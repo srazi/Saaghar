@@ -1,0 +1,11 @@
+[Desktop Entry]
+Categories=Office;Publishing;Qt;X-SuSE-Core-Office;X-Mandriva-Office-Publishing;X-Misc;
+Exec=saaghar
+GenericName=Saaghar
+Comment=A Persian poetry software
+Icon=saaghar
+Name=Saaghar
+StartupNotify=false
+Terminal=false
+Type=Application
+
