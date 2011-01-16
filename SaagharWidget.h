@@ -78,7 +78,6 @@ public:
 	int currentCat;
 
 private:
-	void setFlagOfEmptyColumn(QTableWidget* table, int startRow);
 	void showCategory(GanjoorCat category);
 	int showPoem(GanjoorPoem poem);
 

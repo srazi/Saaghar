@@ -451,11 +451,14 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 		QString verseData = QString::number(verses.at(i)->_PoemID)+"|"+QString::number(verses.at(i)->_Order)+"|"+QString::number((int)verses.at(i)->_Position);
 		mesraItem->setData(Qt::UserRole, "VerseData=|"+verseData);
 
+		bool spacerColumnIsPresent = false;
+
 		if (centeredView)
 		{
 			switch (verses.at(i)->_Position)
 			{
 				case Right :
+					spacerColumnIsPresent = true;
 					if (!flagEmptyThirdColumn)
 					{
 						firstEmptyThirdColumn = row;
@@ -473,6 +476,7 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 					break;
 
 				case Left :
+					spacerColumnIsPresent = true;
 					if (!flagEmptyThirdColumn)
 					{
 						firstEmptyThirdColumn = row;
@@ -530,6 +534,13 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 
 				default:
 					break;
+			}
+
+			if (spacerColumnIsPresent)
+			{
+				QTableWidgetItem *tmp = new QTableWidgetItem("");
+				tmp->setFlags(Qt::NoItemFlags);
+				tableViewWidget->setItem(row, 2, tmp);			
 			}
 		}// end of centeredView
 
@@ -617,7 +628,6 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 	}
 	/////////////////////////////////////
 
-	setFlagOfEmptyColumn(tableViewWidget, firstEmptyThirdColumn);
 	resizeTable(tableViewWidget);
 
 	QApplication::restoreOverrideCursor();
@@ -653,18 +663,6 @@ QString SaagharWidget::currentPageGanjoorUrl ()
      * however size of database is reduced only by 2 mb (for 69 mb one) in this way
      * so I thought it might not condisered harmful to keep current structure.
      */
-}
-
-void SaagharWidget::setFlagOfEmptyColumn(QTableWidget* table, int startRow)
-{
-	QTableWidgetItem *flagItem = new QTableWidgetItem("");
-	flagItem->setFlags(Qt::NoItemFlags);
-
-	if (table->columnCount() == 4)
-	{
-		table->setItem(startRow, 2, flagItem);
-		table->setSpan(startRow, 2, table->rowCount(), 1);
-	}
 }
 
 void SaagharWidget::resizeTable(QTableWidget *table)
