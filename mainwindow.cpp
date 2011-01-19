@@ -80,6 +80,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	pressedMouseButton = Qt::LeftButton;
     
 	QString dataBaseCompleteName = "/ganjoor.s3db";
+
 	if (isPortable)
 	{
 #ifdef Q_WS_MAC
@@ -93,11 +94,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	else
 	{
 #ifdef Q_WS_WIN
-		dataBaseCompleteName = QDir::homePath()+"/Pojh/Saaghar"+dataBaseCompleteName;
+		dataBaseCompleteName = QDir::homePath()+"/Pojh/Saaghar/"+dataBaseCompleteName;
 		SaagharWidget::poetsImagesDir = QCoreApplication::applicationDirPath()+"/poets_images/";
 #endif
 #ifdef Q_WS_X11
-		dataBaseCompleteName = QDir::homePath()+"/.Pojh/Saaghar/"+dataBaseCompleteName;
+		dataBaseCompleteName = QDir::homePath()+"/usr/share/saaghar/"+dataBaseCompleteName;
 		SaagharWidget::poetsImagesDir = "/usr/share/saaghar/poets_images/";
 #endif
 #ifdef Q_WS_MAC
@@ -741,7 +742,7 @@ QString MainWindow::convertToTeX(SaagharWidget *saagharObject)
 
 void MainWindow::actionNewWindowClicked()
 {
-	QProcess::startDetached(QCoreApplication::applicationFilePath());
+	QProcess::startDetached("\""+QCoreApplication::applicationFilePath()+"\"");
 }
 
 void MainWindow::actionNewTabClicked()
@@ -855,7 +856,7 @@ void MainWindow::setupUi()
 	actionExit = new QAction(QIcon(iconThemePath+"/exit.png"), tr("E&xit"),this);
 	actionExit->setMenuRole(QAction::QuitRole);//needed for Mac OS X
 	actionExit->setObjectName(QString::fromUtf8("actionExit"));
-	actionExit->setShortcuts(QKeySequence::Close);
+	actionExit->setShortcut(Qt::CTRL | Qt::Key_Q);
 
 	actionNewTab = new QAction(QIcon(iconThemePath+"/new_tab.png"), tr("New &Tab"),this);
 	actionNewTab->setObjectName(QString::fromUtf8("actionNewTab"));

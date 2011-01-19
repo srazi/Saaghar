@@ -22,10 +22,10 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VER_FILEVERSION             0,7,2,969
-#define VER_FILEVERSION_STR         "0.7.2.969\0"
+#define VER_FILEVERSION             0,7,2,1051
+#define VER_FILEVERSION_STR         "0.7.2.1051\0"
 
-#define VER_FILEBUILDTIME_STR       "21Dec2010, 19:02:23\0"
+#define VER_FILEBUILDTIME_STR       "19Jan2011, 17:15:58\0"
 
 #define VER_PRODUCTVERSION          0,7
 #define VER_PRODUCTVERSION_STR      "0.7\0"
