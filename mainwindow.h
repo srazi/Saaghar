@@ -88,8 +88,10 @@ class MainWindow : public QMainWindow
 		QAction *actionExport;
 		QAction *actionExportAsPDF;
 		QAction *actionHelpContents;
+		QAction *actionCloseTab;
 
 	private slots:
+		void closeCurrentTab();
 		void helpContents();
 		void actionPrintPreviewClicked();
 		void print(QPrinter *printer);

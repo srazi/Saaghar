@@ -18,5 +18,6 @@
     <file>images/next.png</file>
     <file>images/previous.png</file>
     <file>images/copy.png</file>
+    <file>images/close-tab.png</file>
   </qresource>
 </RCC>

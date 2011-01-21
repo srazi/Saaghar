@@ -36,8 +36,13 @@ TRANSLATIONS += saaghar_fa.ts
 message("'make install' doesn't overwrite existing 'database file', do that manually!")
 
 win32 {
+
+win32-msvc*{
+    RC_FILE = win.rc
+}
+
 QTPLUGIN += qsqlite
-RC_FILE = win.rc
+
 target.path = Saaghar-Win
 INSTALLS = target
 utilities.path = Saaghar-Win

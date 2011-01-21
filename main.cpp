@@ -18,7 +18,8 @@
  *  along with this program; if not, see http://www.gnu.org/licenses/      *
  *                                                                         *
  ***************************************************************************/
- 
+
+#include <QTranslator>
 #include <QtGui/QApplication>
 #include "mainwindow.h"
 
@@ -32,7 +33,26 @@
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-	
+
+	QTranslator* appTranslator=new QTranslator();
+	QTranslator* basicTranslator=new QTranslator();
+#if defined( Q_WS_X11 )
+	QString translationDir = "/usr/share/saaghar";
+#endif
+#if defined( Q_WS_MACX )
+	QString translationDir = QCoreApplication::applicationDirPath() + "/../Resources";
+#endif
+#if defined(Q_WS_WIN)
+	QString translationDir = QCoreApplication::applicationDirPath();
+#endif
+
+	if (appTranslator->load(QString("saaghar_fa"), translationDir))
+	{
+		QCoreApplication::installTranslator(appTranslator);
+		if (basicTranslator->load(QString("qt_fa"), translationDir))
+			QCoreApplication::installTranslator(basicTranslator);
+	}
+
 	MainWindow w;
 	w.show();
 

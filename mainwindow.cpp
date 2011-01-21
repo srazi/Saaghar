@@ -98,7 +98,7 @@ MainWindow::MainWindow(QWidget *parent) :
 		SaagharWidget::poetsImagesDir = QCoreApplication::applicationDirPath()+"/poets_images/";
 #endif
 #ifdef Q_WS_X11
-		dataBaseCompleteName = QDir::homePath()+"/usr/share/saaghar/"+dataBaseCompleteName;
+		dataBaseCompleteName = "/usr/share/saaghar/"+dataBaseCompleteName;
 		SaagharWidget::poetsImagesDir = "/usr/share/saaghar/poets_images/";
 #endif
 #ifdef Q_WS_MAC
@@ -788,6 +788,15 @@ void MainWindow::helpContents()
 	help.exec();
 }
 
+void MainWindow::closeCurrentTab()
+{
+	if (mainTabWidget->count() <= 1)
+		close();
+
+	tabCloser(mainTabWidget->currentIndex());
+	return;
+}
+
 void MainWindow::setupUi()
 {
 	QString iconThemePath=":/resources/images/";
@@ -895,6 +904,10 @@ void MainWindow::setupUi()
     actionHelpContents->setObjectName(QString::fromUtf8("actionHelpContents"));
 	actionHelpContents->setShortcuts(QKeySequence::HelpContents);
 
+	actionCloseTab = new QAction(QIcon(iconThemePath+"/close-tab.png"), tr("&Close Tab"),this);
+	actionCloseTab->setObjectName(QString::fromUtf8("actionCloseTab"));
+	actionCloseTab->setShortcuts(QKeySequence::Close);
+
 	//Inserting main menu items
 	ui->menuBar->addMenu(menuFile);
 	ui->menuBar->addMenu(menuNavigation);
@@ -904,6 +917,7 @@ void MainWindow::setupUi()
 	//Inserting items of menus
     menuFile->addAction(actionNewTab);
     menuFile->addAction(actionNewWindow);
+	menuFile->addAction(actionCloseTab);
     menuFile->addSeparator();
 	menuFile->addAction(actionExportAsPDF);
     menuFile->addAction(actionExport);
@@ -952,6 +966,7 @@ void MainWindow::createConnections()
 		//File
 	connect(actionNewTab			,	SIGNAL(triggered())		,	this, SLOT(actionNewTabClicked())		);
 	connect(actionNewWindow			,	SIGNAL(triggered())		,	this, SLOT(actionNewWindowClicked())	);
+	connect(actionCloseTab			,	SIGNAL(triggered())		,	this, SLOT(closeCurrentTab())			);
 	connect(actionExportAsPDF		,	SIGNAL(triggered())		,	this, SLOT(actionExportAsPDFClicked())	);
 	connect(actionExport			,	SIGNAL(triggered())		,	this, SLOT(actionExportClicked())		);
 	connect(actionPrintPreview		,	SIGNAL(triggered())		,	this, SLOT(actionPrintPreviewClicked())	);
@@ -1042,10 +1057,6 @@ void MainWindow::loadGlobalSettings()
 	SaagharWidget::backgroundImagePath = config->value("Background Path", "").toString();
 	settingsIconThemeState = config->value("Icon Theme State",false).toBool();
 	settingsIconThemePath = config->value("Icon Theme Path", "").toString();
-
-	QFontDatabase fontDb;
-	QStringList allFonts = fontDb.families();
-	QString defaultFont;
 
 	//The "XB Sols" is embeded in executable.
 	QString fontFamily=config->value("Font Family", "XB Sols").toString();
