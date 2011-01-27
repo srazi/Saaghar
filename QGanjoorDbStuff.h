@@ -24,42 +24,42 @@
 
 enum VersePosition
 {
-    Right = 0,//مصرع اول
-    Left = 1,// مصرع دوم
-    CenteredVerse1 = 2,// مصرع اول یا تنهای ابیات ترجیع یا ترکیب
-    CenteredVerse2 = 3,// مصرع دوم ابیات ترجیع یا ترکیب
-    Single = 4, //مصرعهای شعرهای نیمایی یا آزاد
-    Paragraph = -1, //نثر
+	Right = 0,//مصرع اول
+	Left = 1,// مصرع دوم
+	CenteredVerse1 = 2,// مصرع اول یا تنهای ابیات ترجیع یا ترکیب
+	CenteredVerse2 = 3,// مصرع دوم ابیات ترجیع یا ترکیب
+	Single = 4, //مصرعهای شعرهای نیمایی یا آزاد
+	Paragraph = -1, //نثر
 };
 
 class GanjoorVerse
 {
-    public:
+	public:
 		int _PoemID;
 		int _Order;
 		VersePosition _Position;
 		QString _Text;
 
-    GanjoorVerse()
-    {
+	GanjoorVerse()
+	{
 		_PoemID = -1;
 		_Order = -1;
 		_Position = Single;
 		_Text = QString();
-    }
+	}
 	
 	inline void init(int PoemID=-1, int Order=-1, VersePosition Position = Single, QString Text=QString() )
-    {
+	{
 		_PoemID = PoemID;
 		_Order = Order;
 		_Position = Position;
 		_Text = Text;
-    }
+	}
 };
 
 class GanjoorPoem
 {
-    public:
+	public:
 		int _ID;
 		int _CatID;
 		QString _Title;
@@ -67,25 +67,25 @@ class GanjoorPoem
 		QString _HighlightText;
 		bool _Faved;
 
-    GanjoorPoem()
-    {
+	GanjoorPoem()
+	{
 		_ID = -1;
 		_CatID = -1;
 		_Title = QString();
 		_Url = QString();
 		_Faved = false;
 		_HighlightText = QString();
-    }
+	}
 
 	inline void init(int ID=-1, int CatID=-1, QString Title=QString(), QString Url=QString(), bool Faved=false, QString HighlightText=QString())
-    {
-        _ID = ID;
-        _CatID = CatID;
-        _Title = Title;
-        _Url = Url;
-        _Faved = Faved;
-        _HighlightText = HighlightText;
-    }
+	{
+		_ID = ID;
+		_CatID = CatID;
+		_Title = Title;
+		_Url = Url;
+		_Faved = Faved;
+		_HighlightText = HighlightText;
+	}
 	inline bool isNull() const {return _ID == -1;}
 	inline void setNull()
 	{
@@ -100,60 +100,65 @@ class GanjoorPoem
 
 class GanjoorPoet
 {
-    public:
+	public:
 		QString _Name;
 		int _ID;
 		int _CatID;
+		QString _Description;
 
-    GanjoorPoet()
-    {
+	GanjoorPoet()
+	{
 		_ID = -1;
 		_Name = QString();
 		_CatID = -1;
-    }
+		_Description = QString();
+	}
 
-	inline void init(int ID=-1, QString Name=QString(), int CatID=-1)
-    {
-        _Name = Name;
-        _ID = ID;
-        _CatID = CatID;
-    }
+	inline void init(int ID=-1, QString Name=QString(), int CatID=-1, QString description=QString())
+	{
+		_Name = Name;
+		_ID = ID;
+		_CatID = CatID;
+		_Description = description;
+	}
+
+	inline bool isNull() const {return _ID == -1;}
 };
 
 class GanjoorCat
 {
-    public:
+	public:
 		int _ID;
 		int _PoetID;
 		QString _Text;
 		int _ParentID;
 		QString _Url;
 
-    GanjoorCat()
-    {
+	GanjoorCat()
+	{
 		_ID = -1;
 		_PoetID = -1;
 		_Text = QString();
 		_ParentID = -1;
 		_Url = QString();
-    }
+	}
 
 	inline bool isNull() const {return _ID == -1;}
 	inline void setNull() 
 	{
 		_ID = -1;
-        _PoetID = -1;
+		_PoetID = -1;
 		_Text = QString();
-        _ParentID = -1;
-        _Url = QString();
+		_ParentID = -1;
+		_Url = QString();
 	}
 	inline void init(int ID=-1, int PoetID=-1, QString Text="", int ParentID=-1, QString Url="") 
 	{
 		_ID = ID;
-        _PoetID = PoetID;
+		_PoetID = PoetID;
 		_Text = Text;
-        _ParentID = ParentID;
-        _Url = Url;
+		_ParentID = ParentID;
+		_Url = Url;
 	}
 };
 #endif // QGANJOORDBSTUFF_H

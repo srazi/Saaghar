@@ -28,6 +28,7 @@
 #include <QScrollBar>
 #include <QMessageBox>
 #include <QAction>
+#include <QFile>
 
 //STATIC Variables
 QString SaagharWidget::poetsImagesDir = QString();
@@ -132,18 +133,18 @@ void SaagharWidget::parentCatClicked()
 	if (!parentCatButtonData.startsWith("CATEGORY_ID=")) return;
 	parentCatButtonData.remove("CATEGORY_ID=");
 
-    GanjoorCat category;
+	GanjoorCat category;
 	category.init(0, 0, "", 0, "");
 	bool OK = false;
 	int CatID = parentCatButtonData.toInt(&OK);
 
 	//qDebug() << "parentCatButtonData=" << parentCatButtonData << "CatID=" << CatID;
 
-    if (OK && ganjoorDataBase)
+	if (OK && ganjoorDataBase)
 		category = ganjoorDataBase->getCategory(CatID);
 
 	clearSaagharWidget();
-    showCategory(category);
+	showCategory(category);
 }
 
 void SaagharWidget::showHome()
@@ -157,50 +158,50 @@ void SaagharWidget::showHome()
 bool SaagharWidget::nextPoem()
 {
 	if (ganjoorDataBase->isConnected())
-    {
-        GanjoorPoem poem = ganjoorDataBase->getNextPoem(currentPoem, currentCat);
+	{
+		GanjoorPoem poem = ganjoorDataBase->getNextPoem(currentPoem, currentCat);
 		if (!poem.isNull())
-        {
+		{
 			clearSaagharWidget();
-            showPoem(poem);
-            return true;
-        }
-    }
-    return false;
+			showPoem(poem);
+			return true;
+		}
+	}
+	return false;
 }
 
 bool SaagharWidget::previousPoem()
 {
-    if (ganjoorDataBase->isConnected())
-    {
-        GanjoorPoem poem = ganjoorDataBase->getPreviousPoem(currentPoem, currentCat);
+	if (ganjoorDataBase->isConnected())
+	{
+		GanjoorPoem poem = ganjoorDataBase->getPreviousPoem(currentPoem, currentCat);
 		if (!poem.isNull())
-        {
+		{
 			clearSaagharWidget();
-            showPoem(poem);
-            return true;
-        }
-    }
-    return false;
+			showPoem(poem);
+			return true;
+		}
+	}
+	return false;
 }
 
 void SaagharWidget::showCategory(GanjoorCat category)
 {
 	if ( category.isNull() )
-    {
+	{
 		showHome();
 		return;
-    }
+	}
 
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-    showParentCategory(category);
+	showParentCategory(category);
 	currentPoem = 0;//from showParentCategory
 
 	//new Caption
 	currentCaption = (currentCat == 0) ? tr("Home") : ganjoorDataBase->getPoetForCat(currentCat)._Name;//for Tab Title
 	emit captionChanged();
-    QList<GanjoorCat *> subcats = ganjoorDataBase->getSubCategories(category._ID);
+	QList<GanjoorCat *> subcats = ganjoorDataBase->getSubCategories(category._ID);
 
 	int subcatsSize = subcats.size();
 
@@ -214,7 +215,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 		return;
 	}
 
-    QList<GanjoorPoem *> poems = ganjoorDataBase->getPoems(category._ID);
+	QList<GanjoorPoem *> poems = ganjoorDataBase->getPoems(category._ID);
 	
 	if (poems.size() == 1 && subcatsSize == 0)
 		{
@@ -243,7 +244,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 	tableViewWidget->setAttribute(Qt::WA_OpaquePaintEvent, true);
 	tableViewWidget->setLayoutDirection(Qt::RightToLeft);
-//////////////////////////////////////////////////
+
 	int startRow = 0;
 	if (currentCat == 0)
 	{
@@ -259,7 +260,10 @@ void SaagharWidget::showCategory(GanjoorCat category)
 		QTableWidgetItem *catItem = new QTableWidgetItem(itemText);
 		catItem->setFlags(catsItemFlag);
 		catItem->setData(Qt::UserRole, "CatID="+QString::number(category._ID));
-		catItem->setIcon(QIcon(poetsImagesDir+"/"+QString::number(gPoet._ID)+".png"));
+		QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(gPoet._ID)+".png";;
+		if (!QFile::exists(poetPhotoFileName))
+			poetPhotoFileName = ":/resources/images/no-photo.png";
+		catItem->setIcon(QIcon(poetPhotoFileName));
 		//set row height
 		int textWidth = tableViewWidget->fontMetrics().boundingRect(itemText).width();
 		int totalWidth = tableViewWidget->columnWidth(0);
@@ -268,8 +272,8 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 		tableViewWidget->setItem(0, 0, catItem);
 	}
-///////////////////////////////////////////////////
-    for (int i = 0; i < subcatsSize; ++i)
+
+	for (int i = 0; i < subcatsSize; ++i)
 	{
 		QTableWidgetItem *catItem = new QTableWidgetItem(subcats.at(i)->_Text);
 		catItem->setFlags(catsItemFlag);
@@ -278,14 +282,17 @@ void SaagharWidget::showCategory(GanjoorCat category)
 		if (currentCat == 0)
 		{
 			GanjoorPoet gPoet = SaagharWidget::ganjoorDataBase->getPoetForCat(subcats.at(i)->_ID);
-			catItem->setIcon(QIcon(poetsImagesDir+"/"+QString::number(gPoet._ID)+".png"));
+			QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(gPoet._ID)+".png";;
+			if (!QFile::exists(poetPhotoFileName))
+				poetPhotoFileName = ":/resources/images/no-photo.png";
+			catItem->setIcon(QIcon(poetPhotoFileName));
 		}
 		tableViewWidget->setItem(i+startRow, 0, catItem);
 
 		//freeing resuorce
 		delete subcats[i];
 		subcats[i]=0;
-    }
+	}
 
 	for (int i = 0; i < poems.size(); i++)
 	{
@@ -303,7 +310,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 		poems[i]=0;
 
 		tableViewWidget->setItem(subcatsSize+i+startRow, 0, poemItem);
-    }
+	}
 
 	if (!poems.isEmpty() || !subcats.isEmpty() )
 	{
@@ -318,12 +325,12 @@ void SaagharWidget::showCategory(GanjoorCat category)
 void SaagharWidget::showParentCategory(GanjoorCat category)
 {
 	parentCatsToolBar->clear();
-    
+	
 	//the parents of this category
-    QList<GanjoorCat> ancestors = ganjoorDataBase->getParentCategories(category);
+	QList<GanjoorCat> ancestors = ganjoorDataBase->getParentCategories(category);
 
 	for (int i = 0; i < ancestors.size(); i++)
-    {
+	{
 		parentCatButton = new QPushButton(parentCatsToolBar);
 		parentCatButton->setText(ancestors.at(i)._Text);
 		parentCatButton->setObjectName("CATEGORY_ID="+QString::number(ancestors.at(i)._ID));//used as button data
@@ -333,7 +340,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 		parentCatButton->setStyleSheet(QString("QPushButton{border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde); min-width: %1px; min-height: %2px; text margin-left:1px; margin-right:1px } QPushButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa); } QPushButton:flat { border: none; } QPushButton:default { border-color: red; }").arg(minWidth).arg(parentCatButton->fontMetrics().height()+2));
 		
 		parentCatsToolBar->addWidget(parentCatButton);
-    }
+	}
 
 	if (!category._Text.isEmpty())
 	{
@@ -347,15 +354,14 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 	}
 
 	currentCat = !category.isNull() ? category._ID : 0;
-    /*currentPoem = 0;*/ //moved to showCategory
 }
 
 int SaagharWidget::showPoem(GanjoorPoem poem)
 {
 	if ( poem.isNull() )
-    {
+	{
 	return 0;
-    }
+	}
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	showParentCategory(ganjoorDataBase->getCategory(poem._CatID));
@@ -387,7 +393,7 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 	//Title of Poem
 	QTableWidgetItem *poemTitle = new QTableWidgetItem(poem._Title);
 	poemTitle->setFlags(poemsTitleItemFlag);
-	poemTitle->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));//
+	poemTitle->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
 	if (centeredView)
 		poemTitle->setTextAlignment(Qt::AlignCenter);
 	else
@@ -506,7 +512,7 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 				case Single :
 					textWidth = fontMetric.boundingRect(mesraItem->data(Qt::DisplayRole).toString()).width();
 					totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-					numOfRow = textWidth/totalWidth ;//(tableViewWidget->columnWidth(1)*3);
+					numOfRow = textWidth/totalWidth ;
 					if (!currentVerseText.isEmpty())
 					{
 						tableViewWidget->setItem(row, 1, mesraItem);
@@ -519,10 +525,10 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 				case Paragraph :
 					textWidth = fontMetric.boundingRect(mesraItem->data(Qt::DisplayRole).toString()).width();
 					totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-					numOfRow = textWidth/totalWidth;//(tableViewWidget->columnWidth(1)*3);
+					numOfRow = textWidth/totalWidth;
 					{
 						QTableWidgetItem *tmp = new QTableWidgetItem("");
-						tmp->setFlags(versesItemFlag/*Qt::NoItemFlags*/);
+						tmp->setFlags(versesItemFlag);
 						tableViewWidget->setItem(row, 3, tmp);
 						mesraItem->setTextAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 						tableViewWidget->setItem(row, 1, mesraItem);
@@ -608,7 +614,7 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 		verses[i]=0;
 	}// end of big for
 
-	//////////////////////////////////////
+
 	//a trick for removing last empty row
 	QString rowStr = "";
 	for (int col = 0; col < tableViewWidget->columnCount(); ++col)
@@ -626,7 +632,6 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 	{
 		tableViewWidget->setRowCount(tableViewWidget->rowCount()-1);
 	}
-	/////////////////////////////////////
 
 	resizeTable(tableViewWidget);
 
@@ -644,25 +649,24 @@ void SaagharWidget::clearSaagharWidget()
 {
 	tableViewWidget->setRowCount(0);
 	tableViewWidget->setColumnCount(0);
-	//qDeleteAll(dockWidgetContents->children());
 }
 
 QString SaagharWidget::currentPageGanjoorUrl ()
 {
-    if(currentCat == 0)
+	if(currentCat == 0)
 		return "http://ganjoor.net";
-    if (currentPoem == 0)
+	if (currentPoem == 0)
 		return ganjoorDataBase->getCategory(currentCat)._Url;
-    return ganjoorDataBase->getPoem(currentPoem)._Url;
-    /*
-     * using following code you can delete url field in poem table,
-     *
-     * return "http://ganjoor.net/?p=" + currentPoem.ToString();
-     *
-     * it causes ganjoor.net to perform a redirect to SEO frinedly url,
-     * however size of database is reduced only by 2 mb (for 69 mb one) in this way
-     * so I thought it might not condisered harmful to keep current structure.
-     */
+	return ganjoorDataBase->getPoem(currentPoem)._Url;
+	/*
+	 * using following code you can delete url field in poem table,
+	 *
+	 * return "http://ganjoor.net/?p=" + currentPoem.ToString();
+	 *
+	 * it causes ganjoor.net to perform a redirect to SEO frinedly url,
+	 * however size of database is reduced only by 2 mb (for 69 mb one) in this way
+	 * so I thought it might not condisered harmful to keep current structure.
+	 */
 }
 
 void SaagharWidget::resizeTable(QTableWidget *table)

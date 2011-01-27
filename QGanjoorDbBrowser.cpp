@@ -25,43 +25,58 @@
 #include <QVariant>
 #include <QSqlQuery>
 #include <QFileInfo>
-#include <QDateTime>
+
+const int minNewPoetID = 1001;
+const int minNewCatID  = 10001;
+const int minNewPoemID = 100001;
 
 const int DatabaseVersion = 1;
 
 QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 {
 	QFileInfo dBFile(sqliteDbCompletePath);
-    dBName = dBFile.fileName();
+	dBName = dBFile.fileName();
 	dBConnection = QSqlDatabase::addDatabase("QSQLITE", dBName);
-    dBConnection.setDatabaseName(sqliteDbCompletePath);
+	dBConnection.setDatabaseName(sqliteDbCompletePath);
 	if (!dBFile.exists() || !dBConnection.open())
-    {
+	{
 		QMessageBox::critical(0, tr("Cannot open Database File"), tr("Cannot open database file...\nError: %1\nDataBase Path=%2\nSaaghar needs its database for working properly, Saaghar is terminated for now.").arg(dBConnection.lastError().text()).arg(sqliteDbCompletePath));
 		dBConnection = QSqlDatabase();
 		QSqlDatabase::removeDatabase(dBName);
 		exit(1);
 	}
+	else
+	{
+		cachedMaxCatID = cachedMaxPoemID = 0;
+	}
 }
 
 QGanjoorDbBrowser::~QGanjoorDbBrowser()
 {
-	dBConnection = QSqlDatabase::database(dBName);
-	dBConnection.close();
+	foreach(const QString& connectionName, QSqlDatabase::connectionNames())
+	{
+		QSqlDatabase::database(connectionName).close();
+		QSqlDatabase::removeDatabase(connectionName);
+	}
 }
 
-bool QGanjoorDbBrowser::isConnected()
+bool QGanjoorDbBrowser::isConnected(const QString& connectionID)
 {
-	dBConnection = QSqlDatabase::database(dBName);
+	QString connectionName = dBName;
+	if (!connectionID.isEmpty()) connectionName = connectionID;
+	dBConnection = QSqlDatabase::database(connectionName, true);//dBName
 	return dBConnection.isOpen();
 }
 
-QList<GanjoorPoet *> QGanjoorDbBrowser::getPoets()
+QList<GanjoorPoet *> QGanjoorDbBrowser::getPoets(const QString& connectionID, bool sort)
 {
-    QList<GanjoorPoet *> poets;
-    if ( isConnected() )
-    {
-		QSqlQuery q(dBConnection);
+	QList<GanjoorPoet *> poets;
+	if ( isConnected(connectionID) )
+	{
+		QSqlDatabase dataBaseObject = dBConnection;
+		if (!connectionID.isEmpty())
+			dBConnection = QSqlDatabase::database(connectionID);
+		QSqlQuery q(dataBaseObject);
 		q.exec("SELECT id, name, cat_id FROM poet");
 		q.first();
 		
@@ -73,8 +88,9 @@ QList<GanjoorPoet *> QGanjoorDbBrowser::getPoets()
 			poets.append(gPoet);
 			if (!q.next()) break;
 		}
-		qSort(poets.begin(), poets.end(), comparePoetsByName);
-    }
+		if (sort)
+			qSort(poets.begin(), poets.end(), comparePoetsByName);
+	}
 	return poets;
 }
 
@@ -87,7 +103,7 @@ GanjoorCat QGanjoorDbBrowser::getCategory(int CatID)
 {
 	GanjoorCat gCat;
 	gCat.init();
-    if (isConnected())
+	if (isConnected())
 	{
 		QSqlQuery q(dBConnection);
 		q.exec("SELECT poet_id, text, parent_id, url FROM cat WHERE id = " + QString::number(CatID) );
@@ -103,8 +119,8 @@ GanjoorCat QGanjoorDbBrowser::getCategory(int CatID)
 				(qrec.value(3)).toString());
 			return gCat;
 		}
-     }
-     return gCat;
+	}
+	return gCat;
  }
 
 bool QGanjoorDbBrowser::compareCategoriesByName(GanjoorCat *cat1, GanjoorCat *cat2)
@@ -114,31 +130,31 @@ bool QGanjoorDbBrowser::compareCategoriesByName(GanjoorCat *cat1, GanjoorCat *ca
 
 QList<GanjoorCat *> QGanjoorDbBrowser::getSubCategories(int CatID)
 {
-    QList<GanjoorCat *> lst;
-    if (isConnected())
-    {
-       QSqlQuery q(dBConnection);
-       q.exec("SELECT poet_id, text, url, ID FROM cat WHERE parent_id = " + QString::number(CatID));
+	QList<GanjoorCat *> lst;
+	if (isConnected())
+	{
+	   QSqlQuery q(dBConnection);
+	   q.exec("SELECT poet_id, text, url, ID FROM cat WHERE parent_id = " + QString::number(CatID));
 	   q.first();
-       while( q.isValid() && q.isActive() )
-       {
+	   while( q.isValid() && q.isActive() )
+	   {
 		   QSqlRecord qrec = q.record();
 		   GanjoorCat *gCat = new GanjoorCat();
 		   gCat->init((qrec.value(3)).toInt(), (qrec.value(0)).toInt(), (qrec.value(1)).toString(), CatID, (qrec.value(2)).toString());
 		   lst.append(gCat);
 		   if (!q.next()) break;
-       }
-       if (CatID == 0)
+	   }
+	   if (CatID == 0)
 			qSort(lst.begin(), lst.end(), compareCategoriesByName);
-    }
-    return lst;
+	}
+	return lst;
 }
 
 QList<GanjoorCat> QGanjoorDbBrowser::getParentCategories(GanjoorCat Cat)
 {
-    QList<GanjoorCat> lst;
-    if (isConnected())
-    {
+	QList<GanjoorCat> lst;
+	if (isConnected())
+	{
 		while (!Cat.isNull() && Cat._ParentID != 0)
 		{
 			Cat = getCategory(Cat._ParentID);
@@ -147,15 +163,15 @@ QList<GanjoorCat> QGanjoorDbBrowser::getParentCategories(GanjoorCat Cat)
 		GanjoorCat gCat;
 		gCat.init(0, 0, QString::fromLocal8Bit("خانه"), 0, "");
 		lst.insert(0, gCat);
-    }
-    return lst;
+	}
+	return lst;
 }
 
 QList<GanjoorPoem *> QGanjoorDbBrowser::getPoems(int CatID)
 {
-    QList<GanjoorPoem *> lst;
-    if (isConnected())
-    {
+	QList<GanjoorPoem *> lst;
+	if (isConnected())
+	{
 		QString selectQuery = QString("SELECT ID, title, url FROM poem WHERE cat_id = %1 ORDER BY ID").arg(CatID);
 		QSqlQuery q(dBConnection);
 		q.exec(selectQuery);
@@ -170,13 +186,13 @@ QList<GanjoorPoem *> QGanjoorDbBrowser::getPoems(int CatID)
 			if (!q.next()) 
 				break;
 		}
-    }
-    return lst;
+	}
+	return lst;
 }
 
 QList<GanjoorVerse *> QGanjoorDbBrowser::getVerses(int PoemID)
 {
-    return getVerses(PoemID, 0);
+	return getVerses(PoemID, 0);
 }
 
 QString QGanjoorDbBrowser::getFirstMesra(int PoemID) //just first Mesra
@@ -197,15 +213,15 @@ QString QGanjoorDbBrowser::getFirstMesra(int PoemID) //just first Mesra
 			words = words.mid(0, length);
 			return words.join("")+text;
 		}
-    }
+	}
 	return "";
 }
 
 QList<GanjoorVerse *> QGanjoorDbBrowser::getVerses(int PoemID, int Count)
 {
-    QList<GanjoorVerse *> lst;
-    if (isConnected())
-    {
+	QList<GanjoorVerse *> lst;
+	if (isConnected())
+	{
 		QSqlQuery q(dBConnection);
 		QString selectQuery = QString( "SELECT vorder, position, text FROM verse WHERE poem_id = %1 order by vorder" + (Count>0 ? " LIMIT "+QString::number(Count) : "") ).arg(PoemID);
 		q.exec(selectQuery);
@@ -218,16 +234,16 @@ QList<GanjoorVerse *> QGanjoorDbBrowser::getVerses(int PoemID, int Count)
 			lst.append(gVerse);
 			if (!q.next()) break;
 		}
-    }
-    return lst;
+	}
+	return lst;
 }
 
 GanjoorPoem QGanjoorDbBrowser::getPoem(int PoemID)
 {
 	GanjoorPoem gPoem;
 	gPoem.init();
-    if (isConnected())
-    {
+	if (isConnected())
+	{
 		QSqlQuery q(dBConnection);
 		q.exec("SELECT cat_id, title, url FROM poem WHERE ID = " + QString::number(PoemID) );
 		q.first();
@@ -237,8 +253,8 @@ GanjoorPoem QGanjoorDbBrowser::getPoem(int PoemID)
 			gPoem.init(PoemID, (qrec.value(0)).toInt(), (qrec.value(1)).toString(), (qrec.value(2)).toString(), false, QString(""));
 			return  gPoem;
 		}
-    }
-    return gPoem;
+	}
+	return gPoem;
 }
 
 GanjoorPoem QGanjoorDbBrowser::getNextPoem(int PoemID, int CatID)
@@ -246,7 +262,7 @@ GanjoorPoem QGanjoorDbBrowser::getNextPoem(int PoemID, int CatID)
 	GanjoorPoem gPoem;
 	gPoem.init();
 	if (isConnected() && PoemID!=-1) // PoemID==-1 when getNextPoem(GanjoorPoem poem) pass null poem
-    {
+	{
 		QSqlQuery q(dBConnection);
 		q.exec(QString("SELECT ID FROM poem WHERE cat_id = %1 AND id>%2 LIMIT 1").arg(CatID).arg(PoemID) );
 		q.first();
@@ -256,7 +272,7 @@ GanjoorPoem QGanjoorDbBrowser::getNextPoem(int PoemID, int CatID)
 			gPoem = getPoem((qrec.value(0)).toInt());
 			return gPoem;
 		}
-    }
+	}
 	return gPoem;
 }
 
@@ -269,19 +285,19 @@ GanjoorPoem QGanjoorDbBrowser::getPreviousPoem(int PoemID, int CatID)
 {	
 	GanjoorPoem gPoem;
 	gPoem.init();
-    if (isConnected() && PoemID!=-1) // PoemID==-1 when getPreviousPoem(GanjoorPoem poem) pass null poem
-    {
+	if (isConnected() && PoemID!=-1) // PoemID==-1 when getPreviousPoem(GanjoorPoem poem) pass null poem
+	{
 		QSqlQuery q(dBConnection);
 		q.exec(QString("SELECT ID FROM poem WHERE cat_id = %1 AND id<%2 ORDER BY ID DESC LIMIT 1").arg(CatID).arg(PoemID) );
-		q.first();//temp
+		q.first();
 		if (q.isValid() && q.isActive())
 		{
 			QSqlRecord qrec = q.record();
 			gPoem = getPoem((qrec.value(0)).toInt());
 			return  gPoem;
 		}
-    }
-    return gPoem;
+	}
+	return gPoem;
 }
 
 GanjoorPoem QGanjoorDbBrowser::getPreviousPoem(GanjoorPoem poem)
@@ -293,13 +309,13 @@ GanjoorPoet QGanjoorDbBrowser::getPoetForCat(int CatID)
 {
 	GanjoorPoet gPoet;
 	gPoet.init();
-    if (CatID == 0)
+	if (CatID == 0)
 	{
 		gPoet.init(0, tr("All"), 0);
 		return gPoet;
 	}
-    if (isConnected())
-    {
+	if (isConnected())
+	{
 		QSqlQuery q(dBConnection);
 		q.exec("SELECT poet_id FROM cat WHERE id = " + QString::number(CatID) );
 		q.first();
@@ -308,21 +324,21 @@ GanjoorPoet QGanjoorDbBrowser::getPoetForCat(int CatID)
 			QSqlRecord qrec = q.record();
 			return getPoet((qrec.value(0)).toInt());
 		}
-    }
-    return gPoet;
+	}
+	return gPoet;
 }
 
 GanjoorPoet QGanjoorDbBrowser::getPoet(int PoetID)
 {
 	GanjoorPoet gPoet;
 	gPoet.init();
-    if (PoetID == 0)
+	if (PoetID == 0)
 	{
 		gPoet.init(0, tr("All"), 0);
 		return gPoet;
 	}
-    if (isConnected())
-    {
+	if (isConnected())
+	{
 		QSqlQuery q(dBConnection);
 		q.exec("SELECT id, name, cat_id FROM poet WHERE id = " + QString::number(PoetID) );
 		q.first();
@@ -332,18 +348,18 @@ GanjoorPoet QGanjoorDbBrowser::getPoet(int PoetID)
 			gPoet.init((qrec.value(0)).toInt(), (qrec.value(1)).toString(), (qrec.value(2)).toInt());
 			return gPoet;
 		}
-    }
-    return gPoet;
+	}
+	return gPoet;
 }
 
 QString QGanjoorDbBrowser::getPoetDescription(int PoetID)
 {
-    if (PoetID <= 0)
+	if (PoetID <= 0)
 	{
 		return "";
 	}
-    if (isConnected())
-    {
+	if (isConnected())
+	{
 		QSqlQuery q(dBConnection);
 		q.exec("SELECT description FROM poet WHERE id = " + QString::number(PoetID) );
 		q.first();
@@ -352,16 +368,16 @@ QString QGanjoorDbBrowser::getPoetDescription(int PoetID)
 			QSqlRecord qrec = q.record();
 			return (qrec.value(0)).toString();
 		}
-    }
-    return "";
+	}
+	return "";
 }
 
 GanjoorPoet QGanjoorDbBrowser::getPoet(QString PoetName)
 {
 	GanjoorPoet gPoet;
 	gPoet.init();
-    if (isConnected())
-    {
+	if (isConnected())
+	{
 		QSqlQuery q(dBConnection);
 		q.exec("SELECT id, name, cat_id FROM poet WHERE name = \'" + PoetName + "\'");
 		q.first();
@@ -371,15 +387,15 @@ GanjoorPoet QGanjoorDbBrowser::getPoet(QString PoetName)
 			gPoet.init((qrec.value(0)).toInt(), (qrec.value(1)).toString(), (qrec.value(2)).toInt());
 			return gPoet;
 		}
-    }
-    return gPoet;
+	}
+	return gPoet;
 }
 
 QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase(QString phrase, int PageStart, int Count, int PoetID)
 {
 	QList<int> idList;
-    if (isConnected())
-    {
+	if (isConnected())
+	{
 		QString strQuery;
 		if (PoetID == 0)
 			strQuery=QString("SELECT poem_id FROM verse WHERE text LIKE \'%" + phrase + "%\' GROUP BY poem_id LIMIT "+QString::number(PageStart)+","+QString::number(Count));
@@ -388,22 +404,21 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase(QString phrase, int Pag
 		
 		QSqlQuery q(dBConnection);
 		q.exec(strQuery);
-		//q.first();
-		while( q.next() /*q.isValid() && q.isActive()*/ )
+
+		while( q.next() )
 		{
 			QSqlRecord qrec = q.record();
 			idList.append(qrec.value(0).toInt());
-			//if (!q.next()) break;
 		}
-	    return idList;
-    }
-    return idList;
+		return idList;
+	}
+	return idList;
 }
 QString QGanjoorDbBrowser::getFirstVerseContainingPhrase(int PoemID, QString phrase)
 {
 	QString text = "";
-    if (isConnected())
-    {
+	if (isConnected())
+	{
 		QString strQuery="SELECT text FROM verse WHERE poem_id="+QString::number(PoemID)+" AND text LIKE\'%"+phrase+"%\' LIMIT 0,1";
 		QSqlQuery q(dBConnection);
 		q.exec(strQuery);
@@ -412,17 +427,25 @@ QString QGanjoorDbBrowser::getFirstVerseContainingPhrase(int PoemID, QString phr
 			QSqlRecord qrec = q.record();
 			text = qrec.value(0).toString();
 		}
-    }
+	}
 	return text;
 }
 
-int QGanjoorDbBrowser::getRandomPoemID(int CatID)
+int QGanjoorDbBrowser::getRandomPoemID(int *CatID)
 {
-    if (isConnected())
-    {
+	if (isConnected())
+	{
+		QList<GanjoorCat *> subCats = getSubCategories(*CatID);
+		int randIndex = QGanjoorDbBrowser::getRandomNumber(0, subCats.size());
+		if (randIndex >= 0 && randIndex != subCats.size()) // '==' is when we want to continue with current 'CatID'. notice maybe 'randIndex == subCats.size() == 0'.
+		{
+			*CatID = subCats.at(randIndex)->_ID;
+			return getRandomPoemID(CatID);
+		}
+
 		QString strQuery="SELECT MIN(id), MAX(id) FROM poem";
-		if (CatID != 0)
-			strQuery += " WHERE cat_id=" + QString::number(CatID);
+		if (*CatID != 0)
+			strQuery += " WHERE cat_id=" + QString::number(*CatID);
 		QSqlQuery q(dBConnection);
 		q.exec(strQuery);
 		if ( q.next() )
@@ -430,17 +453,432 @@ int QGanjoorDbBrowser::getRandomPoemID(int CatID)
 			QSqlRecord qrec = q.record();
 			int minID = qrec.value(0).toInt();
 			int maxID = qrec.value(1).toInt();
-			uint numOfSecs = QDateTime::currentDateTime().toTime_t();
-			uint seed = QCursor::pos().x()+QCursor::pos().y()+numOfSecs+QDateTime::currentDateTime().time().msec();
-				
-			qsrand(seed);
-			int randNumber = qrand();
-			while ( randNumber > maxID || randNumber < minID )
+
+			if (maxID <= 0 || minID < 0)
 			{
-				randNumber = qrand();
+				QList<GanjoorCat *> subCats = getSubCategories(*CatID);
+				*CatID = subCats.at(QGanjoorDbBrowser::getRandomNumber(0, subCats.size()-1))->_ID;
+				return getRandomPoemID(CatID);
 			}
-			return randNumber;
+			return QGanjoorDbBrowser::getRandomNumber(minID, maxID);
+		}
+	}
+	return -1;
+}
+
+int QGanjoorDbBrowser::getRandomNumber(int minBound, int maxBound)
+{
+	if ( (maxBound < minBound) || (minBound < 0) ) return -1;
+	if (minBound == maxBound) return minBound;
+
+	//Generate a random number in the range [0.5f, 1.0f).
+	unsigned int ret = 0x3F000000 | (0x7FFFFF & ((qrand() << 8) ^ qrand()));
+	unsigned short coinFlips;
+
+	//If the coin is tails, return the number, otherwise
+	//divide the random number by two by decrementing the
+	//exponent and keep going. The exponent starts at 63.
+	//Each loop represents 15 random bits, a.k.a. 'coin flips'.
+	#define RND_INNER_LOOP() \
+	if( coinFlips & 1 ) break; \
+	coinFlips >>= 1; \
+	ret -= 0x800000
+	for(;;){
+	coinFlips = qrand();
+	RND_INNER_LOOP(); RND_INNER_LOOP(); RND_INNER_LOOP();
+	//At this point, the exponent is 60, 45, 30, 15, or 0.
+	//If the exponent is 0, then the number equals 0.0f.
+	if( ! (ret & 0x3F800000) ) return 0.0f;
+	RND_INNER_LOOP(); RND_INNER_LOOP(); RND_INNER_LOOP();
+	RND_INNER_LOOP(); RND_INNER_LOOP(); RND_INNER_LOOP();
+	RND_INNER_LOOP(); RND_INNER_LOOP(); RND_INNER_LOOP();
+	RND_INNER_LOOP(); RND_INNER_LOOP(); RND_INNER_LOOP();
+	}
+
+	float rand = *((float *)(&ret));
+	return (int)(rand*(maxBound-minBound+1)+minBound);
+}
+
+QList<GanjoorPoet *> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
+{
+	QList<GanjoorPoet *> poetsInDataBase;
+	QString dataBaseID = getIdForDataBase(fileName);
+	QSqlDatabase databaseObject = QSqlDatabase::database(dataBaseID);
+	if (!databaseObject.open())
+	{
+		QSqlDatabase::removeDatabase(dataBaseID);
+		return poetsInDataBase;
+	}
+
+	poetsInDataBase = getPoets(dataBaseID, false);
+	QSqlQuery q(databaseObject);
+
+	databaseObject.close();
+	QSqlDatabase::removeDatabase(dataBaseID);
+
+	return poetsInDataBase;
+}
+
+QString QGanjoorDbBrowser::getIdForDataBase(const QString sqliteDataBaseName)
+{
+	QFileInfo dataBaseFile(sqliteDataBaseName);
+	QString connectionID = dataBaseFile.fileName();//we need to be sure this name is unique
+	QSqlDatabase databaseObject = QSqlDatabase::addDatabase("QSQLITE", connectionID);
+	databaseObject.setDatabaseName(sqliteDataBaseName);
+
+	return connectionID;
+}
+
+QList<GanjoorPoet *> QGanjoorDbBrowser::getConflictingPoets(const QString fileName)
+{
+	QList<GanjoorPoet *> conflictList;
+	if ( isConnected() )
+	{
+		QList<GanjoorPoet *> dataBasePoets = getDataBasePoets(fileName);
+		QList<GanjoorPoet *> installedPoets = getPoets();
+		foreach(GanjoorPoet *poet, installedPoets)
+		{
+			foreach(GanjoorPoet *dbPoet, dataBasePoets)
+			{
+				if ( dbPoet->_ID == poet->_ID )
+				{
+					conflictList << poet;
+					break;
+				}
+			}
+		}
+	}
+
+    return conflictList;
+}
+
+void QGanjoorDbBrowser::removePoetFromDataBase(int PoetID)
+{
+	if (isConnected())
+	{
+		QString strQuery;
+		QSqlQuery q(dBConnection);
+
+		removeCatFromDataBase( &getCategory(getPoet(PoetID)._CatID) );
+
+		strQuery = "DELETE FROM poet WHERE id="+QString::number(PoetID);
+		q.exec(strQuery);
+	}
+}
+
+void QGanjoorDbBrowser::removeCatFromDataBase(GanjoorCat *gCat)
+{
+	if ( !gCat || gCat->isNull() )
+        return;
+    QList<GanjoorCat *> subCats = getSubCategories(gCat->_ID);
+    foreach (GanjoorCat *cat, subCats)
+        removeCatFromDataBase(cat);
+	if (isConnected())
+	{
+		QString strQuery;
+		QSqlQuery q(dBConnection);
+		strQuery="DELETE FROM verse WHERE poem_id IN (SELECT id FROM poem WHERE cat_id="+QString::number(gCat->_ID)+")";
+		q.exec(strQuery);
+		strQuery="DELETE FROM poem WHERE cat_id="+QString::number(gCat->_ID);
+		q.exec(strQuery);
+		strQuery="DELETE FROM cat WHERE id="+QString::number(gCat->_ID);
+		q.exec(strQuery);
+	}
+}
+
+int QGanjoorDbBrowser::getNewPoetID()
+{
+	int newPoetID = -1;
+
+	if (isConnected())
+	{
+		QString strQuery = "SELECT MAX(id) FROM poet";
+		QSqlQuery q(dBConnection);
+		q.exec(strQuery);
+		
+		if (q.first())
+		{
+			bool ok = false;
+			newPoetID = q.value(0).toInt(&ok)+1;
+			if (!ok)
+				newPoetID = minNewPoetID+1;
+		}
+	}
+
+	if (newPoetID < minNewPoetID)
+		newPoetID = minNewPoetID+1;
+
+    return newPoetID;
+}
+int QGanjoorDbBrowser::getNewPoemID()
+{
+    int newPoemID = -1;
+
+    if (cachedMaxPoemID == 0)
+    {
+		if (isConnected())
+		{
+			QString strQuery = "SELECT MAX(id) FROM poem";
+			QSqlQuery q(dBConnection);
+			q.exec(strQuery);
+			
+			if (q.first())
+			{
+				bool ok = false;
+				newPoemID = q.value(0).toInt(&ok)+1;
+				if (!ok)
+					newPoemID = minNewPoemID+1;
+			}
+		}
+
+		if (newPoemID < minNewPoemID)
+			newPoemID = minNewPoemID+1;
+
+		cachedMaxPoemID = newPoemID;
+	}
+	else
+		newPoemID = ++cachedMaxPoemID;
+
+    return newPoemID;
+}
+
+int QGanjoorDbBrowser::getNewCatID()
+{
+    int newCatID = -1;
+
+    if (cachedMaxCatID == 0)
+    {
+		if (isConnected())
+		{
+			QString strQuery = "SELECT MAX(id) FROM cat";
+			QSqlQuery q(dBConnection);
+			q.exec(strQuery);
+			
+			if (q.first())
+			{
+				bool ok = false;
+				newCatID = q.value(0).toInt(&ok)+1;
+				if (!ok)
+					newCatID = minNewCatID+1;
+			}
+		}
+
+		if (newCatID < minNewCatID)
+			newCatID = minNewCatID+1;
+
+		cachedMaxCatID = newCatID;
+	}
+	else
+		newCatID = ++cachedMaxCatID;
+
+    return newCatID;
+}
+
+bool QGanjoorDbBrowser::importDataBase(const QString fileName)
+{
+	QString connectionID = getIdForDataBase(fileName);
+	QSqlDatabase dataBaseObject = QSqlDatabase::database(connectionID);
+	if (!dataBaseObject.open())
+	{
+		QSqlDatabase::removeDatabase(connectionID);
+		return false;
+	}
+
+	QList<GanjoorPoet *> poets = getPoets(connectionID, false);
+	QString strQuery;
+	QSqlQuery queryObject(dataBaseObject);
+    QMap<int, int> mapPoets;
+    QMap<int, int> mapCats;
+    
+	foreach (GanjoorPoet *newPoet, poets)
+	{
+		bool insertNewPoet = true;
+
+		GanjoorPoet poet = getPoet(newPoet->_Name);
+		if (!poet.isNull())//conflict on Names
+		{
+			if (poet._ID == newPoet->_ID)
+			{
+				insertNewPoet = false;
+				mapPoets.insert(newPoet->_ID, newPoet->_ID);
+				GanjoorCat poetCat = getCategory(newPoet->_CatID);
+				if (!poetCat.isNull())
+				{
+					if (poetCat._PoetID == newPoet->_ID)
+					{
+						mapCats.insert(newPoet->_CatID, newPoet->_CatID);
+					}
+					else
+					{
+						int aRealyNewCatID = getNewCatID();
+						mapCats.insert(newPoet->_CatID, getNewCatID());
+						newPoet->_CatID = aRealyNewCatID;
+					}
+				}
+			}
+			else
+			{
+				mapPoets.insert(newPoet->_ID, poet._ID);
+				mapPoets.insert(newPoet->_CatID, poet._CatID);
+				newPoet->_CatID = poet._CatID;
+			}
+		}
+		else
+		{
+			if ( !getPoet(newPoet->_ID).isNull() )//conflict on IDs
+			{
+				int aRealyNewPoetID = getNewPoetID();
+				mapPoets.insert(newPoet->_ID, aRealyNewPoetID);
+				newPoet->_ID = aRealyNewPoetID;
+
+				int aRealyNewCatID = getNewCatID();
+				mapCats.insert(newPoet->_CatID, aRealyNewCatID);
+				newPoet->_CatID = aRealyNewCatID;
+			}
+			else //no conflict, insertNew
+			{
+				mapPoets.insert(newPoet->_ID, newPoet->_ID);
+				GanjoorCat newPoetCat = getCategory(newPoet->_CatID);
+				if (newPoetCat.isNull())
+					mapCats.insert(newPoet->_CatID, newPoet->_CatID);
+				else
+				{
+					int aRealyNewCatID = getNewCatID();
+					mapCats.insert(newPoet->_CatID, getNewCatID());
+					newPoet->_CatID = aRealyNewCatID;
+				}
+			}
+		}
+        
+		if(insertNewPoet && isConnected())
+		{
+			strQuery = QString("INSERT INTO poet (id, name, cat_id, description) VALUES (%1, \"%2\", %3, \"%4\");").arg(newPoet->_ID).arg(newPoet->_Name).arg(newPoet->_CatID).arg(newPoet->_Description);
+			QSqlQuery q(dBConnection);
+			q.exec(strQuery);
+		}                               
+	}
+
+	strQuery = QString("SELECT id, poet_id, text, parent_id, url FROM cat");
+	queryObject.exec(strQuery);
+
+	QList<GanjoorCat *> gCatList;
+	while (queryObject.next())
+	{
+		GanjoorCat *gCat = new GanjoorCat();
+		gCat->init(queryObject.value(0).toInt(), queryObject.value(1).toInt(), queryObject.value(2).toString(), queryObject.value(3).toInt(), queryObject.value(4).toString());
+		gCatList.append(gCat);
+	}
+
+	foreach (GanjoorCat *newCat, gCatList)
+    {
+		newCat->_PoetID = mapPoets.value(newCat->_PoetID, newCat->_PoetID);
+		newCat->_ParentID = mapCats.value(newCat->_ParentID, newCat->_ParentID);
+
+        bool insertNewCategory = true;
+		GanjoorCat gCat = getCategory(newCat->_ID);
+		if (!gCat.isNull())
+        {
+			if (gCat._PoetID == newCat->_PoetID)
+            {
+                insertNewCategory = false;
+                
+				if (mapCats.value(newCat->_ID, -1) == -1)
+					mapCats.insert(newCat->_ID, newCat->_ID);
+            }
+            else
+            {
+                int aRealyNewCatID = getNewCatID();
+                mapCats.insert(newCat->_ID, aRealyNewCatID);
+                newCat->_ID = aRealyNewCatID;
+            }
+        }
+        else
+        {
+			if (mapCats.value(newCat->_ID, -1) == -1)
+				mapCats.insert(newCat->_ID, newCat->_ID);
+        }
+
+		if(insertNewCategory && isConnected())
+		{
+			strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id, url) VALUES (%1, %2, \"%3\", %4, \"%5\");").arg(newCat->_ID).arg(newCat->_PoetID).arg(newCat->_Text).arg(newCat->_ParentID).arg(newCat->_Url);
+			QSqlQuery q(dBConnection);
+			q.exec(strQuery);
+        }
+
+		if ( getPoet(newCat->_PoetID).isNull() )
+        {
+            //missing poet
+            int poetCat;
+			if (newCat->_ParentID == 0)
+				poetCat = newCat->_ID;
+            else
+            {
+                //this is not good:
+                poetCat = newCat->_ParentID;
+            }
+			qDebug() << "a new poet should be created";
+            //this.NewPoet("شاعر " + PoetID.ToString(), PoetID, poetCat);
+        }
+	}
+
+    QMap<int, int> dicPoemID;
+    strQuery = "SELECT id, cat_id, title, url FROM poem";
+	queryObject.exec(strQuery);
+	QList<GanjoorPoem *> poemList;
+
+	while(queryObject.next())
+	{
+		GanjoorPoem *gPoem = new GanjoorPoem();
+		gPoem->init(queryObject.value(0).toInt(), queryObject.value(1).toInt(), queryObject.value(2).toString(), queryObject.value(3).toString());
+		poemList.append(gPoem);
+	}
+
+	foreach (GanjoorPoem *newPoem, poemList)
+    {
+		int tmp = newPoem->_ID;
+		if (!getPoem(newPoem->_ID).isNull())
+            newPoem->_ID = getNewPoemID();
+		newPoem->_CatID = mapCats.value(newPoem->_CatID, newPoem->_CatID);
+		dicPoemID.insert(tmp, newPoem->_ID);
+		
+		if (isConnected())
+		{
+			strQuery = QString("INSERT INTO poem (id, cat_id, title, url) VALUES (%1, %2, \"%3\", \"%4\");").arg(newPoem->_ID).arg(newPoem->_CatID).arg(newPoem->_Title).arg(newPoem->_Url);
+			QSqlQuery q(dBConnection);
+			q.exec(strQuery);
 		}
     }
-	return -1;
+
+
+    strQuery = "SELECT poem_id, vorder, position, text FROM verse";
+	queryObject.exec(strQuery);
+	QList<GanjoorVerse *> verseList;
+
+	while(queryObject.next())
+	{
+		GanjoorVerse *gVerse = new GanjoorVerse();
+		gVerse->init(queryObject.value(0).toInt(), queryObject.value(1).toInt(), (VersePosition)queryObject.value(2).toInt(), queryObject.value(3).toString());
+		verseList.append(gVerse);
+	}
+
+	if (isConnected())
+	{
+		strQuery = "INSERT INTO verse (poem_id, vorder, position, text) VALUES (:poem_id,:vorder,:position,:text)";
+		QSqlQuery q(dBConnection);
+		q.prepare(strQuery);
+
+		foreach (GanjoorVerse *newVerse, verseList)
+		{
+			newVerse->_PoemID = dicPoemID.value(newVerse->_PoemID, newVerse->_PoemID);
+			q.bindValue( ":poem_id", newVerse->_PoemID );
+			q.bindValue( ":vorder", newVerse->_Order );
+			q.bindValue( ":position", newVerse->_Position );
+			q.bindValue( ":text", newVerse->_Text );
+			q.exec();
+		}
+	}
+
+	dataBaseObject.close();
+	QSqlDatabase::removeDatabase(connectionID);
+	return true;
 }

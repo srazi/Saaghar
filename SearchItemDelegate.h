@@ -26,15 +26,15 @@
 
 class SaagharItemDelegate : public QStyledItemDelegate
 { 
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    SaagharItemDelegate(QWidget *parent = 0, QStyle *style = 0, const QString phrase=QString());
+	SaagharItemDelegate(QWidget *parent = 0, QStyle *style = 0, const QString phrase=QString());
 
 private:
 	QStyle *tableStyle;
 	QString keyword;
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+	void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 };
 
 #endif // SEARCHITEMDELEGATE_H

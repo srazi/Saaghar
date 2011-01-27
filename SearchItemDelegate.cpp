@@ -24,14 +24,14 @@
 #include "SaagharWidget.h"
 #include <QtGui>
 
-SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString phrase) : QStyledItemDelegate(parent)/*, firstIndex(QModelIndex())*/
+SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString phrase) : QStyledItemDelegate(parent)
 {
 	keyword = phrase;
 	tableStyle = style;
 }
 
 void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
-                         const QModelIndex &index) const
+						 const QModelIndex &index) const
 {
 	const bool flagRightToLeft = true;
 	int textHMargin = 0;
@@ -58,9 +58,9 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 
 	Qt::Alignment itemAlignment = 0;
 	QVariant alignValue = index.data(Qt::TextAlignmentRole);
-    
+	
 	if (alignValue.isValid() && !alignValue.isNull())
-        itemAlignment = Qt::Alignment(alignValue.toInt());
+		itemAlignment = Qt::Alignment(alignValue.toInt());
 
 	if (!(keyword.isEmpty() || text.indexOf(keyword) == -1 ) )
 	{

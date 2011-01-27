@@ -25,14 +25,17 @@
 #include "SaagharWidget.h"
 #include <QMainWindow>
 #include <QSettings>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QSpinBox>
 
 namespace Ui {
-    class MainWindow;
+	class MainWindow;
 }
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+	Q_OBJECT
 
 	public:
 		explicit MainWindow(QWidget *parent = 0);
@@ -40,6 +43,10 @@ class MainWindow : public QMainWindow
 		SaagharWidget *saagharWidget;
 
 	private:
+		void importDataBase(const QString fileName);
+		QStringList mainToolBarItems;
+		QAction *actionInstance(const QString actionObjectName = "", QString iconPath = "", QString displayName = "");
+		void searchRegionsInitialize();
 		void showSearchResults(QString phrase, int PageStart, int count, int PoetID, QWidget *dockWidget = 0);
 		bool isPortable;
 		QString convertToTeX(SaagharWidget *saagharObject);
@@ -66,31 +73,18 @@ class MainWindow : public QMainWindow
 		Ui::MainWindow *ui;
 		void createConnections();
 		void setupUi();
+		QLineEdit *lineEditSearchText;
+		QComboBox *comboBoxSearchRegion;
+		QSpinBox *spinBoxMaxSearchResult;
+		QPushButton *pushButtonSearch;
 		QMenu *menuNavigation;
 		QMenu *menuTools;
 		QMenu *menuFile;
 		QMenu *menuHelp;
-		QAction *actionHome;
-		QAction *actionPreviousPoem;
-		QAction *actionNextPoem;
-		QAction *actionViewInGanjoorSite;
-		QAction *actionExit;
-		QAction *actionNewTab;
-		QAction *actionNewWindow;
-		QAction *actionAboutSaaghar;
-		QAction *searchToolbarAction;
-		QAction *actionCopy;
-		QAction *actionSettings;
-		QAction *actionFaal;
-		QAction *actionAboutQt;
-		QAction *actionPrint;
-		QAction *actionPrintPreview;
-		QAction *actionExport;
-		QAction *actionExportAsPDF;
-		QAction *actionHelpContents;
-		QAction *actionCloseTab;
+		QMap<QString, QAction *> allActionMap;
 
 	private slots:
+		void actionImportNewSet();
 		void closeCurrentTab();
 		void helpContents();
 		void actionPrintPreviewClicked();
@@ -98,7 +92,7 @@ class MainWindow : public QMainWindow
 		void actionExportAsPDFClicked();
 		void actionExportClicked();
 		void actionPrintClicked();
-		void actionFaalClicked();
+		void actionFaalRandomClicked();
 		void aboutSaaghar();
 		void tableSelectChanged();
 		void searchPageNavigationClicked(QAction *action);
@@ -111,9 +105,7 @@ class MainWindow : public QMainWindow
 		void globalSettings();
 		void newTabForItem(QString type, int id, bool noError);
 		void updateCaption();
-		void searchWidgetClose();
 		void searchStart();
-		void searchWidgetSetVisible(bool visible);
 			//Navigation
 		void copySelectedItems();
 		void actionHomeClicked();

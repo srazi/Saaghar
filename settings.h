@@ -25,25 +25,33 @@
 #include <QDialog>
 
 namespace Ui {
-    class Settings;
+	class Settings;
 }
 
 class Settings : public QDialog
 {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit Settings(QWidget *parent = 0, bool iconThemeState=false, QString iconThemePath="");
-    ~Settings();
-	void acceptSettings(bool *iconThemeState, QString *iconThemePath);
+	explicit Settings(QWidget *parent = 0, bool iconThemeState=false, QString iconThemePath="", QMap<QString, QAction *> *actionsMap = 0, QStringList toolBarItems = QStringList() );
+	~Settings();
+	void acceptSettings(bool *iconThemeState, QString *iconThemePath, QStringList *toolbarItemsList);
 
 private slots:
+	void removeActionFromToolbarTable();
+	void addActionToToolbarTable();
+	void topAction();
+	void bottomAction();
+	void tableAllActionsEntered();
+	void tableToolBarActionsEntered();
 	void browseForBackground();
 	void browseForIconTheme();
 	void getColorForPushButton();
 
 private:
-    Ui::Settings *ui;
+	void replaceWithNeighbor(int neighbor);
+	void initializeActionTables(QMap<QString, QAction *> *actionsMap, QStringList toolBarItems);
+	Ui::Settings *ui;
 };
 
 #endif // SETTINGS_H

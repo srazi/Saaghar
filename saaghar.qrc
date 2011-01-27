@@ -1,23 +1,30 @@
 <RCC>
-  <qresource prefix="/resources">
-    <file>fonts/XB Sols.ttf</file>
-    <file>images/qt-logo.png</file>
-    <file>images/export-pdf.png</file>
-    <file>images/export.png</file>
-    <file>images/print-preview.png</file>
-    <file>images/print.png</file>
-    <file>images/saaghar.png</file>
-    <file>images/new_tab.png</file>
-    <file>images/exit.png</file>
-    <file>images/new_window.png</file>
-    <file>images/browse_net.png</file>
-    <file>images/faal.png</file>
-    <file>images/home.png</file>
-    <file>images/search.png</file>
-    <file>images/settings.png</file>
-    <file>images/next.png</file>
-    <file>images/previous.png</file>
-    <file>images/copy.png</file>
-    <file>images/close-tab.png</file>
-  </qresource>
+	<qresource prefix="/resources">
+		<file>fonts/XB Sols.ttf</file>
+		<file>images/qt-logo.png</file>
+		<file>images/export-pdf.png</file>
+		<file>images/export.png</file>
+		<file>images/print-preview.png</file>
+		<file>images/print.png</file>
+		<file>images/saaghar.png</file>
+		<file>images/new_tab.png</file>
+		<file>images/exit.png</file>
+		<file>images/new_window.png</file>
+		<file>images/browse_net.png</file>
+		<file>images/faal.png</file>
+		<file>images/home.png</file>
+		<file>images/search.png</file>
+		<file>images/settings.png</file>
+		<file>images/next.png</file>
+		<file>images/previous.png</file>
+		<file>images/copy.png</file>
+		<file>images/close-tab.png</file>
+		<file>images/random.png</file>
+		<file>images/up.png</file>
+		<file>images/down.png</file>
+		<file>images/right.png</file>
+		<file>images/left.png</file>
+		<file>images/import-to-database.png</file>
+		<file>images/no-photo.png</file>
+	</qresource>
 </RCC>

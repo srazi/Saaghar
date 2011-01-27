@@ -36,12 +36,14 @@
 class QGanjoorDbBrowser : public QObject
 {
 	Q_OBJECT
-    public:
+	public:
 		QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
 		~QGanjoorDbBrowser();
-		bool isConnected();
+		bool isConnected(const QString& connectionID = "");
 
-		QList<GanjoorPoet *> getPoets();
+		QList<GanjoorPoet *> getDataBasePoets(const QString fileName);
+		QList<GanjoorPoet *> getConflictingPoets(const QString fileName);
+		QList<GanjoorPoet *> getPoets(const QString& connectionID = "", bool sort = true);
 		QList<GanjoorCat *> getSubCategories(int CatID);
 		QList<GanjoorCat> getParentCategories(GanjoorCat Cat);
 		QList<GanjoorPoem *> getPoems(int CatID);
@@ -63,12 +65,22 @@ class QGanjoorDbBrowser : public QObject
 		QList<int> getPoemIDsContainingPhrase(QString phrase, int PageStart, int Count, int PoetID);
 		QString getFirstVerseContainingPhrase(int PoemID, QString phrase);
 		//Faal
-		int getRandomPoemID(int CatID);
-
-    private:
-		QString dBName;
+		int getRandomPoemID(int *CatID);
+		void removePoetFromDataBase(int PoetID);
+		bool importDataBase(const QString filename);
 		QSqlDatabase dBConnection;
+
+	private:
+		int cachedMaxCatID, cachedMaxPoemID;
+		int getNewPoemID();
+		int getNewPoetID();
+		int getNewCatID();
+		void removeCatFromDataBase(GanjoorCat *gCat);
+		static QString getIdForDataBase(const QString sqliteDataBaseName);
+		QString dBName;
+		//QSqlDatabase dBConnection;
 		static bool comparePoetsByName(GanjoorPoet *poet1, GanjoorPoet *poet2);
 		static bool compareCategoriesByName(GanjoorCat *cat1, GanjoorCat *cat2);
+		static int getRandomNumber(int minBound, int maxBound);
 };
 #endif // QGANJOORDBBROWSER_H
