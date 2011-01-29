@@ -1585,6 +1585,12 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 
 void MainWindow::importDataBase(const QString fileName)
 {
+	QFileInfo dataBaseFile(QSqlDatabase::database("ganjoor.s3db").databaseName());
+	if (!dataBaseFile.isWritable())
+	{
+		QMessageBox::warning(this, tr("Error!"), tr("You have not write permission to database file, the import procedure can not proceed.\nDataBase Path: %2").arg(dataBaseFile.fileName()));
+		return;
+	}
 	QList<GanjoorPoet *> poetsConflictList = SaagharWidget::ganjoorDataBase->getConflictingPoets(fileName);
 	
 	SaagharWidget::ganjoorDataBase->dBConnection.transaction();
@@ -1622,7 +1628,7 @@ void MainWindow::importDataBase(const QString fileName)
     else
 	{
 		SaagharWidget::ganjoorDataBase->dBConnection.rollback();
-		QMessageBox::warning(this, "Error!", tr("There are some errors, the import procedure was not completed"));
+		QMessageBox::warning(this, tr("Error!"), tr("There are some errors, the import procedure was not completed"));
 	}
 
 	QApplication::restoreOverrideCursor();

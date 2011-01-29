@@ -33,7 +33,7 @@
     </message>
     <message>
         <source>Apply</source>
-        <translation>پذيرش</translation>
+        <translation>اعمال</translation>
     </message>
     <message>
         <source>Close</source>
@@ -343,6 +343,80 @@ Do you want to replace it?</source>
 File not found.
 Please verify the correct file name was given.</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>QColorDialog</name>
+    <message>
+        <location filename="../src/gui/dialogs/qcolordialog.cpp" line="+1253"/>
+        <source>Hu&amp;e:</source>
+        <translation>&amp;رنگ:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Sat:</source>
+        <translation>&amp;شدت:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Val:</source>
+        <translation>مقدا&amp;ر:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Red:</source>
+        <translation>&amp;سرخ:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Green:</source>
+        <translation>س&amp;بز:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>Bl&amp;ue:</source>
+        <translation>آب&amp;ی:</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>A&amp;lpha channel:</source>
+        <translation>&amp;کانال آلفا:</translation>
+    </message>
+    <message>
+        <location line="+101"/>
+        <source>Select Color</source>
+        <translation>انتخاب رنگ</translation>
+    </message>
+    <message>
+        <location line="+137"/>
+        <source>&amp;Basic colors</source>
+        <translation>&amp;رنگ‌های بنیادی</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Custom colors</source>
+        <translation>ر&amp;نگ‌های انتخابی</translation>
+    </message>
+    <message>
+        <source>&amp;Define Custom Colors &gt;&gt;</source>
+        <translation type="obsolete"></translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation type="obsolete">قبول</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <translation type="obsolete">رد</translation>
+    </message>
+    <message>
+        <location line="+1"/>
+        <source>&amp;Add to Custom Colors</source>
+        <translation>اضافه &amp;کردن به رنگ‌های انتخابی</translation>
+    </message>
+    <message>
+        <source>Select color</source>
+        <translation type="obsolete">انتخاب رنگ</translation>
     </message>
 </context>
 <context>

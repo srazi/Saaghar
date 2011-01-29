@@ -38,6 +38,11 @@ Settings::Settings(QWidget *parent,	bool iconThemeState, QString iconThemePath, 
 		ui->pushButtonActionRemove->setIcon(QIcon(":/resources/images/right.png"));
 	}
 
+	//in this version, they're not used.
+	ui->pushButtonDataBasePath->hide();
+	ui->lineEditDataBasePath->hide();
+	ui->labelDataBasePath->hide();
+
 	//font
 	QFontDatabase fontDb;
 	ui->comboBoxFontFamily->addItems( fontDb.families() );

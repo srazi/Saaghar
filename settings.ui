@@ -328,6 +328,27 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLabel" name="labelDataBasePath">
+             <property name="text">
+              <string>Data Base Path</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditDataBasePath"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButtonDataBasePath">
+             <property name="text">
+              <string>Browse</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
         </layout>
        </item>
       </layout>
@@ -336,8 +357,28 @@
       <attribute name="title">
        <string>ToolBar</string>
       </attribute>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="labelAllActions">
+         <property name="text">
+          <string>All Actions</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="labelToolBarActions">
+         <property name="text">
+          <string>ToolBar Actions</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
         <widget class="QTableWidget" name="tableWidgetAllActions">
          <property name="alternatingRowColors">
           <bool>false</bool>
@@ -393,7 +434,7 @@
          <column/>
         </widget>
        </item>
-       <item>
+       <item row="1" column="1">
         <layout class="QVBoxLayout" name="verticalLayout_6">
          <item>
           <widget class="QPushButton" name="pushButtonActionAdd">
@@ -453,7 +494,7 @@
          </item>
         </layout>
        </item>
-       <item>
+       <item row="1" column="2">
         <widget class="QTableWidget" name="tableWidgetToolBarActions">
          <property name="dragEnabled">
           <bool>false</bool>
