@@ -98,6 +98,7 @@ class MainWindow : public QMainWindow
 		void searchPageNavigationClicked(QAction *action);
 		void tableItemPress(QTableWidgetItem *item);
 		void tableItemClick(QTableWidgetItem *item);
+		void tableItemMouseOver(QTableWidgetItem *item);
 		void actionNewTabClicked();
 		void actionNewWindowClicked();
 		void currentTabChanged(int tabIndex);

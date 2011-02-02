@@ -126,3 +126,15 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 	}
 	QStyledItemDelegate::paint(painter, option, index);
 }
+
+void SaagharItemDelegate::keywordChanged(const QString &text)
+{
+	keyword = text;
+	//qApp->activeWindow()->repaint();
+	QTableWidget *table=qobject_cast<QTableWidget *>(parent());
+	if (table)
+	{
+		//table->viewport()->repaint();
+		table->viewport()->update();
+	}
+}

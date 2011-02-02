@@ -71,6 +71,7 @@ public:
 	static QColor textColor;
 	static QColor matchedTextColor;
 	static QColor backgroundColor;
+	static QTableWidgetItem *lastOveredItem;
 	//DataBase
 	static QGanjoorDbBrowser *ganjoorDataBase;
 

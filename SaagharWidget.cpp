@@ -41,6 +41,7 @@ QString SaagharWidget::backgroundImagePath = QString();
 QColor SaagharWidget::textColor = QColor();
 QColor SaagharWidget::matchedTextColor = QColor();
 QColor SaagharWidget::backgroundColor = QColor();
+QTableWidgetItem *SaagharWidget::lastOveredItem = 0;
 //ganjoor data base browser
 QGanjoorDbBrowser *SaagharWidget::ganjoorDataBase = NULL;
 
@@ -527,6 +528,12 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 					totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
 					numOfRow = textWidth/totalWidth;
 					{
+						/*QTextEdit *paraEdit = new QTextEdit(this);
+						paraEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+						paraEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+						paraEdit->setFrameShape(QFrame::NoFrame);
+						paraEdit->setPlainText(mesraItem->text());
+						tableViewWidget->setCellWidget(row, 1, paraEdit);*/
 						QTableWidgetItem *tmp = new QTableWidgetItem("");
 						tmp->setFlags(versesItemFlag);
 						tableViewWidget->setItem(row, 3, tmp);
@@ -647,6 +654,7 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 
 void SaagharWidget::clearSaagharWidget()
 {
+	lastOveredItem = 0;
 	tableViewWidget->setRowCount(0);
 	tableViewWidget->setColumnCount(0);
 }
@@ -686,8 +694,13 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 			verticalScrollBarWidth=table->verticalScrollBar()->width();
 		}
 		int baseWidthSize=thisWidget->width()-(2*table->x()+verticalScrollBarWidth);
+		//int tW=0;
+		//for (int i=0; i<table->columnCount(); ++i)
+		//{
+		//	tW+=table->columnWidth(i);
+		//}
+		//qDebug() << QString("x=*%1*--w=*%2*--vX=*%3*--v-W=*%4*--Scroll=*%5*--verticalScrollBarWidth=*%6*--baseWidthSize=*%7*\ntW=*%8*--tableW=*%9*").arg(table->x()).arg(thisWidget->width()/* width()-(2*table->viewport()->x())*/).arg(table->viewport()->x()).arg(table->viewport()->width()).arg(vV).arg(verticalScrollBarWidth).arg(baseWidthSize).arg(tW).arg(table->width());
 
-		//qDebug() << QString("x=*%1*--w=*%2*--vX=*%3*--v-W=*%4*--Scroll=*%5*--verticalScrollBarWidth=*%6*--baseWidthSize=*%7*").arg(table->x()).arg(thisWidget->width()/* width()-(2*table->viewport()->x())*/).arg(table->viewport()->x()).arg(table->viewport()->width()).arg(vV).arg(verticalScrollBarWidth).arg(baseWidthSize);
 		switch (table->columnCount())
 		{
 			case 1:

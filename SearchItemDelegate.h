@@ -35,6 +35,9 @@ private:
 	QStyle *tableStyle;
 	QString keyword;
 	void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+private slots:
+	void keywordChanged(const QString &text);
 };
 
 #endif // SEARCHITEMDELEGATE_H

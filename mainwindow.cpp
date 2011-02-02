@@ -214,8 +214,9 @@ void MainWindow::searchStart()
 		{
 			QAbstractItemDelegate *currentDelegate = saagharWidget->tableViewWidget->itemDelegate();
 			saagharWidget->scrollToFirstItemContains(lineEditSearchText->text());
-			saagharWidget->tableViewWidget->setItemDelegate(new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text()));
-
+			SaagharItemDelegate *tmp = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text());
+			saagharWidget->tableViewWidget->setItemDelegate(tmp);
+			connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), tmp, SLOT(keywordChanged(const QString &)) );
 			delete currentDelegate;
 			currentDelegate = 0;
 		}
@@ -319,6 +320,7 @@ void MainWindow::insertNewTab()
 	tabTableWidget->setGridStyle(Qt::NoPen);
 	tabTableWidget->horizontalHeader()->setVisible(false);
 	tabTableWidget->verticalHeader()->setVisible(false);
+	tabTableWidget->setMouseTracking(true);
 
 	saagharWidget = new SaagharWidget( tabContent, parentCatsToolBar, tabTableWidget);
 	saagharWidget->setObjectName(QString::fromUtf8("saagharWidget"));
@@ -327,6 +329,7 @@ void MainWindow::insertNewTab()
 
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
+	connect(saagharWidget->tableViewWidget, SIGNAL(itemEntered(QTableWidgetItem *)), this, SLOT(tableItemMouseOver(QTableWidgetItem *)));
 	
 	//Enable/Disable navigation actions
 	connect(saagharWidget, SIGNAL(navPreviousActionState(bool)),	actionInstance("actionPreviousPoem"), SLOT(setEnabled(bool)) );
@@ -1505,6 +1508,37 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 	}
 
 	QApplication::restoreOverrideCursor();
+}
+
+void MainWindow::tableItemMouseOver(QTableWidgetItem *item)
+{
+	if (!item)
+		return;
+	QTableWidget *senderTable = item->tableWidget();
+	if (!saagharWidget || !senderTable)	return;
+
+	QVariant itemData = item->data(Qt::UserRole);
+	if (itemData.isValid() && !itemData.isNull())
+	{
+		QString dataString = itemData.toString();
+		if (dataString.startsWith("CatID") || dataString.startsWith("PoemID"))
+		{
+			senderTable->setCursor(QCursor(Qt::PointingHandCursor));
+			QImage image(":/resources/images/select-mask.png");
+			item->setBackground(QBrush(image.scaledToHeight( senderTable->rowHeight( item->row() ) )));
+			if (!(item->flags() & Qt::ItemIsSelectable))
+				senderTable->setCurrentItem(item);
+		}
+		else
+			senderTable->unsetCursor();
+	}
+	else
+		senderTable->unsetCursor();
+	
+	if (SaagharWidget::lastOveredItem && SaagharWidget::lastOveredItem!=item)
+		SaagharWidget::lastOveredItem->setBackground(QBrush(QImage()));//unset background
+
+	SaagharWidget::lastOveredItem = item;
 }
 
 void MainWindow::tableItemPress(QTableWidgetItem *)
