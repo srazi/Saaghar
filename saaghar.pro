@@ -38,11 +38,16 @@ message("'make install' doesn't overwrite existing 'database file', do that manu
 win32 {
 
 win32-msvc*{
-    RC_FILE = win.rc
+	DEFINES += D_MSVC_CC
+	QTPLUGIN += qsqlite
 }
 
-QTPLUGIN += qsqlite
+win32-g++{
+	DEFINES += D_MINGW_CC
+}
 
+RC_FILE = win.rc
+	
 target.path = Saaghar-Win
 INSTALLS = target
 utilities.path = Saaghar-Win

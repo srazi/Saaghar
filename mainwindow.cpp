@@ -289,6 +289,8 @@ SaagharWidget *MainWindow::getSaagharWidget(int tabIndex)
 
 void MainWindow::tabCloser(int tabIndex)
 {
+	if (tabIndex == mainTabWidget->currentIndex())
+		SaagharWidget::lastOveredItem = 0;
 	//if EditMode app need to ask about save changes!
 	disconnect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
 
@@ -330,6 +332,7 @@ void MainWindow::insertNewTab()
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemEntered(QTableWidgetItem *)), this, SLOT(tableItemMouseOver(QTableWidgetItem *)));
+	connect(saagharWidget->tableViewWidget, SIGNAL(currentItemChanged(QTableWidgetItem *,QTableWidgetItem *)), this, SLOT(tableCurrentItemChanged(QTableWidgetItem *,QTableWidgetItem *)));
 	
 	//Enable/Disable navigation actions
 	connect(saagharWidget, SIGNAL(navPreviousActionState(bool)),	actionInstance("actionPreviousPoem"), SLOT(setEnabled(bool)) );
@@ -1518,27 +1521,53 @@ void MainWindow::tableItemMouseOver(QTableWidgetItem *item)
 	if (!saagharWidget || !senderTable)	return;
 
 	QVariant itemData = item->data(Qt::UserRole);
+
 	if (itemData.isValid() && !itemData.isNull())
 	{
 		QString dataString = itemData.toString();
 		if (dataString.startsWith("CatID") || dataString.startsWith("PoemID"))
 		{
 			senderTable->setCursor(QCursor(Qt::PointingHandCursor));
-			QImage image(":/resources/images/select-mask.png");
-			item->setBackground(QBrush(image.scaledToHeight( senderTable->rowHeight( item->row() ) )));
+
 			if (!(item->flags() & Qt::ItemIsSelectable))
+			{
 				senderTable->setCurrentItem(item);
+			}
+			else
+			{
+				QImage image(":/resources/images/select-mask.png");
+				item->setBackground(QBrush(image.scaledToHeight( senderTable->rowHeight( item->row() ) )));			
+			}
 		}
 		else
 			senderTable->unsetCursor();
 	}
 	else
 		senderTable->unsetCursor();
-	
-	if (SaagharWidget::lastOveredItem && SaagharWidget::lastOveredItem!=item)
+
+	if (SaagharWidget::lastOveredItem && SaagharWidget::lastOveredItem!=item && (item->flags() & Qt::ItemIsSelectable) )
+	{
 		SaagharWidget::lastOveredItem->setBackground(QBrush(QImage()));//unset background
+	}
 
 	SaagharWidget::lastOveredItem = item;
+}
+
+void MainWindow::tableCurrentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous)
+{
+	if (current)
+	{
+		QTableWidget *senderTable = current->tableWidget();
+		QImage image(":/resources/images/select-mask.png");
+		current->setBackground(QBrush(image.scaledToHeight( senderTable->rowHeight( current->row() ) )));
+	}
+
+	if (previous)
+	{
+		QTableWidget *senderTable = previous->tableWidget();
+		QImage image(":/resources/images/select-mask.png");
+		previous->setBackground(QBrush(QImage()));
+	}
 }
 
 void MainWindow::tableItemPress(QTableWidgetItem *)

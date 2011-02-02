@@ -99,6 +99,7 @@ class MainWindow : public QMainWindow
 		void tableItemPress(QTableWidgetItem *item);
 		void tableItemClick(QTableWidgetItem *item);
 		void tableItemMouseOver(QTableWidgetItem *item);
+		void tableCurrentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous);
 		void actionNewTabClicked();
 		void actionNewWindowClicked();
 		void currentTabChanged(int tabIndex);
