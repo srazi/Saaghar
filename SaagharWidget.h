@@ -57,7 +57,6 @@ public:
 	void loadSettings();
 	void showParentCategory(GanjoorCat category);
 	void processClickedItem(QString type, int id, bool error);
-	void scrollToFirstItemContains(QString phrase);
 	int minMesraWidth;
 
 	//STATIC Variables
@@ -84,6 +83,9 @@ private:
 
 private slots:
 	void parentCatClicked();
+
+public slots:
+	void scrollToFirstItemContains(const QString &phrase);
 
 signals:
 	void captionChanged();

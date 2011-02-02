@@ -699,7 +699,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 		//{
 		//	tW+=table->columnWidth(i);
 		//}
-		//qDebug() << QString("x=*%1*--w=*%2*--vX=*%3*--v-W=*%4*--Scroll=*%5*--verticalScrollBarWidth=*%6*--baseWidthSize=*%7*\ntW=*%8*--tableW=*%9*").arg(table->x()).arg(thisWidget->width()/* width()-(2*table->viewport()->x())*/).arg(table->viewport()->x()).arg(table->viewport()->width()).arg(vV).arg(verticalScrollBarWidth).arg(baseWidthSize).arg(tW).arg(table->width());
+		//qDebug() << QString("x=*%1*--w=*%2*--vX=*%3*--v-W=*%4*--Scroll=*%5*--verticalScrollBarWidth=*%6*--baseWidthSize=*%7*\ntW=*%8*--tableW=*%9*").arg(table->x()).arg(thisWidget->width()/* width()-(2*table->viewport()->x())*/).arg(table->viewport()->x()).arg(table->viewport()->width()).arg(vV).arg(verticalScrollBarWidth).arg(baseWidthSize).arg(tW).arg(-1 );
 
 		switch (table->columnCount())
 		{
@@ -728,7 +728,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 	}
 }
 
-void SaagharWidget::scrollToFirstItemContains(QString phrase)
+void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 {
 	for (int row = 0; row < tableViewWidget->rowCount(); ++row)
 	{

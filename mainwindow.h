@@ -41,8 +41,10 @@ class MainWindow : public QMainWindow
 		explicit MainWindow(QWidget *parent = 0);
 		~MainWindow();
 		SaagharWidget *saagharWidget;
+		void emitReSizeEvent();
 
 	private:
+		int previousTabIndex;
 		void importDataBase(const QString fileName);
 		QStringList mainToolBarItems;
 		QAction *actionInstance(const QString actionObjectName = "", QString iconPath = "", QString displayName = "");

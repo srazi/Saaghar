@@ -166,6 +166,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(mainTabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(tabCloser(int)));
 
 	createConnections();
+	previousTabIndex = mainTabWidget->currentIndex();
 	currentTabChanged(mainTabWidget->currentIndex());
 	searchRegionsInitialize();
 
@@ -199,28 +200,29 @@ void MainWindow::searchStart()
 		for (int i = 0; i < mainTabWidget->count(); ++i)
 		{
 			SaagharWidget *tmp = getSaagharWidget(i);
-			QAbstractItemDelegate *tmpDelegate = tmp->tableViewWidget->itemDelegate();
+			//QAbstractItemDelegate *tmpDelegate = tmp->tableViewWidget->itemDelegate();
 
-			delete tmpDelegate;
-			tmpDelegate = 0;
-
-			tmp->scrollToFirstItemContains(lineEditSearchText->text());
-			tmp->tableViewWidget->setItemDelegate(new SaagharItemDelegate(tmp->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text()));
+			//delete tmpDelegate;
+			//tmpDelegate = 0;
+			if (tmp)
+				tmp->scrollToFirstItemContains(lineEditSearchText->text());
+			//tmp->tableViewWidget->setItemDelegate(new SaagharItemDelegate(tmp->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text()));
 		}
 	}
-	else if (currentItemData == "CURRENT_TAB")
-	{
-		if (saagharWidget)
-		{
-			QAbstractItemDelegate *currentDelegate = saagharWidget->tableViewWidget->itemDelegate();
-			saagharWidget->scrollToFirstItemContains(lineEditSearchText->text());
-			SaagharItemDelegate *tmp = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text());
-			saagharWidget->tableViewWidget->setItemDelegate(tmp);
-			connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), tmp, SLOT(keywordChanged(const QString &)) );
-			delete currentDelegate;
-			currentDelegate = 0;
-		}
-	}
+	//else if (currentItemData == "CURRENT_TAB")
+	//{
+	//	if (saagharWidget)
+	//	{
+	//		//connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), saagharWidget, SLOT(scrollToFirstItemContains(const QString &)) );
+	//		//QAbstractItemDelegate *currentDelegate = saagharWidget->tableViewWidget->itemDelegate();
+	//		saagharWidget->scrollToFirstItemContains(lineEditSearchText->text());
+	//		//SaagharItemDelegate *tmp = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text());
+	//		//saagharWidget->tableViewWidget->setItemDelegate(tmp);
+	//		//connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), tmp, SLOT(keywordChanged(const QString &)) );
+	//		//delete currentDelegate;
+	//		//currentDelegate = 0;
+	//	}
+	//}
 	else
 	{
 		showSearchResults(lineEditSearchText->text(), 0, spinBoxMaxSearchResult->value(), comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt());
@@ -231,7 +233,7 @@ void MainWindow::searchStart()
 void MainWindow::searchRegionsInitialize()
 {
 
-	comboBoxSearchRegion->addItem(tr("Current Tab"), "CURRENT_TAB");
+	//comboBoxSearchRegion->addItem(tr("Current Tab"), "CURRENT_TAB");
 	comboBoxSearchRegion->addItem(tr("All Opened Tab"), "ALL_OPENED_TAB");
 	comboBoxSearchRegion->addItem(tr("All"), "0");
 
@@ -244,12 +246,25 @@ void MainWindow::searchRegionsInitialize()
 
 void MainWindow::currentTabChanged(int tabIndex)
 {
-	if ( getSaagharWidget(tabIndex) )
+	SaagharWidget *tmpSaagharWidget = getSaagharWidget(tabIndex);
+	if ( tmpSaagharWidget )
 	{
-		saagharWidget = getSaagharWidget(tabIndex);
+		saagharWidget = tmpSaagharWidget;
 		saagharWidget->loadSettings();
 		saagharWidget->showParentCategory(SaagharWidget::ganjoorDataBase->getCategory(saagharWidget->currentCat));//just update parentCatsToolbar
 		saagharWidget->resizeTable(saagharWidget->tableViewWidget);
+
+		connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), saagharWidget, SLOT(scrollToFirstItemContains(const QString &)) );
+
+		if (previousTabIndex != tabIndex)
+		{
+			tmpSaagharWidget = getSaagharWidget(previousTabIndex);
+			if (tmpSaagharWidget)
+			{
+				disconnect(lineEditSearchText, SIGNAL(textChanged(const QString &)), tmpSaagharWidget, SLOT(scrollToFirstItemContains(const QString &)) );
+			}
+			previousTabIndex = tabIndex;
+		}
 
 		if (saagharWidget->tableViewWidget->columnCount() == 1 && saagharWidget->tableViewWidget->rowCount() > 0 && saagharWidget->currentCat != 0)
 		{
@@ -323,9 +338,23 @@ void MainWindow::insertNewTab()
 	tabTableWidget->horizontalHeader()->setVisible(false);
 	tabTableWidget->verticalHeader()->setVisible(false);
 	tabTableWidget->setMouseTracking(true);
+	//install 'delegate' on QTableWidget
+	QAbstractItemDelegate *tmpDelegate = tabTableWidget->itemDelegate();
+	delete tmpDelegate;
+	tmpDelegate = 0;
+
+	SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(tabTableWidget, tabTableWidget->style());
+	tabTableWidget->setItemDelegate(searchDelegate);
+	connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), searchDelegate, SLOT(keywordChanged(const QString &)) );
+
+	//tmp->scrollToFirstItemContains(lineEditSearchText->text());
+	//tabTableWidget->setItemDelegate(new SaagharItemDelegate(tabTableWidget, tabTableWidget->style()));
+	///////
 
 	saagharWidget = new SaagharWidget( tabContent, parentCatsToolBar, tabTableWidget);
 	saagharWidget->setObjectName(QString::fromUtf8("saagharWidget"));
+
+	//connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), saagharWidget, SLOT(scrollToFirstItemContains(const QString &)) );
 
 	connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateCaption()));
 
@@ -1254,10 +1283,18 @@ void MainWindow::actionGanjoorSiteClicked()
 	}
 }
 
+void MainWindow::emitReSizeEvent()
+{
+	//maybe a Qt BUG
+	//before 'QMainWindow::show()' the computation of width of QMainWindow is not correct!
+	resizeEvent(0);
+}
+
 void MainWindow::resizeEvent( QResizeEvent * event )
 {
 	saagharWidget->resizeTable(saagharWidget->tableViewWidget);
-	QMainWindow::resizeEvent(event);
+	if (event)
+		QMainWindow::resizeEvent(event);
 }
 
 void MainWindow::closeEvent( QCloseEvent * event )
