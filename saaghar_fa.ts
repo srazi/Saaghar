@@ -15,23 +15,23 @@
     </message>
     <message>
         <location filename="mainwindow.ui" line="57"/>
-        <location filename="mainwindow.cpp" line="850"/>
-        <location filename="mainwindow.cpp" line="1309"/>
+        <location filename="mainwindow.cpp" line="899"/>
+        <location filename="mainwindow.cpp" line="1366"/>
         <source>Search</source>
         <translation>جستجو</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="823"/>
+        <location filename="mainwindow.cpp" line="872"/>
         <source>Search Phrase</source>
         <translation>عبارت جستجو</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="832"/>
+        <location filename="mainwindow.cpp" line="881"/>
         <source>Search in</source>
         <translation>جستجو در</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="842"/>
+        <location filename="mainwindow.cpp" line="891"/>
         <source>Max Result per Page</source>
         <translation>حداکثر نتایج در هر صفحه</translation>
     </message>
@@ -45,110 +45,125 @@
         <translation>دسته‌های والد</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="192"/>
-        <location filename="mainwindow.cpp" line="425"/>
+        <location filename="mainwindow.cpp" line="193"/>
+        <location filename="mainwindow.cpp" line="461"/>
         <source>Error</source>
         <translation>خطا</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="192"/>
+        <location filename="mainwindow.cpp" line="193"/>
         <source>The search phrase can not be empty.</source>
         <translation>عبارت جستجو نمی‌تواند خالی باشد.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="233"/>
         <source>Current Tab</source>
-        <translation>برگه‌جاری</translation>
+        <translation type="obsolete">برگه‌جاری</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="234"/>
+        <location filename="mainwindow.cpp" line="237"/>
         <source>All Opened Tab</source>
         <translation>همه برگه‌های باز</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="235"/>
+        <location filename="mainwindow.cpp" line="238"/>
+        <location filename="mainwindow.cpp" line="1386"/>
         <source>All</source>
         <translation>همه</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="384"/>
+        <location filename="mainwindow.cpp" line="420"/>
         <source>Export As</source>
         <translation>انتقال به‌عنوان</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="425"/>
+        <location filename="mainwindow.cpp" line="461"/>
         <source>The file could not be saved. Please check if you have write permission.</source>
         <translation>فایل نمی‌تواند ذخیره شود. لطفا اجازه دسترسی نوشتن را بررسی کنید.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="776"/>
+        <location filename="mainwindow.cpp" line="812"/>
         <source>About Saaghar</source>
         <translation>درباره ساغر</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="778"/>
+        <location filename="mainwindow.cpp" line="814"/>
         <source>&lt;br /&gt;%1 is a persian poem viewer software, it uses &quot;ganjoor.net&quot; database, and some of its codes are ported to C++ and Qt from &quot;desktop ganjoor&quot; that is a C# .NET application written by %2.&lt;br /&gt;&lt;br /&gt;Logo Designer: %3&lt;br /&gt;&lt;br /&gt;Photos and Description Sources: ganjoor.net &amp; WiKiPedia&lt;br /&gt;&lt;br /&gt;Author: &lt;a href=&quot;http://www.pojh.co.cc/&quot;&gt;S. Razi Alavizadeh&lt;/a&gt;,&lt;br /&gt;Home Page: %4&lt;br /&gt;Mailing List: %5&lt;br /&gt;&lt;br /&gt;Version: %6&lt;br /&gt;Build Time: %7</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="791"/>
+        <location filename="mainwindow.cpp" line="827"/>
         <source>Help Contents</source>
         <translation>راهنما</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="793"/>
+        <location filename="mainwindow.cpp" line="829"/>
         <source>&lt;br /&gt;Saaghar Version: %1&lt;br /&gt;&lt;br /&gt;Mouse Left Click: Opens in current Tab&lt;br /&gt;Mouse Right Click: Opens in new Tab&lt;br /&gt;&lt;br /&gt;Shortcuts:&lt;br /&gt;Saaghar uses your Operating System standard shortcuts.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="810"/>
+        <location filename="mainwindow.cpp" line="847"/>
+        <source>Please Notice!</source>
+        <translation>توجه!</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="849"/>
+        <source>This feature is in beta state, before continue you should create a backup from your database.</source>
+        <translation>این ویژگی در حالت آزمایشی (بتا) قرار دارد، بهتر است که قبل از ادامه از پایگاه‌داده پشتیبان تهیه کنید.</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="850"/>
+        <source>Continue</source>
+        <translation>ادامه</translation>
+    </message>
+    <message>
+        <location filename="mainwindow.cpp" line="858"/>
         <source>Browse for a new set</source>
         <translation>گزیدن مجموعه شعر جدید</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="864"/>
+        <location filename="mainwindow.cpp" line="913"/>
         <source>&amp;File</source>
         <translation>&amp;فایل</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="866"/>
+        <location filename="mainwindow.cpp" line="915"/>
         <source>&amp;Navigation</source>
         <translation>&amp;ناوبری</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="868"/>
+        <location filename="mainwindow.cpp" line="917"/>
         <source>&amp;Tools</source>
         <translation>&amp;ابزارها</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="870"/>
+        <location filename="mainwindow.cpp" line="919"/>
         <source>&amp;Help</source>
         <translation>&amp;راهنما</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="876"/>
+        <location filename="mainwindow.cpp" line="925"/>
         <source>&amp;Home</source>
         <translation>&amp;خانه</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="880"/>
-        <location filename="mainwindow.cpp" line="885"/>
+        <location filename="mainwindow.cpp" line="929"/>
+        <location filename="mainwindow.cpp" line="934"/>
         <source>&amp;Previous</source>
         <translation>&amp;قبلی</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="881"/>
-        <location filename="mainwindow.cpp" line="886"/>
+        <location filename="mainwindow.cpp" line="930"/>
+        <location filename="mainwindow.cpp" line="935"/>
         <source>&amp;Next</source>
         <translation>&amp;بعدی</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="889"/>
+        <location filename="mainwindow.cpp" line="938"/>
         <source>&amp;Copy</source>
         <translation>&amp;کپی</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1591"/>
+        <location filename="mainwindow.cpp" line="1706"/>
         <source>You have not write permission to database file, the import procedure can not proceed.
 DataBase Path: %2</source>
         <translation>به فایل پایگاه‌داده دسترسی نوشتنی ندارید، فرایند اضافه کردن مجموعه شعر جدید نمی‌تواند ادامه پیدا کند.
@@ -159,23 +174,23 @@ DataBase Path: %2</source>
         <translation type="obsolete">به فایل پایگاه‌داده دسترسی نوشتنی ندارید، فرایند اضافه کردن مجموعه شعر جدید نمی‌تواند ادامه پیدا کند.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1601"/>
+        <location filename="mainwindow.cpp" line="1716"/>
         <source>Warning!</source>
         <translation>هشدار!‏</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1603"/>
+        <location filename="mainwindow.cpp" line="1718"/>
         <source>There are some conflict with your installed database.</source>
         <translation>بخش‌هایی از مجموعه جدید شعر در پایگاه‌داده نصب شده موجودند.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1604"/>
+        <location filename="mainwindow.cpp" line="1719"/>
         <source>These poets are present in installed database:
 </source>
         <translation>سخن‌سراهایی که در پایگاه‌داده فعلی موجودند:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1631"/>
+        <location filename="mainwindow.cpp" line="1746"/>
         <source>There are some errors, the import procedure was not completed</source>
         <translation>خطایی رخ داده است، فرایند اضافه کردن مجموعه شعر جدید کامل نشد</translation>
     </message>
@@ -184,99 +199,99 @@ DataBase Path: %2</source>
         <translation type="obsolete">&amp;جستجو</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="896"/>
+        <location filename="mainwindow.cpp" line="945"/>
         <source>S&amp;ettings</source>
         <translation>&amp;تنظیمات</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="898"/>
+        <location filename="mainwindow.cpp" line="947"/>
         <source>View in &quot;&amp;ganjoor.net&quot;</source>
         <translation>مشاهده در سایت &amp;گنجور</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="900"/>
+        <location filename="mainwindow.cpp" line="949"/>
         <source>E&amp;xit</source>
         <translation>&amp;خروج</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="903"/>
+        <location filename="mainwindow.cpp" line="952"/>
         <source>New &amp;Tab</source>
         <translation>&amp;برگه جدید</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="905"/>
+        <location filename="mainwindow.cpp" line="954"/>
         <source>&amp;New Window</source>
         <translation>&amp;پنجره جدید</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="907"/>
+        <location filename="mainwindow.cpp" line="956"/>
         <source>&amp;About</source>
         <translation>&amp;درباره</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="909"/>
+        <location filename="mainwindow.cpp" line="958"/>
         <source>About &amp;Qt</source>
         <translation>درباره &amp;کیوت</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="911"/>
+        <location filename="mainwindow.cpp" line="960"/>
         <source>&amp;Faal</source>
         <translation>&amp;فال</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="913"/>
+        <location filename="mainwindow.cpp" line="962"/>
         <source>&amp;Print...</source>
         <translation>&amp;چاپ...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="915"/>
+        <location filename="mainwindow.cpp" line="964"/>
         <source>Print Pre&amp;view...</source>
         <translation>پیش‌&amp;نمایش چاپ...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="917"/>
+        <location filename="mainwindow.cpp" line="966"/>
         <source>&amp;Export As...</source>
         <translation>&amp;ذخیره در قالب...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="919"/>
+        <location filename="mainwindow.cpp" line="968"/>
         <source>Exp&amp;ort As PDF...</source>
         <translation>ذخیره در قالب پی‌دی‌ا&amp;ف ...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="921"/>
+        <location filename="mainwindow.cpp" line="970"/>
         <source>&amp;Help Contents...</source>
         <translation>&amp;راهنما...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="923"/>
+        <location filename="mainwindow.cpp" line="972"/>
         <source>&amp;Close Tab</source>
         <translation>بستن برگ&amp;ه</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="925"/>
+        <location filename="mainwindow.cpp" line="974"/>
         <source>&amp;Random</source>
         <translation>&amp;اتفاقی</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="928"/>
+        <location filename="mainwindow.cpp" line="977"/>
         <source>Insert New &amp;Set...</source>
         <translation>اضافه کردن &amp;مجموعه جدید...</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1243"/>
-        <location filename="mainwindow.cpp" line="1591"/>
-        <location filename="mainwindow.cpp" line="1631"/>
+        <location filename="mainwindow.cpp" line="1292"/>
+        <location filename="mainwindow.cpp" line="1706"/>
+        <location filename="mainwindow.cpp" line="1746"/>
         <source>Error!</source>
         <translation>خطا!</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1243"/>
+        <location filename="mainwindow.cpp" line="1292"/>
         <source>There is no equivalent page there at ganjoor website.</source>
         <translation>صفحه متناظر در وب‌سایت گنجور وحود ندارد.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1309"/>
+        <location filename="mainwindow.cpp" line="1366"/>
         <source>No match found.</source>
         <translation>موردی یافت نشد.</translation>
     </message>
@@ -309,9 +324,9 @@ Saaghar needs its database for working properly, Saaghar is terminated for now.<
 <context>
     <name>SaagharWidget</name>
     <message>
-        <location filename="SaagharWidget.cpp" line="61"/>
-        <location filename="SaagharWidget.cpp" line="202"/>
-        <location filename="SaagharWidget.cpp" line="384"/>
+        <location filename="SaagharWidget.cpp" line="62"/>
+        <location filename="SaagharWidget.cpp" line="203"/>
+        <location filename="SaagharWidget.cpp" line="385"/>
         <source>Home</source>
         <translation>خانه</translation>
     </message>

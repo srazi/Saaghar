@@ -290,6 +290,7 @@ SaagharWidget *MainWindow::getSaagharWidget(int tabIndex)
 {
 	if (tabIndex == -1) return 0;
 	QWidget *curTabContent = mainTabWidget->widget(tabIndex);
+	if (!curTabContent) return 0;
 	QObjectList tabContentList = curTabContent->children();
 
 	for (int i=0; i< tabContentList.size(); ++i)
@@ -753,7 +754,7 @@ QString MainWindow::convertToTeX(SaagharWidget *saagharObject)
 	if (!poemEnvironmentEnded)
 		endOfEnvironment = QString("\\end{%1}\n").arg(poemType);
 
-	QString	tableAsTeX = QString("%%%%%\n%This file is generated automatically by Saaghar %1, 2010 http://www.pojh.co.cc\n%%%%%\n%XePersian and bidipoem packages must have been installed on your TeX distribution for compiling this document\n%You can compile this document by running XeLaTeX on it, twice.\n%%%%%\n\\documentclass{article}\n\\usepackage{hyperref}%\n\\usepackage[Kashida]{xepersian}\n\\usepackage{bidipoem}\n\\settextfont{%2}\n\\hypersetup{\npdftitle={%3},%\npdfsubject={Poem},%\npdfkeywords={Poem, Persian},%\npdfcreator={Saaghar, a Persian poetry software, http://www.pojh.co.cc/saaghar},%\npdfview=FitV,\n}\n\\begin{document}\n\\begin{center}\n%3\\\\\n\\end{center}\n\\begin{%4}\n%5\n%6\\end{document}\n%End of document\n")
+	QString	tableAsTeX = QString("%%%%%\n%This file is generated automatically by Saaghar %1, 2010 http://www.pojh.co.cc\n%%%%%\n%XePersian and bidipoem packages must have been installed on your TeX distribution for compiling this document\n%You can compile this document by running XeLaTeX on it, twice.\n%%%%%\n\\documentclass{article}\n\\usepackage{hyperref}%\n\\usepackage[Kashida]{xepersian}\n\\usepackage{bidipoem}\n\\settextfont{%2}\n\\hypersetup{\npdftitle={%3},%\npdfsubject={Poem},%\npdfkeywords={Poem, Persian},%\npdfcreator={Saaghar, a Persian poetry software, http://www.pojh.co.cc/saaghar},%\npdfview=FitV,\n}\n\\renewcommand{\\poemcolsepskip}{1.5cm}\n\\begin{document}\n\\begin{center}\n%3\\\\\n\\end{center}\n\\begin{%4}\n%5\n%6\\end{document}\n%End of document\n")
 								 .arg(VER_FILEVERSION_STR).arg(SaagharWidget::tableFont.family()).arg(curPoem._Title).arg(poemType).arg(tableBody).arg(endOfEnvironment);
 	return tableAsTeX;
 	/*******************************************************
@@ -842,8 +843,21 @@ void MainWindow::closeCurrentTab()
 
 void MainWindow::actionImportNewSet()
 {
+	QMessageBox warnAboutBackup(this);
+	warnAboutBackup.setWindowTitle(tr("Please Notice!"));
+	warnAboutBackup.setIcon(QMessageBox::Information);
+	warnAboutBackup.setText(tr("This feature is in beta state, before continue you should create a backup from your database."));
+	warnAboutBackup.addButton(tr("Continue"), QMessageBox::AcceptRole);
+	warnAboutBackup.setStandardButtons(QMessageBox::Cancel);
+	warnAboutBackup.setEscapeButton(QMessageBox::Cancel);
+	warnAboutBackup.setDefaultButton(QMessageBox::Cancel);
+	int ret = warnAboutBackup.exec();
+	if ( ret == QMessageBox::Cancel)
+		return;
+
 	QString dataBaseName = QFileDialog::getOpenFileName(this,tr("Browse for a new set"), QDir::homePath(),"Ganjoor DataBase (*.gdb *.s3db);;All files (*.*)");
-	importDataBase(dataBaseName);
+	if (!dataBaseName.isEmpty())
+		importDataBase(dataBaseName);
 }
 
 void MainWindow::setupUi()
@@ -1367,7 +1381,14 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 
 	if (!fromOtherPage)
 	{
-		searchResultWidget = new QDockWidget(phrase, this);
+		QString poet = "";
+		if (PoetID == 0)
+			poet = tr("All");
+		else
+		{
+			poet = SaagharWidget::ganjoorDataBase->getPoet(PoetID)._Name;
+		}
+		searchResultWidget = new QDockWidget(poet+":"+phrase, this);
 		searchResultWidget->setObjectName(QString::fromUtf8("searchResultWidget_new"));//object name for created instance, it renames to 'searchResultWidget_old'
 		searchResultWidget->setLayoutDirection(Qt::RightToLeft);
 		searchResultWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
@@ -1569,6 +1590,8 @@ void MainWindow::tableItemMouseOver(QTableWidgetItem *item)
 			if (!(item->flags() & Qt::ItemIsSelectable))
 			{
 				senderTable->setCurrentItem(item);
+				QImage image(":/resources/images/select-mask.png");
+				item->setBackground(QBrush(image.scaledToHeight( senderTable->rowHeight( item->row() ) )));	
 			}
 			else
 			{
@@ -1582,7 +1605,7 @@ void MainWindow::tableItemMouseOver(QTableWidgetItem *item)
 	else
 		senderTable->unsetCursor();
 
-	if (SaagharWidget::lastOveredItem && SaagharWidget::lastOveredItem!=item && (item->flags() & Qt::ItemIsSelectable) )
+	if (SaagharWidget::lastOveredItem && SaagharWidget::lastOveredItem!=item /*&& (item->flags() & Qt::ItemIsSelectable)*/ )
 	{
 		SaagharWidget::lastOveredItem->setBackground(QBrush(QImage()));//unset background
 	}
@@ -1592,16 +1615,8 @@ void MainWindow::tableItemMouseOver(QTableWidgetItem *item)
 
 void MainWindow::tableCurrentItemChanged(QTableWidgetItem *current, QTableWidgetItem *previous)
 {
-	if (current)
-	{
-		QTableWidget *senderTable = current->tableWidget();
-		QImage image(":/resources/images/select-mask.png");
-		current->setBackground(QBrush(image.scaledToHeight( senderTable->rowHeight( current->row() ) )));
-	}
-
 	if (previous)
 	{
-		QTableWidget *senderTable = previous->tableWidget();
 		QImage image(":/resources/images/select-mask.png");
 		previous->setBackground(QBrush(QImage()));
 	}
@@ -1719,7 +1734,7 @@ void MainWindow::importDataBase(const QString fileName)
     }
 
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    
+
 	if (SaagharWidget::ganjoorDataBase->importDataBase(fileName))
 	{
 		SaagharWidget::ganjoorDataBase->dBConnection.commit();
