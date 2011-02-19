@@ -75,6 +75,9 @@ class QGanjoorDbBrowser : public QObject
 		bool importDataBase(const QString filename);
 		QSqlDatabase dBConnection;
 
+		//STATIC Variables
+		static QStringList dataBasePath;
+
 	private:
 		int cachedMaxCatID, cachedMaxPoemID;
 		int getNewPoemID();

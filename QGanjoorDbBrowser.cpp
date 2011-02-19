@@ -25,6 +25,9 @@
 #include <QVariant>
 #include <QSqlQuery>
 #include <QFileInfo>
+#include <QFileDialog>
+
+QStringList QGanjoorDbBrowser::dataBasePath = QStringList();
 
 const int minNewPoetID = 1001;
 const int minNewCatID  = 10001;
@@ -34,21 +37,54 @@ const int DatabaseVersion = 1;
 
 QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 {
+	bool flagSelectNewPath = false;
+	QString newPath = "";
+
 	QFileInfo dBFile(sqliteDbCompletePath);
 	dBName = dBFile.fileName();
 	dBConnection = QSqlDatabase::addDatabase("QSQLITE", dBName);
 	dBConnection.setDatabaseName(sqliteDbCompletePath);
-	if (!dBFile.exists() || !dBConnection.open())
+	while (!dBFile.exists() || !dBConnection.open())
 	{
-		QMessageBox::critical(0, tr("Cannot open Database File"), tr("Cannot open database file...\nError: %1\nDataBase Path=%2\nSaaghar needs its database for working properly, Saaghar is terminated for now.").arg(dBConnection.lastError().text()).arg(sqliteDbCompletePath));
 		dBConnection = QSqlDatabase();
 		QSqlDatabase::removeDatabase(dBName);
-		exit(1);
+
+		QMessageBox warnDataBaseOpen(0);
+		warnDataBaseOpen.setWindowTitle(tr("Cannot open Database File!"));
+		warnDataBaseOpen.setIcon(QMessageBox::Information);
+		warnDataBaseOpen.setText(tr("Cannot open database file...\nError: %1\nDataBase Path=%2\nSaaghar needs its database for working properly. Press 'OK' if you want to terminate application or press 'Browse' for select a new path for database.").arg(dBConnection.lastError().text()).arg(sqliteDbCompletePath));
+		warnDataBaseOpen.addButton(tr("Browse..."), QMessageBox::AcceptRole);
+		warnDataBaseOpen.setStandardButtons(QMessageBox::Ok);
+		warnDataBaseOpen.setEscapeButton(QMessageBox::Ok);
+		warnDataBaseOpen.setDefaultButton(QMessageBox::Ok);
+		int ret = warnDataBaseOpen.exec();
+		if ( ret != QMessageBox::Ok)
+		{
+			QString dir = QFileDialog::getExistingDirectory(0,tr("Add Path For Data Base"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+			if ( !dir.isEmpty() ) 
+			{
+				dir.replace(QString("\\"),QString("/"));
+				if ( !dir.endsWith('/') ) dir+="/";
+				dBFile.setFile(dir+"/ganjoor.s3db");
+				dBName = dBFile.fileName();
+				dBConnection = QSqlDatabase::addDatabase("QSQLITE", dBName);
+				dBConnection.setDatabaseName(dir+"/ganjoor.s3db");
+
+				flagSelectNewPath = true;
+				newPath = dir;
+			}
+		}
+		else
+		{
+			//QMessageBox::critical(0, tr("Cannot open Database File"), tr("Cannot open database file...\nError: %1\nDataBase Path=%2\nSaaghar needs its database for working properly. Press 'OK' if you want to terminate application or press 'Browse' for select a new path for database.").arg(dBConnection.lastError().text()).arg(sqliteDbCompletePath));
+			exit(1);
+		}
 	}
-	else
-	{
-		cachedMaxCatID = cachedMaxPoemID = 0;
-	}
+
+	if (flagSelectNewPath)
+		QGanjoorDbBrowser::dataBasePath << newPath;
+
+	cachedMaxCatID = cachedMaxPoemID = 0;
 }
 
 QGanjoorDbBrowser::~QGanjoorDbBrowser()
@@ -943,7 +979,7 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
 		//progress dialog
 		QTime startTime = QTime::currentTime();
 		int maxOfProgressBar = 50000;
-		QProgressDialog progress(tr("Searching Data Base..."), tr("Cancel"), 0, maxOfProgressBar, qApp->activeModalWidget());
+		QProgressDialog progress(QGanjoorDbBrowser::tr("Searching Data Base..."), QGanjoorDbBrowser::tr("Cancel"), 0, maxOfProgressBar, qApp->activeModalWidget());
 		progress.setWindowModality(Qt::WindowModal);
 		while( q.next() )
 		{
@@ -970,7 +1006,8 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
 				if (foundedVerse.contains(phraseForSearch, Qt::CaseInsensitive))
 				{
 					++index;
-					progress.setLabelText(tr("Search Result(s): %1").arg(index));
+					QString labelText =  QGanjoorDbBrowser::tr("Search Result(s): %1").arg(index);
+					progress.setLabelText(labelText);
 					//QMessageBox::information(0,"TRUE-TRUE-TRUE",tr("phraseForSearch=*%1*\npoemID=*%2*\nNO=*%3*\noffset=*%4*").arg(phraseForSearch).arg(qrec.value(0).toInt()).arg(index).arg(offset));
 					idList.append(qrec.value(0).toInt());
 					

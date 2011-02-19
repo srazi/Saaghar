@@ -82,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	saagharWidget = 0;
 	pressedMouseButton = Qt::LeftButton;
 	
+	const QString tempDataBaseName = "/ganjoor.s3db";//temp
 	QString dataBaseCompleteName = "/ganjoor.s3db";
 
 	if (isPortable)
@@ -129,6 +130,15 @@ MainWindow::MainWindow(QWidget *parent) :
 	mainTabWidget->setUsesScrollButtons(true);
 	mainTabWidget->setMovable(true);
 
+	//searchin database-path for database-file
+	for (int i=0; i<QGanjoorDbBrowser::dataBasePath.size(); ++i)
+	{
+		if ( QFile::exists(QGanjoorDbBrowser::dataBasePath.at(i)+tempDataBaseName) )
+		{
+			dataBaseCompleteName = QGanjoorDbBrowser::dataBasePath.at(i)+tempDataBaseName;
+			break;
+		}
+	}
 	//create ganjoor DataBase browser
 	SaagharWidget::ganjoorDataBase = new QGanjoorDbBrowser(dataBaseCompleteName);
 	SaagharWidget::ganjoorDataBase->setObjectName(QString::fromUtf8("ganjoorDataBaseBrowser"));
@@ -856,7 +866,7 @@ void MainWindow::aboutSaaghar()
 	about.setWindowTitle(tr("About Saaghar"));
 	about.setTextFormat(Qt::RichText);
 	about.setText(tr("<br />%1 is a persian poem viewer software, it uses \"ganjoor.net\" database, and some of its codes are ported to C++ and Qt from \"desktop ganjoor\" that is a C# .NET application written by %2.<br /><br />Logo Designer: %3<br /><br />Photos and Description Sources: ganjoor.net & WiKiPedia<br /><br />Author: <a href=\"http://www.pojh.co.cc/\">S. Razi Alavizadeh</a>,<br />Home Page: %4<br />Mailing List: %5<br /><br />Version: %6<br />Build Time: %7")
-		.arg("<a href=\"http://www.pojh.co.cc/saaghar\">Saaghar</a>").arg("<a href=\"http://www.gozir.com/\">Hamid Reza Mohammadi</a>").arg("<a href=\"http://www.phototak.com/\">S. Nasser Alavizadeh</a>").arg("<a href=\"http://www.pojh.co.cc/saaghar\">http://www.pojh.co.cc/saaghar</a>").arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>").arg(VER_FILEVERSION_STR).arg(VER_FILEBUILDTIME_STR));
+		.arg(tr("<a href=\"http://www.pojh.co.cc/saaghar\">Saaghar</a>")).arg(tr("<a href=\"http://www.gozir.com/\">Hamid Reza Mohammadi</a>")).arg(tr("<a href=\"http://www.phototak.com/\">S. Nasser Alavizadeh</a>")).arg("<a href=\"http://www.pojh.co.cc/saaghar\">http://www.pojh.co.cc/saaghar</a>").arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>").arg(VER_FILEVERSION_STR).arg(VER_FILEBUILDTIME_STR));
 	about.setStandardButtons(QMessageBox::Ok);
 	about.setEscapeButton(QMessageBox::Ok);
 
@@ -1262,6 +1272,8 @@ void MainWindow::loadGlobalSettings()
 	settingsIconThemeState = config->value("Icon Theme State",false).toBool();
 	settingsIconThemePath = config->value("Icon Theme Path", "").toString();
 
+	QGanjoorDbBrowser::dataBasePath = config->value("DataBase Path", "").toString().split(";", QString::SkipEmptyParts);
+
 	//The "XB Sols" is embeded in executable.
 	QString fontFamily=config->value("Font Family", "XB Sols").toString();
 	int fontSize=config->value( "Font Size", 18).toInt();
@@ -1422,6 +1434,9 @@ void MainWindow::saveSaagharState()
 		openedTabs += tabViewType+"|";
 	}
 	config->setValue("openedTabs", openedTabs);
+
+	//database path
+	config->setValue("DataBase Path", QGanjoorDbBrowser::dataBasePath.join(";"));
 
 	//search options
 	config->setValue("New Search", SaagharWidget::newSearchFlag);

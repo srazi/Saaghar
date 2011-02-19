@@ -46,6 +46,7 @@ private slots:
 	void tableToolBarActionsEntered();
 	void browseForBackground();
 	void browseForIconTheme();
+	void browseForDataBasePath();
 	void getColorForPushButton();
 
 private:

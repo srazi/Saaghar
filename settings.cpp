@@ -38,10 +38,9 @@ Settings::Settings(QWidget *parent,	bool iconThemeState, QString iconThemePath, 
 		ui->pushButtonActionRemove->setIcon(QIcon(":/resources/images/right.png"));
 	}
 
-	//in this version, they're not used.
-	ui->pushButtonDataBasePath->hide();
-	ui->lineEditDataBasePath->hide();
-	ui->labelDataBasePath->hide();
+	//database
+	ui->lineEditDataBasePath->setText(QGanjoorDbBrowser::dataBasePath.join(";"));
+	connect( ui->pushButtonDataBasePath, SIGNAL(clicked()), this, SLOT(browseForDataBasePath()));
 
 	//font
 	QFontDatabase fontDb;
@@ -55,7 +54,7 @@ Settings::Settings(QWidget *parent,	bool iconThemeState, QString iconThemePath, 
 	ui->lineEditBackground->setText(SaagharWidget::backgroundImagePath);
 	ui->lineEditBackground->setEnabled(SaagharWidget::backgroundImageState);
 	ui->pushButtonBackground->setEnabled(SaagharWidget::backgroundImageState);
-	connect( ui->pushButtonBackground, SIGNAL(clicked()), this, SLOT(browseForBackground()));	
+	connect( ui->pushButtonBackground, SIGNAL(clicked()), this, SLOT(browseForBackground()));
 	
 	ui->checkBoxIconTheme->setChecked(iconThemeState);
 	ui->lineEditIconTheme->setText(iconThemePath);
@@ -282,6 +281,20 @@ void Settings::getColorForPushButton()
 		}	
 }
 
+void Settings::browseForDataBasePath()
+{
+	QString dir = QFileDialog::getExistingDirectory(this,tr("Add Path For Data Base"), ui->lineEditDataBasePath->text(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+	if ( !dir.isEmpty() ) 
+	{
+		dir.replace(QString("\\"),QString("/"));
+		if ( !dir.endsWith('/') ) dir+="/";
+		QString currentPath = ui->lineEditDataBasePath->text();
+		if (!currentPath.isEmpty())
+			currentPath+=";";
+		ui->lineEditDataBasePath->setText(currentPath+dir);
+	}
+}
+
 void Settings::browseForBackground()
 {
 	QString location=QFileDialog::getOpenFileName(this,tr("Browse Background Image"), ui->lineEditBackground->text(),"Image files (*.png *.bmp)");
@@ -305,6 +318,9 @@ void Settings::browseForIconTheme()
 
 void Settings::acceptSettings(bool *iconThemeState, QString *iconThemePath, QStringList *toolbarItemsList)
 {
+	//database path
+	QGanjoorDbBrowser::dataBasePath = ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
+
 	//font
 	QFont font(ui->comboBoxFontFamily->currentText(), ui->spinBoxFontSize->value());
 	SaagharWidget::tableFont = font;
