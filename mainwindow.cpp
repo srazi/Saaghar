@@ -43,6 +43,7 @@
 #include <QPrintPreviewDialog>
 #include <QDockWidget>
 #include <QDateTime>
+#include <QInputDialog>
 
 const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 
@@ -241,6 +242,49 @@ void MainWindow::searchRegionsInitialize()
 	for(int i=0; i<poets.size(); ++i)
 	{
 		comboBoxSearchRegion->addItem(poets.at(i)->_Name, QString::number(poets.at(i)->_ID));
+	}
+}
+
+void MainWindow::actionRemovePoet()
+{
+	bool ok = false;
+	QStringList items;
+	items << tr("Select a name...");
+	QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
+	for (int i=0; i<poets.size(); ++i)
+		items << poets.at(i)->_Name;
+	QString item = QInputDialog::getItem(this, tr("Remove Poet"), tr("Select a poet name and click on 'OK' button, for remove it from database."), items, 0, false, &ok);
+	if (ok && !item.isEmpty() && item != tr("Select a name...") )
+	{
+		int poetID = SaagharWidget::ganjoorDataBase->getPoet(item)._ID;
+		if (poetID>0)
+		{
+			////
+			QMessageBox warnAboutDelete(this);
+			warnAboutDelete.setWindowTitle(tr("Please Notice!"));
+			warnAboutDelete.setIcon(QMessageBox::Warning);
+			warnAboutDelete.setText(tr("Are you sure for removing \"%1\", from database?").arg(item));
+			warnAboutDelete.addButton(tr("Continue"), QMessageBox::AcceptRole);
+			warnAboutDelete.setStandardButtons(QMessageBox::Cancel);
+			warnAboutDelete.setEscapeButton(QMessageBox::Cancel);
+			warnAboutDelete.setDefaultButton(QMessageBox::Cancel);
+			int ret = warnAboutDelete.exec();
+			if ( ret == QMessageBox::Cancel)
+				return;
+			///////
+			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+			SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poetID);
+			comboBoxSearchRegion->clear();
+			searchRegionsInitialize();
+			//update visible region of searchToolBar
+			bool tmpFlag = labelMaxResultAction->isVisible();
+			labelMaxResultAction->setVisible(!tmpFlag);
+			ui->searchToolBar->update();
+			QApplication::processEvents();
+			labelMaxResultAction->setVisible(tmpFlag);
+
+			QApplication::restoreOverrideCursor();
+		}
 	}
 }
 
@@ -894,20 +938,39 @@ void MainWindow::setupUi()
 	spinBoxMaxSearchResult->setObjectName(QString::fromUtf8("spinBoxMaxSearchResult"));
 	spinBoxMaxSearchResult->setValue(10);
 
-	pushButtonSearch = new QPushButton(ui->searchToolBar);
-	pushButtonSearch->setObjectName(QString::fromUtf8("pushButtonSearch"));
-	pushButtonSearch->setText(tr("Search"));
+	QToolButton *toolButtonSearchOption = new QToolButton(ui->searchToolBar);
+	toolButtonSearchOption->setObjectName(QString::fromUtf8("toolButtonSearchOption"));
+	toolButtonSearchOption->setIcon(QIcon(iconThemePath+"/options.png"));
+	toolButtonSearchOption->setPopupMode(QToolButton::InstantPopup);
+	QMenu *searchOptionMenu = new QMenu(ui->searchToolBar);
+	actionInstance("actionNewSearchFlag", "", tr("&New Search Method") )->setCheckable(true);
+	actionInstance("actionNewSearchSkipNonAlphabet", "", tr("&Skip non-Alphabet") )->setCheckable(true);
+	actionInstance("actionNewSearchFlag")->setChecked(SaagharWidget::newSearchFlag);
+	actionInstance("actionNewSearchSkipNonAlphabet")->setChecked(SaagharWidget::newSearchSkipNonAlphabet);
+	actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(actionInstance("actionNewSearchFlag")->isChecked());
+
+	connect(actionInstance("actionNewSearchFlag"), SIGNAL(toggled(bool)), this, SLOT(newSearchFlagChanged(bool)));
+	connect(actionInstance("actionNewSearchSkipNonAlphabet"), SIGNAL(toggled(bool)), this, SLOT(newSearchNonAlphabetChanged(bool)));
+	searchOptionMenu->addAction(actionInstance("actionNewSearchFlag"));
+	searchOptionMenu->addAction(actionInstance("actionNewSearchSkipNonAlphabet"));
+	toolButtonSearchOption->setMenu(searchOptionMenu);
+	//pushButtonSearch->setText(tr("Search"));
 
 	ui->searchToolBar->addWidget(labelSearchPhrase);
 	ui->searchToolBar->addWidget(lineEditSearchText);
 	ui->searchToolBar->addSeparator();
 	ui->searchToolBar->addWidget(labelSearchIn);
 	ui->searchToolBar->addWidget(comboBoxSearchRegion);
+	labelMaxResultSeparator = ui->searchToolBar->addSeparator();
+	labelMaxResultAction = ui->searchToolBar->addWidget(labelMaxResult);
+	spinBoxMaxSearchResultAction = ui->searchToolBar->addWidget(spinBoxMaxSearchResult);
 	ui->searchToolBar->addSeparator();
-	ui->searchToolBar->addWidget(labelMaxResult);
-	ui->searchToolBar->addWidget(spinBoxMaxSearchResult);
-	ui->searchToolBar->addSeparator();
-	ui->searchToolBar->addWidget(pushButtonSearch);
+	ui->searchToolBar->addWidget(toolButtonSearchOption);
+	
+	//max result spinbox visibility
+	labelMaxResultSeparator->setVisible(!actionInstance("actionNewSearchFlag")->isChecked());
+	labelMaxResultAction->setVisible(!actionInstance("actionNewSearchFlag")->isChecked());
+	spinBoxMaxSearchResultAction->setVisible(!actionInstance("actionNewSearchFlag")->isChecked());
 
 	//Initialize main menu items
 	menuFile = new QMenu(tr("&File"), ui->menuBar);
@@ -976,6 +1039,8 @@ void MainWindow::setupUi()
 
 	actionInstance("actionImportNewSet", iconThemePath+"/import-to-database.png", tr("Insert New &Set..."));
 
+	actionInstance("actionRemovePoet", iconThemePath+"/remove-poet.png", tr("&Remove Poet..."));
+
 	//Inserting main menu items
 	ui->menuBar->addMenu(menuFile);
 	ui->menuBar->addMenu(menuNavigation);
@@ -1008,6 +1073,7 @@ void MainWindow::setupUi()
 	menuTools->addAction(actionInstance("actionViewInGanjoorSite"));
 	menuTools->addSeparator();
 	menuTools->addAction(actionInstance("actionImportNewSet"));
+	menuTools->addAction(actionInstance("actionRemovePoet"));
 	menuTools->addSeparator();
 	menuTools->addAction(actionInstance("actionSettings"));
 
@@ -1021,6 +1087,21 @@ void MainWindow::setupUi()
 	{
 		ui->mainToolBar->addAction(actionInstance(mainToolBarItems.at(i)));
 	}
+}
+
+void MainWindow::newSearchFlagChanged(bool checked)
+{
+	actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(checked);
+	labelMaxResultSeparator->setVisible(!checked);
+	labelMaxResultAction->setVisible(!checked);
+	spinBoxMaxSearchResultAction->setVisible(!checked);
+	SaagharWidget::newSearchFlag = checked;
+}
+
+void MainWindow::newSearchNonAlphabetChanged(bool checked)
+{
+	actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(checked);
+	SaagharWidget::newSearchSkipNonAlphabet = checked;
 }
 
 QAction *MainWindow::actionInstance(const QString actionObjectName, QString iconPath, QString displayName)
@@ -1045,13 +1126,13 @@ QAction *MainWindow::actionInstance(const QString actionObjectName, QString icon
 			displayName = tr(displayName.toUtf8().data());
 		}
 
-		if (iconPath.isEmpty())
+		/*if (iconPath.isEmpty())
 		{
 			QString iconThemePath=":/resources/images/";
 			if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
 				iconThemePath = settingsIconThemePath;
 			iconPath = iconThemePath+"/"+actionObjectName+".png";
-		}
+		}*/
 
 		action = new QAction(QIcon(iconPath), displayName, this);
 		action->setObjectName(actionObjectName);
@@ -1083,6 +1164,7 @@ void MainWindow::createConnections()
 	connect(actionInstance("actionViewInGanjoorSite")	,	SIGNAL(triggered())		,	this, SLOT(actionGanjoorSiteClicked())	);
 	connect(actionInstance("actionCopy")				,	SIGNAL(triggered())		,	this, SLOT(copySelectedItems())			);
 	connect(actionInstance("actionSettings")			,	SIGNAL(triggered())		,	this, SLOT(globalSettings())			);
+	connect(actionInstance("actionRemovePoet")			,	SIGNAL(triggered())		,	this, SLOT(actionRemovePoet())			);
 	connect(actionInstance("actionImportNewSet")		,	SIGNAL(triggered())		,	this, SLOT(actionImportNewSet())		);
 
 		//Help
@@ -1092,7 +1174,7 @@ void MainWindow::createConnections()
 
 		//searchToolBar connections
 	connect(lineEditSearchText							,	SIGNAL(returnPressed())	,	this, SLOT(searchStart())				);
-	connect(pushButtonSearch							,	SIGNAL(clicked())		,	this, SLOT(searchStart())				);
+	//connect(pushButtonSearch							,	SIGNAL(clicked())		,	this, SLOT(searchStart())				);
 }
 
 //Settings Dialog
@@ -1170,6 +1252,10 @@ void MainWindow::loadGlobalSettings()
 		mainToolBarItems = QString("actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|Separator|actionSettings").split("|", QString::SkipEmptyParts);
 
 	openedTabs = config->value("openedTabs", "").toString();
+	
+	//search options
+	SaagharWidget::newSearchFlag = config->value("New Search",false).toBool();
+	SaagharWidget::newSearchSkipNonAlphabet  = config->value("New Search non-Alphabet",false).toBool();
 
 	SaagharWidget::backgroundImageState = config->value("Background State",false).toBool();
 	SaagharWidget::backgroundImagePath = config->value("Background Path", "").toString();
@@ -1336,15 +1422,31 @@ void MainWindow::saveSaagharState()
 		openedTabs += tabViewType+"|";
 	}
 	config->setValue("openedTabs", openedTabs);
+
+	//search options
+	config->setValue("New Search", SaagharWidget::newSearchFlag);
+	config->setValue("New Search non-Alphabet", SaagharWidget::newSearchSkipNonAlphabet);
 }
 
+#include<QProgressDialog>
 //Search
 void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int PoetID, QWidget *dockWidget)
 {
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	QApplication::processEvents();
 
-	QList<int> poemIDsList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase(phrase, PageStart, count+1, PoetID);
+	QList<int> poemIDsList;
+	//new search method
+	QProgressDialog progress(tr("Initializing Results Table..."), tr("Cancel"), 0, 100, this);
+	progress.setWindowModality(Qt::WindowModal);
+	if (SaagharWidget::newSearchFlag)
+	{
+		phrase = QGanjoorDbBrowser::cleanString(phrase, SaagharWidget::newSearchSkipNonAlphabet);
+		poemIDsList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod(phrase, PoetID, SaagharWidget::newSearchSkipNonAlphabet);
+		progress.setMaximum(poemIDsList.size());
+	}
+	else
+		poemIDsList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase(phrase, PageStart, count+1, PoetID);
 	int tmpCount = count;
 	bool HasMore = count>0 && poemIDsList.size() == count+1;
 	bool navButtonsNeeded = false;
@@ -1359,6 +1461,10 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 		count = HasMore ? count : poemIDsList.size() - 1;
 		navButtonsNeeded = true;//almost one of navigation button needs to be enabled
 	}
+	
+	//new search method show all results in one page
+	if (SaagharWidget::newSearchFlag)
+		count = poemIDsList.size();
 
 	if (count < 1)
 	{
@@ -1436,48 +1542,52 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 
 	searchTableGridLayout->addWidget(searchTable, 0, 0, 1, 1);
 
-	QVBoxLayout *searchNavVerticalLayout = new QVBoxLayout();
-	searchNavVerticalLayout->setSpacing(6);
-	searchNavVerticalLayout->setObjectName(QString::fromUtf8("searchNavVerticalLayout"));
-	searchNextPage = new QToolButton(searchResultContents);
-	searchNextPage->setObjectName(QString::fromUtf8("searchNextPage"));
+	if (!SaagharWidget::newSearchFlag)
+	{//by new search method there's just one page result!
+		QVBoxLayout *searchNavVerticalLayout = new QVBoxLayout();
+		searchNavVerticalLayout->setSpacing(6);
+		searchNavVerticalLayout->setObjectName(QString::fromUtf8("searchNavVerticalLayout"));
+		searchNextPage = new QToolButton(searchResultContents);
+		searchNextPage->setObjectName(QString::fromUtf8("searchNextPage"));
 
-	actSearchNextPage = new QAction(searchResultContents);
-	actSearchNextPage->setIcon(actionInstance("actionNextPoem")->icon());
-	searchNextPage->setDefaultAction(actSearchNextPage);
+		actSearchNextPage = new QAction(searchResultContents);
+		actSearchNextPage->setIcon(actionInstance("actionNextPoem")->icon());
+		searchNextPage->setDefaultAction(actSearchNextPage);
 
-	connect(searchNextPage, SIGNAL(triggered(QAction *)), this, SLOT(searchPageNavigationClicked(QAction *)));
+		connect(searchNextPage, SIGNAL(triggered(QAction *)), this, SLOT(searchPageNavigationClicked(QAction *)));
 
-	searchNextPage->setEnabled(false);
-	searchNextPage->hide();
-	
-	searchNavVerticalLayout->addWidget(searchNextPage);
+		searchNextPage->setEnabled(false);
+		searchNextPage->hide();
+		
+		searchNavVerticalLayout->addWidget(searchNextPage);
 
-	searchPreviousPage = new QToolButton(searchResultContents);
-	searchPreviousPage->setObjectName(QString::fromUtf8("searchPreviousPage"));
-	
-	actSearchPreviousPage = new QAction(searchResultContents);
-	actSearchPreviousPage->setIcon(actionInstance("actionPreviousPoem")->icon());
-	searchPreviousPage->setDefaultAction(actSearchPreviousPage);
+		searchPreviousPage = new QToolButton(searchResultContents);
+		searchPreviousPage->setObjectName(QString::fromUtf8("searchPreviousPage"));
+		
+		actSearchPreviousPage = new QAction(searchResultContents);
+		actSearchPreviousPage->setIcon(actionInstance("actionPreviousPoem")->icon());
+		searchPreviousPage->setDefaultAction(actSearchPreviousPage);
 
-	connect(searchPreviousPage, SIGNAL(triggered(QAction *)), this, SLOT(searchPageNavigationClicked(QAction *)));
+		connect(searchPreviousPage, SIGNAL(triggered(QAction *)), this, SLOT(searchPageNavigationClicked(QAction *)));
 
-	searchPreviousPage->setEnabled(false);
-	searchPreviousPage->hide();
+		searchPreviousPage->setEnabled(false);
+		searchPreviousPage->hide();
 
-	searchNavVerticalLayout->addWidget(searchPreviousPage);
-	
-	if (navButtonsNeeded)
-	{//almost one of navigation button needs to be enabled
-		searchNextPage->show();
-		searchPreviousPage->show();
-	}
+		searchNavVerticalLayout->addWidget(searchPreviousPage);
+		
+		if (navButtonsNeeded)
+		{//almost one of navigation button needs to be enabled
+			searchNextPage->show();
+			searchPreviousPage->show();
+		}
 
-	QSpacerItem *searchNavVerticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+		QSpacerItem *searchNavVerticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-	searchNavVerticalLayout->addItem(searchNavVerticalSpacer);
+		searchNavVerticalLayout->addItem(searchNavVerticalSpacer);
 
-	horizontalLayout->addLayout(searchNavVerticalLayout);
+		horizontalLayout->addLayout(searchNavVerticalLayout);
+	} //if (!SaagharWidget::newSearchFlag)
+
 	horizontalLayout->addLayout(searchTableGridLayout);
 
 	searchGridLayout->addLayout(horizontalLayout, 0, 0, 1, 1);
@@ -1513,6 +1623,10 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 
 	for (int i = 0; i < count; ++i)
 	{
+		progress.setValue(i);
+		 if (progress.wasCanceled())
+			break;
+
 		GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(poemIDsList.at(i));
 
 		poem._HighlightText = phrase;
@@ -1535,7 +1649,26 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 		if ( tmpWidth > maxPoemWidth )
 			maxPoemWidth = tmpWidth;
 
-		QString firstVerse = SaagharWidget::ganjoorDataBase->getFirstVerseContainingPhrase(poem._ID, phrase);
+		QString firstVerse = "";
+		/////////////
+		if (SaagharWidget::newSearchFlag)
+		{
+			QStringList verseTexts = SaagharWidget::ganjoorDataBase->getVerseListContainingPhrase(poem._ID, phrase.at(0));
+			for (int k=0; k<verseTexts.size();++k)
+			{
+		
+				QString foundedVerse = QGanjoorDbBrowser::cleanString(verseTexts.at(k), SaagharWidget::newSearchSkipNonAlphabet);	
+
+
+				if (foundedVerse.contains(phrase, Qt::CaseInsensitive))
+				{
+					firstVerse = verseTexts.at(k);
+					break;//we need just first result
+				}
+			}
+		}
+		else
+			firstVerse = SaagharWidget::ganjoorDataBase->getFirstVerseContainingPhrase(poem._ID, phrase);
 
 		QTableWidgetItem *verseItem = new QTableWidgetItem(firstVerse);
 		verseItem->setFlags(Qt::ItemIsEnabled/*Qt::NoItemFlags*/);
@@ -1738,7 +1871,14 @@ void MainWindow::importDataBase(const QString fileName)
 	if (SaagharWidget::ganjoorDataBase->importDataBase(fileName))
 	{
 		SaagharWidget::ganjoorDataBase->dBConnection.commit();
-		saagharWidget->showHome();
+		comboBoxSearchRegion->clear();
+		searchRegionsInitialize();
+		//update visible region of searchToolBar
+		bool tmpFlag = labelMaxResultAction->isVisible();
+		labelMaxResultAction->setVisible(!tmpFlag);
+		ui->searchToolBar->update();
+		QApplication::processEvents();
+		labelMaxResultAction->setVisible(tmpFlag);
 	}
     else
 	{

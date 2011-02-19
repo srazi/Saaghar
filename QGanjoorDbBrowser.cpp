@@ -519,7 +519,7 @@ QList<GanjoorPoet *> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
 	return poetsInDataBase;
 }
 
-QString QGanjoorDbBrowser::getIdForDataBase(const QString sqliteDataBaseName)
+QString QGanjoorDbBrowser::getIdForDataBase(const QString &sqliteDataBaseName)
 {
 	QFileInfo dataBaseFile(sqliteDataBaseName);
 	QString connectionID = dataBaseFile.fileName();//we need to be sure this name is unique
@@ -881,4 +881,126 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
 	dataBaseObject.close();
 	QSqlDatabase::removeDatabase(connectionID);
 	return true;
+}
+
+QString QGanjoorDbBrowser::cleanString(const QString &text, bool skipNonAlphabet)
+{
+	QString cleanedText = text;
+	/*if (skipNonAlphabet)
+	{
+		phraseForSearch.remove("\t");
+		phraseForSearch.remove(" ");
+	}*/
+
+	for (int i=0; i<cleanedText.size(); ++i)
+	{
+		QChar tmpChar = cleanedText.at(i);
+		QChar::Direction chDir = tmpChar.direction();
+		if (chDir == QChar::DirNSM)
+		{
+			cleanedText.remove(tmpChar);
+			--i;
+		}
+
+		if (skipNonAlphabet)
+		{
+			if (chDir != QChar::DirAL && chDir != QChar::DirL && chDir != QChar::DirR)
+			{
+				cleanedText.remove(tmpChar);
+				--i;
+			}
+		}
+	}
+	return cleanedText;
+}
+#include <QProgressDialog>
+#include<QTime>
+QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet)
+{
+	QList<int> idList;
+    if (isConnected())
+	{
+		QString strQuery;
+		QString phraseForSearch = QGanjoorDbBrowser::cleanString(phrase, skipNonAlphabet);
+		//qDebug() << "text=" << phrase << "cleanedText=" << phraseForSearch;
+
+		QString ch = QString(phraseForSearch.at(0));
+		int index=0, offset = 0;// 'index' and 'offset' is not necessary
+
+		if (PoetID == 0)//SELECT count(*),poem_id FROM (
+			strQuery=QString("SELECT poem_id FROM verse WHERE text LIKE \'%" + ch + "%\' GROUP BY poem_id");
+		else
+			strQuery=QString("SELECT poem_id FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + ch + "%\' AND poet_id=" + QString::number(PoetID) + " GROUP BY poem_id");
+		
+		QSqlQuery q(dBConnection);
+		q.exec(strQuery);
+		offset+=1000000;
+		//QMessageBox::information(0,"offset",tr("offset=*%1*").arg(offset));
+		int numOfFounded=0;// 'numOfFounded' is not necessary
+
+		QString lastTextTest="NULL";// 'lastTextTest' is not necessary
+		
+		//progress dialog
+		QTime startTime = QTime::currentTime();
+		int maxOfProgressBar = 50000;
+		QProgressDialog progress(tr("Searching Data Base..."), tr("Cancel"), 0, maxOfProgressBar, qApp->activeModalWidget());
+		progress.setWindowModality(Qt::WindowModal);
+		while( q.next() )
+		{
+			++numOfFounded;
+			if (numOfFounded > maxOfProgressBar)
+			{
+				maxOfProgressBar+=30000;
+				progress.setMaximum(maxOfProgressBar);
+			}
+			 progress.setValue(numOfFounded);
+
+			 if (progress.wasCanceled())
+				 break;
+			QSqlRecord qrec = q.record();
+			/*bool okInt1=false, okInt2=false;
+			int tmp=qrec.value(0).toInt(&okInt1);
+			int pId=qrec.value(1).toInt(&okInt2);*/
+			//GanjoorPoem gPoem = getPoem(
+			QStringList verseTexts = getVerseListContainingPhrase(qrec.value(0).toInt(), ch);
+			for (int k=0; k<verseTexts.size();++k)
+			{
+				QString foundedVerse = QGanjoorDbBrowser::cleanString(verseTexts.at(k), skipNonAlphabet);
+				lastTextTest = foundedVerse;
+				if (foundedVerse.contains(phraseForSearch, Qt::CaseInsensitive))
+				{
+					++index;
+					progress.setLabelText(tr("Search Result(s): %1").arg(index));
+					//QMessageBox::information(0,"TRUE-TRUE-TRUE",tr("phraseForSearch=*%1*\npoemID=*%2*\nNO=*%3*\noffset=*%4*").arg(phraseForSearch).arg(qrec.value(0).toInt()).arg(index).arg(offset));
+					idList.append(qrec.value(0).toInt());
+					
+					break;//we need just first result
+				}
+			}
+		}
+		progress.setValue(maxOfProgressBar);
+		int msStart = startTime.msecsTo( QTime::currentTime());
+		////////////////////////////////////
+		//QMessageBox::information(0,"offset",tr("numOfWhile-LOOP=*%1*\nindex=*%2*\nlastTextTest=*%3*\ntime=*%4*").arg(numOfFounded).arg(index).arg(lastTextTest).arg(msStart));
+		//int tpp=0;
+	    return idList;
+	}
+    return idList;
+}
+
+QStringList QGanjoorDbBrowser::getVerseListContainingPhrase(int PoemID, const QString &phrase)
+{
+	QStringList text = QStringList();//"";
+    if (isConnected())
+    {
+		QString strQuery="SELECT text FROM verse WHERE poem_id="+QString::number(PoemID)+" AND text LIKE\'%"+phrase+"%\'";
+		QSqlQuery q(dBConnection);
+		q.exec(strQuery);
+		while ( q.next() )
+		{
+			QSqlRecord qrec = q.record();
+			text << qrec.value(0).toString();
+		}
+    }
+	return text;
 }

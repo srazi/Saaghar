@@ -46,6 +46,7 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 	itemBrush.setStyle(Qt::SolidPattern);
 
 	QString text="";
+	//QString cleanedText = "";
 	int lastX,x;
 	lastX = x = option.rect.x()+textHMargin;
 	const QFontMetrics fontMetric(option.fontMetrics);
@@ -53,7 +54,10 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 	if (index.data().isValid())
 	{
 		text = index.data().toString();
-		text = fontMetric.elidedText(text, option.textElideMode, option.rect.width() );
+		if (SaagharWidget::newSearchFlag)
+			text = QGanjoorDbBrowser::cleanString(text, false);
+			//cleanedText = QGanjoorDbBrowser::cleanString(index.data().toString(), SaagharWidget::newSearchSkipNonAlphabet);
+		//text = fontMetric.elidedText(text, option.textElideMode, option.rect.width() );
 	}
 
 	Qt::Alignment itemAlignment = 0;
@@ -64,7 +68,11 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 
 	if (!(keyword.isEmpty() || text.indexOf(keyword) == -1 ) )
 	{
-		QString txt = text;
+		QString txt;
+		/*if (SaagharWidget::newSearchFlag)
+			txt = cleanedText;
+		else*/
+			txt = text;
 		while (txt.size() > 0)
 		{
 			int index = txt.indexOf(keyword);

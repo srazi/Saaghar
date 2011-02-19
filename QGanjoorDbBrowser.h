@@ -39,6 +39,7 @@ class QGanjoorDbBrowser : public QObject
 	public:
 		QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
 		~QGanjoorDbBrowser();
+		static QString cleanString(const QString &text, bool skipNonAlphabet);
 		bool isConnected(const QString& connectionID = "");
 
 		QList<GanjoorPoet *> getDataBasePoets(const QString fileName);
@@ -64,6 +65,10 @@ class QGanjoorDbBrowser : public QObject
 		//Search
 		QList<int> getPoemIDsContainingPhrase(QString phrase, int PageStart, int Count, int PoetID);
 		QString getFirstVerseContainingPhrase(int PoemID, QString phrase);
+		//new Search Method
+		QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
+		QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
+
 		//Faal
 		int getRandomPoemID(int *CatID);
 		void removePoetFromDataBase(int PoetID);
@@ -76,7 +81,7 @@ class QGanjoorDbBrowser : public QObject
 		int getNewPoetID();
 		int getNewCatID();
 		void removeCatFromDataBase(GanjoorCat *gCat);
-		static QString getIdForDataBase(const QString sqliteDataBaseName);
+		static QString getIdForDataBase(const QString &sqliteDataBaseName);
 		QString dBName;
 		//QSqlDatabase dBConnection;
 		static bool comparePoetsByName(GanjoorPoet *poet1, GanjoorPoet *poet2);

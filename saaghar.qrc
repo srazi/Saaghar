@@ -27,5 +27,6 @@
 		<file>images/import-to-database.png</file>
 		<file>images/no-photo.png</file>
 		<file>images/select-mask.png</file>
+		<file>images/options.png</file>
 	</qresource>
 </RCC>

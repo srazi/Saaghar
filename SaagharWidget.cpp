@@ -37,6 +37,8 @@ QFont SaagharWidget::tableFont = qApp->font();
 bool SaagharWidget::showBeytNumbers = true;
 bool SaagharWidget::centeredView = true;
 bool SaagharWidget::backgroundImageState = false;
+bool SaagharWidget::newSearchFlag = false;
+bool SaagharWidget::newSearchSkipNonAlphabet = false;
 QString SaagharWidget::backgroundImagePath = QString();
 QColor SaagharWidget::textColor = QColor();
 QColor SaagharWidget::matchedTextColor = QColor();
@@ -735,11 +737,27 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 		for (int col = 0; col < tableViewWidget->columnCount(); ++col)
 		{
 			QTableWidgetItem *tmp = tableViewWidget->item(row, col);
-			if (tmp && tmp->text().contains(phrase))
+			if (newSearchFlag)
 			{
-				tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
-				row = tableViewWidget->rowCount()+1;
-				break;
+				if (tmp)
+				{
+					QString text = QGanjoorDbBrowser::cleanString(tmp->text(), newSearchSkipNonAlphabet);
+					if (text.contains(phrase))
+					{
+						tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
+						row = tableViewWidget->rowCount()+1;
+						break;
+					}
+				}
+			}
+			else
+			{
+				if (tmp && tmp->text().contains(phrase))
+				{
+					tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
+					row = tableViewWidget->rowCount()+1;
+					break;
+				}
 			}
 		}
 	}
