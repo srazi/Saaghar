@@ -54,8 +54,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	QCoreApplication::setOrganizationName("Pojh");
 	QCoreApplication::setApplicationName("Saaghar");
 	QCoreApplication::setOrganizationDomain("Pojh.co.cc");
-	
-	QFontDatabase::addApplicationFont(":/resources/fonts/XB Sols.ttf");
 
 	setWindowIcon(QIcon(":/resources/images/saaghar.png"));
 
@@ -84,31 +82,43 @@ MainWindow::MainWindow(QWidget *parent) :
 	
 	const QString tempDataBaseName = "/ganjoor.s3db";//temp
 	QString dataBaseCompleteName = "/ganjoor.s3db";
+	QString resourcesPath;//not-writable
 
 	if (isPortable)
 	{
 #ifdef Q_WS_MAC
 		dataBaseCompleteName = QCoreApplication::applicationDirPath()+"/../Resources/"+dataBaseCompleteName;
-		SaagharWidget::poetsImagesDir = QCoreApplication::applicationDirPath() + "/../Resources/poets_images/";
+		resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
 #else
 		dataBaseCompleteName = QCoreApplication::applicationDirPath()+dataBaseCompleteName;
-		SaagharWidget::poetsImagesDir = QCoreApplication::applicationDirPath()+"/poets_images/";
+		resourcesPath = QCoreApplication::applicationDirPath();
 #endif
 	}
 	else
 	{
 #ifdef Q_WS_WIN
 		dataBaseCompleteName = QDir::homePath()+"/Pojh/Saaghar/"+dataBaseCompleteName;
-		SaagharWidget::poetsImagesDir = QCoreApplication::applicationDirPath()+"/poets_images/";
+		resourcesPath = QCoreApplication::applicationDirPath();
 #endif
 #ifdef Q_WS_X11
 		dataBaseCompleteName = "/usr/share/saaghar/"+dataBaseCompleteName;
-		SaagharWidget::poetsImagesDir = "/usr/share/saaghar/poets_images/";
+		resourcesPath = "/usr/share/saaghar/";
 #endif
 #ifdef Q_WS_MAC
 		dataBaseCompleteName = QDir::homePath()+"/Library/Saaghar/"+dataBaseCompleteName;
-		SaagharWidget::poetsImagesDir = QCoreApplication::applicationDirPath() + "/../Resources/poets_images/";
+		resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
 #endif
+	}
+
+	SaagharWidget::poetsImagesDir = resourcesPath + "/poets_images/";
+	
+	//loading application fonts
+	QString applicationFontsPath = resourcesPath + "/fonts/";
+	QDir fontsDir(resourcesPath + "/fonts/");
+	QStringList fontsList = fontsDir.entryList(QDir::Files|QDir::NoDotAndDotDot);
+	for (int i=0; i<fontsList.size(); ++i)
+	{
+		QFontDatabase::addApplicationFont(resourcesPath + "/fonts/"+fontsList.at(i));
 	}
 
 	//create Parent Categories ToolBar
@@ -867,6 +877,9 @@ void MainWindow::aboutSaaghar()
 	about.setTextFormat(Qt::RichText);
 	about.setText(tr("<br />%1 is a persian poem viewer software, it uses \"ganjoor.net\" database, and some of its codes are ported to C++ and Qt from \"desktop ganjoor\" that is a C# .NET application written by %2.<br /><br />Logo Designer: %3<br /><br />Photos and Description Sources: ganjoor.net & WiKiPedia<br /><br />Author: <a href=\"http://www.pojh.co.cc/\">S. Razi Alavizadeh</a>,<br />Home Page: %4<br />Mailing List: %5<br /><br />Version: %6<br />Build Time: %7")
 		.arg(tr("<a href=\"http://www.pojh.co.cc/saaghar\">Saaghar</a>")).arg(tr("<a href=\"http://www.gozir.com/\">Hamid Reza Mohammadi</a>")).arg(tr("<a href=\"http://www.phototak.com/\">S. Nasser Alavizadeh</a>")).arg("<a href=\"http://www.pojh.co.cc/saaghar\">http://www.pojh.co.cc/saaghar</a>").arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>").arg(VER_FILEVERSION_STR).arg(VER_FILEBUILDTIME_STR));
+	
+	/*about.setText(tr("<br />%1 is a persian poem viewer software, it uses \"ganjoor.net\" database, and some of its codes are ported to C++ and Qt from \"desktop ganjoor\" that is a C# .NET application written by %2.<br /><br />Logo Designer: %3<br /><br />Photos and Description Sources: ganjoor.net & WiKiPedia<br /><br />Author: <a href=\"http://www.pojh.co.cc/\">S. Razi Alavizadeh</a>,<br />Home Page: %4<br />Mailing List: %5<br /><br />Version: %6<br />Build Time: %7")
+		.arg(tr("<a href=\"http://www.pojh.co.cc/saaghar\">Saaghar</a>")).arg(tr("<a href=\"http://www.gozir.com/\">Hamid Reza Mohammadi</a>")).arg(tr("<a href=\"http://www.phototak.com/\">S. Nasser Alavizadeh</a>")).arg("<a href=\"http://www.pojh.co.cc/saaghar\">http://www.pojh.co.cc/saaghar</a>").arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>").arg(VER_FILEVERSION_STR).arg(VER_FILEBUILDTIME_STR));*/
 	about.setStandardButtons(QMessageBox::Ok);
 	about.setEscapeButton(QMessageBox::Ok);
 

@@ -80,6 +80,8 @@ public:
 	int currentCat;
 
 private:
+	static int computeRowHeight(const QFontMetrics &fontMetric, int textWidth,/*const QString &text,*/ int width, int height=0);
+	QMap<int,int> singleColumnHeightMap;
 	void showCategory(GanjoorCat category);
 	int showPoem(GanjoorPoem poem);
 

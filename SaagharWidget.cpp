@@ -58,6 +58,8 @@ SaagharWidget::SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidge
 	: QWidget(parent), thisWidget(parent), parentCatsToolBar(catsToolBar), tableViewWidget(tableWidget)
 {
 	minMesraWidth = 0;
+	singleColumnHeightMap.clear();
+
 	loadSettings();
 
 	currentCat = currentPoem = 0;
@@ -418,6 +420,8 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 	bool flagEmptyThirdColumn = false;
 	//very Big For loop
 	minMesraWidth = 0;
+	singleColumnHeightMap.clear();
+
 	for (int i = 0; i < verses.size(); i++)
 	{
 		QString currentVerseText = verses.at(i)->_Text;
@@ -521,7 +525,10 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 						tableViewWidget->setItem(row, 1, mesraItem);
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
-					tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
+					
+tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
+						//					tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
+					singleColumnHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
 					MissedMesras--;
 					break;
 
@@ -543,7 +550,9 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 						tableViewWidget->setItem(row, 1, mesraItem);
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
-					tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
+tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
+					//tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
+					singleColumnHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
 					MissedMesras++;
 					break;
 
@@ -703,6 +712,18 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 		//}
 		//qDebug() << QString("x=*%1*--w=*%2*--vX=*%3*--v-W=*%4*--Scroll=*%5*--verticalScrollBarWidth=*%6*--baseWidthSize=*%7*\ntW=*%8*--tableW=*%9*").arg(table->x()).arg(thisWidget->width()/* width()-(2*table->viewport()->x())*/).arg(table->viewport()->x()).arg(table->viewport()->width()).arg(vV).arg(verticalScrollBarWidth).arg(baseWidthSize).arg(tW).arg(-1 );
 
+		//resize rows that contains 'Paragraph' and 'Single'
+		int totalWidth = 0;
+		if (table->columnCount() == 4)
+			totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+		QMap<int, int>::const_iterator i = singleColumnHeightMap.constBegin();
+		while (i != singleColumnHeightMap.constEnd())
+		{
+			table->setRowHeight(i.key(), SaagharWidget::computeRowHeight(table->fontMetrics(), i.value(), totalWidth /*, table->rowHeight(i.key())*/  ));
+			//table->setRowHeight(i.key(), i.value());
+			++i;
+		}
+
 		switch (table->columnCount())
 		{
 			case 1:
@@ -761,4 +782,19 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 			}
 		}
 	}
+}
+
+int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidth,/*const QString &text,*/ int width, int height)
+{
+	if (width <=0 || textWidth<=0) return 0;
+	if (height == 0)
+		height = (4*fontMetric.height())/3;
+	//int textWidth = fontMetric.boundingRect(text).width();
+	//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+	int numOfRow = textWidth/width ;
+	int h1=height+((fontMetric.height()*numOfRow));
+	//int h2=height+((fontMetric.height()*textWidth)/width);
+	//int d=h2-h1;
+	return h1;
+	//return height+((fontMetric.height()*textWidth)/width);
 }
