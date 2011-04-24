@@ -1,6 +1,5 @@
 <RCC>
 	<qresource prefix="/resources">
-		<file>fonts/XB Sols.ttf</file>
 		<file>images/qt-logo.png</file>
 		<file>images/export-pdf.png</file>
 		<file>images/export.png</file>

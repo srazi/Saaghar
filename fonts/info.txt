@@ -1,9 +1,0 @@
-=============================================
-Copyright (c) Irmug.org, 2007. All rights reserved.
-XB Sols is a trademark of Irmug.org.
-Designer: Behnam Esfahbod
-http://irmug.org/portal/index.php
-XB Sols is under GNU General Public License.
-=============================================
-
-This font is initially designed for Mac OS X font technology and is entirely rebuilt and expanded, inspired by  Thuluth font face with support for Arabic, Dari, Kurdish, Pashto, Persian,Uyghur, Urdu, Uzbek, old Turkish (Ottoman) and new Turkish (Roman) using Apple Advanced Typography (AAT) technology and Microsoft Open Type (OT) technology for TrueType format.

@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://www.pojh.co.cc>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -36,21 +36,19 @@ int main(int argc, char *argv[])
 
 	QTranslator* appTranslator=new QTranslator();
 	QTranslator* basicTranslator=new QTranslator();
-#if defined( Q_WS_X11 )
-	QString translationDir = "/usr/share/saaghar";
-#endif
-#if defined( Q_WS_MACX )
-	QString translationDir = QCoreApplication::applicationDirPath() + "/../Resources";
-#endif
-#if defined(Q_WS_WIN)
-	QString translationDir = QCoreApplication::applicationDirPath();
-#endif
 
-	if (appTranslator->load(QString("saaghar_fa"), translationDir))
+	QStringList translationDirs = QStringList() << "/usr/share/saaghar" << QCoreApplication::applicationDirPath() + "/../Resources" << QCoreApplication::applicationDirPath();
+
+	for (int i=0; i<translationDirs.size(); ++i)
 	{
-		QCoreApplication::installTranslator(appTranslator);
-		if (basicTranslator->load(QString("qt_fa"), translationDir))
-			QCoreApplication::installTranslator(basicTranslator);
+		QString translationDir = translationDirs.at(i);
+		if (appTranslator->load(QString("saaghar_fa"), translationDir))
+		{
+			QCoreApplication::installTranslator(appTranslator);
+			if (basicTranslator->load(QString("qt_fa"), translationDir))
+				QCoreApplication::installTranslator(basicTranslator);
+			break;
+		}
 	}
 
 	MainWindow w;

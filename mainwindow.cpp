@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://www.pojh.co.cc>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -44,6 +44,7 @@
 #include <QDockWidget>
 #include <QDateTime>
 #include <QInputDialog>
+#include <QProgressDialog>
 
 const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 
@@ -53,14 +54,17 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 	QCoreApplication::setOrganizationName("Pojh");
 	QCoreApplication::setApplicationName("Saaghar");
-	QCoreApplication::setOrganizationDomain("Pojh.co.cc");
+	QCoreApplication::setOrganizationDomain("Pojh.iBlogger.org");
 
 	setWindowIcon(QIcon(":/resources/images/saaghar.png"));
 
-#ifdef Q_WS_WIN
+#ifdef D_MSVC_CC
 	QTextCodec::setCodecForLocale( QTextCodec::codecForName( "Windows-1256" ) );
 #endif
-	
+#ifdef D_MINGW_CC
+	QTextCodec::setCodecForLocale( QTextCodec::codecForName( "utf-8" ) );
+#endif
+
 	SaagharWidget::persianIranLocal = QLocale(QLocale::Persian, QLocale::Iran);
 	SaagharWidget::persianIranLocal.setNumberOptions(QLocale::OmitGroupSeparator);
 
@@ -82,7 +86,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	
 	const QString tempDataBaseName = "/ganjoor.s3db";//temp
 	QString dataBaseCompleteName = "/ganjoor.s3db";
-	QString resourcesPath;//not-writable
 
 	if (isPortable)
 	{
@@ -333,14 +336,16 @@ void MainWindow::currentTabChanged(int tabIndex)
 		if (saagharWidget->tableViewWidget->columnCount() == 1 && saagharWidget->tableViewWidget->rowCount() > 0 && saagharWidget->currentCat != 0)
 		{
 			QTableWidgetItem *item = saagharWidget->tableViewWidget->item(0,0);
-			if (item)
+
+			if ( item && !item->icon().isNull() )
 			{
 				QString text = item->text();
 				int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
 				int totalWidth = saagharWidget->tableViewWidget->columnWidth(0)-82;
 				totalWidth = qMax(82, totalWidth);
-				int numOfRow = textWidth/totalWidth ;
-				saagharWidget->tableViewWidget->setRowHeight(0, 2*saagharWidget->tableViewWidget->rowHeight(0)+(saagharWidget->tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
+				//int numOfRow = textWidth/totalWidth ;
+				saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth) );
+				//saagharWidget->tableViewWidget->setRowHeight(0, 2*saagharWidget->tableViewWidget->rowHeight(0)+(saagharWidget->tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
 			}
 		}
 
@@ -403,6 +408,7 @@ void MainWindow::insertNewTab()
 	tabTableWidget->horizontalHeader()->setVisible(false);
 	tabTableWidget->verticalHeader()->setVisible(false);
 	tabTableWidget->setMouseTracking(true);
+	tabTableWidget->setAutoScroll(false);
 	//install 'delegate' on QTableWidget
 	QAbstractItemDelegate *tmpDelegate = tabTableWidget->itemDelegate();
 	delete tmpDelegate;
@@ -718,7 +724,7 @@ QString MainWindow::convertToHtml(SaagharWidget *saagharObject)
 		return "";
 	}
 
-	QString tableAsHTML = QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"CONTENT-TYPE\" CONTENT=\"text/html; charset=utf-8\">\n<TITLE>%1</TITLE>\n<META NAME=\"GENERATOR\" CONTENT=\"Saaghar, a Persian poetry software, http://www.pojh.co.cc/saaghar\">\n</HEAD>\n\n<BODY TEXT=%2>\n<FONT FACE=\"%3\">\n<TABLE ALIGN=%4 DIR=RTL FRAME=VOID CELLSPACING=0 COLS=%5 RULES=NONE BORDER=0>\n<COLGROUP>%6</COLGROUP>\n<TBODY>\n%7\n</TBODY>\n</TABLE>\n</BODY>\n</HTML>\n")
+	QString tableAsHTML = QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"CONTENT-TYPE\" CONTENT=\"text/html; charset=utf-8\">\n<TITLE>%1</TITLE>\n<META NAME=\"GENERATOR\" CONTENT=\"Saaghar, a Persian poetry software, http://pojh.iBlogger.org/saaghar\">\n</HEAD>\n\n<BODY TEXT=%2>\n<FONT FACE=\"%3\">\n<TABLE ALIGN=%4 DIR=RTL FRAME=VOID CELLSPACING=0 COLS=%5 RULES=NONE BORDER=0>\n<COLGROUP>%6</COLGROUP>\n<TBODY>\n%7\n</TBODY>\n</TABLE>\n</BODY>\n</HTML>\n")
 		.arg(curPoem._Title).arg(SaagharWidget::textColor.name()).arg(SaagharWidget::tableFont.family()).arg("CENTER").arg(numberOfCols).arg(columnGroupFormat).arg(tableBody);
 	return tableAsHTML;
 	/*******************************************************
@@ -818,7 +824,7 @@ QString MainWindow::convertToTeX(SaagharWidget *saagharObject)
 	if (!poemEnvironmentEnded)
 		endOfEnvironment = QString("\\end{%1}\n").arg(poemType);
 
-	QString	tableAsTeX = QString("%%%%%\n%This file is generated automatically by Saaghar %1, 2010 http://www.pojh.co.cc\n%%%%%\n%XePersian and bidipoem packages must have been installed on your TeX distribution for compiling this document\n%You can compile this document by running XeLaTeX on it, twice.\n%%%%%\n\\documentclass{article}\n\\usepackage{hyperref}%\n\\usepackage[Kashida]{xepersian}\n\\usepackage{bidipoem}\n\\settextfont{%2}\n\\hypersetup{\npdftitle={%3},%\npdfsubject={Poem},%\npdfkeywords={Poem, Persian},%\npdfcreator={Saaghar, a Persian poetry software, http://www.pojh.co.cc/saaghar},%\npdfview=FitV,\n}\n\\renewcommand{\\poemcolsepskip}{1.5cm}\n\\begin{document}\n\\begin{center}\n%3\\\\\n\\end{center}\n\\begin{%4}\n%5\n%6\\end{document}\n%End of document\n")
+	QString	tableAsTeX = QString("%%%%%\n%This file is generated automatically by Saaghar %1, 2010 http://pojh.iBlogger.org\n%%%%%\n%XePersian and bidipoem packages must have been installed on your TeX distribution for compiling this document\n%You can compile this document by running XeLaTeX on it, twice.\n%%%%%\n\\documentclass{article}\n\\usepackage{hyperref}%\n\\usepackage[Kashida]{xepersian}\n\\usepackage{bidipoem}\n\\settextfont{%2}\n\\hypersetup{\npdftitle={%3},%\npdfsubject={Poem},%\npdfkeywords={Poem, Persian},%\npdfcreator={Saaghar, a Persian poetry software, http://pojh.iBlogger.org/saaghar},%\npdfview=FitV,\n}\n\\renewcommand{\\poemcolsepskip}{1.5cm}\n\\begin{document}\n\\begin{center}\n%3\\\\\n\\end{center}\n\\begin{%4}\n%5\n%6\\end{document}\n%End of document\n")
 								 .arg(VER_FILEVERSION_STR).arg(SaagharWidget::tableFont.family()).arg(curPoem._Title).arg(poemType).arg(tableBody).arg(endOfEnvironment);
 	return tableAsTeX;
 	/*******************************************************
@@ -875,11 +881,8 @@ void MainWindow::aboutSaaghar()
 	about.setIconPixmap(pixmap);
 	about.setWindowTitle(tr("About Saaghar"));
 	about.setTextFormat(Qt::RichText);
-	about.setText(tr("<br />%1 is a persian poem viewer software, it uses \"ganjoor.net\" database, and some of its codes are ported to C++ and Qt from \"desktop ganjoor\" that is a C# .NET application written by %2.<br /><br />Logo Designer: %3<br /><br />Photos and Description Sources: ganjoor.net & WiKiPedia<br /><br />Author: <a href=\"http://www.pojh.co.cc/\">S. Razi Alavizadeh</a>,<br />Home Page: %4<br />Mailing List: %5<br /><br />Version: %6<br />Build Time: %7")
-		.arg(tr("<a href=\"http://www.pojh.co.cc/saaghar\">Saaghar</a>")).arg(tr("<a href=\"http://www.gozir.com/\">Hamid Reza Mohammadi</a>")).arg(tr("<a href=\"http://www.phototak.com/\">S. Nasser Alavizadeh</a>")).arg("<a href=\"http://www.pojh.co.cc/saaghar\">http://www.pojh.co.cc/saaghar</a>").arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>").arg(VER_FILEVERSION_STR).arg(VER_FILEBUILDTIME_STR));
-	
-	/*about.setText(tr("<br />%1 is a persian poem viewer software, it uses \"ganjoor.net\" database, and some of its codes are ported to C++ and Qt from \"desktop ganjoor\" that is a C# .NET application written by %2.<br /><br />Logo Designer: %3<br /><br />Photos and Description Sources: ganjoor.net & WiKiPedia<br /><br />Author: <a href=\"http://www.pojh.co.cc/\">S. Razi Alavizadeh</a>,<br />Home Page: %4<br />Mailing List: %5<br /><br />Version: %6<br />Build Time: %7")
-		.arg(tr("<a href=\"http://www.pojh.co.cc/saaghar\">Saaghar</a>")).arg(tr("<a href=\"http://www.gozir.com/\">Hamid Reza Mohammadi</a>")).arg(tr("<a href=\"http://www.phototak.com/\">S. Nasser Alavizadeh</a>")).arg("<a href=\"http://www.pojh.co.cc/saaghar\">http://www.pojh.co.cc/saaghar</a>").arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>").arg(VER_FILEVERSION_STR).arg(VER_FILEBUILDTIME_STR));*/
+	about.setText(tr("<br />%1 is a persian poem viewer software, it uses \"ganjoor.net\" database, and some of its codes are ported to C++ and Qt from \"desktop ganjoor\" that is a C# .NET application written by %2.<br /><br />Logo Designer: %3<br /><br />Author: %4,<br /><br />Home Page: %5<br />Mailing List: %6<br />Saaghar in FaceBook:%7<br /><br />Version: %8<br />Build Time: %9")
+		.arg("<a href=\"http://pojh.iBlogger.org/saaghar\">"+tr("Saaghar")+"</a>").arg("<a href=\"http://www.gozir.com/\">"+tr("Hamid Reza Mohammadi")+"</a>").arg("<a href=\"http://www.phototak.com/\">"+tr("S. Nasser Alavizadeh")+"</a>").arg("<a href=\"http://pojh.iBlogger.org/\">"+tr("S. Razi Alavizadeh")+"</a>").arg("<a href=\"http://pojh.iBlogger.org/saaghar\">http://pojh.iBlogger.org/saaghar</a>").arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>").arg("<a href=\"http://www.facebook.com/saaghar.p\">http://www.facebook.com/saaghar.p</a>").arg(VER_FILEVERSION_STR).arg(VER_FILEBUILDTIME_STR));
 	about.setStandardButtons(QMessageBox::Ok);
 	about.setEscapeButton(QMessageBox::Ok);
 
@@ -888,15 +891,8 @@ void MainWindow::aboutSaaghar()
 
 void MainWindow::helpContents()
 {
-	QMessageBox help(this);
-	QPixmap pixmap(":/resources/images/saaghar.png");
-	help.setIconPixmap(pixmap);
-	help.setWindowTitle(tr("Help Contents"));
-	help.setTextFormat(Qt::RichText);
-	help.setText(tr("<br />Saaghar Version: %1<br /><br />Mouse Left Click: Opens in current Tab<br />Mouse Right Click: Opens in new Tab<br /><br />Shortcuts:<br />Saaghar uses your Operating System standard shortcuts.").arg(VER_PRODUCTVERSION_STR));
-	help.setStandardButtons(QMessageBox::Ok);
-	help.setEscapeButton(QMessageBox::Ok);
-	help.exec();
+	if ( !QDesktopServices::openUrl("file:///"+resourcesPath+"/Saaghar-Manual.pdf") )
+		QMessageBox::warning( this,tr("Error"),tr("Help file not found!"));
 }
 
 void MainWindow::closeCurrentTab()
@@ -1070,6 +1066,13 @@ void MainWindow::setupUi()
 	ui->menuBar->addMenu(menuTools);
 	ui->menuBar->addMenu(menuHelp);
 
+////////////////
+	//movable menubar
+	/*QToolBar *menuToolBar = new QToolBar(this);
+	menuToolBar->addWidget(ui->menuBar);
+	addToolBar(Qt::TopToolBarArea, menuToolBar);*/
+////////////////////////
+
 	//Inserting items of menus
 	menuFile->addAction(actionInstance("actionNewTab"));
 	menuFile->addAction(actionInstance("actionNewWindow"));
@@ -1123,7 +1126,7 @@ void MainWindow::newSearchFlagChanged(bool checked)
 
 void MainWindow::newSearchNonAlphabetChanged(bool checked)
 {
-	actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(checked);
+	//actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(checked);
 	SaagharWidget::newSearchSkipNonAlphabet = checked;
 }
 
@@ -1227,12 +1230,14 @@ void MainWindow::globalSettings()
 					QString text = item->text();
 					int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
 					int totalWidth = saagharWidget->tableViewWidget->columnWidth(0);
-					int numOfRow = textWidth/totalWidth ;
-					saagharWidget->tableViewWidget->setRowHeight(0, 2*saagharWidget->tableViewWidget->rowHeight(0)+(saagharWidget->tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
+					saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth));
 				}
 			}
 			else if ( saagharWidget->currentCat == 0 && saagharWidget->currentPoem == 0 ) //it's Home.
-				saagharWidget->tableViewWidget->resizeRowsToContents();
+			{
+				saagharWidget->homeResizeColsRows();
+			//	saagharWidget->tableViewWidget->resizeRowsToContents();
+			}
 		}
 #ifndef Q_WS_MAC //This doesn't work on MACX and moved to "SaagharWidget::loadSettings()"
 		//apply new text and background color, and also background picture
@@ -1255,7 +1260,6 @@ QSettings *MainWindow::getSettingsObject()
 		organization = ".";
 		settingsName = "settings";
 	}
-	//QSettings *config = 
 	return	new QSettings(settingsFormat, QSettings::UserScope, organization, settingsName);
 }
 
@@ -1275,6 +1279,8 @@ void MainWindow::loadGlobalSettings()
 		mainToolBarItems = QString("actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|Separator|actionSettings").split("|", QString::SkipEmptyParts);
 
 	openedTabs = config->value("openedTabs", "").toString();
+
+	SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
 	
 	//search options
 	SaagharWidget::newSearchFlag = config->value("New Search",false).toBool();
@@ -1318,6 +1324,8 @@ void MainWindow::saveGlobalSettings()
 	QSettings *config = getSettingsObject();
 
 	config->setValue("Main ToolBar Items", mainToolBarItems.join("|"));
+
+	config->setValue("Max Poets Per Group", SaagharWidget::maxPoetsPerGroup);
 
 	config->setValue("Background State", SaagharWidget::backgroundImageState);
 	config->setValue("Background Path", SaagharWidget::backgroundImagePath);
@@ -1456,7 +1464,6 @@ void MainWindow::saveSaagharState()
 	config->setValue("New Search non-Alphabet", SaagharWidget::newSearchSkipNonAlphabet);
 }
 
-#include<QProgressDialog>
 //Search
 void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int PoetID, QWidget *dockWidget)
 {
@@ -1571,7 +1578,7 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 	searchTableGridLayout->addWidget(searchTable, 0, 0, 1, 1);
 
 	if (!SaagharWidget::newSearchFlag)
-	{//by new search method there's just one page result!
+	{//by the new search method there's just one page result!
 		QVBoxLayout *searchNavVerticalLayout = new QVBoxLayout();
 		searchNavVerticalLayout->setSpacing(6);
 		searchNavVerticalLayout->setObjectName(QString::fromUtf8("searchNavVerticalLayout"));
@@ -1678,7 +1685,7 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 			maxPoemWidth = tmpWidth;
 
 		QString firstVerse = "";
-		/////////////
+		//new search
 		if (SaagharWidget::newSearchFlag)
 		{
 			QStringList verseTexts = SaagharWidget::ganjoorDataBase->getVerseListContainingPhrase(poem._ID, phrase.at(0));
@@ -1717,16 +1724,19 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 	searchTable->setColumnWidth(1, maxPoemWidth+searchTable->fontMetrics().boundingRect("00").width() );
 	searchTable->setColumnWidth(2, maxVerseWidth+searchTable->fontMetrics().boundingRect("00").width() );
 
-	if (PageStart > 0)
-	{
-		searchPreviousPage->setEnabled(true);
-		actSearchPreviousPage->setData("actSearchPreviousPage|"+phrase+"|"+QString::number(PageStart - tmpCount)+"|"+QString::number(tmpCount)+"|"+QString::number(PoetID));
-	}
+	if (!SaagharWidget::newSearchFlag)
+	{//by the new search method there's just one page result!
+		if (PageStart > 0)
+		{
+			searchPreviousPage->setEnabled(true);
+			actSearchPreviousPage->setData("actSearchPreviousPage|"+phrase+"|"+QString::number(PageStart - tmpCount)+"|"+QString::number(tmpCount)+"|"+QString::number(PoetID));
+		}
 
-	if (HasMore)
-	{
-		searchNextPage->setEnabled(true);
-		actSearchNextPage->setData("actSearchNextPage|"+phrase+"|"+QString::number(PageStart + count)+"|"+QString::number(count)+"|"+QString::number(PoetID));
+		if (HasMore)
+		{
+			searchNextPage->setEnabled(true);
+			actSearchNextPage->setData("actSearchNextPage|"+phrase+"|"+QString::number(PageStart + count)+"|"+QString::number(count)+"|"+QString::number(PoetID));
+		}
 	}
 
 	QApplication::restoreOverrideCursor();
@@ -1876,7 +1886,7 @@ void MainWindow::importDataBase(const QString fileName)
 		QMessageBox warnAboutConflict(this);
 		warnAboutConflict.setWindowTitle(tr("Warning!"));
 		warnAboutConflict.setIcon(QMessageBox::Warning);
-		warnAboutConflict.setText(tr("There are some conflict with your installed database."));
+		warnAboutConflict.setText(tr("There are some conflict with your installed database. If you continue, these poets will be removed!"));
 		QString details = tr("These poets are present in installed database:\n");
 		for (int i = 0; i<poetsConflictList.size(); ++i)
 		{

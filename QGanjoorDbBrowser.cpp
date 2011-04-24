@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://www.pojh.co.cc>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -26,6 +26,8 @@
 #include <QSqlQuery>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QProgressDialog>
+#include <QTime>
 
 QStringList QGanjoorDbBrowser::dataBasePath = QStringList();
 
@@ -46,19 +48,27 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 	dBConnection.setDatabaseName(sqliteDbCompletePath);
 	while (!dBFile.exists() || !dBConnection.open())
 	{
+		QString errorString = dBConnection.lastError().text();
+
 		dBConnection = QSqlDatabase();
 		QSqlDatabase::removeDatabase(dBName);
 
 		QMessageBox warnDataBaseOpen(0);
 		warnDataBaseOpen.setWindowTitle(tr("Cannot open Database File!"));
 		warnDataBaseOpen.setIcon(QMessageBox::Information);
-		warnDataBaseOpen.setText(tr("Cannot open database file...\nError: %1\nDataBase Path=%2\nSaaghar needs its database for working properly. Press 'OK' if you want to terminate application or press 'Browse' for select a new path for database.").arg(dBConnection.lastError().text()).arg(sqliteDbCompletePath));
-		warnDataBaseOpen.addButton(tr("Browse..."), QMessageBox::AcceptRole);
+		if ( errorString.simplified().isEmpty() /*contains("Driver not loaded")*/ )
+		{
+			warnDataBaseOpen.setText(tr("Cannot open database file...\nDataBase Path=%1\nSaaghar needs its database for working properly. Press 'OK' if you want to terminate application or press 'Browse' for select a new path for database.").arg(sqliteDbCompletePath));
+			warnDataBaseOpen.addButton(tr("Browse..."), QMessageBox::AcceptRole);
+		}
+		else
+			warnDataBaseOpen.setText(tr("Cannot open database file...\nThere is an error!\nError: %1\nDataBase Path=%2").arg(errorString).arg(sqliteDbCompletePath));
+
 		warnDataBaseOpen.setStandardButtons(QMessageBox::Ok);
 		warnDataBaseOpen.setEscapeButton(QMessageBox::Ok);
 		warnDataBaseOpen.setDefaultButton(QMessageBox::Ok);
 		int ret = warnDataBaseOpen.exec();
-		if ( ret != QMessageBox::Ok)
+		if ( ret != QMessageBox::Ok && errorString.simplified().isEmpty() )
 		{
 			QString dir = QFileDialog::getExistingDirectory(0,tr("Add Path For Data Base"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 			if ( !dir.isEmpty() ) 
@@ -73,16 +83,22 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 				flagSelectNewPath = true;
 				newPath = dir;
 			}
+			else
+			{
+				exit(1);
+			}
 		}
 		else
 		{
-			//QMessageBox::critical(0, tr("Cannot open Database File"), tr("Cannot open database file...\nError: %1\nDataBase Path=%2\nSaaghar needs its database for working properly. Press 'OK' if you want to terminate application or press 'Browse' for select a new path for database.").arg(dBConnection.lastError().text()).arg(sqliteDbCompletePath));
 			exit(1);
 		}
 	}
 
 	if (flagSelectNewPath)
+	{
+		QGanjoorDbBrowser::dataBasePath.clear();//in this version Saaghar just use its first search path
 		QGanjoorDbBrowser::dataBasePath << newPath;
+	}
 
 	cachedMaxCatID = cachedMaxPoemID = 0;
 }
@@ -111,16 +127,23 @@ QList<GanjoorPoet *> QGanjoorDbBrowser::getPoets(const QString& connectionID, bo
 	{
 		QSqlDatabase dataBaseObject = dBConnection;
 		if (!connectionID.isEmpty())
-			dBConnection = QSqlDatabase::database(connectionID);
+			/*dBConnection*/ dataBaseObject = QSqlDatabase::database(connectionID);
 		QSqlQuery q(dataBaseObject);
-		q.exec("SELECT id, name, cat_id FROM poet");
+		bool descriptionExists = false;
+		if ( q.exec("SELECT id, name, cat_id, description FROM poet") )
+			descriptionExists = true;
+		else
+			q.exec("SELECT id, name, cat_id FROM poet");
+
 		q.first();
-		
 		while( q.isValid() && q.isActive() )
 		{
 			GanjoorPoet *gPoet = new GanjoorPoet();
 			QSqlRecord qrec = q.record();
-			gPoet->init(qrec.value(0).toInt(),	qrec.value(1).toString(), qrec.value(2).toInt() );
+			if (descriptionExists)
+				gPoet->init(qrec.value(0).toInt(),	qrec.value(1).toString(), qrec.value(2).toInt(), qrec.value(3).toString() );
+			else
+				gPoet->init(qrec.value(0).toInt(),	qrec.value(1).toString(), qrec.value(2).toInt(), "" );
 			poets.append(gPoet);
 			if (!q.next()) break;
 		}
@@ -376,12 +399,22 @@ GanjoorPoet QGanjoorDbBrowser::getPoet(int PoetID)
 	if (isConnected())
 	{
 		QSqlQuery q(dBConnection);
-		q.exec("SELECT id, name, cat_id FROM poet WHERE id = " + QString::number(PoetID) );
+		
+		bool descriptionExists = false;
+		if ( q.exec("SELECT id, name, cat_id, description FROM poet WHERE id = " + QString::number(PoetID) ) )
+			descriptionExists = true;
+		else
+			q.exec("SELECT id, name, cat_id FROM poet WHERE id = " + QString::number(PoetID) );
+		
 		q.first();
 		if (q.isValid() && q.isActive())
 		{
 			QSqlRecord qrec = q.record();
-			gPoet.init((qrec.value(0)).toInt(), (qrec.value(1)).toString(), (qrec.value(2)).toInt());
+			if (descriptionExists)
+				gPoet.init((qrec.value(0)).toInt(), (qrec.value(1)).toString(), (qrec.value(2)).toInt(), (qrec.value(3)).toString());
+			else
+				gPoet.init((qrec.value(0)).toInt(), (qrec.value(1)).toString(), (qrec.value(2)).toInt(), "" );
+
 			return gPoet;
 		}
 	}
@@ -415,12 +448,22 @@ GanjoorPoet QGanjoorDbBrowser::getPoet(QString PoetName)
 	if (isConnected())
 	{
 		QSqlQuery q(dBConnection);
-		q.exec("SELECT id, name, cat_id FROM poet WHERE name = \'" + PoetName + "\'");
+
+		bool descriptionExists = false;
+		if ( q.exec("SELECT id, name, cat_id, description FROM poet WHERE name = \'" + PoetName + "\'") )
+			descriptionExists = true;
+		else
+			q.exec("SELECT id, name, cat_id FROM poet WHERE name = \'" + PoetName + "\'");
+		
 		q.first();
 		if (q.isValid() && q.isActive())
 		{
 			QSqlRecord qrec = q.record();
-			gPoet.init((qrec.value(0)).toInt(), (qrec.value(1)).toString(), (qrec.value(2)).toInt());
+			if (descriptionExists)
+				gPoet.init((qrec.value(0)).toInt(), (qrec.value(1)).toString(), (qrec.value(2)).toInt(), (qrec.value(3)).toString());
+			else
+				gPoet.init((qrec.value(0)).toInt(), (qrec.value(1)).toString(), (qrec.value(2)).toInt(), "");
+
 			return gPoet;
 		}
 	}
@@ -922,11 +965,6 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
 QString QGanjoorDbBrowser::cleanString(const QString &text, bool skipNonAlphabet)
 {
 	QString cleanedText = text;
-	/*if (skipNonAlphabet)
-	{
-		phraseForSearch.remove("\t");
-		phraseForSearch.remove(" ");
-	}*/
 
 	for (int i=0; i<cleanedText.size(); ++i)
 	{
@@ -949,8 +987,7 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, bool skipNonAlphabet
 	}
 	return cleanedText;
 }
-#include <QProgressDialog>
-#include<QTime>
+
 QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet)
 {
 	QList<int> idList;
@@ -961,20 +998,17 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
 		//qDebug() << "text=" << phrase << "cleanedText=" << phraseForSearch;
 
 		QString ch = QString(phraseForSearch.at(0));
-		int index=0, offset = 0;// 'index' and 'offset' is not necessary
+		int numOfFounded=0;
 
-		if (PoetID == 0)//SELECT count(*),poem_id FROM (
+		if (PoetID == 0)
 			strQuery=QString("SELECT poem_id FROM verse WHERE text LIKE \'%" + ch + "%\' GROUP BY poem_id");
 		else
 			strQuery=QString("SELECT poem_id FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + ch + "%\' AND poet_id=" + QString::number(PoetID) + " GROUP BY poem_id");
 		
 		QSqlQuery q(dBConnection);
 		q.exec(strQuery);
-		offset+=1000000;
-		//QMessageBox::information(0,"offset",tr("offset=*%1*").arg(offset));
-		int numOfFounded=0;// 'numOfFounded' is not necessary
 
-		QString lastTextTest="NULL";// 'lastTextTest' is not necessary
+		int numOfNearResult=0;
 		
 		//progress dialog
 		QTime startTime = QTime::currentTime();
@@ -983,32 +1017,29 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
 		progress.setWindowModality(Qt::WindowModal);
 		while( q.next() )
 		{
-			++numOfFounded;
-			if (numOfFounded > maxOfProgressBar)
+			++numOfNearResult;
+			if (numOfNearResult > maxOfProgressBar)
 			{
 				maxOfProgressBar+=30000;
 				progress.setMaximum(maxOfProgressBar);
 			}
-			 progress.setValue(numOfFounded);
+			 progress.setValue(numOfNearResult);
 
 			 if (progress.wasCanceled())
 				 break;
 			QSqlRecord qrec = q.record();
-			/*bool okInt1=false, okInt2=false;
-			int tmp=qrec.value(0).toInt(&okInt1);
-			int pId=qrec.value(1).toInt(&okInt2);*/
-			//GanjoorPoem gPoem = getPoem(
+
 			QStringList verseTexts = getVerseListContainingPhrase(qrec.value(0).toInt(), ch);
 			for (int k=0; k<verseTexts.size();++k)
 			{
 				QString foundedVerse = QGanjoorDbBrowser::cleanString(verseTexts.at(k), skipNonAlphabet);
-				lastTextTest = foundedVerse;
+
 				if (foundedVerse.contains(phraseForSearch, Qt::CaseInsensitive))
 				{
-					++index;
-					QString labelText =  QGanjoorDbBrowser::tr("Search Result(s): %1").arg(index);
+					++numOfFounded;
+					QString labelText =  QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded);
 					progress.setLabelText(labelText);
-					//QMessageBox::information(0,"TRUE-TRUE-TRUE",tr("phraseForSearch=*%1*\npoemID=*%2*\nNO=*%3*\noffset=*%4*").arg(phraseForSearch).arg(qrec.value(0).toInt()).arg(index).arg(offset));
+
 					idList.append(qrec.value(0).toInt());
 					
 					break;//we need just first result
@@ -1017,9 +1048,7 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
 		}
 		progress.setValue(maxOfProgressBar);
 		int msStart = startTime.msecsTo( QTime::currentTime());
-		////////////////////////////////////
-		//QMessageBox::information(0,"offset",tr("numOfWhile-LOOP=*%1*\nindex=*%2*\nlastTextTest=*%3*\ntime=*%4*").arg(numOfFounded).arg(index).arg(lastTextTest).arg(msStart));
-		//int tpp=0;
+
 	    return idList;
 	}
     return idList;
@@ -1027,7 +1056,7 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
 
 QStringList QGanjoorDbBrowser::getVerseListContainingPhrase(int PoemID, const QString &phrase)
 {
-	QStringList text = QStringList();//"";
+	QStringList text;
     if (isConnected())
     {
 		QString strQuery="SELECT text FROM verse WHERE poem_id="+QString::number(PoemID)+" AND text LIKE\'%"+phrase+"%\'";

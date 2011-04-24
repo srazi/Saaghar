@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://www.pojh.co.cc>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -46,7 +46,7 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 	itemBrush.setStyle(Qt::SolidPattern);
 
 	QString text="";
-	//QString cleanedText = "";
+	QString cleanedText = "";
 	int lastX,x;
 	lastX = x = option.rect.x()+textHMargin;
 	const QFontMetrics fontMetric(option.fontMetrics);
@@ -55,7 +55,10 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 	{
 		text = index.data().toString();
 		if (SaagharWidget::newSearchFlag)
+		{
 			text = QGanjoorDbBrowser::cleanString(text, false);
+			cleanedText = QGanjoorDbBrowser::cleanString(text, SaagharWidget::newSearchSkipNonAlphabet);
+		}
 			//cleanedText = QGanjoorDbBrowser::cleanString(index.data().toString(), SaagharWidget::newSearchSkipNonAlphabet);
 		//text = fontMetric.elidedText(text, option.textElideMode, option.rect.width() );
 	}
@@ -126,11 +129,19 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 				painter->setOpacity(0.65);
 				painter->fillRect( rectf, itemBrush );
 				painter->setOpacity(oldOpacity);
-				painter->fillRect( rectf, itemBrush );
+				//painter->fillRect( rectf, itemBrush );
 			}
 			x += option.fontMetrics.width(thisPart);
 			lastX = x;
 		}
+	}
+	else if (!(keyword.isEmpty() || cleanedText.indexOf(keyword) == -1 ) )
+	{
+		qreal oldOpacity = painter->opacity();
+		painter->setOpacity(0.35);
+		painter->fillRect( option.rect, itemBrush );
+		painter->setOpacity(oldOpacity);
+		//painter->fillRect( rectf, itemBrush );
 	}
 	QStyledItemDelegate::paint(painter, option, index);
 }

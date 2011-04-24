@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://www.pojh.co.cc>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -44,6 +44,7 @@ class MainWindow : public QMainWindow
 		void emitReSizeEvent();
 
 	private:
+		QString resourcesPath;//not-writable
 		int previousTabIndex;
 		void importDataBase(const QString fileName);
 		QStringList mainToolBarItems;

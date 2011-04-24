@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://www.pojh.co.cc>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -37,6 +37,8 @@ Settings::Settings(QWidget *parent,	bool iconThemeState, QString iconThemePath, 
 		ui->pushButtonActionAdd->setIcon(QIcon(":/resources/images/left.png"));
 		ui->pushButtonActionRemove->setIcon(QIcon(":/resources/images/right.png"));
 	}
+
+	ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
 
 	//database
 	ui->lineEditDataBasePath->setText(QGanjoorDbBrowser::dataBasePath.join(";"));
@@ -291,7 +293,8 @@ void Settings::browseForDataBasePath()
 		QString currentPath = ui->lineEditDataBasePath->text();
 		if (!currentPath.isEmpty())
 			currentPath+=";";
-		ui->lineEditDataBasePath->setText(currentPath+dir);
+//		ui->lineEditDataBasePath->setText(currentPath+dir);
+		ui->lineEditDataBasePath->setText(dir);//in this version Saaghar just use its first search path
 	}
 }
 
@@ -318,6 +321,8 @@ void Settings::browseForIconTheme()
 
 void Settings::acceptSettings(bool *iconThemeState, QString *iconThemePath, QStringList *toolbarItemsList)
 {
+	SaagharWidget::maxPoetsPerGroup = ui->spinBoxPoetsPerGroup->value();
+
 	//database path
 	QGanjoorDbBrowser::dataBasePath = ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
 

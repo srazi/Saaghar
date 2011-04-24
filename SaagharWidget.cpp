@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://www.pojh.co.cc>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -44,6 +44,7 @@ QColor SaagharWidget::textColor = QColor();
 QColor SaagharWidget::matchedTextColor = QColor();
 QColor SaagharWidget::backgroundColor = QColor();
 QTableWidgetItem *SaagharWidget::lastOveredItem = 0;
+int SaagharWidget::maxPoetsPerGroup = 12;
 //ganjoor data base browser
 QGanjoorDbBrowser *SaagharWidget::ganjoorDataBase = NULL;
 
@@ -190,6 +191,128 @@ bool SaagharWidget::previousPoem()
 	return false;
 }
 
+bool SaagharWidget::initializeCustomizedHome()
+{
+	if (SaagharWidget::maxPoetsPerGroup == 0) return false;
+
+	QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
+	
+	//tableViewWidget->clearContents();
+	
+	int numOfPoets = poets.size();
+	int startIndex = 0;
+	int numOfColumn, numOfRow;
+	if ( numOfPoets > SaagharWidget::maxPoetsPerGroup)
+	{
+		if (SaagharWidget::maxPoetsPerGroup == 1)
+			startIndex = 0;
+		else
+			startIndex = 1;
+
+		numOfRow = SaagharWidget::maxPoetsPerGroup+startIndex;//'startIndex=1' is for group title
+		if ( (numOfPoets/SaagharWidget::maxPoetsPerGroup)*SaagharWidget::maxPoetsPerGroup == numOfPoets)
+			numOfColumn = numOfPoets/SaagharWidget::maxPoetsPerGroup;
+		else
+			numOfColumn = 1 + numOfPoets/SaagharWidget::maxPoetsPerGroup;
+	}
+	else
+	{
+		/*numOfColumn = 1;
+		numOfRow = numOfPoets;*/
+		return false;
+	}
+	tableViewWidget->setColumnCount( numOfColumn );
+	tableViewWidget->setRowCount( numOfRow );
+	
+	int poetIndex = 0;
+	for (int col=0; col<numOfColumn; ++col)
+	{
+		QString groupLabel="";
+		for (int row=0; row<SaagharWidget::maxPoetsPerGroup; ++row)
+		{
+			if (startIndex==1)
+			{
+				if (row == 0)
+					groupLabel = poets.at(poetIndex)->_Name;//.at(0);
+				if (row == SaagharWidget::maxPoetsPerGroup-1 || poetIndex == numOfPoets-1)
+				{
+					QString tmp = poets.at(poetIndex)->_Name;
+					int index = 0;
+					if (groupLabel != tmp)
+					{
+						while (groupLabel.at(index) == tmp.at(index))
+						{
+							++index;
+							if (index>=groupLabel.size() || index>=tmp.size())
+							{
+								--index;
+								break;
+							}
+						}
+						groupLabel = groupLabel.left(index+1)+"-"+tmp.left(index+1);
+					}
+					else
+						groupLabel = groupLabel.at(0);
+					
+					
+					QTableWidgetItem *groupLabelItem = new QTableWidgetItem( groupLabel );
+					groupLabelItem->setFlags(Qt::NoItemFlags);
+					groupLabelItem->setTextAlignment(Qt::AlignCenter);
+					tableViewWidget->setItem(0, col, groupLabelItem);
+				}
+			}
+			QTableWidgetItem *catItem = new QTableWidgetItem(poets.at(poetIndex)->_Name);
+			catItem->setFlags(catsItemFlag);
+			catItem->setData(Qt::UserRole, "CatID="+QString::number(poets.at(poetIndex)->_CatID));
+			//poets.at(poetIndex)->_ID
+			QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(poets.at(poetIndex)->_ID)+".png";;
+			if (!QFile::exists(poetPhotoFileName))
+				poetPhotoFileName = ":/resources/images/no-photo.png";
+			catItem->setIcon(QIcon(poetPhotoFileName));
+			
+			tableViewWidget->setItem(row+startIndex, col, catItem);
+			++poetIndex;
+			if (poetIndex>=numOfPoets)
+			{
+				for (int i=row+1; i<SaagharWidget::maxPoetsPerGroup; ++i)
+				{
+					QTableWidgetItem *tmpItem = new QTableWidgetItem("");
+					tmpItem->setFlags(Qt::NoItemFlags);
+					tableViewWidget->setItem(i+startIndex, col, tmpItem);
+				}
+				break;
+			}
+
+			if (col == 0)
+				tableViewWidget->setRowHeight(row+startIndex, 105);
+		}
+		if (poetIndex>=numOfPoets)
+				break;
+	}
+	tableViewWidget->resizeColumnsToContents();
+	//tableViewWidget->resizeRowsToContents();
+	return true;
+}
+
+void SaagharWidget::homeResizeColsRows()
+{
+	int numOfCols = tableViewWidget->columnCount();
+	int numOfRows = tableViewWidget->rowCount();
+	int startIndex = 0;
+	if (numOfCols > 1 && SaagharWidget::maxPoetsPerGroup != 1)
+		startIndex = 1;
+
+	for (int col=0; col<numOfCols; ++col)
+	{
+		for ( int row=0; row<numOfRows; ++row)
+		{
+			if(row>=startIndex)
+				tableViewWidget->setRowHeight(row, 105);
+		}
+	}
+	tableViewWidget->resizeColumnsToContents();
+}
+
 void SaagharWidget::showCategory(GanjoorCat category)
 {
 	if ( category.isNull() )
@@ -223,22 +346,20 @@ void SaagharWidget::showCategory(GanjoorCat category)
 	QList<GanjoorPoem *> poems = ganjoorDataBase->getPoems(category._ID);
 	
 	if (poems.size() == 1 && subcatsSize == 0)
-		{
-			GanjoorPoem firstPoem;
-			firstPoem.init( poems.at(0)->_ID, poems.at(0)->_CatID, poems.at(0)->_Title, poems.at(0)->_Url,  poems.at(0)->_Faved,  poems.at(0)->_HighlightText);
-			clearSaagharWidget();
-			showPoem(firstPoem);
-			QApplication::restoreOverrideCursor();
-			return;
-		}
+	{
+		GanjoorPoem firstPoem;
+		firstPoem.init( poems.at(0)->_ID, poems.at(0)->_CatID, poems.at(0)->_Title, poems.at(0)->_Url,  poems.at(0)->_Faved,  poems.at(0)->_HighlightText);
+		clearSaagharWidget();
+		showPoem(firstPoem);
+		QApplication::restoreOverrideCursor();
+		return;
+	}
 	///Initialize Table//TODO: I need to check! maybe it's not needed
 	tableViewWidget->clearContents();
-
-	tableViewWidget->setColumnCount(1);
-
 	tableViewWidget->setFrameShape(QFrame::NoFrame);
 	tableViewWidget->setFrameStyle(QFrame::NoFrame|QFrame::Plain);
 	tableViewWidget->setShowGrid(false);
+
 	QHeaderView *header = tableViewWidget->horizontalHeader();
 	header->setStretchLastSection(true);
 	header->hide();
@@ -253,29 +374,48 @@ void SaagharWidget::showCategory(GanjoorCat category)
 	int startRow = 0;
 	if (currentCat == 0)
 	{
-		tableViewWidget->setRowCount(subcatsSize+poems.size());
 		tableViewWidget->setIconSize(QSize(82, 100));
+		bool customHome = true;
+		if (customHome)
+		{
+			tableViewWidget->horizontalHeader()->setStretchLastSection(false);
+			if (initializeCustomizedHome())
+			{
+				QApplication::restoreOverrideCursor();
+				return;
+			}
+			tableViewWidget->horizontalHeader()->setStretchLastSection(true);
+		}
+		tableViewWidget->setColumnCount(1);
+		tableViewWidget->setRowCount(subcatsSize+poems.size());
 	}
 	else
 	{
-		startRow = 1;
-		tableViewWidget->setRowCount(1+subcatsSize+poems.size());
+		tableViewWidget->setColumnCount(1);
 		GanjoorPoet gPoet = SaagharWidget::ganjoorDataBase->getPoetForCat(category._ID);
-		QString itemText = SaagharWidget::ganjoorDataBase->getPoetDescription(gPoet._ID);
-		QTableWidgetItem *catItem = new QTableWidgetItem(itemText);
-		catItem->setFlags(catsItemFlag);
-		catItem->setData(Qt::UserRole, "CatID="+QString::number(category._ID));
-		QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(gPoet._ID)+".png";;
-		if (!QFile::exists(poetPhotoFileName))
-			poetPhotoFileName = ":/resources/images/no-photo.png";
-		catItem->setIcon(QIcon(poetPhotoFileName));
-		//set row height
-		int textWidth = tableViewWidget->fontMetrics().boundingRect(itemText).width();
-		int totalWidth = tableViewWidget->columnWidth(0);
-		int numOfRow = textWidth/totalWidth ;
-		tableViewWidget->setRowHeight(0, 2*tableViewWidget->rowHeight(0)+(tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
+		QString itemText = gPoet._Description;//SaagharWidget::ganjoorDataBase->getPoetDescription(gPoet._ID);
+		if (!itemText.isEmpty())
+		{
+			startRow = 1;
+			tableViewWidget->setRowCount(1+subcatsSize+poems.size());
+			QTableWidgetItem *catItem = new QTableWidgetItem(itemText);
+			catItem->setFlags(catsItemFlag);
+			catItem->setData(Qt::UserRole, "CatID="+QString::number(category._ID));
+			QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(gPoet._ID)+".png";;
+			if (!QFile::exists(poetPhotoFileName))
+				poetPhotoFileName = ":/resources/images/no-photo.png";
+			catItem->setIcon(QIcon(poetPhotoFileName));
+			//set row height
+			int textWidth = tableViewWidget->fontMetrics().boundingRect(itemText).width();
+			int totalWidth = tableViewWidget->columnWidth(0);
+			//int numOfRow = textWidth/totalWidth ;
+			tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(tableViewWidget->fontMetrics(), textWidth, totalWidth) );
+			//tableViewWidget->setRowHeight(0, 2*tableViewWidget->rowHeight(0)+(tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
 
-		tableViewWidget->setItem(0, 0, catItem);
+			tableViewWidget->setItem(0, 0, catItem);
+		}
+		else
+			tableViewWidget->setRowCount(subcatsSize+poems.size());
 	}
 
 	for (int i = 0; i < subcatsSize; ++i)
@@ -406,11 +546,12 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 
 	int textWidth = fontMetric.boundingRect(poem._Title).width();
 	int totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-	int numOfRow = textWidth/totalWidth ;
+	//int numOfRow = textWidth/totalWidth ;
 
 	tableViewWidget->setItem(0, 1, poemTitle);
 	tableViewWidget->setSpan(0, 1, 1, 3 );
-	tableViewWidget->setRowHeight(0, tableViewWidget->rowHeight(0)+(fontMetric.height()*(numOfRow/*+1*/)));
+	tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(tableViewWidget->fontMetrics(), textWidth, totalWidth) );
+	//tableViewWidget->rowHeight(0)+(fontMetric.height()*(numOfRow/*+1*/)));
 
 	int row = 1;
 
@@ -519,14 +660,14 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 				case Single :
 					textWidth = fontMetric.boundingRect(mesraItem->data(Qt::DisplayRole).toString()).width();
 					totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-					numOfRow = textWidth/totalWidth ;
+					//numOfRow = textWidth/totalWidth ;
 					if (!currentVerseText.isEmpty())
 					{
 						tableViewWidget->setItem(row, 1, mesraItem);
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
 					
-tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
+					tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
 						//					tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
 					singleColumnHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
 					MissedMesras--;
@@ -535,7 +676,7 @@ tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, t
 				case Paragraph :
 					textWidth = fontMetric.boundingRect(mesraItem->data(Qt::DisplayRole).toString()).width();
 					totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-					numOfRow = textWidth/totalWidth;
+					//numOfRow = textWidth/totalWidth;
 					{
 						/*QTextEdit *paraEdit = new QTextEdit(this);
 						paraEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -550,7 +691,7 @@ tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, t
 						tableViewWidget->setItem(row, 1, mesraItem);
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
-tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
+					tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
 					//tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
 					singleColumnHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
 					MissedMesras++;
@@ -692,9 +833,11 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 {
 	if (table && table->columnCount()>0)
 	{
-		if (currentCat == 0  && currentPoem == 0) //it's Home.
+		if (currentCat == 0  && currentPoem == 0 ) //it's Home.
 		{
-			table->resizeRowsToContents();
+			//table->resizeRowsToContents();
+			homeResizeColsRows();
+			return;
 		}
 
 		QString vV="False";
@@ -715,13 +858,15 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 		//resize rows that contains 'Paragraph' and 'Single'
 		int totalWidth = 0;
 		if (table->columnCount() == 4)
-			totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-		QMap<int, int>::const_iterator i = singleColumnHeightMap.constBegin();
-		while (i != singleColumnHeightMap.constEnd())
 		{
-			table->setRowHeight(i.key(), SaagharWidget::computeRowHeight(table->fontMetrics(), i.value(), totalWidth /*, table->rowHeight(i.key())*/  ));
-			//table->setRowHeight(i.key(), i.value());
-			++i;
+			totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+			QMap<int, int>::const_iterator i = singleColumnHeightMap.constBegin();
+			while (i != singleColumnHeightMap.constEnd())
+			{
+				table->setRowHeight(i.key(), SaagharWidget::computeRowHeight(table->fontMetrics(), i.value(), totalWidth /*, table->rowHeight(i.key())*/  ));
+				//table->setRowHeight(i.key(), i.value());
+				++i;
+			}
 		}
 
 		switch (table->columnCount())
@@ -765,6 +910,7 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 					QString text = QGanjoorDbBrowser::cleanString(tmp->text(), newSearchSkipNonAlphabet);
 					if (text.contains(phrase))
 					{
+						tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
 						tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
 						row = tableViewWidget->rowCount()+1;
 						break;
@@ -775,6 +921,7 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 			{
 				if (tmp && tmp->text().contains(phrase))
 				{
+					tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
 					tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
 					row = tableViewWidget->rowCount()+1;
 					break;
@@ -784,17 +931,11 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 	}
 }
 
-int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidth,/*const QString &text,*/ int width, int height)
+int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidth, int width, int height)
 {
-	if (width <=0 || textWidth<=0) return 0;
+	if (width <=0 || textWidth<=0) return 4*(fontMetric.height()/3);
 	if (height == 0)
 		height = (4*fontMetric.height())/3;
-	//int textWidth = fontMetric.boundingRect(text).width();
-	//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
 	int numOfRow = textWidth/width ;
-	int h1=height+((fontMetric.height()*numOfRow));
-	//int h2=height+((fontMetric.height()*textWidth)/width);
-	//int d=h2-h1;
-	return h1;
-	//return height+((fontMetric.height()*textWidth)/width);
+	return height+((fontMetric.height()*numOfRow));
 }

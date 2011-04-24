@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://www.pojh.co.cc>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -73,14 +73,17 @@ public:
 	static QColor matchedTextColor;
 	static QColor backgroundColor;
 	static QTableWidgetItem *lastOveredItem;
+	static int maxPoetsPerGroup;
 	//DataBase
 	static QGanjoorDbBrowser *ganjoorDataBase;
+	static int computeRowHeight(const QFontMetrics &fontMetric, int textWidth, int width, int height=0);
 
 	int currentPoem;
 	int currentCat;
+	void homeResizeColsRows();
 
 private:
-	static int computeRowHeight(const QFontMetrics &fontMetric, int textWidth,/*const QString &text,*/ int width, int height=0);
+	bool initializeCustomizedHome();
 	QMap<int,int> singleColumnHeightMap;
 	void showCategory(GanjoorCat category);
 	int showPoem(GanjoorPoem poem);

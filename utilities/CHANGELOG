@@ -1,2 +1,36 @@
+== 0.7.2-->0.8.13 ==
+New Features:
+Added a new powerfull search method, (not completed, it's a demo)
+The 'Main ToolBar' is fully customizable.
+Mouse cursor changes on clickable items, and item is highlighted.
+Saaghar supports importing of new sets of poem.
+Saaghar interface is translated to Persian.
+Added 'Random' button.
+Added ability to select a new Database path.
+If database is not opened, there is a choice for select a new path.
+Added 'Remove Poet' action for removing a poet and all his/her books from database.
+The Ctrl+W shortcut closes current Tab.
+Adding support for minGW compiler on Windows.
+Added the ability of loading fonts on application startup from a special 'fonts' folder.
+
+Improved Features:
+Row height of 'Paragraph' and 'Single' items are adjusted on resizing.
+After application start, the computation of table's width is correct.
+Match highlighter when searching  is completely real-time.
+Random algorithm was improved.
+Changing 'Search dockWidget' to a 'toolBar'.
+Added poet's name to search Tab's title.
+Because of unknown licenses some icons have changed and also the colors of some icons are modified.
+Show a default photo for poets without photo.
+Saaghar has a better TeX output.
+'Description' added to GanjoorPoet object.
+Warning when importing to a database that isn't writable.
+
+Fixed Bugs:
+The spacer column doesn't span now. (some versions of Qt can't render item-view properly when spans cross each other)
+Fixed MainWindow::getSaagharWidget(int)'s bug that occurs when deleting current Tab.
+Some shortcuts are corrected.
+Fixed some little bug.
+
 == Version 0.7.2 ==
  * Initial version. 21 DEC 2010
