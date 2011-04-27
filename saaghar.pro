@@ -56,61 +56,13 @@ utilities.files = utilities/AUTHORS \
 	utilities/COPYING \
 	utilities/README \
 	utilities/TODO \
+	utilities/Saaghar-Manual.pdf \
+	utilities/saaghar_fa.qm \
+	utilities/qt_fa.qm \
 	saaghar.ico
 
 poetsImage.path = Saaghar-Win/poets_images
-poetsImage.files = utilities/poets_images/10.png \
-	utilities/poets_images/11.png \ 
-	utilities/poets_images/12.png \ 
-	utilities/poets_images/13.png \ 
-	utilities/poets_images/14.png \ 
-	utilities/poets_images/15.png \ 
-	utilities/poets_images/16.png \ 
-	utilities/poets_images/17.png \ 
-	utilities/poets_images/18.png \ 
-	utilities/poets_images/19.png \ 
-	utilities/poets_images/2.png \ 
-	utilities/poets_images/20.png \ 
-	utilities/poets_images/21.png \ 
-	utilities/poets_images/22.png \ 
-	utilities/poets_images/23.png \ 
-	utilities/poets_images/24.png \ 
-	utilities/poets_images/25.png \ 
-	utilities/poets_images/26.png \ 
-	utilities/poets_images/27.png \ 
-	utilities/poets_images/28.png \ 
-	utilities/poets_images/29.png \ 
-	utilities/poets_images/3.png \ 
-	utilities/poets_images/30.png \ 
-	utilities/poets_images/31.png \ 
-	utilities/poets_images/32.png \ 
-	utilities/poets_images/33.png \ 
-	utilities/poets_images/34.png \ 
-	utilities/poets_images/35.png \ 
-	utilities/poets_images/37.png \ 
-	utilities/poets_images/38.png \ 
-	utilities/poets_images/39.png \ 
-	utilities/poets_images/4.png \ 
-	utilities/poets_images/40.png \ 
-	utilities/poets_images/41.png \ 
-	utilities/poets_images/42.png \ 
-	utilities/poets_images/43.png \ 
-	utilities/poets_images/44.png \ 
-	utilities/poets_images/45.png \ 
-	utilities/poets_images/46.png \ 
-	utilities/poets_images/47.png \ 
-	utilities/poets_images/5.png \ 
-	utilities/poets_images/501.png \ 
-	utilities/poets_images/502.png \ 
-	utilities/poets_images/503.png \ 
-	utilities/poets_images/504.png \ 
-	utilities/poets_images/505.png \ 
-	utilities/poets_images/6.png \ 
-	utilities/poets_images/600.png \ 
-	utilities/poets_images/602.png \ 
-	utilities/poets_images/7.png \ 
-	utilities/poets_images/8.png \ 
-	utilities/poets_images/9.png
+poetsImage.files = utilities/poets_images/*.png
 
 INSTALLS += utilities \
 	poetsImage
@@ -132,61 +84,13 @@ utilities.files = utilities/AUTHORS \
 	utilities/CHANGELOG \
 	utilities/COPYING \
 	utilities/README \
+	utilities/Saaghar-Manual.pdf \
+	utilities/saaghar_fa.qm \
+	utilities/qt_fa.qm \
 	utilities/TODO
 
 poetsImage.path = Contents/Resources/poets_images
-poetsImage.files = utilities/poets_images/10.png \
-	utilities/poets_images/11.png \ 
-	utilities/poets_images/12.png \ 
-	utilities/poets_images/13.png \ 
-	utilities/poets_images/14.png \ 
-	utilities/poets_images/15.png \ 
-	utilities/poets_images/16.png \ 
-	utilities/poets_images/17.png \ 
-	utilities/poets_images/18.png \ 
-	utilities/poets_images/19.png \ 
-	utilities/poets_images/2.png \ 
-	utilities/poets_images/20.png \ 
-	utilities/poets_images/21.png \ 
-	utilities/poets_images/22.png \ 
-	utilities/poets_images/23.png \ 
-	utilities/poets_images/24.png \ 
-	utilities/poets_images/25.png \ 
-	utilities/poets_images/26.png \ 
-	utilities/poets_images/27.png \ 
-	utilities/poets_images/28.png \ 
-	utilities/poets_images/29.png \ 
-	utilities/poets_images/3.png \ 
-	utilities/poets_images/30.png \ 
-	utilities/poets_images/31.png \ 
-	utilities/poets_images/32.png \ 
-	utilities/poets_images/33.png \ 
-	utilities/poets_images/34.png \ 
-	utilities/poets_images/35.png \ 
-	utilities/poets_images/37.png \ 
-	utilities/poets_images/38.png \ 
-	utilities/poets_images/39.png \ 
-	utilities/poets_images/4.png \ 
-	utilities/poets_images/40.png \ 
-	utilities/poets_images/41.png \ 
-	utilities/poets_images/42.png \ 
-	utilities/poets_images/43.png \ 
-	utilities/poets_images/44.png \ 
-	utilities/poets_images/45.png \ 
-	utilities/poets_images/46.png \ 
-	utilities/poets_images/47.png \ 
-	utilities/poets_images/5.png \ 
-	utilities/poets_images/501.png \ 
-	utilities/poets_images/502.png \ 
-	utilities/poets_images/503.png \ 
-	utilities/poets_images/504.png \ 
-	utilities/poets_images/505.png \ 
-	utilities/poets_images/6.png \ 
-	utilities/poets_images/600.png \ 
-	utilities/poets_images/602.png \ 
-	utilities/poets_images/7.png \ 
-	utilities/poets_images/8.png \ 
-	utilities/poets_images/9.png
+poetsImage.files = utilities/poets_images/*.png
  
 QMAKE_BUNDLE_DATA += utilities\
                      poetsImage
@@ -214,61 +118,13 @@ utilities.files = utilities/AUTHORS \
 	utilities/CHANGELOG \
 	utilities/COPYING \
 	utilities/README \
+	utilities/Saaghar-Manual.pdf \
+	utilities/saaghar_fa.qm \
+	utilities/qt_fa.qm \
 	utilities/TODO
 
 poetsImage.path = $${PREFIX}/share/saaghar/poets_images
-poetsImage.files = utilities/poets_images/10.png \
-	utilities/poets_images/11.png \ 
-	utilities/poets_images/12.png \ 
-	utilities/poets_images/13.png \ 
-	utilities/poets_images/14.png \ 
-	utilities/poets_images/15.png \ 
-	utilities/poets_images/16.png \ 
-	utilities/poets_images/17.png \ 
-	utilities/poets_images/18.png \ 
-	utilities/poets_images/19.png \ 
-	utilities/poets_images/2.png \ 
-	utilities/poets_images/20.png \ 
-	utilities/poets_images/21.png \ 
-	utilities/poets_images/22.png \ 
-	utilities/poets_images/23.png \ 
-	utilities/poets_images/24.png \ 
-	utilities/poets_images/25.png \ 
-	utilities/poets_images/26.png \ 
-	utilities/poets_images/27.png \ 
-	utilities/poets_images/28.png \ 
-	utilities/poets_images/29.png \ 
-	utilities/poets_images/3.png \ 
-	utilities/poets_images/30.png \ 
-	utilities/poets_images/31.png \ 
-	utilities/poets_images/32.png \ 
-	utilities/poets_images/33.png \ 
-	utilities/poets_images/34.png \ 
-	utilities/poets_images/35.png \ 
-	utilities/poets_images/37.png \ 
-	utilities/poets_images/38.png \ 
-	utilities/poets_images/39.png \ 
-	utilities/poets_images/4.png \ 
-	utilities/poets_images/40.png \ 
-	utilities/poets_images/41.png \ 
-	utilities/poets_images/42.png \ 
-	utilities/poets_images/43.png \ 
-	utilities/poets_images/44.png \ 
-	utilities/poets_images/45.png \ 
-	utilities/poets_images/46.png \ 
-	utilities/poets_images/47.png \ 
-	utilities/poets_images/5.png \ 
-	utilities/poets_images/501.png \ 
-	utilities/poets_images/502.png \ 
-	utilities/poets_images/503.png \ 
-	utilities/poets_images/504.png \ 
-	utilities/poets_images/505.png \ 
-	utilities/poets_images/6.png \ 
-	utilities/poets_images/600.png \ 
-	utilities/poets_images/602.png \ 
-	utilities/poets_images/7.png \ 
-	utilities/poets_images/8.png \ 
-	utilities/poets_images/9.png
+poetsImage.files = utilities/poets_images/*.png
 
 desktop.path = $${DESKTOPDIR}
 desktop.files = utilities/Saaghar.desktop

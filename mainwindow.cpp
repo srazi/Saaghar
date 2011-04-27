@@ -991,6 +991,8 @@ void MainWindow::setupUi()
 	labelMaxResultAction->setVisible(!actionInstance("actionNewSearchFlag")->isChecked());
 	spinBoxMaxSearchResultAction->setVisible(!actionInstance("actionNewSearchFlag")->isChecked());
 
+	ui->searchToolBar->hide();
+
 	//Initialize main menu items
 	menuFile = new QMenu(tr("&File"), ui->menuBar);
 	menuFile->setObjectName(QString::fromUtf8("menuFile"));
@@ -1283,7 +1285,7 @@ void MainWindow::loadGlobalSettings()
 	SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
 	
 	//search options
-	SaagharWidget::newSearchFlag = config->value("New Search",false).toBool();
+	SaagharWidget::newSearchFlag = config->value("New Search",true).toBool();
 	SaagharWidget::newSearchSkipNonAlphabet  = config->value("New Search non-Alphabet",false).toBool();
 
 	SaagharWidget::backgroundImageState = config->value("Background State",false).toBool();
