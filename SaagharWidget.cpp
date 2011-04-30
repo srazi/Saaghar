@@ -237,9 +237,10 @@ bool SaagharWidget::initializeCustomizedHome()
 				if (row == SaagharWidget::maxPoetsPerGroup-1 || poetIndex == numOfPoets-1)
 				{
 					QString tmp = poets.at(poetIndex)->_Name;
-					int index = 0;
+
 					if (groupLabel != tmp)
 					{
+						int index = 0;
 						while (groupLabel.at(index) == tmp.at(index))
 						{
 							++index;

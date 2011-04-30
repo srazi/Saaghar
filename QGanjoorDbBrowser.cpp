@@ -638,29 +638,29 @@ void QGanjoorDbBrowser::removePoetFromDataBase(int PoetID)
 		QString strQuery;
 		QSqlQuery q(dBConnection);
 
-		removeCatFromDataBase( &getCategory(getPoet(PoetID)._CatID) );
+		removeCatFromDataBase( getCategory(getPoet(PoetID)._CatID) );
 
 		strQuery = "DELETE FROM poet WHERE id="+QString::number(PoetID);
 		q.exec(strQuery);
 	}
 }
 
-void QGanjoorDbBrowser::removeCatFromDataBase(GanjoorCat *gCat)
+void QGanjoorDbBrowser::removeCatFromDataBase(const GanjoorCat &gCat)
 {
-	if ( !gCat || gCat->isNull() )
+	if ( gCat.isNull() )
         return;
-    QList<GanjoorCat *> subCats = getSubCategories(gCat->_ID);
+    QList<GanjoorCat *> subCats = getSubCategories(gCat._ID);
     foreach (GanjoorCat *cat, subCats)
-        removeCatFromDataBase(cat);
+        removeCatFromDataBase(*cat);
 	if (isConnected())
 	{
 		QString strQuery;
 		QSqlQuery q(dBConnection);
-		strQuery="DELETE FROM verse WHERE poem_id IN (SELECT id FROM poem WHERE cat_id="+QString::number(gCat->_ID)+")";
+		strQuery="DELETE FROM verse WHERE poem_id IN (SELECT id FROM poem WHERE cat_id="+QString::number(gCat._ID)+")";
 		q.exec(strQuery);
-		strQuery="DELETE FROM poem WHERE cat_id="+QString::number(gCat->_ID);
+		strQuery="DELETE FROM poem WHERE cat_id="+QString::number(gCat._ID);
 		q.exec(strQuery);
-		strQuery="DELETE FROM cat WHERE id="+QString::number(gCat->_ID);
+		strQuery="DELETE FROM cat WHERE id="+QString::number(gCat._ID);
 		q.exec(strQuery);
 	}
 }
@@ -884,7 +884,7 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
 			q.exec(strQuery);
         }
 
-		if ( getPoet(newCat->_PoetID).isNull() )
+		/*if ( getPoet(newCat->_PoetID).isNull() )
         {
             //missing poet
             int poetCat;
@@ -896,8 +896,8 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
                 poetCat = newCat->_ParentID;
             }
 			qDebug() << "a new poet should be created";
-            //this.NewPoet("شاعر " + PoetID.ToString(), PoetID, poetCat);
-        }
+            this.NewPoet("شاعر " + PoetID.ToString(), PoetID, poetCat);
+		}*/
 	}
 
     QMap<int, int> dicPoemID;
@@ -1011,7 +1011,6 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
 		int numOfNearResult=0;
 		
 		//progress dialog
-		QTime startTime = QTime::currentTime();
 		int maxOfProgressBar = 50000;
 		QProgressDialog progress(QGanjoorDbBrowser::tr("Searching Data Base..."), QGanjoorDbBrowser::tr("Cancel"), 0, maxOfProgressBar, qApp->activeModalWidget());
 		progress.setWindowModality(Qt::WindowModal);
@@ -1047,7 +1046,6 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
 			}
 		}
 		progress.setValue(maxOfProgressBar);
-		int msStart = startTime.msecsTo( QTime::currentTime());
 
 	    return idList;
 	}

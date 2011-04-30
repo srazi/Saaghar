@@ -83,7 +83,7 @@ class QGanjoorDbBrowser : public QObject
 		int getNewPoemID();
 		int getNewPoetID();
 		int getNewCatID();
-		void removeCatFromDataBase(GanjoorCat *gCat);
+		void removeCatFromDataBase(const GanjoorCat &gCat);
 		static QString getIdForDataBase(const QString &sqliteDataBaseName);
 		QString dBName;
 		//QSqlDatabase dBConnection;
