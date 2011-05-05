@@ -40,6 +40,8 @@ class QGanjoorDbBrowser : public QObject
 		QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
 		~QGanjoorDbBrowser();
 		static QString cleanString(const QString &text, bool skipNonAlphabet);
+		static QString justifiedText(const QString &text, const QFontMetrics &fontmetric, int width);
+
 		bool isConnected(const QString& connectionID = "");
 
 		QList<GanjoorPoet *> getDataBasePoets(const QString fileName);

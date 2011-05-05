@@ -1068,3 +1068,80 @@ QStringList QGanjoorDbBrowser::getVerseListContainingPhrase(int PoemID, const QS
     }
 	return text;
 }
+
+QString QGanjoorDbBrowser::justifiedText(const QString &text, const QFontMetrics &fontmetric, int width)
+{
+	int textSize = text.size();
+	int textWidth = fontmetric.width(text);
+	QChar tatweel = QChar(0x0640);
+	int tatweelWidth = fontmetric.width(tatweel);
+	if (tatweel == QChar(QChar::ReplacementCharacter))//Current font has not a TATWEEL character
+	{
+		tatweel = QChar(QChar::Null);
+		tatweelWidth = 0;
+	}
+
+	int spaceWidth = fontmetric.width(" ");
+
+	if ( textWidth >= width || width <= 0)
+		return text;
+
+	int numOfTatweels = tatweelWidth ? (width - textWidth)/tatweelWidth : 0;
+	int numOfSpaces = (width - (textWidth + numOfTatweels*tatweelWidth))/spaceWidth;
+
+	QList<int> tatweelPositions;
+	QList<int> spacePositions;
+	QStringList charsOfText = text.split("", QString::SkipEmptyParts);
+
+	//founding suitable position for inserting TATWEEL or SPACE characters.
+	for (int i=0; i<charsOfText.size(); ++i)
+	{
+		if (i>0 && i<charsOfText.size()-1 && charsOfText.at(i) == " ")
+		{
+			spacePositions << i;
+			continue;
+		}
+
+		if (charsOfText.at(i).at(0).joining() != QChar::Dual) continue;
+		
+		if ( i<charsOfText.size()-1 && ((charsOfText.at(i+1).at(0).joining() == QChar::Dual) ||
+			(charsOfText.at(i+1).at(0).joining() == QChar::Right)) )
+		{
+			tatweelPositions << i;
+			continue;
+		}
+	}
+
+	if (tatweelPositions.isEmpty())
+	{
+		numOfTatweels = 0;
+		numOfSpaces = (width - textWidth)/spaceWidth;
+	}
+
+	if (numOfTatweels>0)
+	{
+		++numOfTatweels;
+		width = numOfSpaces*spaceWidth+numOfTatweels*tatweelWidth+textWidth;
+	}
+	else
+	{
+		++numOfSpaces;
+		width = numOfSpaces*spaceWidth+numOfTatweels*tatweelWidth+textWidth;
+	}
+
+	for (int i=0; i<tatweelPositions.size(); ++i)
+	{
+		if (numOfTatweels<=0) break;
+		charsOfText[tatweelPositions.at(i)] = charsOfText.at(tatweelPositions.at(i))+tatweel;
+		--numOfTatweels;
+		if (i==tatweelPositions.size()-1) i=-1;
+	}
+	for (int i=0; i<spacePositions.size(); ++i)
+	{
+		if (numOfSpaces<=0) break;
+		charsOfText[spacePositions.at(i)] = charsOfText.at(spacePositions.at(i))+" ";
+		--numOfSpaces;
+		if (i==spacePositions.size()-1) i=-1;
+	}
+	return charsOfText.join("");
+}

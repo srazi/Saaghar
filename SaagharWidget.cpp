@@ -564,9 +564,30 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 	minMesraWidth = 0;
 	singleColumnHeightMap.clear();
 
+	const bool justified = true;//temp
+	int maxWidth = -1;
+	if (justified)
+	{
+		for (int i = 0; i < verses.size(); i++)
+		{
+			QString verseText = verses.at(i)->_Text;
+			
+			if (verses.at(i)->_Position == Single || verses.at(i)->_Position == Paragraph) continue;
+			int temp = fontMetric.width(verseText);
+			if (temp>maxWidth)
+				maxWidth = temp;
+		}
+	}
+
 	for (int i = 0; i < verses.size(); i++)
 	{
 		QString currentVerseText = verses.at(i)->_Text;
+		
+		if (justified)
+		{
+			currentVerseText = QGanjoorDbBrowser::justifiedText(currentVerseText, fontMetric, maxWidth);
+		}
+
 		if (currentVerseText.isEmpty())
 		{
 			if (verses.at(i)->_Position == Paragraph
