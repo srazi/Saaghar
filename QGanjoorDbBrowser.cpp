@@ -965,15 +965,22 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
 QString QGanjoorDbBrowser::cleanString(const QString &text, bool skipNonAlphabet)
 {
 	QString cleanedText = text;
+	if (skipNonAlphabet)
+	{
+		QChar tatweel = QChar(0x0640);
+		cleanedText.remove(tatweel);
+	}
 
 	for (int i=0; i<cleanedText.size(); ++i)
 	{
 		QChar tmpChar = cleanedText.at(i);
 		QChar::Direction chDir = tmpChar.direction();
+
 		if (chDir == QChar::DirNSM)
 		{
 			cleanedText.remove(tmpChar);
 			--i;
+			continue;
 		}
 
 		if (skipNonAlphabet)
@@ -982,6 +989,7 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, bool skipNonAlphabet
 			{
 				cleanedText.remove(tmpChar);
 				--i;
+				continue;
 			}
 		}
 	}
