@@ -84,12 +84,14 @@ class MainWindow : public QMainWindow
 		QMenu *menuTools;
 		QMenu *menuFile;
 		QMenu *menuHelp;
+		QMenu *menuView;
 		QMap<QString, QAction *> allActionMap;
 		QAction *labelMaxResultSeparator;
 		QAction *labelMaxResultAction;
 		QAction *spinBoxMaxSearchResultAction;
 
 	private slots:
+		void actFullScreenClicked(bool checked);
 		void actionRemovePoet();
 		void newSearchNonAlphabetChanged(bool checked);
 		void newSearchFlagChanged(bool checked);

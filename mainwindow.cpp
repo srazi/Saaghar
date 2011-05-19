@@ -45,6 +45,7 @@
 #include <QDateTime>
 #include <QInputDialog>
 #include <QProgressDialog>
+#include <QScrollBar>
 
 const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 
@@ -136,6 +137,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	loadGlobalSettings();
 	setupUi();
+
+	if (windowState() & Qt::WindowFullScreen)
+		actionInstance("actionFullScreen")->setChecked(true);
+	else
+		actionInstance("actionFullScreen")->setChecked(false);
 
 	//create Tab Widget
 	mainTabWidget = new QTabWidget(ui->centralWidget);
@@ -341,8 +347,13 @@ void MainWindow::currentTabChanged(int tabIndex)
 			{
 				QString text = item->text();
 				int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
-				int totalWidth = saagharWidget->tableViewWidget->columnWidth(0)-82;
-				totalWidth = qMax(82, totalWidth);
+				int verticalScrollBarWidth=0;
+				if ( saagharWidget->tableViewWidget->verticalScrollBar()->isVisible() )
+				{
+					verticalScrollBarWidth=saagharWidget->tableViewWidget->verticalScrollBar()->width();
+				}
+				int totalWidth = saagharWidget->tableViewWidget->columnWidth(0)-verticalScrollBarWidth-82;
+				totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
 				//int numOfRow = textWidth/totalWidth ;
 				saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth) );
 				//saagharWidget->tableViewWidget->setRowHeight(0, 2*saagharWidget->tableViewWidget->rowHeight(0)+(saagharWidget->tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
@@ -850,6 +861,14 @@ void MainWindow::actionNewTabClicked()
 	insertNewTab();
 }
 
+void MainWindow::actFullScreenClicked(bool checked)
+{
+	if (checked)
+		setWindowState(windowState() | Qt::WindowFullScreen);
+	else
+		setWindowState(windowState() & ~Qt::WindowFullScreen);
+}
+
 void MainWindow::actionFaalRandomClicked()
 {
 	QAction *triggeredAction = qobject_cast<QAction *>(sender());
@@ -998,6 +1017,8 @@ void MainWindow::setupUi()
 	menuFile->setObjectName(QString::fromUtf8("menuFile"));
 	menuNavigation = new QMenu(tr("&Navigation"), ui->menuBar);
 	menuNavigation->setObjectName(QString::fromUtf8("menuNavigation"));
+	menuView = new QMenu(tr("&View"), ui->menuBar);
+	menuView->setObjectName(QString::fromUtf8("menuView"));
 	menuTools = new QMenu(tr("&Tools"), ui->menuBar);
 	menuTools->setObjectName(QString::fromUtf8("menuTools"));
 	menuHelp = new QMenu(tr("&Help"), ui->menuBar);
@@ -1062,9 +1083,13 @@ void MainWindow::setupUi()
 
 	actionInstance("actionRemovePoet", iconThemePath+"/remove-poet.png", tr("&Remove Poet..."));
 
+	actionInstance("actionFullScreen", iconThemePath+"/fullscreen.png", tr("&Full Screen") )->setShortcut(Qt::Key_F11);
+	actionInstance("actionFullScreen")->setCheckable(true);
+
 	//Inserting main menu items
 	ui->menuBar->addMenu(menuFile);
 	ui->menuBar->addMenu(menuNavigation);
+	ui->menuBar->addMenu(menuView);
 	ui->menuBar->addMenu(menuTools);
 	ui->menuBar->addMenu(menuHelp);
 
@@ -1095,6 +1120,8 @@ void MainWindow::setupUi()
 	menuNavigation->addSeparator();
 	menuNavigation->addAction(actionInstance("actionFaal"));
 	menuNavigation->addAction(actionInstance("actionRandom"));
+
+	menuView->addAction(actionInstance("actionFullScreen"));
 
 	menuTools->addAction(actionInstance("searchToolbarAction"));
 	menuTools->addSeparator();
@@ -1188,6 +1215,9 @@ void MainWindow::createConnections()
 	connect(actionInstance("actionFaal")				,	SIGNAL(triggered())		,	this, SLOT(actionFaalRandomClicked())	);
 	connect(actionInstance("actionRandom")				,	SIGNAL(triggered())		,	this, SLOT(actionFaalRandomClicked())	);
 
+		//View
+	connect(actionInstance("actionFullScreen")			,	SIGNAL(toggled(bool))	,	this, SLOT(actFullScreenClicked(bool))	);
+
 		//Tools
 	connect(actionInstance("actionViewInGanjoorSite")	,	SIGNAL(triggered())		,	this, SLOT(actionGanjoorSiteClicked())	);
 	connect(actionInstance("actionCopy")				,	SIGNAL(triggered())		,	this, SLOT(copySelectedItems())			);
@@ -1268,10 +1298,9 @@ QSettings *MainWindow::getSettingsObject()
 void MainWindow::loadGlobalSettings()
 {
 	QSettings *config = getSettingsObject();
-	//state
-	QByteArray mainWindowState = config->value("MainWindowState").toByteArray();
 
 	restoreState( config->value("MainWindowState").toByteArray(), 1);
+	restoreGeometry(config->value("Mainwindow Geometry").toByteArray());
 
 	mainToolBarItems = config->value("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|Separator|actionSettings").toString().split("|", QString::SkipEmptyParts);
 	QString tmp = mainToolBarItems.join("");
@@ -1444,6 +1473,8 @@ void MainWindow::saveSaagharState()
 	QSettings *config = getSettingsObject();
 
 	config->setValue("MainWindowState", saveState(1));
+	config->setValue("Mainwindow Geometry", saveGeometry());
+
 	QString openedTabs = "";
 	for (int i = 0; i < mainTabWidget->count(); ++i)
 	{

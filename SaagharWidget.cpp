@@ -395,7 +395,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 		tableViewWidget->setColumnCount(1);
 		GanjoorPoet gPoet = SaagharWidget::ganjoorDataBase->getPoetForCat(category._ID);
 		QString itemText = gPoet._Description;//SaagharWidget::ganjoorDataBase->getPoetDescription(gPoet._ID);
-		if (!itemText.isEmpty())
+		if (!itemText.isEmpty() && category._ParentID==0)
 		{
 			startRow = 1;
 			tableViewWidget->setRowCount(1+subcatsSize+poems.size());
@@ -408,7 +408,13 @@ void SaagharWidget::showCategory(GanjoorCat category)
 			catItem->setIcon(QIcon(poetPhotoFileName));
 			//set row height
 			int textWidth = tableViewWidget->fontMetrics().boundingRect(itemText).width();
-			int totalWidth = tableViewWidget->columnWidth(0);
+			int verticalScrollBarWidth=0;
+			if ( tableViewWidget->verticalScrollBar()->isVisible() )
+			{
+				verticalScrollBarWidth=tableViewWidget->verticalScrollBar()->width();
+			}
+			int totalWidth = tableViewWidget->columnWidth(0)-verticalScrollBarWidth-82;
+			totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
 			//int numOfRow = textWidth/totalWidth ;
 			tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(tableViewWidget->fontMetrics(), textWidth, totalWidth) );
 			//tableViewWidget->setRowHeight(0, 2*tableViewWidget->rowHeight(0)+(tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
