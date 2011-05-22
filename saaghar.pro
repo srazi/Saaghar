@@ -10,7 +10,7 @@ CONFIG	+= qt warn_off release
 #CONFIG	+= static
 #DEFINES += STATIC
 
-QT += sql
+QT += sql network
 
 # Input
 HEADERS += mainwindow.h \

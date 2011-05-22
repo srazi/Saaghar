@@ -334,7 +334,12 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 	int subcatsSize = subcats.size();
 
-	if (subcatsSize == 1)
+	bool poetForCathasDescription = false;
+	if (category._ParentID == 0)
+	{
+		poetForCathasDescription = !ganjoorDataBase->getPoetForCat(category._ID)._Description.isEmpty();
+	}
+	if (subcatsSize == 1 && (category._ParentID != 0 || (category._ParentID == 0 && !poetForCathasDescription)) )
 	{
 		GanjoorCat firstCat;
 		firstCat.init( subcats.at(0)->_ID, subcats.at(0)->_PoetID, subcats.at(0)->_Text, subcats.at(0)->_ParentID,  subcats.at(0)->_Url);
@@ -345,8 +350,8 @@ void SaagharWidget::showCategory(GanjoorCat category)
 	}
 
 	QList<GanjoorPoem *> poems = ganjoorDataBase->getPoems(category._ID);
-	
-	if (poems.size() == 1 && subcatsSize == 0)
+
+	if (poems.size() == 1 && subcatsSize == 0 && (category._ParentID != 0 || (category._ParentID == 0 && !poetForCathasDescription)))
 	{
 		GanjoorPoem firstPoem;
 		firstPoem.init( poems.at(0)->_ID, poems.at(0)->_CatID, poems.at(0)->_Title, poems.at(0)->_Url,  poems.at(0)->_Faved,  poems.at(0)->_HighlightText);
@@ -394,13 +399,14 @@ void SaagharWidget::showCategory(GanjoorCat category)
 	{
 		tableViewWidget->setColumnCount(1);
 		GanjoorPoet gPoet = SaagharWidget::ganjoorDataBase->getPoetForCat(category._ID);
-		QString itemText = gPoet._Description;//SaagharWidget::ganjoorDataBase->getPoetDescription(gPoet._ID);
+		QString itemText = gPoet._Description;
 		if (!itemText.isEmpty() && category._ParentID==0)
 		{
 			startRow = 1;
 			tableViewWidget->setRowCount(1+subcatsSize+poems.size());
 			QTableWidgetItem *catItem = new QTableWidgetItem(itemText);
 			catItem->setFlags(catsItemFlag);
+			catItem->setTextAlignment(Qt::AlignJustify);
 			catItem->setData(Qt::UserRole, "CatID="+QString::number(category._ID));
 			QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(gPoet._ID)+".png";;
 			if (!QFile::exists(poetPhotoFileName))
@@ -416,7 +422,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 			int totalWidth = tableViewWidget->columnWidth(0)-verticalScrollBarWidth-82;
 			totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
 			//int numOfRow = textWidth/totalWidth ;
-			tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(tableViewWidget->fontMetrics(), textWidth, totalWidth) );
+			tableViewWidget->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(tableViewWidget->fontMetrics(), textWidth, totalWidth)) );
 			//tableViewWidget->setRowHeight(0, 2*tableViewWidget->rowHeight(0)+(tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
 
 			tableViewWidget->setItem(0, 0, catItem);
@@ -434,7 +440,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 		if (currentCat == 0)
 		{
 			GanjoorPoet gPoet = SaagharWidget::ganjoorDataBase->getPoetForCat(subcats.at(i)->_ID);
-			QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(gPoet._ID)+".png";;
+			QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(gPoet._ID)+".png";
 			if (!QFile::exists(poetPhotoFileName))
 				poetPhotoFileName = ":/resources/images/no-photo.png";
 			catItem->setIcon(QIcon(poetPhotoFileName));
@@ -882,6 +888,29 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 		//	tW+=table->columnWidth(i);
 		//}
 		//qDebug() << QString("x=*%1*--w=*%2*--vX=*%3*--v-W=*%4*--Scroll=*%5*--verticalScrollBarWidth=*%6*--baseWidthSize=*%7*\ntW=*%8*--tableW=*%9*").arg(table->x()).arg(thisWidget->width()/* width()-(2*table->viewport()->x())*/).arg(table->viewport()->x()).arg(table->viewport()->width()).arg(vV).arg(verticalScrollBarWidth).arg(baseWidthSize).arg(tW).arg(-1 );
+		
+		//resize description's row
+		if (currentCat != 0  && currentPoem == 0 && table->columnCount() == 1)
+		{//using column count here is a tricky way
+			GanjoorCat gCat = SaagharWidget::ganjoorDataBase->getCategory(currentCat);
+			if (gCat._ParentID == 0)
+			{
+				GanjoorPoet gPoet = SaagharWidget::ganjoorDataBase->getPoetForCat(gCat._ID);
+				QString itemText = gPoet._Description;
+				if (!itemText.isEmpty())
+				{
+					int textWidth = table->fontMetrics().boundingRect(itemText).width();
+					int verticalScrollBarWidth=0;
+					if ( table->verticalScrollBar()->isVisible() )
+					{
+						verticalScrollBarWidth=table->verticalScrollBar()->width();
+					}
+					int totalWidth = table->columnWidth(0)-verticalScrollBarWidth-82;
+					totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
+					table->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(table->fontMetrics(), textWidth, totalWidth)) );
+				}
+			}
+		}
 
 		//resize rows that contains 'Paragraph' and 'Single'
 		int totalWidth = 0;

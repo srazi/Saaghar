@@ -46,8 +46,13 @@
 #include <QInputDialog>
 #include <QProgressDialog>
 #include <QScrollBar>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 
 const int ITEM_SEARCH_DATA = Qt::UserRole+10;
+
+bool MainWindow::autoCheckForUpdatesState = true;
 
 MainWindow::MainWindow(QWidget *parent) :
 	QMainWindow(parent),
@@ -138,10 +143,22 @@ MainWindow::MainWindow(QWidget *parent) :
 	loadGlobalSettings();
 	setupUi();
 
+	QString iconThemePath=":/resources/images/";
+	if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
+		iconThemePath = settingsIconThemePath;
+
 	if (windowState() & Qt::WindowFullScreen)
+	{
 		actionInstance("actionFullScreen")->setChecked(true);
+		actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
+		actionInstance("actionFullScreen")->setIcon(QIcon(iconThemePath+"/no-fullscreen.png"));
+	}
 	else
+	{
 		actionInstance("actionFullScreen")->setChecked(false);
+		actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
+		actionInstance("actionFullScreen")->setIcon(QIcon(iconThemePath+"/fullscreen.png"));
+	}
 
 	//create Tab Widget
 	mainTabWidget = new QTabWidget(ui->centralWidget);
@@ -199,6 +216,9 @@ MainWindow::MainWindow(QWidget *parent) :
 	previousTabIndex = mainTabWidget->currentIndex();
 	currentTabChanged(mainTabWidget->currentIndex());
 	searchRegionsInitialize();
+
+	if (autoCheckForUpdatesState)
+		checkForUpdates();
 
 	//seeding random function
 	uint numOfSecs = QDateTime::currentDateTime().toTime_t();
@@ -355,7 +375,7 @@ void MainWindow::currentTabChanged(int tabIndex)
 				int totalWidth = saagharWidget->tableViewWidget->columnWidth(0)-verticalScrollBarWidth-82;
 				totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
 				//int numOfRow = textWidth/totalWidth ;
-				saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth) );
+				saagharWidget->tableViewWidget->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth)) );
 				//saagharWidget->tableViewWidget->setRowHeight(0, 2*saagharWidget->tableViewWidget->rowHeight(0)+(saagharWidget->tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
 			}
 		}
@@ -381,6 +401,108 @@ SaagharWidget *MainWindow::getSaagharWidget(int tabIndex)
 		}
 	}
 	return 0;
+}
+
+void MainWindow::checkForUpdates()
+{
+	QAction *action = qobject_cast<QAction *>(sender());
+
+	QEventLoop loop;
+	
+	QNetworkRequest requestVersionInfo(QUrl("http://saaghar.sourceforge.net/saaghar.version"));
+	QNetworkAccessManager *netManager = new QNetworkAccessManager();
+	QNetworkReply *reply = netManager->get(requestVersionInfo);
+	
+	QProgressDialog updateProgress(tr("Checking for updates..."),  tr("Cancel"), 0, 0, this);
+	if (action)
+	{
+		updateProgress.setMinimumDuration(0);
+	}
+	else
+	{
+		updateProgress.setParent(0);
+		updateProgress.setMinimumDuration(5000);
+	}
+
+	updateProgress.setWindowModality(Qt::WindowModal);
+	updateProgress.setFixedSize(updateProgress.size());
+	updateProgress.show();
+
+	connect( &updateProgress, SIGNAL( canceled() ), &loop, SLOT( quit() ) );
+	connect( reply, SIGNAL( finished() ), &updateProgress, SLOT( hide() ) );
+	connect( reply, SIGNAL( finished() ), &loop, SLOT( quit() ) );
+	loop.exec();
+
+	if (updateProgress.wasCanceled())
+	{
+		updateProgress.hide();
+		loop.quit();
+		return;
+	}
+
+	if( reply->error() )
+	{
+		QMessageBox::critical(this, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()));
+		return;
+	}
+	QStringList data = QString::fromUtf8( reply->readAll() ).split("|", QString::SkipEmptyParts);
+
+	QMap<QString, QString> releaseInfo;
+	for (int i=0; i<data.size(); ++i)
+	{
+		QStringList fields = data.at(i).split("*", QString::SkipEmptyParts);
+		if (fields.size() == 2)
+			releaseInfo.insert(fields.at(0), fields.at(1));
+	}
+	
+	if (releaseInfo.value("VERSION").isEmpty()) return;
+	QString runningAppVersionStr = QString(VER_FILEVERSION_STR);
+	runningAppVersionStr.remove('.');
+	int runningAppVersion = runningAppVersionStr.toInt();
+	QString serverAppVerionStr = releaseInfo.value("VERSION");
+	serverAppVerionStr.remove('.');
+	int serverAppVerion = serverAppVerionStr.toInt();
+	
+	if (serverAppVerion > runningAppVersion)
+	{
+		QMessageBox updateIsAvailable(this);
+		updateIsAvailable.setTextFormat(Qt::RichText);
+		updateIsAvailable.setWindowTitle(tr("New Saaghar Version Available"));
+		updateIsAvailable.setIcon(QMessageBox::Information);
+		QString newVersionInfo = "";
+		if ( !releaseInfo.value("infoLinks").isEmpty() )
+		{
+			QStringList infoLinks = releaseInfo.value("infoLinks").split('\\', QString::SkipEmptyParts);
+			if (!infoLinks.isEmpty())
+			{
+				newVersionInfo = infoLinks.join("<br />");
+			}
+		}
+		updateIsAvailable.setText(tr("The Version <strong>%1</strong> of Saaghar is available for download.<br />%2<br />Do you want to browse download page?").arg(releaseInfo.value("VERSION")).arg(newVersionInfo));
+		updateIsAvailable.setStandardButtons(QMessageBox::Ok|QMessageBox::Cancel);
+		updateIsAvailable.setEscapeButton(QMessageBox::Cancel);
+		updateIsAvailable.setDefaultButton(QMessageBox::Ok);
+		QString downloadLinkKey = "OTHERS";
+
+#ifdef Q_WS_WIN
+	downloadLinkKey = "WINDOWS";
+#endif
+#ifdef Q_WS_X11
+	downloadLinkKey = "LINUX";
+#endif
+#ifdef Q_WS_MAC
+	downloadLinkKey = "MACOSX";
+#endif
+		int ret = updateIsAvailable.exec();
+		if ( ret == QMessageBox::Ok)
+			QDesktopServices::openUrl(QUrl( releaseInfo.value(downloadLinkKey, "http://pojh.iblogger.org/saaghar/downloads/") ));
+		else return; 
+	}
+	else
+	{
+		if (action)
+			QMessageBox::information(this, tr("Saaghar is up to date"), tr("There is no new version available. Please check for updates later!") );
+	}
 }
 
 void MainWindow::tabCloser(int tabIndex)
@@ -863,10 +985,22 @@ void MainWindow::actionNewTabClicked()
 
 void MainWindow::actFullScreenClicked(bool checked)
 {
+	QString iconThemePath=":/resources/images/";
+	if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
+		iconThemePath = settingsIconThemePath;
+
 	if (checked)
+	{
 		setWindowState(windowState() | Qt::WindowFullScreen);
+		actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
+		actionInstance("actionFullScreen")->setIcon(QIcon(iconThemePath+"/no-fullscreen.png"));
+	}
 	else
+	{
 		setWindowState(windowState() & ~Qt::WindowFullScreen);
+		actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
+		actionInstance("actionFullScreen")->setIcon(QIcon(iconThemePath+"/fullscreen.png"));
+	}
 }
 
 void MainWindow::actionFaalRandomClicked()
@@ -1086,6 +1220,8 @@ void MainWindow::setupUi()
 	actionInstance("actionFullScreen", iconThemePath+"/fullscreen.png", tr("&Full Screen") )->setShortcut(Qt::Key_F11);
 	actionInstance("actionFullScreen")->setCheckable(true);
 
+	actionInstance("actionCheckUpdates", iconThemePath+"/check-updates.png", tr("Check for &Updates") );
+
 	//Inserting main menu items
 	ui->menuBar->addMenu(menuFile);
 	ui->menuBar->addMenu(menuNavigation);
@@ -1134,14 +1270,22 @@ void MainWindow::setupUi()
 
 	menuHelp->addAction(actionInstance("actionHelpContents"));
 	menuHelp->addSeparator();
+	menuHelp->addAction(actionInstance("actionCheckUpdates"));
+	menuHelp->addSeparator();
 	menuHelp->addAction(actionInstance("actionAboutSaaghar"));
 	menuHelp->addAction(actionInstance("actionAboutQt"));
 
 	//Inserting mainToolbar's items
 	for (int i=0; i<mainToolBarItems.size(); ++i)
 	{
-		ui->mainToolBar->addAction(actionInstance(mainToolBarItems.at(i)));
+		if (allActionMap.contains(mainToolBarItems.at(i)) || mainToolBarItems.at(i).contains("separator", Qt::CaseInsensitive))
+			ui->mainToolBar->addAction(actionInstance(mainToolBarItems.at(i)));
+		else mainToolBarItems[i] = "";
 	}
+
+	//removing no more supported items
+	QString temp = mainToolBarItems.join("|");
+	mainToolBarItems = temp.split("|", QString::SkipEmptyParts);
 }
 
 void MainWindow::newSearchFlagChanged(bool checked)
@@ -1227,6 +1371,7 @@ void MainWindow::createConnections()
 
 		//Help
 	connect(actionInstance("actionHelpContents")		,	SIGNAL(triggered())		,	this, SLOT(helpContents())				);
+	connect(actionInstance("actionCheckUpdates")		,	SIGNAL(triggered())		,	this, SLOT(checkForUpdates())			);
 	connect(actionInstance("actionAboutSaaghar")		,	SIGNAL(triggered())		,	this, SLOT(aboutSaaghar())				);
 	connect(actionInstance("actionAboutQt")				,	SIGNAL(triggered())		,	qApp, SLOT(aboutQt())					);
 
@@ -1302,12 +1447,12 @@ void MainWindow::loadGlobalSettings()
 	restoreState( config->value("MainWindowState").toByteArray(), 1);
 	restoreGeometry(config->value("Mainwindow Geometry").toByteArray());
 
-	mainToolBarItems = config->value("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|Separator|actionSettings").toString().split("|", QString::SkipEmptyParts);
+	mainToolBarItems = config->value("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").toString().split("|", QString::SkipEmptyParts);
 	QString tmp = mainToolBarItems.join("");
 	tmp.remove("action", Qt::CaseInsensitive);
 	tmp.remove("Separator", Qt::CaseInsensitive);
 	if (tmp.isEmpty() || tmp.contains(" "))
-		mainToolBarItems = QString("actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|Separator|actionSettings").split("|", QString::SkipEmptyParts);
+		mainToolBarItems = QString("actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").split("|", QString::SkipEmptyParts);
 
 	openedTabs = config->value("openedTabs", "").toString();
 
@@ -1333,6 +1478,8 @@ void MainWindow::loadGlobalSettings()
 	SaagharWidget::textColor=config->value("Text Color",QColor(0x23,0x65, 0xFF)).value<QColor>();
 	SaagharWidget::matchedTextColor=config->value("Matched Text Color",QColor(0x5E, 0xFF, 0x13)).value<QColor>();
 	SaagharWidget::backgroundColor=config->value("Background Color",QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
+
+	autoCheckForUpdatesState = config->value("Auto Check For Updates",true).toBool();
 }
 
 void MainWindow::loadTabWidgetSettings()
@@ -1371,6 +1518,8 @@ void MainWindow::saveGlobalSettings()
 	config->setValue("Text Color", SaagharWidget::textColor);
 	config->setValue("Matched Text Color", SaagharWidget::matchedTextColor);
 	config->setValue("Background Color", SaagharWidget::backgroundColor);
+
+	config->setValue("Auto Check For Updates", autoCheckForUpdatesState);
 }
 
 QString MainWindow::tableToString(QTableWidget *table, QString mesraSeparator, QString beytSeparator, int startRow, int startColumn, int endRow, int endColumn)

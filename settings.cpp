@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "ui_settings.h"
 #include "SaagharWidget.h"
+#include "mainwindow.h"
 #include <QFontDatabase>
 #include <QColorDialog>
 #include <QFileDialog>
@@ -39,6 +40,8 @@ Settings::Settings(QWidget *parent,	bool iconThemeState, QString iconThemePath, 
 	}
 
 	ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
+
+	ui->checkBoxAutoUpdates->setChecked(MainWindow::autoCheckForUpdatesState);
 
 	//database
 	ui->lineEditDataBasePath->setText(QGanjoorDbBrowser::dataBasePath.join(";"));
@@ -322,6 +325,8 @@ void Settings::browseForIconTheme()
 void Settings::acceptSettings(bool *iconThemeState, QString *iconThemePath, QStringList *toolbarItemsList)
 {
 	SaagharWidget::maxPoetsPerGroup = ui->spinBoxPoetsPerGroup->value();
+
+	MainWindow::autoCheckForUpdatesState = ui->checkBoxAutoUpdates->isChecked();
 
 	//database path
 	QGanjoorDbBrowser::dataBasePath = ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);

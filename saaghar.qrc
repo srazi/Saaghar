@@ -27,5 +27,9 @@
 		<file>images/no-photo.png</file>
 		<file>images/select-mask.png</file>
 		<file>images/options.png</file>
+		<file>images/no-fullscreen.png</file>
+		<file>images/fullscreen.png</file>
+		<file>images/remove-poet.png</file>
+		<file>images/check-updates.png</file>
 	</qresource>
 </RCC>

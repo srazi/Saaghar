@@ -1,3 +1,22 @@
+== 0.8.13-->0.8.21 ==
+New Features:
+New: The Mesras are 'Justified', now,
+New: The Full Screen View was added,
+New: The ability to check for updates, was added.
+
+Improved Features:
+Improved: The Poet's description is shown just in his/her first page,
+Improved: The computation of height of poet's description, was improved in several ways.
+
+Fixed Bugs:
+Fixed: The bug that cause application hangs when searching for some phrases was fixed,
+Fixed: The bug created because of 'taking address of temporary' was fixed,
+Fixed: The height of poet's description was not computed in SaagharWidget::resizeTable(), it was fixed now,
+Fixed: The description of poets with one category was skipped, now it's displayed,
+Fixed: qmake .pro file was corrected, wildcards in '.pro' is not supported on MAC OS X,
+Fixed: The geometry of screen is saved,
+Fixed: A few bugs were fixed.
+
 == 0.7.2-->0.8.13 ==
 New Features:
 Added a new powerfull search method, (not completed, it's a demo)

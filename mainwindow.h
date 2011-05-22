@@ -42,6 +42,7 @@ class MainWindow : public QMainWindow
 		~MainWindow();
 		SaagharWidget *saagharWidget;
 		void emitReSizeEvent();
+		static bool autoCheckForUpdatesState;
 
 	private:
 		QString resourcesPath;//not-writable
@@ -91,6 +92,7 @@ class MainWindow : public QMainWindow
 		QAction *spinBoxMaxSearchResultAction;
 
 	private slots:
+		void checkForUpdates();
 		void actFullScreenClicked(bool checked);
 		void actionRemovePoet();
 		void newSearchNonAlphabetChanged(bool checked);
