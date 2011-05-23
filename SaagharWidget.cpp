@@ -576,6 +576,7 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 	minMesraWidth = 0;
 	singleColumnHeightMap.clear();
 
+#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
 	const bool justified = true;//temp
 	int maxWidth = -1;
 	if (justified)
@@ -590,15 +591,18 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 				maxWidth = temp;
 		}
 	}
+#endif
 
 	for (int i = 0; i < verses.size(); i++)
 	{
 		QString currentVerseText = verses.at(i)->_Text;
-		
+
+#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
 		if (justified)
 		{
 			currentVerseText = QGanjoorDbBrowser::justifiedText(currentVerseText, fontMetric, maxWidth);
 		}
+#endif
 
 		if (currentVerseText.isEmpty())
 		{
