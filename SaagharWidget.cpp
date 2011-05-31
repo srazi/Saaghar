@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>    *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -454,7 +454,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 	for (int i = 0; i < poems.size(); i++)
 	{
-		QString itemText = poems.at(i)->_Title;
+		QString itemText = QGanjoorDbBrowser::snippedText(poems.at(i)->_Title, "", 0, 15, true);
 		if (subcatsSize>0)
 			itemText.prepend("       ");//7 spaces
 		itemText+= " : " + ganjoorDataBase->getFirstMesra(poems.at(i)->_ID);

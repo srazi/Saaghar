@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>    *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -989,6 +989,7 @@ void MainWindow::actFullScreenClicked(bool checked)
 	if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
 		iconThemePath = settingsIconThemePath;
 
+	setUpdatesEnabled(false);
 	if (checked)
 	{
 		setWindowState(windowState() | Qt::WindowFullScreen);
@@ -1001,6 +1002,7 @@ void MainWindow::actFullScreenClicked(bool checked)
 		actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
 		actionInstance("actionFullScreen")->setIcon(QIcon(iconThemePath+"/fullscreen.png"));
 	}
+	setUpdatesEnabled(true);
 }
 
 void MainWindow::actionFaalRandomClicked()
@@ -1652,18 +1654,20 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 	QApplication::processEvents();
 
-	QList<int> poemIDsList;
+	QHash<int, QString> poemIDsList;
+	QList<int> poemIDs;
 	//new search method
 	QProgressDialog progress(tr("Initializing Results Table..."), tr("Cancel"), 0, 100, this);
 	progress.setWindowModality(Qt::WindowModal);
 	if (SaagharWidget::newSearchFlag)
 	{
 		phrase = QGanjoorDbBrowser::cleanString(phrase, SaagharWidget::newSearchSkipNonAlphabet);
-		poemIDsList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod(phrase, PoetID, SaagharWidget::newSearchSkipNonAlphabet);
+		poemIDsList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod2(phrase, PoetID, SaagharWidget::newSearchSkipNonAlphabet);
 		progress.setMaximum(poemIDsList.size());
-	}
+	}	
 	else
-		poemIDsList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase(phrase, PageStart, count+1, PoetID);
+		poemIDs = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase(phrase, PageStart, count+1, PoetID);
+/////////////////////////////
 	int tmpCount = count;
 	bool HasMore = count>0 && poemIDsList.size() == count+1;
 	bool navButtonsNeeded = false;
@@ -1838,13 +1842,28 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 	searchTable->setColumnWidth(0, searchTable->fontMetrics().boundingRect(QString::number((PageStart+count)*100)).width());
 	int maxPoemWidth = 0, maxVerseWidth = 0;
 
+	QList<int> tmpList = poemIDsList.keys();
+	count = tmpList.size();
+	int progressBarIndex = 50;
+	const int step = count/20;
+	
+	bool firstTimeUpdate = false;
 	for (int i = 0; i < count; ++i)
 	{
-		progress.setValue(i);
+		if (i>progressBarIndex)
+		{
+			progress.setValue(i);
+			progressBarIndex += step;
+			if (!firstTimeUpdate)
+			{
+				searchTable->setUpdatesEnabled(false);
+				firstTimeUpdate = true;
+			}
+		}
 		 if (progress.wasCanceled())
 			break;
 
-		GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(poemIDsList.at(i));
+		GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(tmpList.at(i)/*poemIDsList.at(i)*/);
 
 		poem._HighlightText = phrase;
 		
@@ -1858,11 +1877,12 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 		searchTable->setItem(i, 0, numItem);
 
 		//add Items
-		QTableWidgetItem *poemItem = new QTableWidgetItem(poem._Title);
+		QString snippedPoemTitle = QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 5, true);
+		QTableWidgetItem *poemItem = new QTableWidgetItem( snippedPoemTitle );
 		poemItem->setFlags(Qt::ItemIsEnabled);
 		poemItem->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
 
-		int tmpWidth = searchTable->fontMetrics().boundingRect(poem._Title).width();
+		int tmpWidth = searchTable->fontMetrics().boundingRect(snippedPoemTitle).width();
 		if ( tmpWidth > maxPoemWidth )
 			maxPoemWidth = tmpWidth;
 
@@ -1870,7 +1890,8 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 		//new search
 		if (SaagharWidget::newSearchFlag)
 		{
-			QStringList verseTexts = SaagharWidget::ganjoorDataBase->getVerseListContainingPhrase(poem._ID, phrase.at(0));
+			firstVerse = poemIDsList.value(poem._ID, "");
+			/*QStringList verseTexts = SaagharWidget::ganjoorDataBase->getVerseListContainingPhrase(poem._ID, phrase.at(0));
 			for (int k=0; k<verseTexts.size();++k)
 			{
 		
@@ -1882,12 +1903,17 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 					firstVerse = verseTexts.at(k);
 					break;//we need just first result
 				}
-			}
+			}*/
 		}
 		else
 			firstVerse = SaagharWidget::ganjoorDataBase->getFirstVerseContainingPhrase(poem._ID, phrase);
 
-		QTableWidgetItem *verseItem = new QTableWidgetItem(firstVerse);
+		QString cleanedFirstVerse = QGanjoorDbBrowser::cleanString(firstVerse, false);
+		QString snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, phrase, 0, 8, true);
+		if (snippedFirstVerse.isEmpty())
+			snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, "", 0, 8, true);
+
+		QTableWidgetItem *verseItem = new QTableWidgetItem(snippedFirstVerse);
 		verseItem->setFlags(Qt::ItemIsEnabled/*Qt::NoItemFlags*/);
 		verseItem->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
 		//set search data
@@ -1898,7 +1924,7 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 		searchTable->setItem(i, 1, poemItem);
 		searchTable->setItem(i, 2, verseItem);
 
-		tmpWidth = searchTable->fontMetrics().boundingRect(firstVerse).width();
+		tmpWidth = searchTable->fontMetrics().boundingRect(snippedFirstVerse).width();
 		if ( tmpWidth > maxVerseWidth )
 			maxVerseWidth = tmpWidth;
 	}
@@ -1906,6 +1932,8 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 	searchTable->setColumnWidth(1, maxPoemWidth+searchTable->fontMetrics().boundingRect("00").width() );
 	searchTable->setColumnWidth(2, maxVerseWidth+searchTable->fontMetrics().boundingRect("00").width() );
 
+	searchTable->setUpdatesEnabled(true);
+	
 	if (!SaagharWidget::newSearchFlag)
 	{//by the new search method there's just one page result!
 		if (PageStart > 0)

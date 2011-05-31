@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>    *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -33,6 +33,11 @@
 
 #include <QDebug>
 
+#ifdef EMBEDDED_SQLITE
+#include "sqlite-driver/qsql_sqlite.h"
+#include "sqlite3.h"
+#endif
+
 class QGanjoorDbBrowser : public QObject
 {
 	Q_OBJECT
@@ -41,6 +46,7 @@ class QGanjoorDbBrowser : public QObject
 		~QGanjoorDbBrowser();
 		static QString cleanString(const QString &text, bool skipNonAlphabet);
 		static QString justifiedText(const QString &text, const QFontMetrics &fontmetric, int width);
+		static QString snippedText(const QString &text, const QString &str, int from = 0, int maxNumOfWords = 10, bool elided = true, Qt::TextElideMode elideMode = Qt::ElideRight);
 
 		bool isConnected(const QString& connectionID = "");
 
@@ -70,6 +76,8 @@ class QGanjoorDbBrowser : public QObject
 		//new Search Method
 		QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
 		QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
+		//another new approch
+		QHash<int, QString> getPoemIDsContainingPhrase_NewMethod2(const QString &phrase, int PoetID, bool skipNonAlphabet);
 
 		//Faal
 		int getRandomPoemID(int *CatID);
@@ -92,5 +100,10 @@ class QGanjoorDbBrowser : public QObject
 		static bool comparePoetsByName(GanjoorPoet *poet1, GanjoorPoet *poet2);
 		static bool compareCategoriesByName(GanjoorCat *cat1, GanjoorCat *cat2);
 		static int getRandomNumber(int minBound, int maxBound);
+
+#ifdef EMBEDDED_SQLITE
+	private:
+		static QSQLiteDriver *sqlDriver;
+#endif
 };
 #endif // QGANJOORDBBROWSER_H

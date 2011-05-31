@@ -2,7 +2,8 @@ TEMPLATE = app
 TARGET = Saaghar
 
 DEPENDPATH += . build
-INCLUDEPATH += . $UI_DIR
+INCLUDEPATH += . $UI_DIR sqlite sqlite-driver/sqlite
+# $$QMAKE_INCDIR_QT/QtSql/private
 
 CONFIG	+= qt warn_off release
 
@@ -29,6 +30,25 @@ SOURCES += main.cpp \
     QGanjoorDbBrowser.cpp \
 	settings.cpp
 	
+
+
+#########################################
+##for embeding SQlite and its Qt Driver
+DEFINES += EMBEDDED_SQLITE
+HEADERS		+= sqlite-driver/qsql_sqlite.h
+SOURCES		+= sqlite-driver/qsql_sqlite.cpp
+ 
+DEFINES += SQLITE_OMIT_LOAD_EXTENSION SQLITE_OMIT_COMPLETE
+DEFINES += SQLITE_ENABLE_FTS3 SQLITE_ENABLE_FTS3_PARENTHESIS
+
+HEADERS += sqlite-driver/sqlite/sqlite3.h \
+	sqlite-driver/sqlite/sqlite3ext.h
+SOURCES += sqlite-driver/sqlite/sqlite3.c
+#########################################
+# HEADERS		+= $$QMAKE_INCDIR_QT/../src/sql/drivers/sqlite/qsql_sqlite.h
+# SOURCES		+= $$QMAKE_INCDIR_QT/../src/sql/drivers/sqlite/qsql_sqlite.cpp
+
+
 RESOURCES += saaghar.qrc
 
 TRANSLATIONS += saaghar_fa.ts
@@ -39,7 +59,7 @@ win32 {
 
 win32-msvc*{
 	DEFINES += D_MSVC_CC
-	QTPLUGIN += qsqlite
+	#QTPLUGIN += qsqlite
 }
 
 win32-g++{

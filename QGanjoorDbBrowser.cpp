@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>       *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>    *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -37,6 +37,12 @@ const int minNewPoemID = 100001;
 
 const int DatabaseVersion = 1;
 
+#ifdef EMBEDDED_SQLITE
+QSQLiteDriver *QGanjoorDbBrowser::sqlDriver = 0;
+#else
+const QString sqlDriver = "QSQLITE";
+#endif
+
 QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 {
 	bool flagSelectNewPath = false;
@@ -44,7 +50,15 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 
 	QFileInfo dBFile(sqliteDbCompletePath);
 	dBName = dBFile.fileName();
-	dBConnection = QSqlDatabase::addDatabase("QSQLITE", dBName);
+
+#ifdef EMBEDDED_SQLITE
+	sqlite3 *connection;
+	sqlite3_open(sqliteDbCompletePath.toUtf8().data(), &connection);
+	sqlDriver = new QSQLiteDriver(connection);
+#endif
+	
+	dBConnection = QSqlDatabase::addDatabase(sqlDriver, dBName);
+
 	dBConnection.setDatabaseName(sqliteDbCompletePath);
 	while (!dBFile.exists() || !dBConnection.open())
 	{
@@ -77,7 +91,7 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 				if ( !dir.endsWith('/') ) dir+="/";
 				dBFile.setFile(dir+"/ganjoor.s3db");
 				dBName = dBFile.fileName();
-				dBConnection = QSqlDatabase::addDatabase("QSQLITE", dBName);
+				dBConnection = QSqlDatabase::addDatabase(sqlDriver, dBName);
 				dBConnection.setDatabaseName(dir+"/ganjoor.s3db");
 
 				flagSelectNewPath = true;
@@ -264,13 +278,14 @@ QString QGanjoorDbBrowser::getFirstMesra(int PoemID) //just first Mesra
 		q.first();
 		while( q.isValid() && q.isActive() )
 		{
-			QStringList words = q.record().value(1).toString().split(QRegExp("\\b"));
+			/*QStringList words = q.record().value(1).toString().split(QRegExp("\\b"));
 			int length = qMin(words.size(), 30);
 			QString text = "";
 			if ( length<words.size() )
 				text = "...";
 			words = words.mid(0, length);
-			return words.join("")+text;
+			return words.join("")+text;*/
+			return snippedText(q.record().value(1).toString(), "", 0, 12, true);
 		}
 	}
 	return "";
@@ -602,8 +617,11 @@ QString QGanjoorDbBrowser::getIdForDataBase(const QString &sqliteDataBaseName)
 {
 	QFileInfo dataBaseFile(sqliteDataBaseName);
 	QString connectionID = dataBaseFile.fileName();//we need to be sure this name is unique
-	QSqlDatabase databaseObject = QSqlDatabase::addDatabase("QSQLITE", connectionID);
-	databaseObject.setDatabaseName(sqliteDataBaseName);
+
+	if (!QSqlDatabase::contains(connectionID))
+	{
+		QSqlDatabase::addDatabase(sqlDriver, connectionID).setDatabaseName(sqliteDataBaseName);
+	}
 
 	return connectionID;
 }
@@ -965,11 +983,9 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
 QString QGanjoorDbBrowser::cleanString(const QString &text, bool skipNonAlphabet)
 {
 	QString cleanedText = text;
-	if (skipNonAlphabet)
-	{
-		QChar tatweel = QChar(0x0640);
-		cleanedText.remove(tatweel);
-	}
+
+	QChar tatweel = QChar(0x0640);
+	cleanedText.remove(tatweel);
 
 	for (int i=0; i<cleanedText.size(); ++i)
 	{
@@ -997,7 +1013,7 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, bool skipNonAlphabet
 }
 
 QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet)
-{
+{//return getPoemIDsContainingPhrase_NewMethod2(phrase, PoetID, skipNonAlphabet);
 	QList<int> idList;
     if (isConnected())
 	{
@@ -1012,9 +1028,13 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
 			strQuery=QString("SELECT poem_id FROM verse WHERE text LIKE \'%" + ch + "%\' GROUP BY poem_id");
 		else
 			strQuery=QString("SELECT poem_id FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + ch + "%\' AND poet_id=" + QString::number(PoetID) + " GROUP BY poem_id");
-		
+
 		QSqlQuery q(dBConnection);
+		int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
 		q.exec(strQuery);
+		int end = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
+		int miliSec= end-start;
+		qDebug() << "duration=" << miliSec;
 
 		int numOfNearResult=0;
 		
@@ -1030,7 +1050,7 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
 				maxOfProgressBar+=30000;
 				progress.setMaximum(maxOfProgressBar);
 			}
-			 progress.setValue(numOfNearResult);
+			progress.setValue(numOfNearResult);
 
 			 if (progress.wasCanceled())
 				 break;
@@ -1060,6 +1080,77 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
     return idList;
 }
 
+QHash<int, QString> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod2(const QString &phrase, int PoetID, bool skipNonAlphabet)
+{
+	QHash<int, QString> idList;
+    if (isConnected())
+	{
+		QString strQuery;
+		QString phraseForSearch = QGanjoorDbBrowser::cleanString(phrase, skipNonAlphabet);
+		//qDebug() << "text=" << phrase << "cleanedText=" << phraseForSearch;
+		QString phraseForSearchQuery = QGanjoorDbBrowser::cleanString(phraseForSearch, true).split("",QString::SkipEmptyParts).join("%");
+		QMessageBox::information(0,"Method22222", phraseForSearchQuery);
+		QString ch = QString(phraseForSearch.at(0));
+		int numOfFounded=0;
+
+		if (PoetID == 0)
+			strQuery=QString("SELECT poem_id, text FROM verse WHERE text LIKE \'%" + phraseForSearchQuery + "%\'");
+		else
+			strQuery=QString("SELECT poem_id, text FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + phraseForSearchQuery + "%\' AND poet_id=" + QString::number(PoetID) );
+
+		QSqlQuery q(dBConnection);
+		int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
+		q.exec(strQuery);
+		int end = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
+		int miliSec= end-start;
+		qDebug() << "duration=" << miliSec;
+
+		int numOfNearResult=0;
+		
+		//progress dialog
+		int maxOfProgressBar = 800000;//50000;
+		QProgressDialog progress(QGanjoorDbBrowser::tr("Searching Data Base..."), QGanjoorDbBrowser::tr("Cancel"), 0, maxOfProgressBar, qApp->activeModalWidget());
+		progress.setWindowModality(Qt::WindowModal);
+
+		while( q.next() )
+		{
+			++numOfNearResult;
+			/*if (numOfNearResult > maxOfProgressBar)
+			{
+				maxOfProgressBar+=30000;
+				progress.setMaximum(maxOfProgressBar);
+			}*/
+			//progress.setValue(numOfNearResult);
+
+			 if (progress.wasCanceled())
+				 break;
+			QSqlRecord qrec = q.record();
+			int poemID = qrec.value(0).toInt();
+			if (idList.contains(poemID))
+				continue;//we need just first result
+			QString verseText = qrec.value(1).toString();
+			//QStringList verseTexts = getVerseListContainingPhrase(qrec.value(0).toInt(), ch);
+			QString foundedVerse = QGanjoorDbBrowser::cleanString(verseText, skipNonAlphabet);
+			if (foundedVerse.contains(phraseForSearch, Qt::CaseInsensitive))
+			{
+				++numOfFounded;
+				QString labelText =  QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded);
+				progress.setLabelText(labelText);
+	
+				progress.setValue(numOfNearResult);
+				
+				idList.insert(poemID,  verseText);//.append(poemID);
+				
+				continue;
+			}
+		}
+		progress.setValue(maxOfProgressBar);
+
+	    return idList;
+	}
+    return idList;
+}
+
 QStringList QGanjoorDbBrowser::getVerseListContainingPhrase(int PoemID, const QString &phrase)
 {
 	QStringList text;
@@ -1067,7 +1158,13 @@ QStringList QGanjoorDbBrowser::getVerseListContainingPhrase(int PoemID, const QS
     {
 		QString strQuery="SELECT text FROM verse WHERE poem_id="+QString::number(PoemID)+" AND text LIKE\'%"+phrase+"%\'";
 		QSqlQuery q(dBConnection);
+		int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
 		q.exec(strQuery);
+		int end = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
+		int miliSec= end-start;
+		if (miliSec>0)
+			qDebug() << "duration=" << miliSec;
+
 		while ( q.next() )
 		{
 			QSqlRecord qrec = q.record();
@@ -1152,4 +1249,74 @@ QString QGanjoorDbBrowser::justifiedText(const QString &text, const QFontMetrics
 		if (i==spacePositions.size()-1) i=-1;
 	}
 	return charsOfText.join("");
+}
+
+QString QGanjoorDbBrowser::snippedText(const QString &text, const QString &str, int from, int maxNumOfWords, bool elided, Qt::TextElideMode elideMode)
+{
+	if (!str.isEmpty() && !text.contains(str))
+		return "";
+	
+	QString elideString = "";
+	if (elided)
+		elideString = "...";
+
+	if ( !str.isEmpty() && text.contains(str) )
+	{
+		int index = text.indexOf(str, from);
+		if (index == -1) return "";//it's not possible
+		int partMaxNumOfWords = maxNumOfWords/2;
+		if (text.right(text.size()-str.size()-index).split(" ", QString::SkipEmptyParts).size() < partMaxNumOfWords)
+			partMaxNumOfWords = maxNumOfWords-text.right(text.size()-str.size()-index).split(" ", QString::SkipEmptyParts).size();
+		QString leftPart = QGanjoorDbBrowser::snippedText(text.left(index), "", 0, partMaxNumOfWords, elided, Qt::ElideLeft);
+		//int rightPartMaxNumOfWords = maxNumOfWords/2;
+		if (leftPart.split(" ", QString::SkipEmptyParts).size() < maxNumOfWords/2)
+			partMaxNumOfWords = maxNumOfWords-leftPart.split(" ", QString::SkipEmptyParts).size();
+		QString rightPart = QGanjoorDbBrowser::snippedText(text.right(text.size()-str.size()-index), "", 0, partMaxNumOfWords, elided, Qt::ElideRight);
+		/*if (index == text.size()-1)
+			return elideString+leftPart+str+rightPart;
+		else if (index == 0)
+			return leftPart+str+rightPart+elideString;
+		else
+			return elideString+leftPart+str+rightPart+elideString;*/
+		return leftPart+str+rightPart;
+	}
+
+	QStringList words = text.split(QRegExp("\\b"), QString::SkipEmptyParts);
+	int textWordCount = words.size();
+	if ( textWordCount < maxNumOfWords || maxNumOfWords <= 0)
+		return text;
+
+	QStringList snippedList;
+	int numOfInserted = 0;
+	for (int i=0; i<textWordCount; ++i)
+	{
+		if (numOfInserted >= maxNumOfWords) break;
+	
+		if (elideMode == Qt::ElideLeft)
+		{
+			//words = words.mid(words.size()-maxNumOfWords, maxNumOfWords);
+			snippedList.prepend( words.at(textWordCount-1-i) );
+			if (words.at(i) != " ")
+				++numOfInserted;
+		}
+		else
+		{
+			snippedList << words.at(i);
+			if (words.at(i) != " ")
+				++numOfInserted;
+		}
+	}
+	/*if (elideMode == Qt::ElideLeft)
+	{
+		words = words.mid(words.size()-maxNumOfWords, maxNumOfWords);
+	}
+	else
+		words = words.mid(0, maxNumOfWords);*/
+	QString snippedString = snippedList.join("");
+	if (snippedString==text)
+		return text;
+	if (elideMode == Qt::ElideLeft)
+		return elideString+snippedList.join("");
+	else
+		return snippedList.join("")+elideString;
 }
