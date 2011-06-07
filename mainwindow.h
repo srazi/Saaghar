@@ -18,7 +18,7 @@
  *  along with this program; if not, see http://www.gnu.org/licenses/      *
  *                                                                         *
  ***************************************************************************/
- 
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 

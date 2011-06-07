@@ -34,16 +34,18 @@ SOURCES += main.cpp \
 
 #########################################
 ##for embeding SQlite and its Qt Driver
-DEFINES += EMBEDDED_SQLITE
-HEADERS		+= sqlite-driver/qsql_sqlite.h
-SOURCES		+= sqlite-driver/qsql_sqlite.cpp
+# DEFINES += EMBEDDED_SQLITE
+# HEADERS		+= sqlite-driver/qsql_sqlite.h \
+	# sqlite-driver/qsqlcachedresult_p.h
+# SOURCES		+= sqlite-driver/qsql_sqlite.cpp \
+	# sqlite-driver/qsqlcachedresult.cpp
  
-DEFINES += SQLITE_OMIT_LOAD_EXTENSION SQLITE_OMIT_COMPLETE
-DEFINES += SQLITE_ENABLE_FTS3 SQLITE_ENABLE_FTS3_PARENTHESIS
+# DEFINES += SQLITE_OMIT_LOAD_EXTENSION SQLITE_OMIT_COMPLETE
+# DEFINES += SQLITE_ENABLE_FTS3 SQLITE_ENABLE_FTS3_PARENTHESIS
 
-HEADERS += sqlite-driver/sqlite/sqlite3.h \
-	sqlite-driver/sqlite/sqlite3ext.h
-SOURCES += sqlite-driver/sqlite/sqlite3.c
+# HEADERS += sqlite-driver/sqlite/sqlite3.h \
+	# sqlite-driver/sqlite/sqlite3ext.h
+# SOURCES += sqlite-driver/sqlite/sqlite3.c
 #########################################
 # HEADERS		+= $$QMAKE_INCDIR_QT/../src/sql/drivers/sqlite/qsql_sqlite.h
 # SOURCES		+= $$QMAKE_INCDIR_QT/../src/sql/drivers/sqlite/qsql_sqlite.cpp

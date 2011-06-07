@@ -18,7 +18,7 @@
  *  along with this program; if not, see http://www.gnu.org/licenses/      *
  *                                                                         *
  ***************************************************************************/
- 
+
 #ifndef QGANJOORDBBROWSER_H
 #define QGANJOORDBBROWSER_H
 

@@ -18,7 +18,7 @@
  *  along with this program; if not, see http://www.gnu.org/licenses/      *
  *                                                                         *
  ***************************************************************************/
- 
+
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "SearchItemDelegate.h"
