@@ -23,6 +23,7 @@
 #include "ui_mainwindow.h"
 #include "SearchItemDelegate.h"
 #include "version.h"
+#include "settings.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -1385,11 +1386,103 @@ void MainWindow::createConnections()
 //Settings Dialog
 void MainWindow::globalSettings()
 {
+	Settings *settingsDlg = new Settings(this);
+	
+	/************initializing saved state of Settings dialog object!************/
+	if (QApplication::layoutDirection() == Qt::RightToLeft)
+	{
+		settingsDlg->ui->pushButtonActionAdd->setIcon(QIcon(":/resources/images/left.png"));
+		settingsDlg->ui->pushButtonActionRemove->setIcon(QIcon(":/resources/images/right.png"));
+	}
 
-	Settings *settingsDlg = new Settings(this, settingsIconThemeState, settingsIconThemePath, &allActionMap, mainToolBarItems);
+	settingsDlg->ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
+
+	settingsDlg->ui->checkBoxAutoUpdates->setChecked(MainWindow::autoCheckForUpdatesState);
+
+	//database
+	settingsDlg->ui->lineEditDataBasePath->setText(QGanjoorDbBrowser::dataBasePath.join(";"));
+	connect( settingsDlg->ui->pushButtonDataBasePath, SIGNAL(clicked()), settingsDlg, SLOT(browseForDataBasePath()));
+
+	//font
+	QFontDatabase fontDb;
+	settingsDlg->ui->comboBoxFontFamily->addItems( fontDb.families() );
+	settingsDlg->ui->comboBoxFontFamily->setCurrentIndex(settingsDlg->ui->comboBoxFontFamily->findText(SaagharWidget::tableFont.family(), Qt::MatchExactly));
+	settingsDlg->ui->spinBoxFontSize->setValue(SaagharWidget::tableFont.pointSize());
+	
+	settingsDlg->ui->checkBoxBeytNumbers->setChecked(SaagharWidget::showBeytNumbers);
+
+	settingsDlg->ui->checkBoxBackground->setChecked(SaagharWidget::backgroundImageState);
+	settingsDlg->ui->lineEditBackground->setText(SaagharWidget::backgroundImagePath);
+	settingsDlg->ui->lineEditBackground->setEnabled(SaagharWidget::backgroundImageState);
+	settingsDlg->ui->pushButtonBackground->setEnabled(SaagharWidget::backgroundImageState);
+	connect( settingsDlg->ui->pushButtonBackground, SIGNAL(clicked()), settingsDlg, SLOT(browseForBackground()));
+	
+	settingsDlg->ui->checkBoxIconTheme->setChecked(settingsIconThemeState);
+	settingsDlg->ui->lineEditIconTheme->setText(settingsIconThemePath);
+	settingsDlg->ui->lineEditIconTheme->setEnabled(settingsIconThemeState);
+	settingsDlg->ui->pushButtonIconTheme->setEnabled(settingsIconThemeState);
+	connect( settingsDlg->ui->pushButtonIconTheme, SIGNAL(clicked()), settingsDlg, SLOT(browseForIconTheme()));
+
+	//colors
+	connect( settingsDlg->ui->pushButtonBackgroundColor, SIGNAL(clicked()), settingsDlg, SLOT(getColorForPushButton()));
+	connect( settingsDlg->ui->pushButtonMatchedTextColor, SIGNAL(clicked()), settingsDlg, SLOT(getColorForPushButton()));
+	connect( settingsDlg->ui->pushButtonTextColor, SIGNAL(clicked()), settingsDlg, SLOT(getColorForPushButton()));
+	settingsDlg->ui->pushButtonBackgroundColor->setPalette(QPalette(SaagharWidget::backgroundColor));
+	settingsDlg->ui->pushButtonBackgroundColor->setAutoFillBackground(true);
+	settingsDlg->ui->pushButtonMatchedTextColor->setPalette(QPalette(SaagharWidget::matchedTextColor));
+	settingsDlg->ui->pushButtonMatchedTextColor->setAutoFillBackground(true);
+	settingsDlg->ui->pushButtonTextColor->setPalette(QPalette(SaagharWidget::textColor));
+	settingsDlg->ui->pushButtonTextColor->setAutoFillBackground(true);
+
+	//initialize Action's Tables
+	settingsDlg->initializeActionTables(allActionMap, mainToolBarItems);
+
+	connect(settingsDlg->ui->pushButtonActionBottom, SIGNAL(clicked()), settingsDlg, SLOT(bottomAction()));
+	connect(settingsDlg->ui->pushButtonActionTop, SIGNAL(clicked()), settingsDlg, SLOT(topAction()));
+	connect(settingsDlg->ui->pushButtonActionAdd, SIGNAL(clicked()), settingsDlg, SLOT(addActionToToolbarTable()));
+	connect(settingsDlg->ui->pushButtonActionRemove, SIGNAL(clicked()), settingsDlg, SLOT(removeActionFromToolbarTable()));
+	/************end of initialization************/
+	
 	if (settingsDlg->exec())
 	{
-		settingsDlg->acceptSettings( &settingsIconThemeState, &settingsIconThemePath, &mainToolBarItems);
+		/************setup new settings************/
+		SaagharWidget::maxPoetsPerGroup = settingsDlg->ui->spinBoxPoetsPerGroup->value();
+	
+		MainWindow::autoCheckForUpdatesState = settingsDlg->ui->checkBoxAutoUpdates->isChecked();
+	
+		//database path
+		QGanjoorDbBrowser::dataBasePath = settingsDlg->ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
+	
+		//font
+		QFont font(settingsDlg->ui->comboBoxFontFamily->currentText(), settingsDlg->ui->spinBoxFontSize->value());
+		SaagharWidget::tableFont = font;
+		
+		SaagharWidget::showBeytNumbers = settingsDlg->ui->checkBoxBeytNumbers->isChecked();
+	
+		SaagharWidget::backgroundImageState = settingsDlg->ui->checkBoxBackground->isChecked();
+		SaagharWidget::backgroundImagePath = settingsDlg->ui->lineEditBackground->text();
+	
+		settingsIconThemeState = settingsDlg->ui->checkBoxIconTheme->isChecked();
+		settingsIconThemePath = settingsDlg->ui->lineEditIconTheme->text();
+		
+		//colors
+		SaagharWidget::backgroundColor = settingsDlg->ui->pushButtonBackgroundColor->palette().background().color();
+		SaagharWidget::textColor = settingsDlg->ui->pushButtonTextColor->palette().background().color();
+		if (settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color() != SaagharWidget::textColor)//they must be different.
+			SaagharWidget::matchedTextColor = settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color();
+	
+		//toolbar items
+		mainToolBarItems.clear();
+		for (int i=0; i<settingsDlg->ui->tableWidgetToolBarActions->rowCount(); ++i)
+		{
+			QTableWidgetItem *item = settingsDlg->ui->tableWidgetToolBarActions->item(i, 0);
+			if (item)
+			{
+				mainToolBarItems.append(item->data(Qt::UserRole+1).toString());
+			}
+		}
+		/************end of setup new settings************/
+
 		ui->mainToolBar->clear();
 		//Inserting main toolbar Items
 		for (int i=0; i<mainToolBarItems.size(); ++i)

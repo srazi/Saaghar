@@ -22,6 +22,8 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#include "ui_settings.h"
+
 #include <QDialog>
 
 namespace Ui {
@@ -33,9 +35,10 @@ class Settings : public QDialog
 	Q_OBJECT
 
 public:
-	explicit Settings(QWidget *parent = 0, bool iconThemeState=false, QString iconThemePath="", QMap<QString, QAction *> *actionsMap = 0, QStringList toolBarItems = QStringList() );
+	explicit Settings(QWidget *parent = 0);
 	~Settings();
-	void acceptSettings(bool *iconThemeState, QString *iconThemePath, QStringList *toolbarItemsList);
+	Ui::Settings *ui;
+	void initializeActionTables(const QMap<QString, QAction *> &actionsMap, const QStringList &toolBarItems);
 
 private slots:
 	void removeActionFromToolbarTable();
@@ -51,8 +54,6 @@ private slots:
 
 private:
 	void replaceWithNeighbor(int neighbor);
-	void initializeActionTables(QMap<QString, QAction *> *actionsMap, QStringList toolBarItems);
-	Ui::Settings *ui;
 };
 
 #endif // SETTINGS_H

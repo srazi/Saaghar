@@ -119,11 +119,13 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 
 QGanjoorDbBrowser::~QGanjoorDbBrowser()
 {
-	foreach(const QString& connectionName, QSqlDatabase::connectionNames())
+	//we should change 'dBConnection' to a local varible!
+	/*foreach(const QString& connectionName, QSqlDatabase::connectionNames())
 	{
-		QSqlDatabase::database(connectionName).close();
+		QSqlDatabase::database(connectionName, false).close();
+		QSqlDatabase::database(connectionName, false).~QSqlDatabase();
 		QSqlDatabase::removeDatabase(connectionName);
-	}
+	}*/
 }
 
 bool QGanjoorDbBrowser::isConnected(const QString& connectionID)

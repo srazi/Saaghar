@@ -20,71 +20,12 @@
  ***************************************************************************/
 
 #include "settings.h"
-#include "ui_settings.h"
-#include "SaagharWidget.h"
-#include "mainwindow.h"
-#include <QFontDatabase>
 #include <QColorDialog>
 #include <QFileDialog>
 
-Settings::Settings(QWidget *parent,	bool iconThemeState, QString iconThemePath, QMap<QString, QAction *> *actionsMap, QStringList toolBarItems ) :
-	QDialog(parent),
-	ui(new Ui::Settings)
+Settings::Settings(QWidget *parent) :	QDialog(parent), ui(new Ui::Settings)
 {
 	ui->setupUi(this);
-
-	if (QApplication::layoutDirection() == Qt::RightToLeft)
-	{
-		ui->pushButtonActionAdd->setIcon(QIcon(":/resources/images/left.png"));
-		ui->pushButtonActionRemove->setIcon(QIcon(":/resources/images/right.png"));
-	}
-
-	ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
-
-	ui->checkBoxAutoUpdates->setChecked(MainWindow::autoCheckForUpdatesState);
-
-	//database
-	ui->lineEditDataBasePath->setText(QGanjoorDbBrowser::dataBasePath.join(";"));
-	connect( ui->pushButtonDataBasePath, SIGNAL(clicked()), this, SLOT(browseForDataBasePath()));
-
-	//font
-	QFontDatabase fontDb;
-	ui->comboBoxFontFamily->addItems( fontDb.families() );
-	ui->comboBoxFontFamily->setCurrentIndex(ui->comboBoxFontFamily->findText(SaagharWidget::tableFont.family(), Qt::MatchExactly));
-	ui->spinBoxFontSize->setValue(SaagharWidget::tableFont.pointSize());
-	
-	ui->checkBoxBeytNumbers->setChecked(SaagharWidget::showBeytNumbers);
-
-	ui->checkBoxBackground->setChecked(SaagharWidget::backgroundImageState);
-	ui->lineEditBackground->setText(SaagharWidget::backgroundImagePath);
-	ui->lineEditBackground->setEnabled(SaagharWidget::backgroundImageState);
-	ui->pushButtonBackground->setEnabled(SaagharWidget::backgroundImageState);
-	connect( ui->pushButtonBackground, SIGNAL(clicked()), this, SLOT(browseForBackground()));
-	
-	ui->checkBoxIconTheme->setChecked(iconThemeState);
-	ui->lineEditIconTheme->setText(iconThemePath);
-	ui->lineEditIconTheme->setEnabled(iconThemeState);
-	ui->pushButtonIconTheme->setEnabled(iconThemeState);
-	connect( ui->pushButtonIconTheme, SIGNAL(clicked()), this, SLOT(browseForIconTheme()));
-
-	//colors
-	connect( ui->pushButtonBackgroundColor, SIGNAL(clicked()), this, SLOT(getColorForPushButton()));
-	connect( ui->pushButtonMatchedTextColor, SIGNAL(clicked()), this, SLOT(getColorForPushButton()));
-	connect( ui->pushButtonTextColor, SIGNAL(clicked()), this, SLOT(getColorForPushButton()));
-	ui->pushButtonBackgroundColor->setPalette(QPalette(SaagharWidget::backgroundColor));
-	ui->pushButtonBackgroundColor->setAutoFillBackground(true);
-	ui->pushButtonMatchedTextColor->setPalette(QPalette(SaagharWidget::matchedTextColor));
-	ui->pushButtonMatchedTextColor->setAutoFillBackground(true);
-	ui->pushButtonTextColor->setPalette(QPalette(SaagharWidget::textColor));
-	ui->pushButtonTextColor->setAutoFillBackground(true);
-
-	//initialize Action's Tables
-	initializeActionTables(actionsMap, toolBarItems);
-
-	connect(ui->pushButtonActionBottom, SIGNAL(clicked()), this, SLOT(bottomAction()));
-	connect(ui->pushButtonActionTop, SIGNAL(clicked()), this, SLOT(topAction()));
-	connect(ui->pushButtonActionAdd, SIGNAL(clicked()), this, SLOT(addActionToToolbarTable()));
-	connect(ui->pushButtonActionRemove, SIGNAL(clicked()), this, SLOT(removeActionFromToolbarTable()));
 }
 
 Settings::~Settings()
@@ -163,7 +104,7 @@ void Settings::replaceWithNeighbor(int neighbor)
 	}
 }
 
-void Settings::initializeActionTables(QMap<QString, QAction *> *actionsMap, QStringList toolBarItems)
+void Settings::initializeActionTables(const QMap<QString, QAction *> &actionsMap, const QStringList &toolBarItems)
 {
 	//table for all actions
 	ui->tableWidgetAllActions->setRowCount(1);
@@ -185,11 +126,11 @@ void Settings::initializeActionTables(QMap<QString, QAction *> *actionsMap, QStr
 	item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 	item->setTextAlignment(Qt::AlignCenter);
 	ui->tableWidgetAllActions->setItem(0, 0, item);
-	if (actionsMap)
+	if (!actionsMap.isEmpty())
 	{
-		QMap<QString, QAction *>::const_iterator it = actionsMap->constBegin();
+		QMap<QString, QAction *>::const_iterator it = actionsMap.constBegin();
 		int index = 1;
-		while (it != actionsMap->constEnd())
+		while (it != actionsMap.constEnd())
 		{
 			if ( toolBarItems.contains(it.key(), Qt::CaseInsensitive) )
 			{
@@ -224,7 +165,7 @@ void Settings::initializeActionTables(QMap<QString, QAction *> *actionsMap, QStr
 		}
 		else
 		{
-			QAction *action = actionsMap->value(actionString);
+			QAction *action = actionsMap.value(actionString);
 			if (action)
 			{
 				QString text = action->text();
@@ -320,43 +261,4 @@ void Settings::browseForIconTheme()
 		if ( !dir.endsWith('/') ) dir+="/";
 		ui->lineEditIconTheme->setText(dir);
 		}
-}
-
-void Settings::acceptSettings(bool *iconThemeState, QString *iconThemePath, QStringList *toolbarItemsList)
-{
-	SaagharWidget::maxPoetsPerGroup = ui->spinBoxPoetsPerGroup->value();
-
-	MainWindow::autoCheckForUpdatesState = ui->checkBoxAutoUpdates->isChecked();
-
-	//database path
-	QGanjoorDbBrowser::dataBasePath = ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
-
-	//font
-	QFont font(ui->comboBoxFontFamily->currentText(), ui->spinBoxFontSize->value());
-	SaagharWidget::tableFont = font;
-	
-	SaagharWidget::showBeytNumbers = ui->checkBoxBeytNumbers->isChecked();
-
-	SaagharWidget::backgroundImageState = ui->checkBoxBackground->isChecked();
-	SaagharWidget::backgroundImagePath = ui->lineEditBackground->text();
-
-	*iconThemeState = ui->checkBoxIconTheme->isChecked();
-	*iconThemePath = ui->lineEditIconTheme->text();
-	
-	//colors
-	SaagharWidget::backgroundColor = ui->pushButtonBackgroundColor->palette().background().color();
-	SaagharWidget::textColor = ui->pushButtonTextColor->palette().background().color();
-	if (ui->pushButtonMatchedTextColor->palette().background().color() != SaagharWidget::textColor)//they must be different.
-		SaagharWidget::matchedTextColor = ui->pushButtonMatchedTextColor->palette().background().color();
-
-	//toolbar items
-	toolbarItemsList->clear();
-	for (int i=0; i<ui->tableWidgetToolBarActions->rowCount(); ++i)
-	{
-		QTableWidgetItem *item = ui->tableWidgetToolBarActions->item(i, 0);
-		if (item)
-		{
-			toolbarItemsList->append(item->data(Qt::UserRole+1).toString());
-		}
-	}
 }
