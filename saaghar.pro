@@ -5,7 +5,7 @@ DEPENDPATH += . build
 INCLUDEPATH += . $UI_DIR sqlite sqlite-driver/sqlite
 # $$QMAKE_INCDIR_QT/QtSql/private
 
-CONFIG	+= qt warn_off release
+CONFIG	+= qt warn_off
 
 #for static building un-comment the following two lines
 #CONFIG	+= static

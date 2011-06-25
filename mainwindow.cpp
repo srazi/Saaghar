@@ -597,8 +597,9 @@ void MainWindow::newTabForItem(QString type, int id, bool noError)
 
 void MainWindow::updateCaption()
 {
-	mainTabWidget->setTabText(mainTabWidget->currentIndex(), saagharWidget->currentCaption );
-	setWindowTitle(QString::fromLocal8Bit("ساغر")+":"+saagharWidget->currentCaption);
+	QString newTabCaption = QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption, "", 0, 6, true, Qt::ElideRight)+QString(QChar(0x200F));
+	mainTabWidget->setTabText(mainTabWidget->currentIndex(), newTabCaption );
+	setWindowTitle(QString(QChar(0x202B))+QString::fromLocal8Bit("ساغر")+":"+saagharWidget->currentCaption+QString(QChar(0x202C)));
 }
 
 void MainWindow::tableSelectChanged()
@@ -1757,7 +1758,7 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 		phrase = QGanjoorDbBrowser::cleanString(phrase, SaagharWidget::newSearchSkipNonAlphabet);
 		poemIDsList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod2(phrase, PoetID, SaagharWidget::newSearchSkipNonAlphabet);
 		progress.setMaximum(poemIDsList.size());
-	}	
+	}
 	else
 		poemIDs = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase(phrase, PageStart, count+1, PoetID);
 /////////////////////////////
@@ -1777,9 +1778,9 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 	}
 	
 	//new search method show all results in one page
-	if (SaagharWidget::newSearchFlag)
+/*	if (SaagharWidget::newSearchFlag)
 		count = poemIDsList.size();
-
+*/
 	if (count < 1)
 	{
 		QApplication::restoreOverrideCursor();
@@ -1856,7 +1857,7 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 
 	searchTableGridLayout->addWidget(searchTable, 0, 0, 1, 1);
 
-	if (!SaagharWidget::newSearchFlag)
+	//if (!SaagharWidget::newSearchFlag)
 	{//by the new search method there's just one page result!
 		QVBoxLayout *searchNavVerticalLayout = new QVBoxLayout();
 		searchNavVerticalLayout->setSpacing(6);
@@ -2027,7 +2028,7 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 
 	searchTable->setUpdatesEnabled(true);
 	
-	if (!SaagharWidget::newSearchFlag)
+	//if (!SaagharWidget::newSearchFlag)
 	{//by the new search method there's just one page result!
 		if (PageStart > 0)
 		{
@@ -2094,6 +2095,11 @@ void MainWindow::tableCurrentItemChanged(QTableWidgetItem *current, QTableWidget
 		QImage image(":/resources/images/select-mask.png");
 		previous->setBackground(QBrush(QImage()));
 	}
+	if (current)//maybe create a bug! check older codes!!
+	{
+		QImage image(":/resources/images/select-mask.png");
+		current->setBackground(QBrush(image));
+	}
 }
 
 void MainWindow::tableItemPress(QTableWidgetItem *)
@@ -2110,7 +2116,7 @@ void MainWindow::searchPageNavigationClicked(QAction *action)
 	QStringList dataList = actionData.toString().split("|", QString::SkipEmptyParts);
 	if (actParent)
 		showSearchResults(dataList.at(1), dataList.at(2).toInt(), dataList.at(3).toInt(), dataList.at(4).toInt(), actParent);
-	else	
+	else
 		showSearchResults(dataList.at(1), dataList.at(2).toInt(), dataList.at(3).toInt(), dataList.at(4).toInt(), 0);
 }
 

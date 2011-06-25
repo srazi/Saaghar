@@ -540,7 +540,7 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 
 	//new Caption
 	currentCaption = (currentCat == 0) ? tr("Home") : ganjoorDataBase->getPoetForCat(currentCat)._Name;//for Tab Title
-	currentCaption += ":"+poem._Title.left(7);
+	currentCaption += ":"+poem._Title;//.left(7);
 	emit captionChanged();
 
 	//disabling item (0,0)
