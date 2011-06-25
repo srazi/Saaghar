@@ -1405,9 +1405,11 @@ void MainWindow::globalSettings()
 	connect( settingsDlg->ui->pushButtonDataBasePath, SIGNAL(clicked()), settingsDlg, SLOT(browseForDataBasePath()));
 
 	//font
-	QFontDatabase fontDb;
-	settingsDlg->ui->comboBoxFontFamily->addItems( fontDb.families() );
-	settingsDlg->ui->comboBoxFontFamily->setCurrentIndex(settingsDlg->ui->comboBoxFontFamily->findText(SaagharWidget::tableFont.family(), Qt::MatchExactly));
+	//QFontDatabase fontDb;
+	settingsDlg->ui->comboBoxFontFamily->setWritingSystem(QFontDatabase::Arabic);
+	//settingsDlg->ui->comboBoxFontFamily->addItems( fontDb.families() );
+	//settingsDlg->ui->comboBoxFontFamily->setCurrentIndex(settingsDlg->ui->comboBoxFontFamily->findText(SaagharWidget::tableFont.family(), Qt::MatchExactly));
+	settingsDlg->ui->comboBoxFontFamily->setCurrentFont(SaagharWidget::tableFont);
 	settingsDlg->ui->spinBoxFontSize->setValue(SaagharWidget::tableFont.pointSize());
 	
 	settingsDlg->ui->checkBoxBeytNumbers->setChecked(SaagharWidget::showBeytNumbers);
@@ -1455,8 +1457,8 @@ void MainWindow::globalSettings()
 		QGanjoorDbBrowser::dataBasePath = settingsDlg->ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
 	
 		//font
-		QFont font(settingsDlg->ui->comboBoxFontFamily->currentText(), settingsDlg->ui->spinBoxFontSize->value());
-		SaagharWidget::tableFont = font;
+		//QFont font(settingsDlg->ui->comboBoxFontFamily->currentText(), settingsDlg->ui->spinBoxFontSize->value());
+		SaagharWidget::tableFont = settingsDlg->ui->comboBoxFontFamily->currentFont(); //font;
 		
 		SaagharWidget::showBeytNumbers = settingsDlg->ui->checkBoxBeytNumbers->isChecked();
 	

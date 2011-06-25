@@ -77,7 +77,11 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QComboBox" name="comboBoxFontFamily"/>
+                   <widget class="QFontComboBox" name="comboBoxFontFamily">
+                    <property name="writingSystem">
+                     <enum>QFontDatabase::Any</enum>
+                    </property>
+                   </widget>
                   </item>
                  </layout>
                 </item>
