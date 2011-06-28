@@ -487,45 +487,46 @@ GanjoorPoet QGanjoorDbBrowser::getPoet(QString PoetName)
 	return gPoet;
 }
 
-QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase(QString phrase, int PageStart, int Count, int PoetID)
-{
-	QList<int> idList;
-	if (isConnected())
-	{
-		QString strQuery;
-		if (PoetID == 0)
-			strQuery=QString("SELECT poem_id FROM verse WHERE text LIKE \'%" + phrase + "%\' GROUP BY poem_id LIMIT "+QString::number(PageStart)+","+QString::number(Count));
-		else
-			strQuery=QString("SELECT poem_id FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + phrase + "%\' AND poet_id=" + QString::number(PoetID) + " GROUP BY poem_id LIMIT " + QString::number(PageStart) + "," + QString::number(Count));
+//QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase(QString phrase, int PageStart, int Count, int PoetID)
+//{
+//	QList<int> idList;
+//	if (isConnected())
+//	{
+//		QString strQuery;
+//		if (PoetID == 0)
+//			strQuery=QString("SELECT poem_id FROM verse WHERE text LIKE \'%" + phrase + "%\' GROUP BY poem_id LIMIT "+QString::number(PageStart)+","+QString::number(Count));
+//		else
+//			strQuery=QString("SELECT poem_id FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + phrase + "%\' AND poet_id=" + QString::number(PoetID) + " GROUP BY poem_id LIMIT " + QString::number(PageStart) + "," + QString::number(Count));
 		
-		QSqlQuery q(dBConnection);
-		q.exec(strQuery);
+//		QSqlQuery q(dBConnection);
+//		q.exec(strQuery);
 
-		while( q.next() )
-		{
-			QSqlRecord qrec = q.record();
-			idList.append(qrec.value(0).toInt());
-		}
-		return idList;
-	}
-	return idList;
-}
-QString QGanjoorDbBrowser::getFirstVerseContainingPhrase(int PoemID, QString phrase)
-{
-	QString text = "";
-	if (isConnected())
-	{
-		QString strQuery="SELECT text FROM verse WHERE poem_id="+QString::number(PoemID)+" AND text LIKE\'%"+phrase+"%\' LIMIT 0,1";
-		QSqlQuery q(dBConnection);
-		q.exec(strQuery);
-		if ( q.next() )
-		{
-			QSqlRecord qrec = q.record();
-			text = qrec.value(0).toString();
-		}
-	}
-	return text;
-}
+//		while( q.next() )
+//		{
+//			QSqlRecord qrec = q.record();
+//			idList.append(qrec.value(0).toInt());
+//		}
+//		return idList;
+//	}
+//	return idList;
+//}
+
+//QString QGanjoorDbBrowser::getFirstVerseContainingPhrase(int PoemID, QString phrase)
+//{
+//	QString text = "";
+//	if (isConnected())
+//	{
+//		QString strQuery="SELECT text FROM verse WHERE poem_id="+QString::number(PoemID)+" AND text LIKE\'%"+phrase+"%\' LIMIT 0,1";
+//		QSqlQuery q(dBConnection);
+//		q.exec(strQuery);
+//		if ( q.next() )
+//		{
+//			QSqlRecord qrec = q.record();
+//			text = qrec.value(0).toString();
+//		}
+//	}
+//	return text;
+//}
 
 int QGanjoorDbBrowser::getRandomPoemID(int *CatID)
 {
@@ -1014,73 +1015,73 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, bool skipNonAlphabet
 	return cleanedText;
 }
 
-QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet)
-{//return getPoemIDsContainingPhrase_NewMethod2(phrase, PoetID, skipNonAlphabet);
-	QList<int> idList;
-    if (isConnected())
-	{
-		QString strQuery;
-		QString phraseForSearch = QGanjoorDbBrowser::cleanString(phrase, skipNonAlphabet);
-		//qDebug() << "text=" << phrase << "cleanedText=" << phraseForSearch;
+//QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet)
+//{
+//	QList<int> idList;
+//    if (isConnected())
+//	{
+//		QString strQuery;
+//		QString phraseForSearch = QGanjoorDbBrowser::cleanString(phrase, skipNonAlphabet);
+//		//qDebug() << "text=" << phrase << "cleanedText=" << phraseForSearch;
 
-		QString ch = QString(phraseForSearch.at(0));
-		int numOfFounded=0;
+//		QString ch = QString(phraseForSearch.at(0));
+//		int numOfFounded=0;
 
-		if (PoetID == 0)
-			strQuery=QString("SELECT poem_id FROM verse WHERE text LIKE \'%" + ch + "%\' GROUP BY poem_id");
-		else
-			strQuery=QString("SELECT poem_id FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + ch + "%\' AND poet_id=" + QString::number(PoetID) + " GROUP BY poem_id");
+//		if (PoetID == 0)
+//			strQuery=QString("SELECT poem_id FROM verse WHERE text LIKE \'%" + ch + "%\' GROUP BY poem_id");
+//		else
+//			strQuery=QString("SELECT poem_id FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + ch + "%\' AND poet_id=" + QString::number(PoetID) + " GROUP BY poem_id");
 
-		QSqlQuery q(dBConnection);
-		int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
-		q.exec(strQuery);
-		int end = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
-		int miliSec= end-start;
-		qDebug() << "duration=" << miliSec;
+//		QSqlQuery q(dBConnection);
+//		int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
+//		q.exec(strQuery);
+//		int end = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
+//		int miliSec= end-start;
+//		qDebug() << "duration=" << miliSec;
 
-		int numOfNearResult=0;
+//		int numOfNearResult=0;
 		
-		//progress dialog
-		int maxOfProgressBar = 50000;
-		QProgressDialog progress(QGanjoorDbBrowser::tr("Searching Data Base..."), QGanjoorDbBrowser::tr("Cancel"), 0, maxOfProgressBar, qApp->activeModalWidget());
-		progress.setWindowModality(Qt::WindowModal);
-		while( q.next() )
-		{
-			++numOfNearResult;
-			if (numOfNearResult > maxOfProgressBar)
-			{
-				maxOfProgressBar+=30000;
-				progress.setMaximum(maxOfProgressBar);
-			}
-			progress.setValue(numOfNearResult);
+//		//progress dialog
+//		int maxOfProgressBar = 50000;
+//		QProgressDialog progress(QGanjoorDbBrowser::tr("Searching Data Base..."), QGanjoorDbBrowser::tr("Cancel"), 0, maxOfProgressBar, qApp->activeModalWidget());
+//		progress.setWindowModality(Qt::WindowModal);
+//		while( q.next() )
+//		{
+//			++numOfNearResult;
+//			if (numOfNearResult > maxOfProgressBar)
+//			{
+//				maxOfProgressBar+=30000;
+//				progress.setMaximum(maxOfProgressBar);
+//			}
+//			progress.setValue(numOfNearResult);
 
-			 if (progress.wasCanceled())
-				 break;
-			QSqlRecord qrec = q.record();
+//			 if (progress.wasCanceled())
+//				 break;
+//			QSqlRecord qrec = q.record();
 
-			QStringList verseTexts = getVerseListContainingPhrase(qrec.value(0).toInt(), ch);
-			for (int k=0; k<verseTexts.size();++k)
-			{
-				QString foundedVerse = QGanjoorDbBrowser::cleanString(verseTexts.at(k), skipNonAlphabet);
+//			QStringList verseTexts = getVerseListContainingPhrase(qrec.value(0).toInt(), ch);
+//			for (int k=0; k<verseTexts.size();++k)
+//			{
+//				QString foundedVerse = QGanjoorDbBrowser::cleanString(verseTexts.at(k), skipNonAlphabet);
 
-				if (foundedVerse.contains(phraseForSearch, Qt::CaseInsensitive))
-				{
-					++numOfFounded;
-					QString labelText =  QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded);
-					progress.setLabelText(labelText);
+//				if (foundedVerse.contains(phraseForSearch, Qt::CaseInsensitive))
+//				{
+//					++numOfFounded;
+//					QString labelText =  QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded);
+//					progress.setLabelText(labelText);
 
-					idList.append(qrec.value(0).toInt());
+//					idList.append(qrec.value(0).toInt());
 					
-					break;//we need just first result
-				}
-			}
-		}
-		progress.setValue(maxOfProgressBar);
+//					break;//we need just first result
+//				}
+//			}
+//		}
+//		progress.setValue(maxOfProgressBar);
 
-	    return idList;
-	}
-    return idList;
-}
+//	    return idList;
+//	}
+//    return idList;
+//}
 
 QMap<int, QString> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod2(const QString &phrase, int PoetID, bool skipNonAlphabet)
 {
@@ -1155,28 +1156,28 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod2(cons
     return idList;
 }
 
-QStringList QGanjoorDbBrowser::getVerseListContainingPhrase(int PoemID, const QString &phrase)
-{
-	QStringList text;
-    if (isConnected())
-    {
-		QString strQuery="SELECT text FROM verse WHERE poem_id="+QString::number(PoemID)+" AND text LIKE\'%"+phrase+"%\'";
-		QSqlQuery q(dBConnection);
-		int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
-		q.exec(strQuery);
-		int end = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
-		int miliSec= end-start;
-		if (miliSec>0)
-			qDebug() << "duration=" << miliSec;
+//QStringList QGanjoorDbBrowser::getVerseListContainingPhrase(int PoemID, const QString &phrase)
+//{
+//	QStringList text;
+//    if (isConnected())
+//    {
+//		QString strQuery="SELECT text FROM verse WHERE poem_id="+QString::number(PoemID)+" AND text LIKE\'%"+phrase+"%\'";
+//		QSqlQuery q(dBConnection);
+//		int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
+//		q.exec(strQuery);
+//		int end = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
+//		int miliSec= end-start;
+//		if (miliSec>0)
+//			qDebug() << "duration=" << miliSec;
 
-		while ( q.next() )
-		{
-			QSqlRecord qrec = q.record();
-			text << qrec.value(0).toString();
-		}
-    }
-	return text;
-}
+//		while ( q.next() )
+//		{
+//			QSqlRecord qrec = q.record();
+//			text << qrec.value(0).toString();
+//		}
+//    }
+//	return text;
+//}
 
 QString QGanjoorDbBrowser::justifiedText(const QString &text, const QFontMetrics &fontmetric, int width)
 {

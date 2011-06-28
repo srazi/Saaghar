@@ -54,7 +54,7 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 	if (index.data().isValid())
 	{
 		text = index.data().toString();
-		if (SaagharWidget::newSearchFlag)
+		//if (SaagharWidget::newSearchFlag)
 		{
 			text = QGanjoorDbBrowser::cleanString(text, false);
 			cleanedText = QGanjoorDbBrowser::cleanString(text, SaagharWidget::newSearchSkipNonAlphabet);
@@ -72,7 +72,7 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 	if (!(keyword.isEmpty() || text.indexOf(keyword) == -1 ) )
 	{
 		QString txt;
-		/*if (SaagharWidget::newSearchFlag)
+		/*if ( //SaagharWidget::newSearchFlag)
 			txt = cleanedText;
 		else*/
 			txt = text;

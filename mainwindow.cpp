@@ -312,41 +312,6 @@ void MainWindow::searchStart()
 		//create connections for mouse signals
 		connect(searchResultWidget->searchTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
 		connect(searchResultWidget->searchTable, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
-
-
-//		QDockWidget *tmpDockWidget = 0, *newDockWidget = 0;
-//		QObjectList mainWindowChildren = this->children();
-//		int oldObjectIndex = -1, newObjectIndex = -1;
-//		for (int i=0; i < mainWindowChildren.size(); ++i)
-//		{
-//			//tmpDockWidget = qobject_cast<QDockWidget *>(mainWindowChildren.at(i));
-//			if (mainWindowChildren.at(i)/*tmpDockWidget*/)
-//			{
-//				if (oldObjectIndex == -1 && mainWindowChildren.at(i)->objectName() == "searchResultWidget_old")
-//					oldObjectIndex = i;
-//				if (newObjectIndex == -1 && mainWindowChildren.at(i)->objectName() == "searchResultWidget_new")
-//					newObjectIndex = i;
-//				//break;
-//			}
-//		}
-		
-//		if (oldObjectIndex != -1)
-//			tmpDockWidget = qobject_cast<QDockWidget *>(mainWindowChildren.at(oldObjectIndex));
-//		if (newObjectIndex != -1)
-//			newDockWidget = qobject_cast<QDockWidget *>(mainWindowChildren.at(newObjectIndex));
-//		//searchResultWidget->setWidget(searchResultContents);
-//		if (newDockWidget)
-//		{
-//			this->addDockWidget(Qt::LeftDockWidgetArea, newDockWidget);
-			
-//			if (tmpDockWidget /*&& tmpDockWidget->objectName() == "searchResultWidget_old"*/) //there is another search results dock-widget present
-//				tabifyDockWidget(tmpDockWidget, newDockWidget);
-
-//			newDockWidget->setObjectName("searchResultWidget_old");
-	
-//			newDockWidget->show();
-//			newDockWidget->raise();
-//		}
 	}
 
 }
@@ -1191,15 +1156,15 @@ void MainWindow::setupUi()
 	toolButtonSearchOption->setIcon(QIcon(iconThemePath+"/options.png"));
 	toolButtonSearchOption->setPopupMode(QToolButton::InstantPopup);
 	QMenu *searchOptionMenu = new QMenu(ui->searchToolBar);
-	actionInstance("actionNewSearchFlag", "", tr("&New Search Method") )->setCheckable(true);
+	//actionInstance("actionNewSearchFlag", "", tr("&New Search Method") )->setCheckable(true);
 	actionInstance("actionNewSearchSkipNonAlphabet", "", tr("&Skip non-Alphabet") )->setCheckable(true);
-	actionInstance("actionNewSearchFlag")->setChecked(SaagharWidget::newSearchFlag);
+	//actionInstance("actionNewSearchFlag")->setChecked(SaagharWidget::newSearchFlag);
 	actionInstance("actionNewSearchSkipNonAlphabet")->setChecked(SaagharWidget::newSearchSkipNonAlphabet);
-	actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(actionInstance("actionNewSearchFlag")->isChecked());
+	actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(true /*actionInstance("actionNewSearchFlag")->isChecked()*/);
 
-	connect(actionInstance("actionNewSearchFlag"), SIGNAL(toggled(bool)), this, SLOT(newSearchFlagChanged(bool)));
+	//connect(actionInstance("actionNewSearchFlag"), SIGNAL(toggled(bool)), this, SLOT(newSearchFlagChanged(bool)));
 	connect(actionInstance("actionNewSearchSkipNonAlphabet"), SIGNAL(toggled(bool)), this, SLOT(newSearchNonAlphabetChanged(bool)));
-	searchOptionMenu->addAction(actionInstance("actionNewSearchFlag"));
+	//searchOptionMenu->addAction(actionInstance("actionNewSearchFlag"));
 	searchOptionMenu->addAction(actionInstance("actionNewSearchSkipNonAlphabet"));
 	toolButtonSearchOption->setMenu(searchOptionMenu);
 	//pushButtonSearch->setText(tr("Search"));
@@ -1216,9 +1181,9 @@ void MainWindow::setupUi()
 	ui->searchToolBar->addWidget(toolButtonSearchOption);
 	
 	//max result spinbox visibility
-	labelMaxResultSeparator->setVisible(!actionInstance("actionNewSearchFlag")->isChecked());
-	labelMaxResultAction->setVisible(!actionInstance("actionNewSearchFlag")->isChecked());
-	spinBoxMaxSearchResultAction->setVisible(!actionInstance("actionNewSearchFlag")->isChecked());
+	labelMaxResultSeparator->setVisible(true /*!actionInstance("actionNewSearchFlag")->isChecked()*/);
+	labelMaxResultAction->setVisible(true /*!actionInstance("actionNewSearchFlag")->isChecked()*/);
+	spinBoxMaxSearchResultAction->setVisible(true /*!actionInstance("actionNewSearchFlag")->isChecked()*/);
 
 	ui->searchToolBar->hide();
 
@@ -1364,14 +1329,14 @@ void MainWindow::setupUi()
 	mainToolBarItems = temp.split("|", QString::SkipEmptyParts);
 }
 
-void MainWindow::newSearchFlagChanged(bool checked)
-{
-	actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(checked);
-	labelMaxResultSeparator->setVisible(!checked);
-	labelMaxResultAction->setVisible(!checked);
-	spinBoxMaxSearchResultAction->setVisible(!checked);
-	SaagharWidget::newSearchFlag = checked;
-}
+//void MainWindow::newSearchFlagChanged(bool checked)
+//{
+//	actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(checked);
+//	labelMaxResultSeparator->setVisible(!checked);
+//	labelMaxResultAction->setVisible(!checked);
+//	spinBoxMaxSearchResultAction->setVisible(!checked);
+//	//SaagharWidget::newSearchFlag = checked;
+//}
 
 void MainWindow::newSearchNonAlphabetChanged(bool checked)
 {
@@ -1629,7 +1594,7 @@ void MainWindow::loadGlobalSettings()
 	SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
 	
 	//search options
-	SaagharWidget::newSearchFlag = config->value("New Search",true).toBool();
+	//SaagharWidget::newSearchFlag = config->value("New Search",true).toBool();
 	SaagharWidget::newSearchSkipNonAlphabet  = config->value("New Search non-Alphabet",false).toBool();
 
 	SaagharWidget::backgroundImageState = config->value("Background State",false).toBool();
@@ -1812,319 +1777,8 @@ void MainWindow::saveSaagharState()
 	config->setValue("DataBase Path", QGanjoorDbBrowser::dataBasePath.join(";"));
 
 	//search options
-	config->setValue("New Search", SaagharWidget::newSearchFlag);
+	//config->setValue("New Search", SaagharWidget::newSearchFlag);
 	config->setValue("New Search non-Alphabet", SaagharWidget::newSearchSkipNonAlphabet);
-}
-
-//Search
-void MainWindow::showSearchResults(const QString &phrase, QHash<int, QString> *resultList, int PageStart, int count, int PoetID, QWidget *dockWidget)
-{
-	if (!resultList) return;
-	/*QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-	QApplication::processEvents();*/
-
-	//QHash<int, QString> poemIDsList;
-	//QList<int> poemIDs;
-	////new search method
-
-	/*QProgressDialog progress(tr("Initializing Results Table..."), tr("Cancel"), 0, resultList->size(), this);
-	progress.setWindowModality(Qt::WindowModal);*/
-
-
-//	if (SaagharWidget::newSearchFlag)
-//	{
-//		phrase = QGanjoorDbBrowser::cleanString(phrase, SaagharWidget::newSearchSkipNonAlphabet);
-//		poemIDsList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod2(phrase, PoetID, SaagharWidget::newSearchSkipNonAlphabet);
-//		progress.setMaximum(resultList->size());
-//	}
-//	else
-//		poemIDs = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase(phrase, PageStart, count+1, PoetID);
-/////////////////////////////
-	/*int tmpCount = count;
-	bool HasMore = count>0 && resultList->size() >= count+1;
-	bool navButtonsNeeded = false;
-	if (resultList->size() <= count)
-	{
-		count = resultList->size();
-		if (PageStart>0)
-			navButtonsNeeded = true;//almost one of navigation button needs to be enabled
-	}
-	else
-	{
-		count = HasMore ? count : resultList->size() - 1;
-		navButtonsNeeded = true;//almost one of navigation button needs to be enabled
-	}*/
-	
-//	//new search method show all results in one page
-//	if (SaagharWidget::newSearchFlag)
-//		count = resultList->size();
-
-	/*if (count < 1)
-	{
-		QApplication::restoreOverrideCursor();
-		QMessageBox::information(this, tr("Search"), tr("No match found."));
-		return;
-	}*/
-///////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-	/*QTableWidget *searchTable;
-	QToolButton *searchNextPage, *searchPreviousPage;
-	QAction *actSearchNextPage, *actSearchPreviousPage;
-	QDockWidget *searchResultWidget = 0;
-	QWidget *searchResultContents;
-	bool fromOtherPage = false;
-
-	if (dockWidget)
-	{
-		fromOtherPage = true;
-		qDeleteAll(dockWidget->children());
-	}
-
-	if (!fromOtherPage)
-	{
-		QString poet = "";
-		if (PoetID == 0)
-			poet = tr("All");
-		else
-		{
-			poet = SaagharWidget::ganjoorDataBase->getPoet(PoetID)._Name;
-		}
-		searchResultWidget = new QDockWidget(poet+":"+phrase, this);
-		searchResultWidget->setObjectName(QString::fromUtf8("searchResultWidget_new"));//object name for created instance, it renames to 'searchResultWidget_old'
-		searchResultWidget->setLayoutDirection(Qt::RightToLeft);
-		searchResultWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
-		searchResultWidget->setAttribute(Qt::WA_DeleteOnClose, true);
-		searchResultContents = new QWidget();
-		searchResultContents->setObjectName(QString::fromUtf8("searchResultContents"));
-		searchResultContents->setAttribute(Qt::WA_DeleteOnClose, true);
-	}
-	else
-	{
-		searchResultContents = dockWidget;
-	}
-
-	QGridLayout *searchGridLayout = new QGridLayout(searchResultContents);
-	searchGridLayout->setSpacing(6);
-	searchGridLayout->setContentsMargins(11, 11, 11, 11);
-	searchGridLayout->setObjectName(QString::fromUtf8("searchGridLayout"));
-	QHBoxLayout *horizontalLayout = new QHBoxLayout();
-	horizontalLayout->setSpacing(6);
-	horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
-	QGridLayout *searchTableGridLayout = new QGridLayout();
-	searchTableGridLayout->setSpacing(6);
-	searchTableGridLayout->setObjectName(QString::fromUtf8("gridLayout_3"));
-	//create QTableWidget
-	searchTable = new QTableWidget(searchResultContents);
-	searchTable->setObjectName(QString::fromUtf8("searchTable"));
-	searchTable->setAlternatingRowColors(true);
-	searchTable->setSelectionMode(QAbstractItemView::NoSelection);
-	searchTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-	searchTable->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-	searchTable->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-	searchTable->setRowCount(count);
-	searchTable->setColumnCount(3);
-	searchTable->verticalHeader()->setVisible(false);
-	searchTable->horizontalHeader()->setVisible(false);
-	searchTable->horizontalHeader()->setHighlightSections(false);
-	searchTable->horizontalHeader()->setStretchLastSection(true);
-
-	//create connections for mouse signals
-	connect(searchTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
-	connect(searchTable, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
-
-	//install delagate on third column
-	searchTable->setItemDelegateForColumn(2, new SaagharItemDelegate(searchTable, searchTable->style(), phrase));
-
-	searchTableGridLayout->addWidget(searchTable, 0, 0, 1, 1);
-
-	//if (!SaagharWidget::newSearchFlag)
-	{//by the new search method there's just one page result!
-		QVBoxLayout *searchNavVerticalLayout = new QVBoxLayout();
-		searchNavVerticalLayout->setSpacing(6);
-		searchNavVerticalLayout->setObjectName(QString::fromUtf8("searchNavVerticalLayout"));
-		searchNextPage = new QToolButton(searchResultContents);
-		searchNextPage->setObjectName(QString::fromUtf8("searchNextPage"));
-
-		actSearchNextPage = new QAction(searchResultContents);
-		actSearchNextPage->setIcon(actionInstance("actionNextPoem")->icon());
-		searchNextPage->setDefaultAction(actSearchNextPage);
-
-		connect(searchNextPage, SIGNAL(triggered(QAction *)), this, SLOT(searchPageNavigationClicked(QAction *)));
-
-		searchNextPage->setEnabled(false);
-		searchNextPage->hide();
-		
-		searchNavVerticalLayout->addWidget(searchNextPage);
-
-		searchPreviousPage = new QToolButton(searchResultContents);
-		searchPreviousPage->setObjectName(QString::fromUtf8("searchPreviousPage"));
-		
-		actSearchPreviousPage = new QAction(searchResultContents);
-		actSearchPreviousPage->setIcon(actionInstance("actionPreviousPoem")->icon());
-		searchPreviousPage->setDefaultAction(actSearchPreviousPage);
-
-		connect(searchPreviousPage, SIGNAL(triggered(QAction *)), this, SLOT(searchPageNavigationClicked(QAction *)));
-
-		searchPreviousPage->setEnabled(false);
-		searchPreviousPage->hide();
-
-		searchNavVerticalLayout->addWidget(searchPreviousPage);
-		
-		if (navButtonsNeeded)
-		{//almost one of navigation button needs to be enabled
-			searchNextPage->show();
-			searchPreviousPage->show();
-		}
-
-		QSpacerItem *searchNavVerticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-
-		searchNavVerticalLayout->addItem(searchNavVerticalSpacer);
-
-		horizontalLayout->addLayout(searchNavVerticalLayout);
-	} //if (!SaagharWidget::newSearchFlag)
-
-	horizontalLayout->addLayout(searchTableGridLayout);
-
-	searchGridLayout->addLayout(horizontalLayout, 0, 0, 1, 1);
-
-	if (!fromOtherPage)
-	{
-		QDockWidget *tmpDockWidget = 0;
-		QObjectList mainWindowChildren = this->children();
-		for (int i=0; i < mainWindowChildren.size(); ++i)
-		{
-			tmpDockWidget = qobject_cast<QDockWidget *>(mainWindowChildren.at(i));
-			if (tmpDockWidget)
-			{
-				if (mainWindowChildren.at(i)->objectName() == "searchResultWidget_old")
-				break;
-			}
-		}
-
-		searchResultWidget->setWidget(searchResultContents);
-		this->addDockWidget(Qt::LeftDockWidgetArea, searchResultWidget);
-		
-		if (tmpDockWidget && tmpDockWidget->objectName() == "searchResultWidget_old") //there is another search results dock-widget present
-			tabifyDockWidget(tmpDockWidget, searchResultWidget);
-
-		searchResultWidget->setObjectName("searchResultWidget_old");
-
-		searchResultWidget->show();
-		searchResultWidget->raise();
-	}*/
-///////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-//	searchTable->setColumnWidth(0, searchTable->fontMetrics().boundingRect(QString::number((PageStart+count)*100)).width());
-//	int maxPoemWidth = 0, maxVerseWidth = 0;
-
-//	QList<int> tmpList = resultList->keys();
-//	//count = tmpList.size();
-//	int progressBarIndex = 50;
-//	const int step = count/20;
-	
-//	bool firstTimeUpdate = false;
-//	for (int i = 0; i < count; ++i)
-//	{
-//		if (i>progressBarIndex)
-//		{
-//			progress.setValue(i);
-//			progressBarIndex += step;
-//			if (!firstTimeUpdate)
-//			{
-//				searchTable->setUpdatesEnabled(false);
-//				firstTimeUpdate = true;
-//			}
-//		}
-//		 if (progress.wasCanceled())
-//			break;
-
-//		GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(tmpList.at(i)/*resultList->at(i)*/);
-
-//		poem._HighlightText = phrase;
-		
-//		//we need a modified verion of showParentCategory
-//		//showParentCategory(SaagharWidget::ganjoorDataBase->getCategory(poem._CatID));
-//		//adding Numbers
-//		QString localizedNumber = SaagharWidget::persianIranLocal.toString(PageStart+i+1);
-//		QTableWidgetItem *numItem = new QTableWidgetItem(localizedNumber);
-//		numItem->setFlags(Qt::NoItemFlags /*Qt::ItemIsEnabled*/);
-
-//		searchTable->setItem(i, 0, numItem);
-
-//		//add Items
-//		QString snippedPoemTitle = QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 5, true);
-//		QTableWidgetItem *poemItem = new QTableWidgetItem( snippedPoemTitle );
-//		poemItem->setFlags(Qt::ItemIsEnabled);
-//		poemItem->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
-
-//		int tmpWidth = searchTable->fontMetrics().boundingRect(snippedPoemTitle).width();
-//		if ( tmpWidth > maxPoemWidth )
-//			maxPoemWidth = tmpWidth;
-
-//		QString firstVerse = "";
-//		//new search
-//		if (SaagharWidget::newSearchFlag)
-//		{
-//			firstVerse = resultList->value(poem._ID, "");
-//			/*QStringList verseTexts = SaagharWidget::ganjoorDataBase->getVerseListContainingPhrase(poem._ID, phrase.at(0));
-//			for (int k=0; k<verseTexts.size();++k)
-//			{
-		
-//				QString foundedVerse = QGanjoorDbBrowser::cleanString(verseTexts.at(k), SaagharWidget::newSearchSkipNonAlphabet);	
-
-
-//				if (foundedVerse.contains(phrase, Qt::CaseInsensitive))
-//				{
-//					firstVerse = verseTexts.at(k);
-//					break;//we need just first result
-//				}
-//			}*/
-//		}
-//		else
-//			firstVerse = SaagharWidget::ganjoorDataBase->getFirstVerseContainingPhrase(poem._ID, phrase);
-
-//		QString cleanedFirstVerse = QGanjoorDbBrowser::cleanString(firstVerse, false);
-//		QString snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, phrase, 0, 8, true);
-//		if (snippedFirstVerse.isEmpty())
-//			snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, "", 0, 8, true);
-
-//		QTableWidgetItem *verseItem = new QTableWidgetItem(snippedFirstVerse);
-//		verseItem->setFlags(Qt::ItemIsEnabled/*Qt::NoItemFlags*/);
-//		verseItem->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
-//		//set search data
-//		verseItem->setData(ITEM_SEARCH_DATA, phrase);
-//		poemItem->setData(ITEM_SEARCH_DATA, phrase);
-
-//		//insert items to table
-//		searchTable->setItem(i, 1, poemItem);
-//		searchTable->setItem(i, 2, verseItem);
-
-//		tmpWidth = searchTable->fontMetrics().boundingRect(snippedFirstVerse).width();
-//		if ( tmpWidth > maxVerseWidth )
-//			maxVerseWidth = tmpWidth;
-//	}
-
-//	searchTable->setColumnWidth(1, maxPoemWidth+searchTable->fontMetrics().boundingRect("00").width() );
-//	searchTable->setColumnWidth(2, maxVerseWidth+searchTable->fontMetrics().boundingRect("00").width() );
-
-//	searchTable->setUpdatesEnabled(true);
-	
-//	//if (!SaagharWidget::newSearchFlag)
-//	{//by the new search method there's just one page result!
-//		if (PageStart > 0)
-//		{
-//			searchPreviousPage->setEnabled(true);
-//			actSearchPreviousPage->setData("actSearchPreviousPage|"+phrase+"|"+qVari+QString::number(PageStart - tmpCount)+"|"+QString::number(tmpCount)+"|"+QString::number(PoetID));
-//		}
-
-//		if (HasMore)
-//		{
-//			searchNextPage->setEnabled(true);
-//			actSearchNextPage->setData("actSearchNextPage|"+phrase+"|"+QString::number(PageStart + count)+"|"+QString::number(count)+"|"+QString::number(PoetID));
-//		}
-//	}
-
-//	QApplication::restoreOverrideCursor();
 }
 
 void MainWindow::tableItemMouseOver(QTableWidgetItem *item)

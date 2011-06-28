@@ -37,7 +37,7 @@ QFont SaagharWidget::tableFont = qApp->font();
 bool SaagharWidget::showBeytNumbers = true;
 bool SaagharWidget::centeredView = true;
 bool SaagharWidget::backgroundImageState = false;
-bool SaagharWidget::newSearchFlag = false;
+//bool SaagharWidget::newSearchFlag = false;
 bool SaagharWidget::newSearchSkipNonAlphabet = false;
 QString SaagharWidget::backgroundImagePath = QString();
 QColor SaagharWidget::textColor = QColor();
@@ -964,7 +964,7 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 		for (int col = 0; col < tableViewWidget->columnCount(); ++col)
 		{
 			QTableWidgetItem *tmp = tableViewWidget->item(row, col);
-			if (newSearchFlag)
+			if (true /*SaagharWidget::newSearchFlag*/)
 			{
 				if (tmp)
 				{

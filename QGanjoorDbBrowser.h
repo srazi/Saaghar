@@ -71,11 +71,11 @@ class QGanjoorDbBrowser : public QObject
 		GanjoorPoet getPoet(QString PoetName);
 		QString getPoetDescription(int PoetID);
 		//Search
-		QList<int> getPoemIDsContainingPhrase(QString phrase, int PageStart, int Count, int PoetID);
-		QString getFirstVerseContainingPhrase(int PoemID, QString phrase);
+		//QList<int> getPoemIDsContainingPhrase(QString phrase, int PageStart, int Count, int PoetID);
+		//QString getFirstVerseContainingPhrase(int PoemID, QString phrase);
 		//new Search Method
-		QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
-		QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
+		//QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
+		//QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
 		//another new approch
 		QMap<int, QString> getPoemIDsContainingPhrase_NewMethod2(const QString &phrase, int PoetID, bool skipNonAlphabet);
 

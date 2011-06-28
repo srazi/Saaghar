@@ -51,7 +51,6 @@ class MainWindow : public QMainWindow
 		QStringList mainToolBarItems;
 		QAction *actionInstance(const QString actionObjectName = "", QString iconPath = "", QString displayName = "");
 		void searchRegionsInitialize();
-		void showSearchResults(const QString &phrase, QHash<int, QString> *resultList, int PageStart, int count, int PoetID, QWidget *dockWidget = 0);
 		bool isPortable;
 		QString convertToTeX(SaagharWidget *saagharObject);
 		QPrinter *defaultPrinter;
@@ -96,7 +95,7 @@ class MainWindow : public QMainWindow
 		void actFullScreenClicked(bool checked);
 		void actionRemovePoet();
 		void newSearchNonAlphabetChanged(bool checked);
-		void newSearchFlagChanged(bool checked);
+		//void newSearchFlagChanged(bool checked);
 		void actionImportNewSet();
 		void closeCurrentTab();
 		void helpContents();
