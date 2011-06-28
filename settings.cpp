@@ -20,8 +20,10 @@
  ***************************************************************************/
 
 #include "settings.h"
+
 #include <QColorDialog>
 #include <QFileDialog>
+#include <QImageReader>
 
 Settings::Settings(QWidget *parent) :	QDialog(parent), ui(new Ui::Settings)
 {
@@ -244,7 +246,18 @@ void Settings::browseForDataBasePath()
 
 void Settings::browseForBackground()
 {
-	QString location=QFileDialog::getOpenFileName(this,tr("Browse Background Image"), ui->lineEditBackground->text(),"Image files (*.png *.bmp)");
+	QList<QByteArray> formatList = QImageReader::supportedImageFormats();
+	QString imageFormats = "";
+	for (int i = 0; i<formatList.size(); ++i)
+	{
+		QString tmp = QString(formatList.at(i));
+		if (!tmp.isEmpty())
+			imageFormats+= "*."+QString(formatList.at(i));
+		if (i<formatList.size()-1)
+			imageFormats+=" ";
+	}
+
+	QString location=QFileDialog::getOpenFileName(this,tr("Browse Background Image"), ui->lineEditBackground->text(),"Image files ("+imageFormats+")");//*.png *.bmp)");
 	if ( !location.isEmpty() ) 
 		{
 		location.replace(QString("\\"),QString("/"));

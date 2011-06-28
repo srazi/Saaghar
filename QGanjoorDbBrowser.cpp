@@ -1082,23 +1082,23 @@ QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod(const QString
     return idList;
 }
 
-QHash<int, QString> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod2(const QString &phrase, int PoetID, bool skipNonAlphabet)
+QMap<int, QString> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod2(const QString &phrase, int PoetID, bool skipNonAlphabet)
 {
-	QHash<int, QString> idList;
+	QMap<int, QString> idList;
     if (isConnected())
 	{
 		QString strQuery;
 		QString phraseForSearch = QGanjoorDbBrowser::cleanString(phrase, skipNonAlphabet);
 		//qDebug() << "text=" << phrase << "cleanedText=" << phraseForSearch;
 		QString phraseForSearchQuery = QGanjoorDbBrowser::cleanString(phraseForSearch, true).split("",QString::SkipEmptyParts).join("%");
-		QMessageBox::information(0,"Method22222", phraseForSearchQuery);
+		QMessageBox::information(qApp->activeWindow(),"Method22222", phraseForSearchQuery);
 		QString ch = QString(phraseForSearch.at(0));
 		int numOfFounded=0;
 
 		if (PoetID == 0)
 			strQuery=QString("SELECT poem_id, text FROM verse WHERE text LIKE \'%" + phraseForSearchQuery + "%\'");
 		else
-			strQuery=QString("SELECT poem_id, text FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + phraseForSearchQuery + "%\' AND poet_id=" + QString::number(PoetID) );
+			strQuery=QString("SELECT verse.poem_id,verse.text FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + phraseForSearchQuery + "%\' AND poet_id=" + QString::number(PoetID) );
 
 		QSqlQuery q(dBConnection);
 		int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
@@ -1111,7 +1111,7 @@ QHash<int, QString> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod2(con
 		
 		//progress dialog
 		int maxOfProgressBar = 800000;//50000;
-		QProgressDialog progress(QGanjoorDbBrowser::tr("Searching Data Base..."), QGanjoorDbBrowser::tr("Cancel"), 0, maxOfProgressBar, qApp->activeModalWidget());
+		QProgressDialog progress(QGanjoorDbBrowser::tr("Searching Data Base..."), QGanjoorDbBrowser::tr("Cancel"), 0, maxOfProgressBar, qApp->activeWindow());
 		progress.setWindowModality(Qt::WindowModal);
 
 		while( q.next() )
@@ -1130,7 +1130,9 @@ QHash<int, QString> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod2(con
 			int poemID = qrec.value(0).toInt();
 			if (idList.contains(poemID))
 				continue;//we need just first result
+
 			QString verseText = qrec.value(1).toString();
+
 			//QStringList verseTexts = getVerseListContainingPhrase(qrec.value(0).toInt(), ch);
 			QString foundedVerse = QGanjoorDbBrowser::cleanString(verseText, skipNonAlphabet);
 			if (foundedVerse.contains(phraseForSearch, Qt::CaseInsensitive))
@@ -1140,8 +1142,8 @@ QHash<int, QString> QGanjoorDbBrowser::getPoemIDsContainingPhrase_NewMethod2(con
 				progress.setLabelText(labelText);
 	
 				progress.setValue(numOfNearResult);
-				
-				idList.insert(poemID,  verseText);//.append(poemID);
+				GanjoorPoem gPoem = getPoem(poemID);
+				idList.insert(poemID,  "verseText="+verseText+"|poemTitle="+gPoem._Title+"|poetName="+getPoetForCat(gPoem._CatID)._Name);//.append(poemID);
 				
 				continue;
 			}

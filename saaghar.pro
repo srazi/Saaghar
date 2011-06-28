@@ -20,6 +20,7 @@ HEADERS += mainwindow.h \
 	QGanjoorDbBrowser.h \
 	QGanjoorDbStuff.h \
 	settings.h \
+	SearchResultWidget.h \
 	version.h
 FORMS += mainwindow.ui \
 	settings.ui
@@ -28,7 +29,8 @@ SOURCES += main.cpp \
 	SearchItemDelegate.cpp \
     SaagharWidget.cpp \
     QGanjoorDbBrowser.cpp \
-	settings.cpp
+	settings.cpp \
+	SearchResultWidget.cpp
 	
 
 

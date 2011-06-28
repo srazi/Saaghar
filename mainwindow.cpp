@@ -24,6 +24,7 @@
 #include "SearchItemDelegate.h"
 #include "version.h"
 #include "settings.h"
+#include "SearchResultWidget.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -51,7 +52,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
-const int ITEM_SEARCH_DATA = Qt::UserRole+10;
+//const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 
 bool MainWindow::autoCheckForUpdatesState = true;
 
@@ -276,7 +277,76 @@ void MainWindow::searchStart()
 	//}
 	else
 	{
-		showSearchResults(lineEditSearchText->text(), 0, spinBoxMaxSearchResult->value(), comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt());
+		phrase = QGanjoorDbBrowser::cleanString(lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
+		int poetID = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt();
+
+		QString poetName = "";
+		if (poetID == 0)
+			poetName = tr("All");
+		else
+		{
+			poetName = SaagharWidget::ganjoorDataBase->getPoet(poetID)._Name;
+		}
+
+		QWidget *searchResultContents = new QWidget(this);
+		searchResultContents->setObjectName(QString::fromUtf8("searchResultContents"));
+		searchResultContents->setAttribute(Qt::WA_DeleteOnClose, true);
+		//searchResultContents->setLayoutDirection(Qt::RightToLeft);
+
+		SearchResultWidget *searchResultWidget = new SearchResultWidget(searchResultContents, lineEditSearchText->text(), spinBoxMaxSearchResult->value(), poetName);
+
+		QString iconThemePath=":/resources/images/";
+		if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
+			iconThemePath = settingsIconThemePath;
+
+		searchResultWidget->resultList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod2(phrase, poetID, SaagharWidget::newSearchSkipNonAlphabet);
+		if (!searchResultWidget->init(this, iconThemePath)/* || searchResultWidget->resultList->isEmpty()*/)
+		{
+			QMessageBox::information(this, tr("Search"), tr("No match found."));
+			delete searchResultWidget;
+			searchResultWidget = 0;
+			return;
+		}
+
+		connect(spinBoxMaxSearchResult, SIGNAL(valueChanged(int)), searchResultWidget, SLOT(setMaxItemPerPage(int)));
+		//create connections for mouse signals
+		connect(searchResultWidget->searchTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
+		connect(searchResultWidget->searchTable, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
+
+
+//		QDockWidget *tmpDockWidget = 0, *newDockWidget = 0;
+//		QObjectList mainWindowChildren = this->children();
+//		int oldObjectIndex = -1, newObjectIndex = -1;
+//		for (int i=0; i < mainWindowChildren.size(); ++i)
+//		{
+//			//tmpDockWidget = qobject_cast<QDockWidget *>(mainWindowChildren.at(i));
+//			if (mainWindowChildren.at(i)/*tmpDockWidget*/)
+//			{
+//				if (oldObjectIndex == -1 && mainWindowChildren.at(i)->objectName() == "searchResultWidget_old")
+//					oldObjectIndex = i;
+//				if (newObjectIndex == -1 && mainWindowChildren.at(i)->objectName() == "searchResultWidget_new")
+//					newObjectIndex = i;
+//				//break;
+//			}
+//		}
+		
+//		if (oldObjectIndex != -1)
+//			tmpDockWidget = qobject_cast<QDockWidget *>(mainWindowChildren.at(oldObjectIndex));
+//		if (newObjectIndex != -1)
+//			newDockWidget = qobject_cast<QDockWidget *>(mainWindowChildren.at(newObjectIndex));
+//		//searchResultWidget->setWidget(searchResultContents);
+//		if (newDockWidget)
+//		{
+//			this->addDockWidget(Qt::LeftDockWidgetArea, newDockWidget);
+			
+//			if (tmpDockWidget /*&& tmpDockWidget->objectName() == "searchResultWidget_old"*/) //there is another search results dock-widget present
+//				tabifyDockWidget(tmpDockWidget, newDockWidget);
+
+//			newDockWidget->setObjectName("searchResultWidget_old");
+	
+//			newDockWidget->show();
+//			newDockWidget->raise();
+//		}
 	}
 
 }
@@ -1112,7 +1182,9 @@ void MainWindow::setupUi()
 
 	spinBoxMaxSearchResult = new QSpinBox(ui->searchToolBar);
 	spinBoxMaxSearchResult->setObjectName(QString::fromUtf8("spinBoxMaxSearchResult"));
-	spinBoxMaxSearchResult->setValue(10);
+	spinBoxMaxSearchResult->setValue(100);
+	spinBoxMaxSearchResult->setMaximum(5000);
+	spinBoxMaxSearchResult->setSingleStep(5);
 
 	QToolButton *toolButtonSearchOption = new QToolButton(ui->searchToolBar);
 	toolButtonSearchOption->setObjectName(QString::fromUtf8("toolButtonSearchOption"));
@@ -1745,51 +1817,57 @@ void MainWindow::saveSaagharState()
 }
 
 //Search
-void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int PoetID, QWidget *dockWidget)
+void MainWindow::showSearchResults(const QString &phrase, QHash<int, QString> *resultList, int PageStart, int count, int PoetID, QWidget *dockWidget)
 {
-	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-	QApplication::processEvents();
+	if (!resultList) return;
+	/*QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+	QApplication::processEvents();*/
 
-	QHash<int, QString> poemIDsList;
-	QList<int> poemIDs;
-	//new search method
-	QProgressDialog progress(tr("Initializing Results Table..."), tr("Cancel"), 0, 100, this);
-	progress.setWindowModality(Qt::WindowModal);
-	if (SaagharWidget::newSearchFlag)
-	{
-		phrase = QGanjoorDbBrowser::cleanString(phrase, SaagharWidget::newSearchSkipNonAlphabet);
-		poemIDsList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod2(phrase, PoetID, SaagharWidget::newSearchSkipNonAlphabet);
-		progress.setMaximum(poemIDsList.size());
-	}
-	else
-		poemIDs = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase(phrase, PageStart, count+1, PoetID);
+	//QHash<int, QString> poemIDsList;
+	//QList<int> poemIDs;
+	////new search method
+
+	/*QProgressDialog progress(tr("Initializing Results Table..."), tr("Cancel"), 0, resultList->size(), this);
+	progress.setWindowModality(Qt::WindowModal);*/
+
+
+//	if (SaagharWidget::newSearchFlag)
+//	{
+//		phrase = QGanjoorDbBrowser::cleanString(phrase, SaagharWidget::newSearchSkipNonAlphabet);
+//		poemIDsList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod2(phrase, PoetID, SaagharWidget::newSearchSkipNonAlphabet);
+//		progress.setMaximum(resultList->size());
+//	}
+//	else
+//		poemIDs = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase(phrase, PageStart, count+1, PoetID);
 /////////////////////////////
-	int tmpCount = count;
-	bool HasMore = count>0 && poemIDsList.size() == count+1;
+	/*int tmpCount = count;
+	bool HasMore = count>0 && resultList->size() >= count+1;
 	bool navButtonsNeeded = false;
-	if (poemIDsList.size() <= count)
+	if (resultList->size() <= count)
 	{
-		count = poemIDsList.size();
+		count = resultList->size();
 		if (PageStart>0)
 			navButtonsNeeded = true;//almost one of navigation button needs to be enabled
 	}
 	else
 	{
-		count = HasMore ? count : poemIDsList.size() - 1;
+		count = HasMore ? count : resultList->size() - 1;
 		navButtonsNeeded = true;//almost one of navigation button needs to be enabled
-	}
+	}*/
 	
-	//new search method show all results in one page
-/*	if (SaagharWidget::newSearchFlag)
-		count = poemIDsList.size();
-*/
-	if (count < 1)
+//	//new search method show all results in one page
+//	if (SaagharWidget::newSearchFlag)
+//		count = resultList->size();
+
+	/*if (count < 1)
 	{
 		QApplication::restoreOverrideCursor();
 		QMessageBox::information(this, tr("Search"), tr("No match found."));
 		return;
-	}
-	QTableWidget *searchTable;
+	}*/
+///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+	/*QTableWidget *searchTable;
 	QToolButton *searchNextPage, *searchPreviousPage;
 	QAction *actSearchNextPage, *actSearchPreviousPage;
 	QDockWidget *searchResultWidget = 0;
@@ -1933,119 +2011,120 @@ void MainWindow::showSearchResults(QString phrase, int PageStart, int count, int
 
 		searchResultWidget->show();
 		searchResultWidget->raise();
-	}
+	}*/
+///////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+//	searchTable->setColumnWidth(0, searchTable->fontMetrics().boundingRect(QString::number((PageStart+count)*100)).width());
+//	int maxPoemWidth = 0, maxVerseWidth = 0;
 
-	searchTable->setColumnWidth(0, searchTable->fontMetrics().boundingRect(QString::number((PageStart+count)*100)).width());
-	int maxPoemWidth = 0, maxVerseWidth = 0;
-
-	QList<int> tmpList = poemIDsList.keys();
-	count = tmpList.size();
-	int progressBarIndex = 50;
-	const int step = count/20;
+//	QList<int> tmpList = resultList->keys();
+//	//count = tmpList.size();
+//	int progressBarIndex = 50;
+//	const int step = count/20;
 	
-	bool firstTimeUpdate = false;
-	for (int i = 0; i < count; ++i)
-	{
-		if (i>progressBarIndex)
-		{
-			progress.setValue(i);
-			progressBarIndex += step;
-			if (!firstTimeUpdate)
-			{
-				searchTable->setUpdatesEnabled(false);
-				firstTimeUpdate = true;
-			}
-		}
-		 if (progress.wasCanceled())
-			break;
+//	bool firstTimeUpdate = false;
+//	for (int i = 0; i < count; ++i)
+//	{
+//		if (i>progressBarIndex)
+//		{
+//			progress.setValue(i);
+//			progressBarIndex += step;
+//			if (!firstTimeUpdate)
+//			{
+//				searchTable->setUpdatesEnabled(false);
+//				firstTimeUpdate = true;
+//			}
+//		}
+//		 if (progress.wasCanceled())
+//			break;
 
-		GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(tmpList.at(i)/*poemIDsList.at(i)*/);
+//		GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(tmpList.at(i)/*resultList->at(i)*/);
 
-		poem._HighlightText = phrase;
+//		poem._HighlightText = phrase;
 		
-		//we need a modified verion of showParentCategory
-		//showParentCategory(SaagharWidget::ganjoorDataBase->getCategory(poem._CatID));
-		//adding Numbers
-		QString localizedNumber = SaagharWidget::persianIranLocal.toString(PageStart+i+1);
-		QTableWidgetItem *numItem = new QTableWidgetItem(localizedNumber);
-		numItem->setFlags(Qt::NoItemFlags /*Qt::ItemIsEnabled*/);
+//		//we need a modified verion of showParentCategory
+//		//showParentCategory(SaagharWidget::ganjoorDataBase->getCategory(poem._CatID));
+//		//adding Numbers
+//		QString localizedNumber = SaagharWidget::persianIranLocal.toString(PageStart+i+1);
+//		QTableWidgetItem *numItem = new QTableWidgetItem(localizedNumber);
+//		numItem->setFlags(Qt::NoItemFlags /*Qt::ItemIsEnabled*/);
 
-		searchTable->setItem(i, 0, numItem);
+//		searchTable->setItem(i, 0, numItem);
 
-		//add Items
-		QString snippedPoemTitle = QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 5, true);
-		QTableWidgetItem *poemItem = new QTableWidgetItem( snippedPoemTitle );
-		poemItem->setFlags(Qt::ItemIsEnabled);
-		poemItem->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
+//		//add Items
+//		QString snippedPoemTitle = QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 5, true);
+//		QTableWidgetItem *poemItem = new QTableWidgetItem( snippedPoemTitle );
+//		poemItem->setFlags(Qt::ItemIsEnabled);
+//		poemItem->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
 
-		int tmpWidth = searchTable->fontMetrics().boundingRect(snippedPoemTitle).width();
-		if ( tmpWidth > maxPoemWidth )
-			maxPoemWidth = tmpWidth;
+//		int tmpWidth = searchTable->fontMetrics().boundingRect(snippedPoemTitle).width();
+//		if ( tmpWidth > maxPoemWidth )
+//			maxPoemWidth = tmpWidth;
 
-		QString firstVerse = "";
-		//new search
-		if (SaagharWidget::newSearchFlag)
-		{
-			firstVerse = poemIDsList.value(poem._ID, "");
-			/*QStringList verseTexts = SaagharWidget::ganjoorDataBase->getVerseListContainingPhrase(poem._ID, phrase.at(0));
-			for (int k=0; k<verseTexts.size();++k)
-			{
+//		QString firstVerse = "";
+//		//new search
+//		if (SaagharWidget::newSearchFlag)
+//		{
+//			firstVerse = resultList->value(poem._ID, "");
+//			/*QStringList verseTexts = SaagharWidget::ganjoorDataBase->getVerseListContainingPhrase(poem._ID, phrase.at(0));
+//			for (int k=0; k<verseTexts.size();++k)
+//			{
 		
-				QString foundedVerse = QGanjoorDbBrowser::cleanString(verseTexts.at(k), SaagharWidget::newSearchSkipNonAlphabet);	
+//				QString foundedVerse = QGanjoorDbBrowser::cleanString(verseTexts.at(k), SaagharWidget::newSearchSkipNonAlphabet);	
 
 
-				if (foundedVerse.contains(phrase, Qt::CaseInsensitive))
-				{
-					firstVerse = verseTexts.at(k);
-					break;//we need just first result
-				}
-			}*/
-		}
-		else
-			firstVerse = SaagharWidget::ganjoorDataBase->getFirstVerseContainingPhrase(poem._ID, phrase);
+//				if (foundedVerse.contains(phrase, Qt::CaseInsensitive))
+//				{
+//					firstVerse = verseTexts.at(k);
+//					break;//we need just first result
+//				}
+//			}*/
+//		}
+//		else
+//			firstVerse = SaagharWidget::ganjoorDataBase->getFirstVerseContainingPhrase(poem._ID, phrase);
 
-		QString cleanedFirstVerse = QGanjoorDbBrowser::cleanString(firstVerse, false);
-		QString snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, phrase, 0, 8, true);
-		if (snippedFirstVerse.isEmpty())
-			snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, "", 0, 8, true);
+//		QString cleanedFirstVerse = QGanjoorDbBrowser::cleanString(firstVerse, false);
+//		QString snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, phrase, 0, 8, true);
+//		if (snippedFirstVerse.isEmpty())
+//			snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, "", 0, 8, true);
 
-		QTableWidgetItem *verseItem = new QTableWidgetItem(snippedFirstVerse);
-		verseItem->setFlags(Qt::ItemIsEnabled/*Qt::NoItemFlags*/);
-		verseItem->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
-		//set search data
-		verseItem->setData(ITEM_SEARCH_DATA, phrase);
-		poemItem->setData(ITEM_SEARCH_DATA, phrase);
+//		QTableWidgetItem *verseItem = new QTableWidgetItem(snippedFirstVerse);
+//		verseItem->setFlags(Qt::ItemIsEnabled/*Qt::NoItemFlags*/);
+//		verseItem->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
+//		//set search data
+//		verseItem->setData(ITEM_SEARCH_DATA, phrase);
+//		poemItem->setData(ITEM_SEARCH_DATA, phrase);
 
-		//insert items to table
-		searchTable->setItem(i, 1, poemItem);
-		searchTable->setItem(i, 2, verseItem);
+//		//insert items to table
+//		searchTable->setItem(i, 1, poemItem);
+//		searchTable->setItem(i, 2, verseItem);
 
-		tmpWidth = searchTable->fontMetrics().boundingRect(snippedFirstVerse).width();
-		if ( tmpWidth > maxVerseWidth )
-			maxVerseWidth = tmpWidth;
-	}
+//		tmpWidth = searchTable->fontMetrics().boundingRect(snippedFirstVerse).width();
+//		if ( tmpWidth > maxVerseWidth )
+//			maxVerseWidth = tmpWidth;
+//	}
 
-	searchTable->setColumnWidth(1, maxPoemWidth+searchTable->fontMetrics().boundingRect("00").width() );
-	searchTable->setColumnWidth(2, maxVerseWidth+searchTable->fontMetrics().boundingRect("00").width() );
+//	searchTable->setColumnWidth(1, maxPoemWidth+searchTable->fontMetrics().boundingRect("00").width() );
+//	searchTable->setColumnWidth(2, maxVerseWidth+searchTable->fontMetrics().boundingRect("00").width() );
 
-	searchTable->setUpdatesEnabled(true);
+//	searchTable->setUpdatesEnabled(true);
 	
-	//if (!SaagharWidget::newSearchFlag)
-	{//by the new search method there's just one page result!
-		if (PageStart > 0)
-		{
-			searchPreviousPage->setEnabled(true);
-			actSearchPreviousPage->setData("actSearchPreviousPage|"+phrase+"|"+QString::number(PageStart - tmpCount)+"|"+QString::number(tmpCount)+"|"+QString::number(PoetID));
-		}
+//	//if (!SaagharWidget::newSearchFlag)
+//	{//by the new search method there's just one page result!
+//		if (PageStart > 0)
+//		{
+//			searchPreviousPage->setEnabled(true);
+//			actSearchPreviousPage->setData("actSearchPreviousPage|"+phrase+"|"+qVari+QString::number(PageStart - tmpCount)+"|"+QString::number(tmpCount)+"|"+QString::number(PoetID));
+//		}
 
-		if (HasMore)
-		{
-			searchNextPage->setEnabled(true);
-			actSearchNextPage->setData("actSearchNextPage|"+phrase+"|"+QString::number(PageStart + count)+"|"+QString::number(count)+"|"+QString::number(PoetID));
-		}
-	}
+//		if (HasMore)
+//		{
+//			searchNextPage->setEnabled(true);
+//			actSearchNextPage->setData("actSearchNextPage|"+phrase+"|"+QString::number(PageStart + count)+"|"+QString::number(count)+"|"+QString::number(PoetID));
+//		}
+//	}
 
-	QApplication::restoreOverrideCursor();
+//	QApplication::restoreOverrideCursor();
 }
 
 void MainWindow::tableItemMouseOver(QTableWidgetItem *item)
@@ -2107,19 +2186,6 @@ void MainWindow::tableCurrentItemChanged(QTableWidgetItem *current, QTableWidget
 void MainWindow::tableItemPress(QTableWidgetItem *)
 {
 	pressedMouseButton = QApplication::mouseButtons();
-}
-
-void MainWindow::searchPageNavigationClicked(QAction *action)
-{
-	QWidget *actParent = action->parentWidget();
-
-	QVariant actionData = action->data();
-	if ( !actionData.isValid() || actionData.isNull() ) return;
-	QStringList dataList = actionData.toString().split("|", QString::SkipEmptyParts);
-	if (actParent)
-		showSearchResults(dataList.at(1), dataList.at(2).toInt(), dataList.at(3).toInt(), dataList.at(4).toInt(), actParent);
-	else
-		showSearchResults(dataList.at(1), dataList.at(2).toInt(), dataList.at(3).toInt(), dataList.at(4).toInt(), 0);
 }
 
 void MainWindow::tableItemClick(QTableWidgetItem *item)

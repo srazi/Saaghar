@@ -51,7 +51,7 @@ class MainWindow : public QMainWindow
 		QStringList mainToolBarItems;
 		QAction *actionInstance(const QString actionObjectName = "", QString iconPath = "", QString displayName = "");
 		void searchRegionsInitialize();
-		void showSearchResults(QString phrase, int PageStart, int count, int PoetID, QWidget *dockWidget = 0);
+		void showSearchResults(const QString &phrase, QHash<int, QString> *resultList, int PageStart, int count, int PoetID, QWidget *dockWidget = 0);
 		bool isPortable;
 		QString convertToTeX(SaagharWidget *saagharObject);
 		QPrinter *defaultPrinter;
@@ -108,7 +108,6 @@ class MainWindow : public QMainWindow
 		void actionFaalRandomClicked();
 		void aboutSaaghar();
 		void tableSelectChanged();
-		void searchPageNavigationClicked(QAction *action);
 		void tableItemPress(QTableWidgetItem *item);
 		void tableItemClick(QTableWidgetItem *item);
 		void tableItemMouseOver(QTableWidgetItem *item);

@@ -77,7 +77,7 @@ class QGanjoorDbBrowser : public QObject
 		QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
 		QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
 		//another new approch
-		QHash<int, QString> getPoemIDsContainingPhrase_NewMethod2(const QString &phrase, int PoetID, bool skipNonAlphabet);
+		QMap<int, QString> getPoemIDsContainingPhrase_NewMethod2(const QString &phrase, int PoetID, bool skipNonAlphabet);
 
 		//Faal
 		int getRandomPoemID(int *CatID);
