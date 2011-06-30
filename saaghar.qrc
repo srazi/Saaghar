@@ -31,5 +31,8 @@
 		<file>images/fullscreen.png</file>
 		<file>images/remove-poet.png</file>
 		<file>images/check-updates.png</file>
+		<file>images/clear-left.png</file>
+		<file>images/clear-right.png</file>
+		<file>images/search-options.png</file>
 	</qresource>
 </RCC>

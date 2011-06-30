@@ -21,17 +21,20 @@ HEADERS += mainwindow.h \
 	QGanjoorDbStuff.h \
 	settings.h \
 	SearchResultWidget.h \
+#	SearchPatternManager.h \
+	QSearchLineEdit.h \
 	version.h
 FORMS += mainwindow.ui \
 	settings.ui
 SOURCES += main.cpp \
 	mainwindow.cpp \
 	SearchItemDelegate.cpp \
-    SaagharWidget.cpp \
-    QGanjoorDbBrowser.cpp \
+	SaagharWidget.cpp \
+	QGanjoorDbBrowser.cpp \
 	settings.cpp \
-	SearchResultWidget.cpp
-	
+	SearchResultWidget.cpp \
+#	SearchPatternManager.cpp \
+	QSearchLineEdit.cpp
 
 
 #########################################
@@ -152,7 +155,7 @@ INSTALLS += utilities \
 mac {
 LOG = $$system(mkdir ~/Library/)
 LOG += $$system(mkdir ~/Library/Saaghar)
-LOG  += $$system(cp -n utilities/* ~/Library/Saaghar/)
+LOG += $$system(cp -n utilities/* ~/Library/Saaghar/)
 
 CONFIG += link_prl x86
 QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
@@ -324,8 +327,8 @@ poetsImage.files = utilities/poets_images/10.png \
 desktop.path = $${DESKTOPDIR}
 desktop.files = utilities/Saaghar.desktop
 INSTALLS += desktop \
-            poetsImage \
-            utilities
+			poetsImage \
+			utilities
 
 icon.path = $${ICONDIR}
 icon.files = images/saaghar.png

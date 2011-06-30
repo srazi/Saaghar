@@ -23,6 +23,8 @@
 #define MAINWINDOW_H
 
 #include "SaagharWidget.h"
+#include "QSearchLineEdit.h"
+
 #include <QMainWindow>
 #include <QSettings>
 #include <QLineEdit>
@@ -76,7 +78,8 @@ class MainWindow : public QMainWindow
 		Ui::MainWindow *ui;
 		void createConnections();
 		void setupUi();
-		QLineEdit *lineEditSearchText;
+		QSearchLineEdit *lineEditSearchText;
+		//QLineEdit *lineEditSearchText;
 		QComboBox *comboBoxSearchRegion;
 		QSpinBox *spinBoxMaxSearchResult;
 		QPushButton *pushButtonSearch;
@@ -89,6 +92,7 @@ class MainWindow : public QMainWindow
 		QAction *labelMaxResultSeparator;
 		QAction *labelMaxResultAction;
 		QAction *spinBoxMaxSearchResultAction;
+		QMenu *searchOptionMenu;
 
 	private slots:
 		void checkForUpdates();
@@ -126,6 +130,9 @@ class MainWindow : public QMainWindow
 		void actionNextPoemClicked();
 			//Tools
 		void actionGanjoorSiteClicked();
+		
+			//search options
+		void showSearchOptionMenu();
 
 	protected:
 		void resizeEvent( QResizeEvent * event );

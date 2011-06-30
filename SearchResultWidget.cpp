@@ -46,7 +46,12 @@ SearchResultWidget::SearchResultWidget(QWidget *parent, const QString &searchPhr
 
 SearchResultWidget::~SearchResultWidget()
 {
-qDebug() << "SearchResultWidget is destroyed!";
+	//qDebug() << "SearchResultWidget is destroyed!";
+}
+
+void SearchResultWidget::setResultList(const QMap<int, QString> &map)
+{
+	copyResultList = resultList = map;
 }
 
 bool SearchResultWidget::init(QMainWindow *qmw, const QString &iconThemePath)
@@ -64,14 +69,7 @@ bool SearchResultWidget::init(QMainWindow *qmw, const QString &iconThemePath)
 
 void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 {
-	//QString iconThemePath=":/resources/images/";
-	/*if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
-		iconThemePath = settingsIconThemePath;*/
-
 	QDockWidget *searchResultWidget = 0;
-	
-	//bool fromOtherPage = false;
-
 	searchResultWidget = new QDockWidget(sectionName+":"+phrase, qmw);
 	searchResultWidget->setObjectName(QString::fromUtf8("searchResultWidget_new"));//object name for created instance, it renames to 'searchResultWidget_old'
 	//searchResultWidget->setLayoutDirection(Qt::RightToLeft);
@@ -88,9 +86,37 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 	QGridLayout *searchTableGridLayout = new QGridLayout();
 	searchTableGridLayout->setSpacing(6);
 	searchTableGridLayout->setObjectName(QString::fromUtf8("gridLayout_3"));
+
+	//create filter lable and lineEdit and layout
+	QHBoxLayout *filterHorizontalLayout = new QHBoxLayout();
+	filterHorizontalLayout->setSpacing(6);
+	filterHorizontalLayout->setObjectName(QString::fromUtf8("filterHorizontalLayout"));
+
+	QLabel *filterLabel = new QLabel(searchResultContents);
+	filterLabel->setObjectName(QString::fromUtf8("filterLabel"));
+	filterLabel->setText(tr("Filter:"));
+	filterHorizontalLayout->addWidget(filterLabel, 0, Qt::AlignRight|Qt::AlignCenter);
+	
+	QString clearIconPath = iconThemePath+"/clear-left.png";
+	if (searchResultContents->layoutDirection() == Qt::RightToLeft)
+		clearIconPath = iconThemePath+"/clear-right.png";
+	filterLineEdit = new QSearchLineEdit(searchResultContents, clearIconPath, iconThemePath+"/search.png");
+	filterLineEdit->setObjectName(QString::fromUtf8("filterLineEdit"));
+	connect(filterLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(filterResults(const QString &)));
+	filterHorizontalLayout->addWidget(filterLineEdit);
+	QSpacerItem *filterHorizSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+	filterHorizontalLayout->addItem(filterHorizSpacer);
+
+	pageLabel = new QLabel(searchResultContents);
+	pageLabel->setObjectName(QString::fromUtf8("pageLabel"));
+	filterHorizontalLayout->addWidget(pageLabel, 0, Qt::AlignRight|Qt::AlignCenter);
+
+	searchTableGridLayout->addLayout(filterHorizontalLayout, 1, 0, 1, 1);
+
 	//create QTableWidget
 	searchTable = new QTableWidget(searchResultContents);
 	searchTable->setObjectName(QString::fromUtf8("searchTable"));
+	searchTable->setColumnCount(3);
 	searchTable->setLayoutDirection(Qt::RightToLeft);
 	searchTable->setAlternatingRowColors(true);
 	searchTable->setSelectionMode(QAbstractItemView::NoSelection);
@@ -98,7 +124,7 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 	searchTable->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 	searchTable->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 	searchTable->verticalHeader()->setVisible(false);
-	searchTable->horizontalHeader()->setVisible(false);
+	//searchTable->horizontalHeader()->setVisible(false);
 	searchTable->horizontalHeader()->setHighlightSections(false);
 	searchTable->horizontalHeader()->setStretchLastSection(true);
 
@@ -208,13 +234,32 @@ void SearchResultWidget::showSearchResult(int start)
 	{
 		start = 0;
 		end = resultList.size()-1;
+		pageNumber = 1;
+		pageCount = 1;
 	}
+	else
+	{
+		pageCount = resultList.size()/SearchResultWidget::maxItemPerPage;
+		if (resultList.size()%SearchResultWidget::maxItemPerPage != 0)
+			++pageCount;
+		if (end == resultList.size()-1)
+			pageNumber = pageCount;
+		else if (start == 0)
+			pageNumber = 1;
+		else
+		{
+			pageNumber = (start+1)/SearchResultWidget::maxItemPerPage;//'start' is started from 0
+			if ((start+1)%SearchResultWidget::maxItemPerPage != 0)
+				++pageNumber;
+		}
+	}
+	//updatePageLabel(pageCount, pageNumber;
+	pageLabel->setText(tr("page %1 of %2 page(s)").arg(pageNumber).arg(pageCount));
 
 	int count = end-start+1;
-
 	searchTable->clear();
 	searchTable->setRowCount(count);
-	searchTable->setColumnCount(3);
+	searchTable->setHorizontalHeaderLabels(QStringList() << tr("#") << tr("Title") << tr("Verse") );
 
 	navButtonsNeeded = moreThanOnePage;
 	
@@ -380,4 +425,35 @@ void SearchResultWidget::setMaxItemPerPage(int value)
 	}
 
 	SearchResultWidget::maxItemPerPage = value;
+}
+
+void SearchResultWidget::filterResults(const QString &text)
+{
+	if (text.isEmpty())
+	{
+		resultList = copyResultList;
+		showSearchResult(0);
+		return;
+	}
+	//QMap<int, QString> tmpList;
+	resultList.clear();
+	QMap<int, QString>::const_iterator it = copyResultList.constBegin();
+	const QMap<int, QString>::const_iterator endIterator = copyResultList.constEnd();
+	while (it != endIterator)
+	{
+		const QString value = it.value();
+		if (value.contains(text, Qt::CaseInsensitive))
+			resultList.insert(it.key(), value);
+		++it;
+	}
+	if (resultList.isEmpty())
+	{
+		pageLabel->setText(tr("Nothing found!"));
+		searchPreviousPage->setEnabled(false);
+		searchNextPage->setEnabled(false);
+		searchTable->clear();
+		searchTable->setRowCount(0);
+	}
+	else
+		showSearchResult(0);
 }

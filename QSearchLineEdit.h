@@ -19,56 +19,37 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef SEARCHRESULTWIDGET_H
-#define SEARCHRESULTWIDGET_H
+#ifndef QSEARCHLINEEDIT_H
+#define QSEARCHLINEEDIT_H
 
-#include "QSearchLineEdit.h"
+#include <QLineEdit>
 
-#include <QMainWindow>
-#include <QHash>
-#include <QTableWidget>
-#include <QToolButton>
-#include <QAction>
-//#include <QLineEdit>
-#include <QLabel>
+class QToolButton;
 
-const int ITEM_SEARCH_DATA = Qt::UserRole+10;
-
-
-class SearchResultWidget : public QWidget
-{ 
+class QSearchLineEdit : public QLineEdit
+{
 	Q_OBJECT
 
 public:
-	SearchResultWidget(QWidget *parent = 0, const QString &searchPhrase = "", int count = 0, const QString &poetName = "");
-	~SearchResultWidget();
+	QSearchLineEdit(QWidget *parent = 0, const QString &clearIconFileName = "", const QString &optionsIconFileName = "");
+	QToolButton *optionsButton();
+	
 
-	bool init(QMainWindow *qmw, const QString &iconThemePath);
-	void setResultList(const QMap<int, QString> &map);
-	//QHash<int, QString> resultList;//random order
-	QTableWidget *searchTable;
-
-private:
-	QWidget *searchResultContents;
-	void setupUi(QMainWindow *qmw, const QString &iconThemePath);
-	void showSearchResult(int start);
-	static int maxItemPerPage;
-	QString phrase;
-	bool navButtonsNeeded;
-	bool moreThanOnePage;
-	QString sectionName;
-	QToolButton *searchNextPage, *searchPreviousPage;
-	QAction *actSearchNextPage, *actSearchPreviousPage;
-	int pageNumber, pageCount;
-	QLabel *pageLabel;
-	QSearchLineEdit *filterLineEdit;
-	QMap<int, QString> resultList;
-	QMap<int, QString> copyResultList;
+protected:
+	void resizeEvent(QResizeEvent *);
 
 private slots:
-	void searchPageNavigationClicked(QAction *action);
-	void setMaxItemPerPage(int value);
-	void filterResults(const QString &text);
+	void updateCloseButton(const QString &text);
+	void updateStyleSheet(const QString &text);
+
+private:
+	void moveToRight(QToolButton *button);
+	void moveToLeft(QToolButton *button);
+	QToolButton *clearButton;
+	QToolButton *_optionsButton;
+
+signals:
+	void clearButtonPressed();
 };
 
-#endif // SEARCHRESULTWIDGET_H
+#endif // QSEARCHLINEEDIT_H

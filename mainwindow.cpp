@@ -299,7 +299,7 @@ void MainWindow::searchStart()
 		if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
 			iconThemePath = settingsIconThemePath;
 
-		searchResultWidget->resultList = SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod2(phrase, poetID, SaagharWidget::newSearchSkipNonAlphabet);
+		searchResultWidget->setResultList( SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod2(phrase, poetID, SaagharWidget::newSearchSkipNonAlphabet) );
 		if (!searchResultWidget->init(this, iconThemePath)/* || searchResultWidget->resultList->isEmpty()*/)
 		{
 			QMessageBox::information(this, tr("Search"), tr("No match found."));
@@ -1126,7 +1126,12 @@ void MainWindow::setupUi()
 	labelSearchPhrase->setObjectName(QString::fromUtf8("labelSearchPhrase"));
 	labelSearchPhrase->setText(tr("Search Phrase"));
 
-	lineEditSearchText = new QLineEdit(ui->searchToolBar);
+	QString clearIconPath = iconThemePath+"/clear-left.png";
+	if (layoutDirection() == Qt::RightToLeft)
+		clearIconPath = iconThemePath+"/clear-right.png";
+	lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, iconThemePath+"/search-options.png");
+	//lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, iconThemePath+"/clear.png", iconThemePath+"/options.png");
+	//lineEditSearchText = new QLineEdit(ui->searchToolBar);
 	lineEditSearchText->setObjectName(QString::fromUtf8("lineEditSearchText"));
 	lineEditSearchText->setMaximumSize(QSize(170, 16777215));
 	lineEditSearchText->setLayoutDirection(Qt::RightToLeft);
@@ -1140,6 +1145,16 @@ void MainWindow::setupUi()
 	comboBoxSearchRegion->setMinimumSize(QSize(0, 0));
 	comboBoxSearchRegion->setLayoutDirection(Qt::RightToLeft);
 	comboBoxSearchRegion->setSizeAdjustPolicy(QComboBox::AdjustToContents);
+	
+	//create layout and add widgets to it!
+	QVBoxLayout *searchVerLayout = new QVBoxLayout();
+	searchVerLayout->setSpacing(0);
+	searchVerLayout->addWidget(lineEditSearchText);
+	searchVerLayout->addWidget(comboBoxSearchRegion);
+	QWidget *searchVerWidget = new QWidget();
+	searchVerWidget->setLayout(searchVerLayout);
+	//ui->mainToolBar->addWidget( searchVerWidget);
+	//ui->searchToolBar->addWidget(searchVerWidget);
 
 	QLabel *labelMaxResult = new QLabel(ui->searchToolBar);
 	labelMaxResult->setObjectName(QString::fromUtf8("labelMaxResult"));
@@ -1151,23 +1166,29 @@ void MainWindow::setupUi()
 	spinBoxMaxSearchResult->setMaximum(5000);
 	spinBoxMaxSearchResult->setSingleStep(5);
 
-	QToolButton *toolButtonSearchOption = new QToolButton(ui->searchToolBar);
-	toolButtonSearchOption->setObjectName(QString::fromUtf8("toolButtonSearchOption"));
-	toolButtonSearchOption->setIcon(QIcon(iconThemePath+"/options.png"));
-	toolButtonSearchOption->setPopupMode(QToolButton::InstantPopup);
-	QMenu *searchOptionMenu = new QMenu(ui->searchToolBar);
+//	QToolButton *toolButtonSearchOption = new QToolButton(ui->searchToolBar);
+//	toolButtonSearchOption->setObjectName(QString::fromUtf8("toolButtonSearchOption"));
+//	toolButtonSearchOption->setIcon(QIcon(iconThemePath+"/options.png"));
+//	toolButtonSearchOption->setPopupMode(QToolButton::InstantPopup);
+	//QMenu *
+	searchOptionMenu = new QMenu(ui->searchToolBar);
 	//actionInstance("actionNewSearchFlag", "", tr("&New Search Method") )->setCheckable(true);
 	actionInstance("actionNewSearchSkipNonAlphabet", "", tr("&Skip non-Alphabet") )->setCheckable(true);
 	//actionInstance("actionNewSearchFlag")->setChecked(SaagharWidget::newSearchFlag);
 	actionInstance("actionNewSearchSkipNonAlphabet")->setChecked(SaagharWidget::newSearchSkipNonAlphabet);
-	actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(true /*actionInstance("actionNewSearchFlag")->isChecked()*/);
+	//actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(true /*actionInstance("actionNewSearchFlag")->isChecked()*/);
 
 	//connect(actionInstance("actionNewSearchFlag"), SIGNAL(toggled(bool)), this, SLOT(newSearchFlagChanged(bool)));
 	connect(actionInstance("actionNewSearchSkipNonAlphabet"), SIGNAL(toggled(bool)), this, SLOT(newSearchNonAlphabetChanged(bool)));
 	//searchOptionMenu->addAction(actionInstance("actionNewSearchFlag"));
 	searchOptionMenu->addAction(actionInstance("actionNewSearchSkipNonAlphabet"));
-	toolButtonSearchOption->setMenu(searchOptionMenu);
+//toolButtonSearchOption->setMenu(searchOptionMenu);
 	//pushButtonSearch->setText(tr("Search"));
+
+//	lineEditSearchText->optionsButton()->setPopupMode(QToolButton::InstantPopup);
+//	lineEditSearchText->optionsButton()->setMenu(searchOptionMenu);
+//	lineEditSearchText->optionsButton()->setArrowType(Qt::NoArrow);
+	connect(lineEditSearchText->optionsButton(), SIGNAL(clicked()), this, SLOT(showSearchOptionMenu()));
 
 	ui->searchToolBar->addWidget(labelSearchPhrase);
 	ui->searchToolBar->addWidget(lineEditSearchText);
@@ -1178,7 +1199,7 @@ void MainWindow::setupUi()
 	labelMaxResultAction = ui->searchToolBar->addWidget(labelMaxResult);
 	spinBoxMaxSearchResultAction = ui->searchToolBar->addWidget(spinBoxMaxSearchResult);
 	ui->searchToolBar->addSeparator();
-	ui->searchToolBar->addWidget(toolButtonSearchOption);
+//	ui->searchToolBar->addWidget(toolButtonSearchOption);
 	
 	//max result spinbox visibility
 	labelMaxResultSeparator->setVisible(true /*!actionInstance("actionNewSearchFlag")->isChecked()*/);
@@ -1337,6 +1358,12 @@ void MainWindow::setupUi()
 //	spinBoxMaxSearchResultAction->setVisible(!checked);
 //	//SaagharWidget::newSearchFlag = checked;
 //}
+
+void MainWindow::showSearchOptionMenu()
+{
+	if (!searchOptionMenu || !lineEditSearchText || !lineEditSearchText->optionsButton()) return;
+	searchOptionMenu->exec(lineEditSearchText->optionsButton()->mapToGlobal(QPoint(0, lineEditSearchText->optionsButton()->height()))/*QCursor::pos()*/);
+}
 
 void MainWindow::newSearchNonAlphabetChanged(bool checked)
 {
