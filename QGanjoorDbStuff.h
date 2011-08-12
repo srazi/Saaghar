@@ -22,6 +22,8 @@
 #ifndef QGANJOORDBSTUFF_H
 #define QGANJOORDBSTUFF_H
 
+#include <QString>
+
 enum VersePosition
 {
 	Right = 0,//مصرع اول

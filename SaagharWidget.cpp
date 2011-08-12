@@ -1,4 +1,4 @@
-﻿/***************************************************************************
+/***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
@@ -79,7 +79,7 @@ void SaagharWidget::loadSettings()
 	//tableViewWidget->setSelectionMode(QAbstractItemView::ContiguousSelection);
 	QPalette p(tableViewWidget->palette());
 
-#ifdef Q_WS_MAC
+#if defined(Q_WS_MAC) || defined(Q_WS_X11)
 	if ( SaagharWidget::backgroundImageState && !SaagharWidget::backgroundImagePath.isEmpty() )
 	{
 		p.setBrush(QPalette::Base, QBrush(QPixmap(SaagharWidget::backgroundImagePath)) );
@@ -362,19 +362,16 @@ void SaagharWidget::showCategory(GanjoorCat category)
 	}
 	///Initialize Table//TODO: I need to check! maybe it's not needed
 	tableViewWidget->clearContents();
-	tableViewWidget->setFrameShape(QFrame::NoFrame);
-	tableViewWidget->setFrameStyle(QFrame::NoFrame|QFrame::Plain);
-	tableViewWidget->setShowGrid(false);
 
-	QHeaderView *header = tableViewWidget->horizontalHeader();
-	header->setStretchLastSection(true);
-	header->hide();
-	tableViewWidget->setHorizontalHeader(header);
-	header = tableViewWidget->verticalHeader();
-	header->hide();
-	tableViewWidget->setVerticalHeader(header);
+//	QHeaderView *header = tableViewWidget->horizontalHeader();
+//	header->setStretchLastSection(true);
+//	header->hide();
+//	tableViewWidget->setHorizontalHeader(header);
+//	header = tableViewWidget->verticalHeader();
+//	header->hide();
+//	tableViewWidget->setVerticalHeader(header);
 
-	tableViewWidget->setAttribute(Qt::WA_OpaquePaintEvent, true);
+	//tableViewWidget->setAttribute(Qt::WA_OpaquePaintEvent, true);
 	tableViewWidget->setLayoutDirection(Qt::RightToLeft);
 
 	int startRow = 0;
@@ -406,12 +403,14 @@ void SaagharWidget::showCategory(GanjoorCat category)
 			tableViewWidget->setRowCount(1+subcatsSize+poems.size());
 			QTableWidgetItem *catItem = new QTableWidgetItem(itemText);
 			catItem->setFlags(catsItemFlag);
+			qDebug() << "showCategory";
 			catItem->setTextAlignment(Qt::AlignJustify);
 			catItem->setData(Qt::UserRole, "CatID="+QString::number(category._ID));
 			QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(gPoet._ID)+".png";;
 			if (!QFile::exists(poetPhotoFileName))
 				poetPhotoFileName = ":/resources/images/no-photo.png";
 			catItem->setIcon(QIcon(poetPhotoFileName));
+			/*************
 			//set row height
 			int textWidth = tableViewWidget->fontMetrics().boundingRect(itemText).width();
 			int verticalScrollBarWidth=0;
@@ -423,8 +422,10 @@ void SaagharWidget::showCategory(GanjoorCat category)
 			totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
 			//int numOfRow = textWidth/totalWidth ;
 			tableViewWidget->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(tableViewWidget->fontMetrics(), textWidth, totalWidth)) );
-			//tableViewWidget->setRowHeight(0, 2*tableViewWidget->rowHeight(0)+(tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
-
+			*************/
+			//////tableViewWidget->setRowHeight(0, 2*tableViewWidget->rowHeight(0)+(tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
+			//fixed bug: description's height 
+			resizeTable(tableViewWidget);
 			tableViewWidget->setItem(0, 0, catItem);
 		}
 		else
@@ -483,21 +484,71 @@ void SaagharWidget::showCategory(GanjoorCat category)
 void SaagharWidget::showParentCategory(GanjoorCat category)
 {
 	parentCatsToolBar->clear();
-	
+	parentCatsToolBar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	parentCatsToolBar->setAllowedAreas(Qt::TopToolBarArea|Qt::BottomToolBarArea|Qt::NoToolBarArea);
 	//the parents of this category
 	QList<GanjoorCat> ancestors = ganjoorDataBase->getParentCategories(category);
 
+	QHBoxLayout *parentCatLayout = new QHBoxLayout();
+	QWidget *parentCatWidget = new QWidget();
+	parentCatLayout->setSpacing(0);
+	parentCatLayout->setContentsMargins(0,0,0,0);
+
 	for (int i = 0; i < ancestors.size(); i++)
 	{
+		QString buttonImage = ":/resources/images/cats-buttons/button-middle.png";
+		QString buttonHomePressed, buttonHomeHovered;
+		buttonHomePressed = buttonHomeHovered = buttonImage;
+
 		parentCatButton = new QPushButton(parentCatsToolBar);
-		parentCatButton->setText(ancestors.at(i)._Text);
+		int minWidth = parentCatButton->fontMetrics().width(ancestors.at(i)._Text)+4;
+
+		if (ancestors.size() == 1 && category._Text.isEmpty())
+		{
+			buttonImage = ":/resources/images/cats-buttons/button-home-single.png";
+			buttonHomeHovered = ":/resources/images/cats-buttons/button-home-single_hovered.png";
+			buttonHomePressed = ":/resources/images/cats-buttons/button-home-single_pressed.png";
+			//minWidth = 12;
+			parentCatButton->setFixedWidth(32);
+		}
+		else
+		{
+			if (i==0)
+			{
+				buttonImage = ":/resources/images/cats-buttons/button-home-start.png";
+				buttonHomeHovered = ":/resources/images/cats-buttons/button-home-start_hovered.png";
+				buttonHomePressed = ":/resources/images/cats-buttons/button-home-start_pressed.png";
+				//minWidth = 22;
+				parentCatButton->setFixedWidth(22);
+			}
+		}
+
+QString styleSheetStr = QString("QPushButton {\
+						color: #606060;\
+						min-height: 22px;\
+						width: %1px;\
+						padding-left: 15px;\
+						border-image: url(%2) 0 15 0 15;\
+						border-top: 0px transparent;\
+						border-bottom: 0px transparent;\
+						border-right: 15px transparent;\
+						border-left: 15px transparent; }\
+						QPushButton:hover { font: bold; color: black; border-image: url(%3) 0 15 0 15; }\
+						QPushButton:pressed { color: grey; border-image: url(%4) 0 15 0 15; }\
+						").arg(minWidth).arg(buttonImage).arg(buttonHomeHovered).arg(buttonHomePressed);
+			//background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #fafbee);
+		if (i==0)
+			parentCatButton->setText("");
+		else
+			parentCatButton->setText(ancestors.at(i)._Text);
 		parentCatButton->setObjectName("CATEGORY_ID="+QString::number(ancestors.at(i)._ID));//used as button data
 		connect(parentCatButton, SIGNAL(clicked(bool)), this, SLOT(parentCatClicked()));
 		//style
-		int minWidth = parentCatButton->fontMetrics().width(ancestors.at(i)._Text)+6;
-		parentCatButton->setStyleSheet(QString("QPushButton{border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde); min-width: %1px; min-height: %2px; text margin-left:1px; margin-right:1px } QPushButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa); } QPushButton:flat { border: none; } QPushButton:default { border-color: red; }").arg(minWidth).arg(parentCatButton->fontMetrics().height()+2));
+		parentCatButton->setStyleSheet(styleSheetStr);
+		//(QString("QPushButton{border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde); min-width: %1px; min-height: %2px; text margin-left:1px; margin-right:1px } QPushButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa); } QPushButton:flat { border: none; } QPushButton:default { border-color: red; }").arg(minWidth).arg(parentCatButton->fontMetrics().height()+2));
 		
-		parentCatsToolBar->addWidget(parentCatButton);
+//		parentCatsToolBar->addWidget(parentCatButton);
+		parentCatLayout->addWidget(parentCatButton);
 	}
 
 	if (!category._Text.isEmpty())
@@ -507,9 +558,28 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 		parentCatButton->setObjectName("CATEGORY_ID="+QString::number(category._ID));//used as button data
 		connect(parentCatButton, SIGNAL(clicked(bool)), this, SLOT(parentCatClicked()));
 		int minWidth = parentCatButton->fontMetrics().width(category._Text)+6;
-		parentCatButton->setStyleSheet(QString("QPushButton{border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde); min-width: %1px; min-height: %2px; text margin-left:1px; margin-right:1px } QPushButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa); } QPushButton:flat { border: none; } QPushButton:default { border-color: red; }").arg(minWidth).arg(parentCatButton->fontMetrics().height()+2));
-		parentCatsToolBar->addWidget(parentCatButton);
+		QString styleSheetStr = QString("QPushButton {\
+						color: #707070;\
+						min-height: 22px;\
+						min-width: %1px;\
+						padding-left: 15px;\
+						border-image: url(%2) 0 15 0 15;\
+						border-top: 0px transparent;\
+						border-bottom: 0px transparent;\
+						border-right: 15px transparent;\
+						border-left: 15px transparent; }\
+						QPushButton:hover { color: black; }\
+						QPushButton:pressed { color: grey; }\
+						").arg(minWidth).arg(":/resources/images/cats-buttons/button-last.png");
+						
+						// background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);
+		parentCatButton->setStyleSheet(styleSheetStr);
+		//QString("QPushButton{border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde); min-width: %1px; min-height: %2px; text margin-left:1px; margin-right:1px } QPushButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa); } QPushButton:flat { border: none; } QPushButton:default { border-color: red; }").arg(minWidth).arg(parentCatButton->fontMetrics().height()+2));
+		//parentCatsToolBar->addWidget(parentCatButton);
+		parentCatLayout->addWidget(parentCatButton);
 	}
+	parentCatWidget->setLayout(parentCatLayout);
+	parentCatsToolBar->addWidget(parentCatWidget);
 
 	currentCat = !category.isNull() ? category._ID : 0;
 }
@@ -560,11 +630,12 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 	int textWidth = fontMetric.boundingRect(poem._Title).width();
 	int totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
 	//int numOfRow = textWidth/totalWidth ;
+	totalWidth = tableViewWidget->viewport()->width();
 
 	tableViewWidget->setItem(0, 1, poemTitle);
 	tableViewWidget->setSpan(0, 1, 1, 3 );
 	tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(tableViewWidget->fontMetrics(), textWidth, totalWidth) );
-	//tableViewWidget->rowHeight(0)+(fontMetric.height()*(numOfRow/*+1*/)));
+	////tableViewWidget->rowHeight(0)+(fontMetric.height()*(numOfRow/*+1*/)));
 
 	int row = 1;
 
@@ -705,7 +776,7 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
 					
-					tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
+					//tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
 						//					tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
 					singleColumnHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
 					MissedMesras--;
@@ -714,6 +785,8 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 				case Paragraph :
 					textWidth = fontMetric.boundingRect(mesraItem->data(Qt::DisplayRole).toString()).width();
 					totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+
+					totalWidth = tableViewWidget->viewport()->width();
 					//numOfRow = textWidth/totalWidth;
 					{
 						/*QTextEdit *paraEdit = new QTextEdit(this);
@@ -729,8 +802,8 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 						tableViewWidget->setItem(row, 1, mesraItem);
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
-					tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
-					//tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
+					//tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
+					////tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
 					singleColumnHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
 					MissedMesras++;
 					break;
@@ -909,7 +982,8 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 					{
 						verticalScrollBarWidth=table->verticalScrollBar()->width();
 					}
-					int totalWidth = table->columnWidth(0)-verticalScrollBarWidth-82;
+					//int totalWidth = table->columnWidth(0)-verticalScrollBarWidth-82;
+					int totalWidth = tableViewWidget->viewport()->width();
 					totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
 					table->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(table->fontMetrics(), textWidth, totalWidth)) );
 				}
@@ -920,7 +994,8 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 		int totalWidth = 0;
 		if (table->columnCount() == 4)
 		{
-			totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+			//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+			totalWidth = tableViewWidget->viewport()->width();
 			QMap<int, int>::const_iterator i = singleColumnHeightMap.constBegin();
 			while (i != singleColumnHeightMap.constEnd())
 			{

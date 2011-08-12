@@ -41,7 +41,7 @@ SearchResultWidget::SearchResultWidget(QWidget *parent, const QString &searchPhr
 	actSearchPreviousPage = 0;
 	phrase = searchPhrase;
 	sectionName = poetName;
-	setMaxItemPerPage(count);
+	maxItemPerPageChange(count);
 }
 
 SearchResultWidget::~SearchResultWidget()
@@ -405,7 +405,7 @@ void SearchResultWidget::searchPageNavigationClicked(QAction *action)
 		showSearchResult(dataList.at(1).toInt());
 }
 
-void SearchResultWidget::setMaxItemPerPage(int value)
+void SearchResultWidget::maxItemPerPageChange(int value)
 {
 	//update 'actSearchPreviousPage' data object
 	if (actSearchPreviousPage && searchPreviousPage)
@@ -457,3 +457,8 @@ void SearchResultWidget::filterResults(const QString &text)
 	else
 		showSearchResult(0);
 }
+
+//void SearchResultWidget::setMaxItemPerPage(int max)
+//{
+//	SearchResultWidget::maxItemPerPage = max;
+//}

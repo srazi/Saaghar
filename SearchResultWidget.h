@@ -29,7 +29,6 @@
 #include <QTableWidget>
 #include <QToolButton>
 #include <QAction>
-//#include <QLineEdit>
 #include <QLabel>
 
 const int ITEM_SEARCH_DATA = Qt::UserRole+10;
@@ -45,14 +44,14 @@ public:
 
 	bool init(QMainWindow *qmw, const QString &iconThemePath);
 	void setResultList(const QMap<int, QString> &map);
-	//QHash<int, QString> resultList;//random order
+	//static void setMaxItemPerPage(int max);
 	QTableWidget *searchTable;
+	static int maxItemPerPage;
 
 private:
 	QWidget *searchResultContents;
 	void setupUi(QMainWindow *qmw, const QString &iconThemePath);
 	void showSearchResult(int start);
-	static int maxItemPerPage;
 	QString phrase;
 	bool navButtonsNeeded;
 	bool moreThanOnePage;
@@ -67,7 +66,7 @@ private:
 
 private slots:
 	void searchPageNavigationClicked(QAction *action);
-	void setMaxItemPerPage(int value);
+	void maxItemPerPageChange(int value);
 	void filterResults(const QString &text);
 };
 

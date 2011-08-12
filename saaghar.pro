@@ -3,6 +3,7 @@ TARGET = Saaghar
 
 DEPENDPATH += . build
 INCLUDEPATH += . $UI_DIR sqlite sqlite-driver/sqlite
+# Qxt/
 # $$QMAKE_INCDIR_QT/QtSql/private
 
 CONFIG	+= qt warn_off
@@ -23,9 +24,15 @@ HEADERS += mainwindow.h \
 	SearchResultWidget.h \
 #	SearchPatternManager.h \
 	QSearchLineEdit.h \
+	Qxt/QxtCheckComboBox.h \
+	#Qxt/QxtCheckComboBox_p.h \
+#	Qxt/qxtnamespace.h \
+#	Qxt/qxtglobal.h \
 	version.h
+
 FORMS += mainwindow.ui \
 	settings.ui
+
 SOURCES += main.cpp \
 	mainwindow.cpp \
 	SearchItemDelegate.cpp \
@@ -34,7 +41,12 @@ SOURCES += main.cpp \
 	settings.cpp \
 	SearchResultWidget.cpp \
 #	SearchPatternManager.cpp \
-	QSearchLineEdit.cpp
+	QSearchLineEdit.cpp \
+	Qxt/QxtCheckComboBox.cpp
+#	 \
+#	Qxt/qxtglobal.cpp
+
+
 
 
 #########################################

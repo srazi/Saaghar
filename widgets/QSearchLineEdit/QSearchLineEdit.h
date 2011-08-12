@@ -1,8 +1,10 @@
 /***************************************************************************
- *  This file is part of Saaghar, a Persian poetry software                *
+ *  This file is part of QSearchLineEdit, a custom Qt widget               *
  *                                                                         *
- *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2011 by S. Razi Alavizadeh                               *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>    *
+ *                                                                         *
+ *  The initial idea is from a custom lineEdit from qt labs................*
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *

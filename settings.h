@@ -23,6 +23,7 @@
 #define SETTINGS_H
 
 #include "ui_settings.h"
+#include "QMultiSelectWidget.h"
 
 #include <QDialog>
 
@@ -54,6 +55,29 @@ private slots:
 
 private:
 	void replaceWithNeighbor(int neighbor);
+};
+
+class CustomizeRandomDialog : public QDialog
+{
+	Q_OBJECT
+
+public:
+	explicit CustomizeRandomDialog(QWidget *parent = 0, bool checked = false);
+	~CustomizeRandomDialog();
+	void acceptSettings(bool *checked);
+	QMultiSelectWidget *selectRandomRange;
+
+private:
+	QLabel *label;
+	QGridLayout *gridLayout;
+	QVBoxLayout *verticalLayout;
+	QCheckBox *checkBox;
+	QHBoxLayout *horizontalLayout;
+	QSpacerItem *horizontalSpacer;
+	QPushButton *pushButtonOk;
+	QPushButton *pushButtonCancel;
+	void setupui();
+	void retranslateUi();
 };
 
 #endif // SETTINGS_H

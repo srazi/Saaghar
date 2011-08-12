@@ -387,6 +387,13 @@
              </property>
             </spacer>
            </item>
+           <item>
+            <widget class="QPushButton" name="pushButtonRandomOptions">
+             <property name="text">
+              <string>Customize Faal &amp;&amp; Random...</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
          <item>
