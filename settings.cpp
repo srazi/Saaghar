@@ -25,6 +25,8 @@
 #include <QFileDialog>
 #include <QImageReader>
 
+QHash<QString, QVariant> Settings::VariablesHash = QHash<QString, QVariant>();
+
 Settings::Settings(QWidget *parent) :	QDialog(parent), ui(new Ui::Settings)
 {
 	ui->setupUi(this);

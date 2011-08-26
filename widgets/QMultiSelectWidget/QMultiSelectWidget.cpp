@@ -81,7 +81,7 @@ void CustomComboBox::hidePopup()
 }
 
 QMultiSelectWidget::QMultiSelectWidget(QWidget* parent, QMultiSelectWidget::WidgetType type)
-    : QListWidget(parent)
+	: QListWidget(parent)
 {
 	separator = " - ";
 	//setMaximumHeight(180);
@@ -155,7 +155,6 @@ void QMultiSelectWidget::itemDataChanged(QListWidgetItem *item)
 	disconnect(this, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemDataChanged(QListWidgetItem*)));
 	if (item->checkState() != item->data(LAST_CHECK_STATE))
 	{
-		//qDebug() << "check state Changed";
 		item->setData(LAST_CHECK_STATE, item->checkState());
 		checkStateChanged(item);
 		emit itemCheckStateChanged(item);

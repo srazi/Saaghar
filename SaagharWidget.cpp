@@ -56,8 +56,9 @@ const Qt::ItemFlags versesItemFlag = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 const Qt::ItemFlags poemsTitleItemFlag = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
 SaagharWidget::SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidget *tableWidget)
-	: QWidget(parent), thisWidget(parent), parentCatsToolBar(catsToolBar), tableViewWidget(tableWidget)
+	: QWidget(parent), tableViewWidget(tableWidget), parentCatsToolBar(catsToolBar)
 {
+	dirty = true;
 	minMesraWidth = 0;
 	singleColumnHeightMap.clear();
 
@@ -65,7 +66,10 @@ SaagharWidget::SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidge
 
 	currentCat = currentPoem = 0;
 	currentCaption = tr("Home");
+	pressedPosition = QPoint(-1, -1);
 
+	connect(this->tableViewWidget, SIGNAL(cellClicked(int,int)), this, SLOT(clickedOnItem(int,int)));
+	connect(this->tableViewWidget, SIGNAL(cellPressed(int,int)), this, SLOT(pressedOnItem(int,int)));
 	showHome();
 }
 
@@ -262,14 +266,17 @@ bool SaagharWidget::initializeCustomizedHome()
 					tableViewWidget->setItem(0, col, groupLabelItem);
 				}
 			}
-			QTableWidgetItem *catItem = new QTableWidgetItem(poets.at(poetIndex)->_Name);
+			QTableWidgetItem *catItem = new QTableWidgetItem(poets.at(poetIndex)->_Name+"       ");
 			catItem->setFlags(catsItemFlag);
 			catItem->setData(Qt::UserRole, "CatID="+QString::number(poets.at(poetIndex)->_CatID));
 			//poets.at(poetIndex)->_ID
 			QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(poets.at(poetIndex)->_ID)+".png";;
 			if (!QFile::exists(poetPhotoFileName))
 				poetPhotoFileName = ":/resources/images/no-photo.png";
-			catItem->setIcon(QIcon(poetPhotoFileName));
+			if (Settings::READ("Show Photo at Home").toBool())
+				catItem->setIcon(QIcon(poetPhotoFileName));
+			else
+				catItem->setIcon(QIcon());
 			
 			tableViewWidget->setItem(row+startIndex, col, catItem);
 			++poetIndex;
@@ -284,7 +291,7 @@ bool SaagharWidget::initializeCustomizedHome()
 				break;
 			}
 
-			if (col == 0)
+			if (col == 0 && Settings::READ("Show Photo at Home").toBool())
 				tableViewWidget->setRowHeight(row+startIndex, 105);
 		}
 		if (poetIndex>=numOfPoets)
@@ -292,24 +299,32 @@ bool SaagharWidget::initializeCustomizedHome()
 	}
 	tableViewWidget->resizeColumnsToContents();
 	//tableViewWidget->resizeRowsToContents();
+	dirty = false;//page is showed or refreshed
+
 	return true;
 }
 
 void SaagharWidget::homeResizeColsRows()
 {
-	int numOfCols = tableViewWidget->columnCount();
-	int numOfRows = tableViewWidget->rowCount();
-	int startIndex = 0;
-	if (numOfCols > 1 && SaagharWidget::maxPoetsPerGroup != 1)
-		startIndex = 1;
-
-	for (int col=0; col<numOfCols; ++col)
+	if (Settings::READ("Show Photo at Home").toBool())
 	{
-		for ( int row=0; row<numOfRows; ++row)
+		int numOfCols = tableViewWidget->columnCount();
+		int numOfRows = tableViewWidget->rowCount();
+		int startIndex = 0;
+		if (numOfCols > 1 && SaagharWidget::maxPoetsPerGroup != 1)
+			startIndex = 1;
+		for (int col=0; col<numOfCols; ++col)
 		{
-			if(row>=startIndex)
-				tableViewWidget->setRowHeight(row, 105);
+			for ( int row=0; row<numOfRows; ++row)
+			{
+				if(row>=startIndex)
+					tableViewWidget->setRowHeight(row, 105);
+			}
 		}
+	}
+	else
+	{
+		tableViewWidget->resizeRowsToContents();
 	}
 	tableViewWidget->resizeColumnsToContents();
 }
@@ -410,6 +425,12 @@ void SaagharWidget::showCategory(GanjoorCat category)
 			if (!QFile::exists(poetPhotoFileName))
 				poetPhotoFileName = ":/resources/images/no-photo.png";
 			catItem->setIcon(QIcon(poetPhotoFileName));
+
+			/*if (category._ID == 0 && !Settings::READ("Show Photo at Home").toBool())
+			{
+				qDebug() << "Remove Icon11111111";
+				catItem->setIcon(QIcon());
+			}*/
 			/*************
 			//set row height
 			int textWidth = tableViewWidget->fontMetrics().boundingRect(itemText).width();
@@ -444,7 +465,10 @@ void SaagharWidget::showCategory(GanjoorCat category)
 			QString poetPhotoFileName = poetsImagesDir+"/"+QString::number(gPoet._ID)+".png";
 			if (!QFile::exists(poetPhotoFileName))
 				poetPhotoFileName = ":/resources/images/no-photo.png";
-			catItem->setIcon(QIcon(poetPhotoFileName));
+			if (Settings::READ("Show Photo at Home").toBool())
+				catItem->setIcon(QIcon(poetPhotoFileName));
+			else
+				catItem->setIcon(QIcon());
 		}
 		tableViewWidget->setItem(i+startRow, 0, catItem);
 
@@ -479,6 +503,8 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 	emit navPreviousActionState( !ganjoorDataBase->getPreviousPoem(currentPoem, currentCat).isNull() );
 	emit navNextActionState( !ganjoorDataBase->getNextPoem(currentPoem, currentCat).isNull() );
+
+	dirty = false;//page is showed or refreshed
 }
 
 void SaagharWidget::showParentCategory(GanjoorCat category)
@@ -584,12 +610,11 @@ QString styleSheetStr = QString("QPushButton {\
 	currentCat = !category.isNull() ? category._ID : 0;
 }
 
-int SaagharWidget::showPoem(GanjoorPoem poem)
+void SaagharWidget::showPoem(GanjoorPoem poem)
 {
 	if ( poem.isNull() )
-	{
-	return 0;
-	}
+		return;
+
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	showParentCategory(ganjoorDataBase->getCategory(poem._CatID));
@@ -912,7 +937,7 @@ int SaagharWidget::showPoem(GanjoorPoem poem)
 	emit navPreviousActionState( !ganjoorDataBase->getPreviousPoem(currentPoem, currentCat).isNull() );
 	emit navNextActionState( !ganjoorDataBase->getNextPoem(currentPoem, currentCat).isNull() );
 
-	return 0;
+	dirty = false;//page is showed or refreshed
 }
 
 void SaagharWidget::clearSaagharWidget()
@@ -958,7 +983,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 			vV="true";
 			verticalScrollBarWidth=table->verticalScrollBar()->width();
 		}
-		int baseWidthSize=thisWidget->width()-(2*table->x()+verticalScrollBarWidth);
+		int baseWidthSize=parentWidget()->width()-(2*table->x()+verticalScrollBarWidth);
 		//int tW=0;
 		//for (int i=0; i<table->columnCount(); ++i)
 		//{
@@ -1074,4 +1099,68 @@ int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidt
 		height = (4*fontMetric.height())/3;
 	int numOfRow = textWidth/width ;
 	return height+((fontMetric.height()*numOfRow));
+}
+
+void SaagharWidget::pressedOnItem(int row,int /*col*/)
+{
+	pressedPosition = QCursor::pos();
+	clickedOnItem(row, 0);
+}
+
+void SaagharWidget::clickedOnItem(int row,int /*col*/)
+{
+	//connect(this->tableViewWidget, SIGNAL(cellClicked(int,int)), this, SLOT(clickedOnItem(int,int)));
+	//disconnect(this->tableViewWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(clickedOnItem(QTableWidgetItem*)));
+	if (pressedPosition != QCursor::pos())
+	{
+		pressedPosition = QPoint(-1, -1);
+		return;
+	}
+	Qt::KeyboardModifiers modifiers = QApplication::keyboardModifiers();
+	if ( (modifiers & Qt::ShiftModifier) || (modifiers & Qt::ControlModifier) )
+		return;
+
+	QList<QTableWidgetItem *> selectedList = tableViewWidget->selectedItems();
+	bool otherSelections = false;
+	for (int i=0; i< selectedList.size(); ++i)
+	{
+		if (selectedList.at(i) && selectedList.at(i)->row()!=row)
+		{
+			otherSelections = true;
+			break;
+		}
+	}
+
+	if (otherSelections)
+		return;
+
+	for (int col = 0; col<tableViewWidget->columnCount(); ++col)
+	{
+		QTableWidgetItem *item = tableViewWidget->item(row, col);
+		if (item)
+		{
+			if (item->isSelected() /*->flags() & Qt::ItemIsSelectable*/ )
+			{
+				item->setSelected(false);
+			}
+		}
+	}
+}
+
+QString SaagharWidget::identifier()
+{
+	QString tabViewType;
+	if (currentPoem > 0)
+		tabViewType = "PoemID="+QString::number(currentPoem);
+	else
+		tabViewType = "CatID="+QString::number(currentCat);
+	return tabViewType;
+}
+
+void SaagharWidget::refresh()
+{
+	if (currentPoem > 0)
+		processClickedItem("PoemID", currentPoem, true);
+	else
+		processClickedItem("CatID", currentCat, true);
 }

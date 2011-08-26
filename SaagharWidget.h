@@ -50,7 +50,6 @@ public:
 	bool nextPoem();
 	bool previousPoem();
 	void clearSaagharWidget();
-	QWidget *thisWidget;
 	QToolBar *parentCatsToolBar;
 	void showHome();
 	QString currentPageGanjoorUrl ();
@@ -81,15 +80,25 @@ public:
 	int currentPoem;
 	int currentCat;
 	void homeResizeColsRows();
+	inline bool isDirty()
+		{return dirty;}
+	inline void setDirty()
+		{dirty = true;}
+	QString identifier();
+	void refresh();
 
 private:
 	bool initializeCustomizedHome();
 	QMap<int,int> singleColumnHeightMap;
 	void showCategory(GanjoorCat category);
-	int showPoem(GanjoorPoem poem);
+	void showPoem(GanjoorPoem poem);
+	QPoint pressedPosition;
+	bool dirty;
 
 private slots:
 	void parentCatClicked();
+	void clickedOnItem(int row,int col);
+	void pressedOnItem(int row,int col);
 
 public slots:
 	void scrollToFirstItemContains(const QString &phrase);

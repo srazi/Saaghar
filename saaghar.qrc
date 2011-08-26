@@ -26,7 +26,6 @@
 		<file>images/import-to-database.png</file>
 		<file>images/no-photo.png</file>
 		<file>images/select-mask.png</file>
-		<file>images/options.png</file>
 		<file>images/no-fullscreen.png</file>
 		<file>images/fullscreen.png</file>
 		<file>images/remove-poet.png</file>
@@ -42,5 +41,6 @@
 		<file>images/cats-buttons/button-home-start_pressed.png</file>
 		<file>images/cats-buttons/button-last.png</file>
 		<file>images/cats-buttons/button-middle.png</file>
+		<file>images/corner-button.png</file>
 	</qresource>
 </RCC>

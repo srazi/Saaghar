@@ -41,6 +41,30 @@ public:
 	Ui::Settings *ui;
 	void initializeActionTables(const QMap<QString, QAction *> &actionsMap, const QStringList &toolBarItems);
 
+	//settings variables
+	inline static QVariant READ(const QString &key, const QVariant &defaultValue = QVariant())
+	{
+		if (!Settings::VariablesHash.contains(key))
+			Settings::VariablesHash.insert(key, defaultValue);
+		return Settings::VariablesHash.value(key);
+	}
+
+	inline static void WRITE(const QString &key, const QVariant &value = QVariant())
+	{
+		Settings::VariablesHash.insert(key, value);
+	}
+
+	inline static void LOAD_VARIABLES(const QHash<QString, QVariant> &variables)
+	{
+		Settings::VariablesHash.clear();
+		Settings::VariablesHash = variables;
+	}
+
+	inline static QVariant GET_VARIABLES_VARIANT()
+	{
+		return QVariant(Settings::VariablesHash);
+	}
+
 private slots:
 	void removeActionFromToolbarTable();
 	void addActionToToolbarTable();
@@ -55,6 +79,8 @@ private slots:
 
 private:
 	void replaceWithNeighbor(int neighbor);
+
+	static QHash<QString, QVariant> VariablesHash;
 };
 
 class CustomizeRandomDialog : public QDialog

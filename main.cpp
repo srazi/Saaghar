@@ -21,6 +21,7 @@
 
 #include <QTranslator>
 #include <QtGui/QApplication>
+//#include<QMessageBox>
 #include "mainwindow.h"
 
 #ifdef Q_WS_WIN
@@ -50,6 +51,9 @@ int main(int argc, char *argv[])
 			break;
 		}
 	}
+
+	//'At Development Stage' message
+	//QMessageBox::information(0, QObject::tr("At Development Stage"), QObject::tr("This is an experimental version! Don\'t release it!\nWWW: http://pojh.iblogger.org/saaghar"));
 
 	MainWindow w;
 	w.show();

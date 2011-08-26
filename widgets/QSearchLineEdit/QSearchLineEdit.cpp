@@ -32,11 +32,11 @@ QSearchLineEdit::QSearchLineEdit(QWidget *parent, const QString &clearIconFileNa
 
 	QPixmap optionsPixmap(optionsIconFileName);
 	optionsPixmap = optionsPixmap.scaledToHeight(fontMetrics().height() , Qt::SmoothTransformation);
-	_optionsButton = new QToolButton(this);
-	_optionsButton->setIcon(QIcon(optionsPixmap));
-	_optionsButton->setIconSize(optionsPixmap.size());
-	_optionsButton->setCursor(Qt::ArrowCursor);
-	_optionsButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
+	optionButton = new QToolButton(this);
+	optionButton->setIcon(QIcon(optionsPixmap));
+	optionButton->setIconSize(optionsPixmap.size());
+	optionButton->setCursor(Qt::ArrowCursor);
+	optionButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
 
 	clearButton = new QToolButton(this);
 	QPixmap clearPixmap(clearIconFileName);
@@ -51,12 +51,11 @@ QSearchLineEdit::QSearchLineEdit(QWidget *parent, const QString &clearIconFileNa
 	connect(clearButton, SIGNAL(clicked()), this, SLOT(clear()));
 	connect(clearButton, SIGNAL(clicked()), this, SIGNAL(clearButtonPressed()));
 	connect(this, SIGNAL(textChanged(const QString&)), this, SLOT(updateCloseButton(const QString&)));
-	//connect(this, SIGNAL(textEdited(const QString&)), this, SLOT(updateStyleSheet(const QString&)));
-	int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-	setMinimumSize(qMax(msz.width(), _optionsButton->sizeHint().width()+clearButton->sizeHint().width() /*+ frameWidth * 2 + 2*/),
-					qMax(qMax(msz.height(), _optionsButton->sizeHint().height() /*+ frameWidth * 2 + 2*/), clearButton->sizeHint().height() /*+ frameWidth * 2 + 2*/) );
-	setStyleSheet(QString("QLineEdit { padding-left: %1px; padding-right: %2px; } ").arg(clearButton->sizeHint().width() /*+ frameWidth + 1*/).arg(_optionsButton->sizeHint().width() /*+ frameWidth + 1*/));
-	clearButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");//->setStyleSheet(QString("QToolButton { border: none; padding-right: %1px; }").arg(_optionsButton->width()+this->width()-clearPixmap.width()));
+
+	setMinimumSize(qMax(msz.width(), optionButton->sizeHint().width()+clearButton->sizeHint().width() ),
+					qMax(qMax(msz.height(), optionButton->sizeHint().height() ), clearButton->sizeHint().height() ) );
+	setStyleSheet(QString("QLineEdit { padding-left: %1px; padding-right: %2px; } ").arg(clearButton->sizeHint().width() ).arg(optionButton->sizeHint().width() ));
+	clearButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
 }
 
 void QSearchLineEdit::moveToRight(QToolButton *button)
@@ -69,8 +68,7 @@ void QSearchLineEdit::moveToRight(QToolButton *button)
 void QSearchLineEdit::moveToLeft(QToolButton *button)
 {
 	QSize sz = button->sizeHint();
-	int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-	button->move(rect().left()/* - frameWidth - sz.width()*/, (rect().bottom() + 1 - sz.height())/2);
+	button->move(rect().left(), (rect().bottom() + 1 - sz.height())/2);
 }
 
 void QSearchLineEdit::resizeEvent(QResizeEvent *)
@@ -79,39 +77,21 @@ void QSearchLineEdit::resizeEvent(QResizeEvent *)
 	{
 		if (parentWidget()->layoutDirection() == Qt::RightToLeft)
 		{
-			moveToRight(_optionsButton);
+			moveToRight(optionButton);
 			moveToLeft(clearButton);
 			return;
 		}
 	}
 	moveToRight(clearButton);
-	moveToLeft(_optionsButton);
-}
-
-void QSearchLineEdit::updateStyleSheet(const QString &text)
-{
-//	setStyleSheet("QLineEdit { padding-right: 0; padding-left: 0; } ");
-//	int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-//	QString paddingType = layoutDirection() == Qt::LeftToRight ? "padding-right" : "padding-left";
-//	setStyleSheet(QString("QLineEdit { %1: %2px; } ").arg(paddingType).arg(clearButton->sizeHint().width() + frameWidth + 1));
+	moveToLeft(optionButton);
 }
 
 void QSearchLineEdit::updateCloseButton(const QString& text)
 {
 	clearButton->setVisible(!text.isEmpty());
-//	if (text.isEmpty())
-//	{
-//		setStyleSheet("QLineEdit { padding-right: 0; padding-left: 0; } ");
-//	}
-//	else
-//	{
-//		int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth);
-//		QString paddingType = "padding-left";//layoutDirection() == Qt::LeftToRight ? "padding-right" : "padding-left";
-//		setStyleSheet(QString("QLineEdit { %1: %2px; } ").arg(paddingType).arg(clearButton->sizeHint().width() + frameWidth + 1));
-//	}
 }
 
 QToolButton *QSearchLineEdit::optionsButton()
 {
-	return _optionsButton;
+	return optionButton;
 }

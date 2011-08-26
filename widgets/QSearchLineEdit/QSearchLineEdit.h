@@ -42,13 +42,12 @@ protected:
 
 private slots:
 	void updateCloseButton(const QString &text);
-	void updateStyleSheet(const QString &text);
 
 private:
 	void moveToRight(QToolButton *button);
 	void moveToLeft(QToolButton *button);
 	QToolButton *clearButton;
-	QToolButton *_optionsButton;
+	QToolButton *optionButton;
 
 signals:
 	void clearButtonPressed();
