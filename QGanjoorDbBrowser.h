@@ -29,6 +29,8 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlRecord>
+#include <QProgressDialog>
+
 #include "QGanjoorDbStuff.h"
 
 #include <QDebug>
@@ -44,9 +46,10 @@ class QGanjoorDbBrowser : public QObject
 	public:
 		QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
 		~QGanjoorDbBrowser();
-		static QString cleanString(const QString &text, bool skipNonAlphabet);
+		static QString cleanString(const QString &text, const QStringList &excludeList = QStringList() << " ");
 		static QString justifiedText(const QString &text, const QFontMetrics &fontmetric, int width);
 		static QString snippedText(const QString &text, const QString &str, int from = 0, int maxNumOfWords = 10, bool elided = true, Qt::TextElideMode elideMode = Qt::ElideRight);
+		static int getRandomNumber(int minBound, int maxBound);
 
 		bool isConnected(const QString& connectionID = "");
 
@@ -77,7 +80,7 @@ class QGanjoorDbBrowser : public QObject
 		//QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
 		//QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
 		//another new approch
-		QMap<int, QString> getPoemIDsContainingPhrase_NewMethod2(const QString &phrase, int PoetID, bool skipNonAlphabet);
+		QMap<int, QString> getPoemIDsByPhrase(const QStringList &phraseList, int PoetID, const QStringList &excludedList = QStringList(), bool skipNonAlphabet = false, bool *canceled = 0, QProgressDialog *progress = 0, int resultCount = 0);
 
 		//Faal
 		int getRandomPoemID(int *CatID);
@@ -99,7 +102,6 @@ class QGanjoorDbBrowser : public QObject
 		//QSqlDatabase dBConnection;
 		static bool comparePoetsByName(GanjoorPoet *poet1, GanjoorPoet *poet2);
 		static bool compareCategoriesByName(GanjoorCat *cat1, GanjoorCat *cat2);
-		static int getRandomNumber(int minBound, int maxBound);
 
 #ifdef EMBEDDED_SQLITE
 	private:

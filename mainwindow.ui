@@ -26,7 +26,7 @@
     </rect>
    </property>
   </widget>
-  <widget class="QToolBar" name="mainToolBar">
+  <widget class="QToolBar" name="menuToolBar">
    <property name="cursor">
     <cursorShape>ArrowCursor</cursorShape>
    </property>
@@ -34,10 +34,13 @@
     <bool>false</bool>
    </property>
    <property name="contextMenuPolicy">
-    <enum>Qt::CustomContextMenu</enum>
+    <enum>Qt::DefaultContextMenu</enum>
    </property>
    <property name="windowTitle">
-    <string>Buttons</string>
+    <string>Menu Bar</string>
+   </property>
+   <property name="allowedAreas">
+    <set>Qt::BottomToolBarArea|Qt::TopToolBarArea</set>
    </property>
    <property name="iconSize">
     <size>
@@ -55,6 +58,20 @@
   <widget class="QToolBar" name="searchToolBar">
    <property name="windowTitle">
     <string>Search</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <property name="contextMenuPolicy">
+    <enum>Qt::CustomContextMenu</enum>
+   </property>
+   <property name="windowTitle">
+    <string>Buttons</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>

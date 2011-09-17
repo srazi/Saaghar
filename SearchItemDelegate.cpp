@@ -56,8 +56,8 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 		text = index.data().toString();
 		//if (SaagharWidget::newSearchFlag)
 		{
-			text = QGanjoorDbBrowser::cleanString(text, false);
-			cleanedText = QGanjoorDbBrowser::cleanString(text, SaagharWidget::newSearchSkipNonAlphabet);
+			text = QGanjoorDbBrowser::cleanString(text/*, false*/);
+			cleanedText = QGanjoorDbBrowser::cleanString(text/*, SaagharWidget::newSearchSkipNonAlphabet*/);
 		}
 			//cleanedText = QGanjoorDbBrowser::cleanString(index.data().toString(), SaagharWidget::newSearchSkipNonAlphabet);
 		//text = fontMetric.elidedText(text, option.textElideMode, option.rect.width() );

@@ -1068,7 +1068,7 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 			{
 				if (tmp)
 				{
-					QString text = QGanjoorDbBrowser::cleanString(tmp->text(), newSearchSkipNonAlphabet);
+					QString text = QGanjoorDbBrowser::cleanString(tmp->text()/*, newSearchSkipNonAlphabet*/);
 					if (text.contains(phrase))
 					{
 						tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);

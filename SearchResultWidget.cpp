@@ -345,7 +345,7 @@ void SearchResultWidget::showSearchResult(int start)
 		if ( tmpWidth > maxPoemWidth )
 			maxPoemWidth = tmpWidth;
 
-		QString cleanedFirstVerse = QGanjoorDbBrowser::cleanString(firstVerse, false);
+		QString cleanedFirstVerse = QGanjoorDbBrowser::cleanString(firstVerse/*, false*/);
 		QString snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, phrase, 0, 8, true);
 		if (snippedFirstVerse.isEmpty())
 			snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, "", 0, 8, true);

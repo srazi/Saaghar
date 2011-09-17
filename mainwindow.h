@@ -24,12 +24,14 @@
 
 #include "SaagharWidget.h"
 #include "QSearchLineEdit.h"
+#include "QMultiSelectWidget.h"
 
 #include <QMainWindow>
 #include <QSettings>
-#include <QLineEdit>
-#include <QComboBox>
+//#include <QLineEdit>
+//#include <QComboBox>
 #include <QSpinBox>
+#include <QToolButton>
 
 namespace Ui {
 	class MainWindow;
@@ -43,16 +45,28 @@ class MainWindow : public QMainWindow
 		explicit MainWindow(QWidget *parent = 0);
 		~MainWindow();
 		SaagharWidget *saagharWidget;
-		void emitReSizeEvent();
+//		void emitReSizeEvent();
 		static bool autoCheckForUpdatesState;
 
+	public slots:
+		void emitReSizeEvent();
+
 	private:
+		QString currentIconThemePath();
+		QBoxLayout *searchToolBarBoxLayout;
+		bool skipSearchToolBarResize;
+		void setupSearchToolBarUi();
+		bool eventFilter(QObject* receiver, QEvent* event);
+		void toolBarViewActions(QToolBar *toolBar, QMenu *menu, bool subMenu);
+		QStringList selectedRandomRange;
+		QStringList selectedSearchRange;
+		bool randomOpenInNewTab;
 		QString resourcesPath;//not-writable
 		int previousTabIndex;
 		void importDataBase(const QString fileName);
 		QStringList mainToolBarItems;
 		QAction *actionInstance(const QString actionObjectName = "", QString iconPath = "", QString displayName = "");
-		void searchRegionsInitialize();
+		void multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidget, const QStringList &selectedData = QStringList());
 		bool isPortable;
 		QString convertToTeX(SaagharWidget *saagharObject);
 		QPrinter *defaultPrinter;
@@ -61,15 +75,14 @@ class MainWindow : public QMainWindow
 		void writeToFile(QString fileName, QString textToWrite);
 		QString convertToHtml(SaagharWidget *saagharObject);
 		QSettings *getSettingsObject();
-		QString openedTabs;
-		void saveSaagharState();
+		QStringList openedTabs;
 		void scrollToFirstFoundedItem(QString phrase, int PoemID, int vorder);
 		QTabWidget *mainTabWidget;
 		void loadTabWidgetSettings();
 		bool settingsIconThemeState;
 		QString settingsIconThemePath;
 		void loadGlobalSettings();
-		void saveGlobalSettings();
+		void saveSettings();
 		bool processTextChanged;
 		QToolBar *parentCatsToolBar;
 		SaagharWidget *getSaagharWidget(int tabIndex);
@@ -80,6 +93,8 @@ class MainWindow : public QMainWindow
 		void setupUi();
 		QSearchLineEdit *lineEditSearchText;
 		//QLineEdit *lineEditSearchText;
+		//QxtCheckComboBox *comboBoxSearchRegion;
+		QMultiSelectWidget *selectSearchRange;
 		QComboBox *comboBoxSearchRegion;
 		QSpinBox *spinBoxMaxSearchResult;
 		QPushButton *pushButtonSearch;
@@ -88,13 +103,27 @@ class MainWindow : public QMainWindow
 		QMenu *menuFile;
 		QMenu *menuHelp;
 		QMenu *menuView;
+
+		//submenus
+		QMenu *menuOpenedTabs, *menuClosedTabs;
+		void updateTabsSubMenus();
+
 		QMap<QString, QAction *> allActionMap;
 		QAction *labelMaxResultSeparator;
 		QAction *labelMaxResultAction;
 		QAction *spinBoxMaxSearchResultAction;
 		QMenu *searchOptionMenu;
+		QString mainToolBarSizeAction;
+		QString mainToolBarStyleAction;
+		bool dataFromIdentifier(const QString &identifier, QString *type = 0, int *id = 0);
 
 	private slots:
+		void actonClosedTabsClicked();
+		void namedActionTriggered(bool checked);
+		void toolbarViewChanges(QAction *action);
+		void customizeRandomDialog();
+		void toolBarContextMenu(const QPoint &pos);
+		void getMaxResultPerPage();
 		void checkForUpdates();
 		void actFullScreenClicked(bool checked);
 		void actionRemovePoet();
@@ -137,5 +166,8 @@ class MainWindow : public QMainWindow
 	protected:
 		void resizeEvent( QResizeEvent * event );
 		void closeEvent( QCloseEvent * event );
+	
+	signals:
+		void maxItemPerPageChanged(int);
 };
 #endif // MAINWINDOW_H

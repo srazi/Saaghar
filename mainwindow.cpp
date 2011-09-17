@@ -20,11 +20,13 @@
  ***************************************************************************/
 
 #include "mainwindow.h"
+
 #include "ui_mainwindow.h"
 #include "SearchItemDelegate.h"
 #include "version.h"
 #include "settings.h"
 #include "SearchResultWidget.h"
+#include "SearchPatternManager.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -34,7 +36,6 @@
 #include <QFontDatabase>
 #include <QClipboard>
 #include <QProcess>
-#include <QToolButton>
 #include <QDir>
 #include <QCloseEvent>
 #include <QTextCodec>
@@ -132,41 +133,72 @@ MainWindow::MainWindow(QWidget *parent) :
 		QFontDatabase::addApplicationFont(resourcesPath + "/fonts/"+fontsList.at(i));
 	}
 
+	ui->setupUi(this);
+
 	//create Parent Categories ToolBar
 	parentCatsToolBar = new QToolBar(this);
 	parentCatsToolBar->setObjectName(QString::fromUtf8("parentCatsToolBar"));
 	parentCatsToolBar->setLayoutDirection(Qt::RightToLeft);
 	parentCatsToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
-	addToolBar(Qt::BottomToolBarArea, parentCatsToolBar);
+	//addToolBar(Qt::BottomToolBarArea, parentCatsToolBar);
+	insertToolBar(ui->mainToolBar, parentCatsToolBar);
 	parentCatsToolBar->setWindowTitle(QApplication::translate("MainWindow", "Parent Categories", 0, QApplication::UnicodeUTF8));
-
-	ui->setupUi(this);
-
-	loadGlobalSettings();
-	setupUi();
-
-	QString iconThemePath=":/resources/images/";
-	if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
-		iconThemePath = settingsIconThemePath;
-
-	if (windowState() & Qt::WindowFullScreen)
-	{
-		actionInstance("actionFullScreen")->setChecked(true);
-		actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
-		actionInstance("actionFullScreen")->setIcon(QIcon(iconThemePath+"/no-fullscreen.png"));
-	}
-	else
-	{
-		actionInstance("actionFullScreen")->setChecked(false);
-		actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
-		actionInstance("actionFullScreen")->setIcon(QIcon(iconThemePath+"/fullscreen.png"));
-	}
 
 	//create Tab Widget
 	mainTabWidget = new QTabWidget(ui->centralWidget);
 	mainTabWidget->setDocumentMode(true);
 	mainTabWidget->setUsesScrollButtons(true);
 	mainTabWidget->setMovable(true);
+
+	loadGlobalSettings();
+	setupUi();
+
+	//setup corner widget
+	QToolButton *cornerButton = new QToolButton(mainTabWidget);
+	cornerButton->setIcon(QIcon(":/resources/images/corner-button.png"));
+	cornerButton->setPopupMode(QToolButton::InstantPopup);
+	cornerButton->setStyleSheet("QToolButton::menu-indicator{image: none;}");
+	QMenu *cornerMenu = new QMenu(0);
+	QMenu *mainMenuAsSubMenu = new QMenu(tr("Main Menu"),cornerMenu);
+	mainMenuAsSubMenu->addMenu(menuFile);
+	mainMenuAsSubMenu->addMenu(menuNavigation);
+	mainMenuAsSubMenu->addMenu(menuView);
+	mainMenuAsSubMenu->addMenu(menuTools);
+	mainMenuAsSubMenu->addMenu(menuHelp);
+
+	cornerMenu->addMenu(mainMenuAsSubMenu);
+	cornerMenu->addSeparator();
+
+	cornerMenu->addAction(actionInstance("actionNewTab"));
+	cornerMenu->addAction(actionInstance("actionNewWindow"));
+	cornerMenu->addSeparator();
+	cornerMenu->addMenu(menuOpenedTabs);
+	cornerMenu->addMenu(menuClosedTabs);
+	cornerButton->setMenu(cornerMenu);
+	mainTabWidget->setCornerWidget(cornerButton);
+
+//	QString iconThemePath=":/resources/images/";
+//	if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
+//		iconThemePath = settingsIconThemePath;
+
+	if (windowState() & Qt::WindowFullScreen)
+	{
+		actionInstance("actionFullScreen")->setChecked(true);
+		actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
+		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/no-fullscreen.png"));
+	}
+	else
+	{
+		actionInstance("actionFullScreen")->setChecked(false);
+		actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
+		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/fullscreen.png"));
+	}
+
+//	//create Tab Widget
+//	mainTabWidget = new QTabWidget(ui->centralWidget);
+//	mainTabWidget->setDocumentMode(true);
+//	mainTabWidget->setUsesScrollButtons(true);
+//	mainTabWidget->setMovable(true);
 
 	//searchin database-path for database-file
 	for (int i=0; i<QGanjoorDbBrowser::dataBasePath.size(); ++i)
@@ -183,26 +215,19 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	loadTabWidgetSettings();
 
-	ui->gridLayout->setMargin(0);
+	ui->gridLayout->setContentsMargins(0,0,0,0);
 	
 	ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
 
-	if (!openedTabs.isEmpty())
+	for (int i=0; i<openedTabs.size(); ++i)
 	{
-		QStringList openedTabsList = openedTabs.split("|", QString::SkipEmptyParts);
-		if (!openedTabsList.isEmpty())
+		QStringList tabViewData = openedTabs.at(i).split("=", QString::SkipEmptyParts);
+		if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
 		{
-			for (int i=0; i<openedTabsList.size(); ++i)
-			{
-				QStringList tabViewData = openedTabsList.at(i).split("=", QString::SkipEmptyParts);
-				if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
-				{
-					bool Ok = false;
-					int id = tabViewData.at(1).toInt(&Ok);
-					if (Ok)
-						newTabForItem(tabViewData.at(0), id, true);
-				}
-			}
+			bool Ok = false;
+			int id = tabViewData.at(1).toInt(&Ok);
+			if (Ok)
+				newTabForItem(tabViewData.at(0), id, true);
 		}
 	}
 
@@ -214,10 +239,17 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
 	connect(mainTabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(tabCloser(int)));
 
+	connect(ui->mainToolBar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(toolBarContextMenu(QPoint)));
+	//connect(ui->searchToolBar, SIGNAL(orientationChanged(Qt::Orientation)), this, SLOT(searchToolBarView()));
+	ui->searchToolBar->installEventFilter(this);
+
 	createConnections();
 	previousTabIndex = mainTabWidget->currentIndex();
 	currentTabChanged(mainTabWidget->currentIndex());
-	searchRegionsInitialize();
+
+	QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
+	multiSelectObjectInitialize(selectSearchRange, selectedSearchRange);
+	item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
 
 	if (autoCheckForUpdatesState)
 		checkForUpdates();
@@ -226,6 +258,10 @@ MainWindow::MainWindow(QWidget *parent) :
 	uint numOfSecs = QDateTime::currentDateTime().toTime_t();
 	uint seed = QCursor::pos().x()+QCursor::pos().y()+numOfSecs+QDateTime::currentDateTime().time().msec();
 	qsrand(seed);
+
+	//install search pattern manager
+	SearchPatternManager *searchPatternManager = new SearchPatternManager();
+	searchPatternManager->setWildcardCharacter("%");
 }
 
 MainWindow::~MainWindow()
@@ -245,89 +281,256 @@ void MainWindow::searchStart()
 		QMessageBox::information(this, tr("Error"), tr("The search phrase can not be empty."));
 		return;
 	}
-	QString currentItemData = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toString();
-	
-	if (currentItemData == "ALL_OPENED_TAB")
+
+	//QString currentItemData = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toString();
+
+	QList<QListWidgetItem *> selectList = selectSearchRange->getSelectedItemList();
+	for (int i=0; i<selectList.size(); ++i)
 	{
-		for (int i = 0; i < mainTabWidget->count(); ++i)
+		QVariant currentItemData = selectList.at(i)->data(Qt::UserRole);
+		//QString currentItemStrData = currentItemData.toString();
+
+		if (currentItemData.toString() == "ALL_OPENED_TAB")
 		{
-			SaagharWidget *tmp = getSaagharWidget(i);
-			//QAbstractItemDelegate *tmpDelegate = tmp->tableViewWidget->itemDelegate();
-
-			//delete tmpDelegate;
-			//tmpDelegate = 0;
-			if (tmp)
-				tmp->scrollToFirstItemContains(lineEditSearchText->text());
-			//tmp->tableViewWidget->setItemDelegate(new SaagharItemDelegate(tmp->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text()));
+			for (int i = 0; i < mainTabWidget->count(); ++i)
+			{
+				SaagharWidget *tmp = getSaagharWidget(i);
+				//QAbstractItemDelegate *tmpDelegate = tmp->tableViewWidget->itemDelegate();
+	
+				//delete tmpDelegate;
+				//tmpDelegate = 0;
+				if (tmp)
+					tmp->scrollToFirstItemContains(lineEditSearchText->text());
+				//tmp->tableViewWidget->setItemDelegate(new SaagharItemDelegate(tmp->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text()));
+			}
 		}
-	}
-	//else if (currentItemData == "CURRENT_TAB")
-	//{
-	//	if (saagharWidget)
-	//	{
-	//		//connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), saagharWidget, SLOT(scrollToFirstItemContains(const QString &)) );
-	//		//QAbstractItemDelegate *currentDelegate = saagharWidget->tableViewWidget->itemDelegate();
-	//		saagharWidget->scrollToFirstItemContains(lineEditSearchText->text());
-	//		//SaagharItemDelegate *tmp = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text());
-	//		//saagharWidget->tableViewWidget->setItemDelegate(tmp);
-	//		//connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), tmp, SLOT(keywordChanged(const QString &)) );
-	//		//delete currentDelegate;
-	//		//currentDelegate = 0;
-	//	}
-	//}
-	else
-	{
-		phrase = QGanjoorDbBrowser::cleanString(lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
-		int poetID = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt();
-
-		QString poetName = "";
-		if (poetID == 0)
-			poetName = tr("All");
+		//else if (currentItemData == "CURRENT_TAB")
+		//{
+		//	if (saagharWidget)
+		//	{
+		//		//connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), saagharWidget, SLOT(scrollToFirstItemContains(const QString &)) );
+		//		//QAbstractItemDelegate *currentDelegate = saagharWidget->tableViewWidget->itemDelegate();
+		//		saagharWidget->scrollToFirstItemContains(lineEditSearchText->text());
+		//		//SaagharItemDelegate *tmp = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text());
+		//		//saagharWidget->tableViewWidget->setItemDelegate(tmp);
+		//		//connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), tmp, SLOT(keywordChanged(const QString &)) );
+		//		//delete currentDelegate;
+		//		//currentDelegate = 0;
+		//	}
+		//}
 		else
 		{
-			poetName = SaagharWidget::ganjoorDataBase->getPoet(poetID)._Name;
+			//phrase = QGanjoorDbBrowser::cleanString(lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
+			//int poetID = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt();
+SearchPatternManager::setInputPhrase(lineEditSearchText->text()/*phrase*/);
+SearchPatternManager::init();
+QVector<QStringList> phraseVectorList = SearchPatternManager::outputPhrases();
+QVector<QStringList> excludedVectorList = SearchPatternManager::outputExcludedLlist();
+int vectorSize = phraseVectorList.size();
+qDebug() << "SearchPatternManager::finished!";
+qDebug() << "phraseVectorList=" <<phraseVectorList;
+qDebug() << "excludedVectorList="<<excludedVectorList;
+
+			bool ok = false;
+			int poetID = currentItemData.toInt(&ok);
+			if (!ok)
+				continue;//itemData is not int skip to next item
+
+			QString poetName = "";
+			if (poetID == 0)
+				poetName = tr("All");
+			else
+			{
+				//because of 'ok == true' we know this is  poet name
+				poetName = selectList.at(i)->text();
+				//SaagharWidget::ganjoorDataBase->getPoet(poetID)._Name;
+			}
+
+			QWidget *searchResultContents = new QWidget(this);
+			searchResultContents->setObjectName(QString::fromUtf8("searchResultContents"));
+			searchResultContents->setAttribute(Qt::WA_DeleteOnClose, true);
+			//searchResultContents->setLayoutDirection(Qt::RightToLeft);
+
+			SearchResultWidget *searchResultWidget = new SearchResultWidget(searchResultContents, lineEditSearchText->text(), SearchResultWidget::maxItemPerPage, poetName);
+
+//			QString iconThemePath=":/resources/images/";
+//			if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
+//				iconThemePath = settingsIconThemePath;
+
+			bool searchCanceled = false;
+//////////////////////////////////////////////////////
+QMap<int, QString> finalResult;
+QProgressDialog searchProgress(tr("Searching Data Base..."),  tr("Cancel"), 0, 0, this);
+connect( &searchProgress, SIGNAL( canceled() ), &searchProgress, SLOT( hide() ) );
+searchProgress.setWindowModality(Qt::WindowModal);
+searchProgress.setFixedSize(searchProgress.size());
+searchProgress.setMinimumDuration(0);
+//searchProgress.setValue(0);
+searchProgress.show();
+QApplication::processEvents();
+int resultCount = 0;
+			for (int j=0;j<vectorSize;++j)
+			{
+				QStringList phrases = phraseVectorList.at(j);
+//				int phraseCount = phrases.size();
+				QStringList excluded = excludedVectorList.at(j);
+
+				QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->
+				getPoemIDsByPhrase(phrases, poetID, excluded,
+													SaagharWidget::newSearchSkipNonAlphabet, &searchCanceled, 
+													&searchProgress, resultCount);
+//				for (int k=0;k<phraseCount;++k)
+//				{
+//					QString kphrase = phrases.at(k);
+//					if (kphrase.remove("%").isEmpty()) continue;
+//					qDebug() << "kphrase=" << kphrase;
+//					QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(phrases.at(k), poetID, excluded, SaagharWidget::newSearchSkipNonAlphabet, &searchCanceled, &searchProgress, resultCount);
+
+//				qDebug() << "mapResult-size" << mapResult.size();
+
+					QMap<int, QString>::const_iterator it = mapResult.constBegin();
+
+//					qDebug() << "mapResult-size" << mapResult.size();
+					while (it != mapResult.constEnd())
+					{
+						finalResult.insert(it.key(), it.value());//insertMulti for more than one result from a poem
+						++it;
+					}
+//					resultCount = finalResult.size();
+//					qDebug() << "resultCount=" << resultCount;
+
+					if (searchProgress.wasCanceled())
+					{
+						searchCanceled = true;
+						break;
+					}
+
+					if (searchCanceled)
+						break;
+//				}
+				qDebug() << "finalResult-size" << finalResult.size();
+				if (searchCanceled)
+					break;
+			}
+///////////////////////////////////////////////////////////
+			//searchResultWidget->setResultList( SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(phrase, poetID, SaagharWidget::newSearchSkipNonAlphabet, &searchCanceled) );
+			searchResultWidget->setResultList( finalResult );
+			if (!searchResultWidget->init(this, currentIconThemePath()))
+			{
+				QMessageBox::information(this, tr("Search"), tr("Current Scope: %1\nNo match found.").arg(poetName));
+				delete searchResultWidget;
+				searchResultWidget = 0;
+				continue;
+			}
+
+			//connect(spinBoxMaxSearchResult, SIGNAL(valueChanged(int)), searchResultWidget, SLOT(maxItemPerPageChange(int)));
+			connect(this, SIGNAL(maxItemPerPageChanged(int)), searchResultWidget, SLOT(maxItemPerPageChange(int)));
+
+			//create connections for mouse signals
+			connect(searchResultWidget->searchTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
+			connect(searchResultWidget->searchTable, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
+
+			//resize table on create and destroy
+			emitReSizeEvent();
+			connect(searchResultWidget, SIGNAL(destroyed()), this, SLOT(emitReSizeEvent()));
+
+			//we should create conection first and then break!
+			if (searchCanceled)
+				break;//search is canceled
 		}
-
-		QWidget *searchResultContents = new QWidget(this);
-		searchResultContents->setObjectName(QString::fromUtf8("searchResultContents"));
-		searchResultContents->setAttribute(Qt::WA_DeleteOnClose, true);
-		//searchResultContents->setLayoutDirection(Qt::RightToLeft);
-
-		SearchResultWidget *searchResultWidget = new SearchResultWidget(searchResultContents, lineEditSearchText->text(), spinBoxMaxSearchResult->value(), poetName);
-
-		QString iconThemePath=":/resources/images/";
-		if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
-			iconThemePath = settingsIconThemePath;
-
-		searchResultWidget->setResultList( SaagharWidget::ganjoorDataBase->getPoemIDsContainingPhrase_NewMethod2(phrase, poetID, SaagharWidget::newSearchSkipNonAlphabet) );
-		if (!searchResultWidget->init(this, iconThemePath)/* || searchResultWidget->resultList->isEmpty()*/)
-		{
-			QMessageBox::information(this, tr("Search"), tr("No match found."));
-			delete searchResultWidget;
-			searchResultWidget = 0;
-			return;
-		}
-
-		connect(spinBoxMaxSearchResult, SIGNAL(valueChanged(int)), searchResultWidget, SLOT(setMaxItemPerPage(int)));
-		//create connections for mouse signals
-		connect(searchResultWidget->searchTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
-		connect(searchResultWidget->searchTable, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
 	}
-
 }
 
-void MainWindow::searchRegionsInitialize()
+void MainWindow::multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidget, const QStringList &selectedData)
 {
+	//	/*comboBoxSearchRegion->addItem(tr("All Opened Tab"), "ALL_OPENED_TAB");
+	//	comboBoxSearchRegion->setItemCheckState(0, Qt::Checked);
+	//	comboBoxSearchRegion->addItem(tr("All"), "0");*/
 
-	//comboBoxSearchRegion->addItem(tr("Current Tab"), "CURRENT_TAB");
-	comboBoxSearchRegion->addItem(tr("All Opened Tab"), "ALL_OPENED_TAB");
-	comboBoxSearchRegion->addItem(tr("All"), "0");
+	//multiSelectWidget->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
+	QListWidgetItem *rootItem = multiSelectWidget->insertRow(1, tr("All"), true, "0", Qt::UserRole);
 
 	QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
+	
+	//int insertIndex = count();
 	for(int i=0; i<poets.size(); ++i)
 	{
-		comboBoxSearchRegion->addItem(poets.at(i)->_Name, QString::number(poets.at(i)->_ID));
+		multiSelectWidget->insertRow(i+2, poets.at(i)->_Name, true,
+			QString::number(poets.at(i)->_ID), Qt::UserRole, false, rootItem)->setCheckState(selectedData.contains(QString::number(poets.at(i)->_ID)) ? Qt::Checked : Qt::Unchecked);
 	}
+
+	if (selectedData.contains("0"))
+		rootItem->setCheckState(Qt::Checked);
+
+	multiSelectWidget->updateSelectedLists();
+/////////////////////////////////////
+////QListWidget *tmp=new QListWidget(mainTabWidget);
+////QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
+////	for(int i=0; i<poets.size(); ++i)
+////	{
+////	QListWidgetItem *item = new QListWidgetItem(poets.at(i)->_Name );
+////		//item = new QStandardItem(poets.at(i)->_Name);
+////		item->setData(Qt::UserRole, QString::number(poets.at(i)->_ID));
+////		item->setCheckState(Qt::Unchecked);
+////		tmp->insertItem(i, item);
+		
+////		//item->setTristate(true);
+////		//comboBoxSearchRegion->addItem(poets.at(i)->_Name, QString::number(poets.at(i)->_ID));
+////		//rootItem
+////		//rootItem->setChild(i+2, item /*standardModel->item(i+2)*/);   //CheckState(Qt::PartiallyChecked);
+		
+////		//standardModel->setItem(i+1, item);
+////	}//comboBoxSearchRegion->setModel(standardModel);
+//////////////////////////////////////
+
+//	/*comboBoxSearchRegion->addItem(tr("All Opened Tab"), "ALL_OPENED_TAB");
+//	comboBoxSearchRegion->setItemCheckState(0, Qt::Checked);
+//	comboBoxSearchRegion->addItem(tr("All"), "0");*/
+	
+//	//comboBoxSearchRegion
+
+//selectSearchRange->insertPoets( SaagharWidget::ganjoorDataBase->getPoets() );
+
+////	QxtCheckComboModel *standardModel = static_cast<QxtCheckComboModel *>(comboBoxSearchRegion->model());
+////	if (!standardModel)
+////	{
+////		qDebug() << "there is NO standardModel";
+////		return;
+////		//standardModel->item(0)->setCheckState(Qt::PartiallyChecked);//able(false);
+////	}
+
+////		QStandardItem *allTabsItem = new QStandardItem(tr("All Opened Tab"));
+////		allTabsItem->setCheckable(false);
+////		allTabsItem->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
+		
+////standardModel->setItem(0,allTabsItem );
+
+////	////comboBoxSearchRegion->addItem(tr("Current Tab"), "CURRENT_TAB");
+////	//comboBoxSearchRegion->addItem(tr("All Opened Tab"), "ALL_OPENED_TAB");
+
+////	//comboBoxSearchRegion->addItem(tr("All"), "0");
+////		QStandardItem *rootItem = new QStandardItem(tr("All"));
+////		rootItem->setTristate(true);
+//////standardModel->setItem(1,rootItem );
+//	QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
+////standardModel->setRowCount(poets.size()+2);
+//QStandardItem *item;
+//	QStandardItemModel *itemModel = new QStandardItemModel();
+//	itemModel->setColumnCount(1);
+//	itemModel->setRowCount(poets.size());
+//	for(int i=0; i<poets.size(); ++i)
+//	{
+//		item = new QStandardItem(poets.at(i)->_Name);
+//		item->setData(QString::number(poets.at(i)->_ID));
+//		//item->setTristate(true);
+//		item->setCheckState(Qt::Checked);
+//		//comboBoxSearchRegion->addItem(poets.at(i)->_Name, QString::number(poets.at(i)->_ID));
+//		////rootItem
+//		//rootItem->setChild(i+2, item /*standardModel->item(i+2)*/);   //CheckState(Qt::PartiallyChecked);
+		
+//		itemModel->setItem(i, 0, item);
+//	}//comboBoxSearchRegion->setModel(itemModel);
+////	standardModel->setItem(1, rootItem);
 }
 
 void MainWindow::actionRemovePoet()
@@ -360,7 +563,9 @@ void MainWindow::actionRemovePoet()
 			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 			SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poetID);
 			comboBoxSearchRegion->clear();
-			searchRegionsInitialize();
+			QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
+			multiSelectObjectInitialize(selectSearchRange, selectedSearchRange);
+			item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
 			//update visible region of searchToolBar
 			bool tmpFlag = labelMaxResultAction->isVisible();
 			labelMaxResultAction->setVisible(!tmpFlag);
@@ -380,6 +585,11 @@ void MainWindow::currentTabChanged(int tabIndex)
 	{
 		saagharWidget = tmpSaagharWidget;
 		saagharWidget->loadSettings();
+
+		if ( saagharWidget->isDirty() )
+		{
+			saagharWidget->refresh();
+		}
 		saagharWidget->showParentCategory(SaagharWidget::ganjoorDataBase->getCategory(saagharWidget->currentCat));//just update parentCatsToolbar
 		saagharWidget->resizeTable(saagharWidget->tableViewWidget);
 
@@ -395,28 +605,48 @@ void MainWindow::currentTabChanged(int tabIndex)
 			previousTabIndex = tabIndex;
 		}
 
-		if (saagharWidget->tableViewWidget->columnCount() == 1 && saagharWidget->tableViewWidget->rowCount() > 0 && saagharWidget->currentCat != 0)
+		if (saagharWidget->tableViewWidget->rowCount() > 0 && saagharWidget->currentCat != 0)
 		{
-			QTableWidgetItem *item = saagharWidget->tableViewWidget->item(0,0);
-
-			if ( item && !item->icon().isNull() )
+			if (saagharWidget->currentPoem == 0)
 			{
-				QString text = item->text();
-				int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
-				int verticalScrollBarWidth=0;
-				if ( saagharWidget->tableViewWidget->verticalScrollBar()->isVisible() )
+				QTableWidgetItem *item = saagharWidget->tableViewWidget->item(0,0);
+				if (item && !item->icon().isNull() && saagharWidget->tableViewWidget->columnCount() == 1)
 				{
-					verticalScrollBarWidth=saagharWidget->tableViewWidget->verticalScrollBar()->width();
+					QString text = item->text();
+					int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
+					int verticalScrollBarWidth=0;
+					if ( saagharWidget->tableViewWidget->verticalScrollBar()->isVisible() )
+					{
+						verticalScrollBarWidth=saagharWidget->tableViewWidget->verticalScrollBar()->width();
+					}
+					//int totalWidth = saagharWidget->tableViewWidget->columnWidth(0)-verticalScrollBarWidth-82;
+					int totalWidth = saagharWidget->tableViewWidget->viewport()->width()-verticalScrollBarWidth-82;
+					totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
+					saagharWidget->tableViewWidget->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth)) );
+					//saagharWidget->tableViewWidget->setRowHeight(0, 2*saagharWidget->tableViewWidget->rowHeight(0)+(saagharWidget->tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
 				}
-				int totalWidth = saagharWidget->tableViewWidget->columnWidth(0)-verticalScrollBarWidth-82;
-				totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
-				//int numOfRow = textWidth/totalWidth ;
-				saagharWidget->tableViewWidget->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth)) );
-				//saagharWidget->tableViewWidget->setRowHeight(0, 2*saagharWidget->tableViewWidget->rowHeight(0)+(saagharWidget->tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
+			}
+			else if(saagharWidget->tableViewWidget->columnCount()>1)
+			{
+				QTableWidgetItem *item = saagharWidget->tableViewWidget->item(0,1);
+				if (item)
+				{
+					QString text = item->text();
+					int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
+					int verticalScrollBarWidth=0;
+					if ( saagharWidget->tableViewWidget->verticalScrollBar()->isVisible() )
+					{
+						verticalScrollBarWidth=saagharWidget->tableViewWidget->verticalScrollBar()->width();
+					}
+					int totalWidth = saagharWidget->tableViewWidget->viewport()->width();
+					saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth) );
+				}
 			}
 		}
 
 		updateCaption();
+		updateTabsSubMenus();
+
 		actionInstance("actionPreviousPoem")->setEnabled( !SaagharWidget::ganjoorDataBase->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull() );
 		actionInstance("actionNextPoem")->setEnabled( !SaagharWidget::ganjoorDataBase->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull() );
 	}
@@ -548,6 +778,15 @@ void MainWindow::tabCloser(int tabIndex)
 	//if EditMode app need to ask about save changes!
 	disconnect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
 
+	QAction *tabAct = new QAction(mainTabWidget->tabText(tabIndex), menuClosedTabs);
+	tabAct->setData( getSaagharWidget(tabIndex)->identifier());
+	connect(tabAct, SIGNAL(triggered()), this, SLOT(actonClosedTabsClicked()) );
+	menuClosedTabs->addAction(tabAct);
+
+//	QAction *tabAction = new QAction(mainTabWidget->tabText(i), menuOpenedTabs);
+//	tabAction->setData(mainTabWidget->widget(i) /*QString::number(i)*/);
+//	menuOpenedTabs->addAction(tabAction);
+
 	QWidget *closedTabContent = mainTabWidget->widget(tabIndex);
 	mainTabWidget->setUpdatesEnabled(false);
 	mainTabWidget->removeTab(tabIndex);
@@ -567,6 +806,7 @@ void MainWindow::insertNewTab()
 	QGridLayout *tabGridLayout = new QGridLayout(tabContent);
 	tabGridLayout->setObjectName(QString::fromUtf8("tabGridLayout"));
 	QTableWidget *tabTableWidget = new QTableWidget(tabContent);
+
 	//table defaults
 	tabTableWidget->setObjectName(QString::fromUtf8("mainTableWidget"));
 	tabTableWidget->setLayoutDirection(Qt::RightToLeft);
@@ -574,6 +814,8 @@ void MainWindow::insertNewTab()
 	tabTableWidget->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 	tabTableWidget->setShowGrid(false);
 	tabTableWidget->setGridStyle(Qt::NoPen);
+	tabTableWidget->setFrameShape(QFrame::NoFrame);
+	tabTableWidget->setFrameStyle(QFrame::NoFrame|QFrame::Plain);
 	tabTableWidget->horizontalHeader()->setVisible(false);
 	tabTableWidget->verticalHeader()->setVisible(false);
 	tabTableWidget->setMouseTracking(true);
@@ -1022,22 +1264,18 @@ void MainWindow::actionNewTabClicked()
 
 void MainWindow::actFullScreenClicked(bool checked)
 {
-	QString iconThemePath=":/resources/images/";
-	if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
-		iconThemePath = settingsIconThemePath;
-
 	setUpdatesEnabled(false);
 	if (checked)
 	{
 		setWindowState(windowState() | Qt::WindowFullScreen);
 		actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
-		actionInstance("actionFullScreen")->setIcon(QIcon(iconThemePath+"/no-fullscreen.png"));
+		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/no-fullscreen.png"));
 	}
 	else
 	{
 		setWindowState(windowState() & ~Qt::WindowFullScreen);
 		actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
-		actionInstance("actionFullScreen")->setIcon(QIcon(iconThemePath+"/fullscreen.png"));
+		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/fullscreen.png"));
 	}
 	setUpdatesEnabled(true);
 }
@@ -1052,16 +1290,35 @@ void MainWindow::actionFaalRandomClicked()
 		actionData = 24;
 	else
 	{
-		if (saagharWidget->currentPoem != 0)
-			actionData = SaagharWidget::ganjoorDataBase->getPoem(saagharWidget->currentPoem)._CatID;
+		if (selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS"))
+		{
+			if (saagharWidget->currentPoem != 0)
+				actionData = SaagharWidget::ganjoorDataBase->getPoem(saagharWidget->currentPoem)._CatID;
+			else
+				actionData = saagharWidget->currentCat;
+		}
+		else if (selectedRandomRange.contains("0")) //all
+			actionData = 0;//home
 		else
-			actionData = saagharWidget->currentCat;
+		{
+			if (selectedRandomRange.isEmpty())
+				actionData = 0;//all
+			else
+			{
+				int randIndex = QGanjoorDbBrowser::getRandomNumber(0, selectedRandomRange.size()-1);
+				actionData = SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex).toInt())._CatID;
+				qDebug() << "actionData=" << actionData << "randIndex=" << randIndex << SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex))._Name;
+			}
+		}
 	}
 
 	int PoemID = SaagharWidget::ganjoorDataBase->getRandomPoemID(&actionData);
 	GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(PoemID);
 	if (!poem.isNull() && poem._CatID == actionData)
-		saagharWidget->processClickedItem("PoemID", poem._ID, true);
+		if (randomOpenInNewTab)
+			newTabForItem("PoemID", poem._ID, true);
+		else
+			saagharWidget->processClickedItem("PoemID", poem._ID, true);
 	else
 		actionFaalRandomClicked();//not any random id exists, so repeat until finding a valid id
 }
@@ -1117,100 +1374,36 @@ void MainWindow::actionImportNewSet()
 
 void MainWindow::setupUi()
 {
-	QString iconThemePath=":/resources/images/";
-	if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
-		iconThemePath = settingsIconThemePath;
+	QString iconThemePath = currentIconThemePath();
 
-	//initialize Search ToolBar
-	QLabel *labelSearchPhrase = new QLabel(ui->searchToolBar);
-	labelSearchPhrase->setObjectName(QString::fromUtf8("labelSearchPhrase"));
-	labelSearchPhrase->setText(tr("Search Phrase"));
+	if (Settings::READ("MainWindowState").isNull())
+	{
+		insertToolBarBreak(ui->mainToolBar);
+	}
 
-	QString clearIconPath = iconThemePath+"/clear-left.png";
-	if (layoutDirection() == Qt::RightToLeft)
-		clearIconPath = iconThemePath+"/clear-right.png";
-	lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, iconThemePath+"/search-options.png");
-	//lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, iconThemePath+"/clear.png", iconThemePath+"/options.png");
-	//lineEditSearchText = new QLineEdit(ui->searchToolBar);
-	lineEditSearchText->setObjectName(QString::fromUtf8("lineEditSearchText"));
-	lineEditSearchText->setMaximumSize(QSize(170, 16777215));
-	lineEditSearchText->setLayoutDirection(Qt::RightToLeft);
-
-	QLabel *labelSearchIn = new QLabel(ui->searchToolBar);
-	labelSearchIn->setObjectName(QString::fromUtf8("labelSearchIn"));
-	labelSearchIn->setText(tr("Search in"));
-
-	comboBoxSearchRegion = new QComboBox(ui->searchToolBar);
-	comboBoxSearchRegion->setObjectName(QString::fromUtf8("comboBoxSearchRegion"));
-	comboBoxSearchRegion->setMinimumSize(QSize(0, 0));
-	comboBoxSearchRegion->setLayoutDirection(Qt::RightToLeft);
-	comboBoxSearchRegion->setSizeAdjustPolicy(QComboBox::AdjustToContents);
-	
-	//create layout and add widgets to it!
-	QVBoxLayout *searchVerLayout = new QVBoxLayout();
-	searchVerLayout->setSpacing(0);
-	searchVerLayout->addWidget(lineEditSearchText);
-	searchVerLayout->addWidget(comboBoxSearchRegion);
-	QWidget *searchVerWidget = new QWidget();
-	searchVerWidget->setLayout(searchVerLayout);
-	//ui->mainToolBar->addWidget( searchVerWidget);
-	//ui->searchToolBar->addWidget(searchVerWidget);
-
-	QLabel *labelMaxResult = new QLabel(ui->searchToolBar);
-	labelMaxResult->setObjectName(QString::fromUtf8("labelMaxResult"));
-	labelMaxResult->setText(tr("Max Result per Page"));
-
-	spinBoxMaxSearchResult = new QSpinBox(ui->searchToolBar);
-	spinBoxMaxSearchResult->setObjectName(QString::fromUtf8("spinBoxMaxSearchResult"));
-	spinBoxMaxSearchResult->setValue(100);
-	spinBoxMaxSearchResult->setMaximum(5000);
-	spinBoxMaxSearchResult->setSingleStep(5);
-
-//	QToolButton *toolButtonSearchOption = new QToolButton(ui->searchToolBar);
-//	toolButtonSearchOption->setObjectName(QString::fromUtf8("toolButtonSearchOption"));
-//	toolButtonSearchOption->setIcon(QIcon(iconThemePath+"/options.png"));
-//	toolButtonSearchOption->setPopupMode(QToolButton::InstantPopup);
-	//QMenu *
-	searchOptionMenu = new QMenu(ui->searchToolBar);
-	//actionInstance("actionNewSearchFlag", "", tr("&New Search Method") )->setCheckable(true);
-	actionInstance("actionNewSearchSkipNonAlphabet", "", tr("&Skip non-Alphabet") )->setCheckable(true);
-	//actionInstance("actionNewSearchFlag")->setChecked(SaagharWidget::newSearchFlag);
-	actionInstance("actionNewSearchSkipNonAlphabet")->setChecked(SaagharWidget::newSearchSkipNonAlphabet);
-	//actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(true /*actionInstance("actionNewSearchFlag")->isChecked()*/);
-
-	//connect(actionInstance("actionNewSearchFlag"), SIGNAL(toggled(bool)), this, SLOT(newSearchFlagChanged(bool)));
-	connect(actionInstance("actionNewSearchSkipNonAlphabet"), SIGNAL(toggled(bool)), this, SLOT(newSearchNonAlphabetChanged(bool)));
-	//searchOptionMenu->addAction(actionInstance("actionNewSearchFlag"));
-	searchOptionMenu->addAction(actionInstance("actionNewSearchSkipNonAlphabet"));
-//toolButtonSearchOption->setMenu(searchOptionMenu);
-	//pushButtonSearch->setText(tr("Search"));
-
-//	lineEditSearchText->optionsButton()->setPopupMode(QToolButton::InstantPopup);
-//	lineEditSearchText->optionsButton()->setMenu(searchOptionMenu);
-//	lineEditSearchText->optionsButton()->setArrowType(Qt::NoArrow);
-	connect(lineEditSearchText->optionsButton(), SIGNAL(clicked()), this, SLOT(showSearchOptionMenu()));
-
-	ui->searchToolBar->addWidget(labelSearchPhrase);
-	ui->searchToolBar->addWidget(lineEditSearchText);
-	ui->searchToolBar->addSeparator();
-	ui->searchToolBar->addWidget(labelSearchIn);
-	ui->searchToolBar->addWidget(comboBoxSearchRegion);
-	labelMaxResultSeparator = ui->searchToolBar->addSeparator();
-	labelMaxResultAction = ui->searchToolBar->addWidget(labelMaxResult);
-	spinBoxMaxSearchResultAction = ui->searchToolBar->addWidget(spinBoxMaxSearchResult);
-	ui->searchToolBar->addSeparator();
-//	ui->searchToolBar->addWidget(toolButtonSearchOption);
-	
-	//max result spinbox visibility
-	labelMaxResultSeparator->setVisible(true /*!actionInstance("actionNewSearchFlag")->isChecked()*/);
-	labelMaxResultAction->setVisible(true /*!actionInstance("actionNewSearchFlag")->isChecked()*/);
-	spinBoxMaxSearchResultAction->setVisible(true /*!actionInstance("actionNewSearchFlag")->isChecked()*/);
-
+	skipSearchToolBarResize = false;
+	lineEditSearchText = 0;
+	comboBoxSearchRegion = 0;
+	setupSearchToolBarUi();
 	ui->searchToolBar->hide();
 
 	//Initialize main menu items
+	QHBoxLayout *menuBarLayout = new QHBoxLayout();
+	menuBarLayout->addWidget(ui->menuBar,0,Qt::AlignCenter|Qt::AlignLeft);
+	menuBarLayout->setContentsMargins(1,1,1,1);
+	QWidget *menuBarContainer = new QWidget(this);
+	menuBarContainer->setLayout(menuBarLayout);
+	ui->menuToolBar->addWidget(menuBarContainer);
+
 	menuFile = new QMenu(tr("&File"), ui->menuBar);
 	menuFile->setObjectName(QString::fromUtf8("menuFile"));
+
+	//submenus
+	menuOpenedTabs = new QMenu(tr("&Opened Tabs"), menuFile);
+	menuOpenedTabs->setObjectName(QString::fromUtf8("menuOpenedTabs"));
+	menuClosedTabs = new QMenu(tr("&Closed Tabs"), menuFile);
+	menuClosedTabs->setObjectName(QString::fromUtf8("menuClosedTabs"));
+
 	menuNavigation = new QMenu(tr("&Navigation"), ui->menuBar);
 	menuNavigation->setObjectName(QString::fromUtf8("menuNavigation"));
 	menuView = new QMenu(tr("&View"), ui->menuBar);
@@ -1256,7 +1449,7 @@ void MainWindow::setupUi()
 
 	actionInstance("actionAboutSaaghar", ":/resources/images/saaghar.png", tr("&About") )->setMenuRole(QAction::AboutRole);//needed for Mac OS X
 
-	actionInstance("actionAboutQt", ":/resources/images/qt-logo.png", tr("About &Qt") )->setMenuRole(QAction::AboutQtRole);//needed for Mac OS X
+	actionInstance("actionAboutQt", iconThemePath+"/qt-logo.png", tr("About &Qt") )->setMenuRole(QAction::AboutQtRole);//needed for Mac OS X
 
 	actionInstance("actionFaal", iconThemePath+"/faal.png", tr("&Faal"))->setData("-1");
 
@@ -1284,6 +1477,17 @@ void MainWindow::setupUi()
 
 	actionInstance("actionCheckUpdates", iconThemePath+"/check-updates.png", tr("Check for &Updates") );
 
+	//The following actions are processed in 'namedActionTriggered()' slot
+	actionInstance("Show Photo at Home", iconThemePath+"/show-photo-home.png", tr("&Show Photo at Home"))->setCheckable(true);
+	actionInstance("Show Photo at Home")->setChecked( Settings::READ("Show Photo at Home", true).toBool() );
+
+	actionInstance("Lock ToolBars", iconThemePath+"/lock-toolbars.png", tr("&Lock ToolBars"))->setCheckable(true);
+	actionInstance("Lock ToolBars")->setChecked( Settings::READ("Lock ToolBars", true).toBool() );
+	ui->mainToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
+	ui->menuToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
+	ui->searchToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
+	parentCatsToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
+
 	//Inserting main menu items
 	ui->menuBar->addMenu(menuFile);
 	ui->menuBar->addMenu(menuNavigation);
@@ -1291,17 +1495,33 @@ void MainWindow::setupUi()
 	ui->menuBar->addMenu(menuTools);
 	ui->menuBar->addMenu(menuHelp);
 
-////////////////
-	//movable menubar
-	/*QToolBar *menuToolBar = new QToolBar(this);
-	menuToolBar->addWidget(ui->menuBar);
-	addToolBar(Qt::TopToolBarArea, menuToolBar);*/
-////////////////////////
+	//QMenuBar style sheet
+	ui->menuBar->setStyleSheet("QMenuBar {background-color: transparent;}"
+	"QMenuBar::item {spacing: 3px;padding: 1px 7px 4px 7px;background: transparent;border-radius: 4px;}"
+	"QMenuBar::item:selected { background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadada, stop: 0.4 #d4d4d4, stop: 0.5 #c7c7c7, stop: 1.0 #dadada); border: 1px; }"
+	"QMenuBar::item:pressed {background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #9a9a9a, stop: 0.4 #949494, stop: 0.5 #a7a7a7, stop: 1.0 #9a9a9a); color: #fefefe; border: 1px; }");
+
+	int menuBarWidth = 0;
+	foreach(QAction *act, ui->menuBar->actions())
+	{
+		if (act)
+		{
+			menuBarWidth+=ui->menuBar->fontMetrics().boundingRect(act->text()).width()+7;
+		}
+	}
+
+	menuBarWidth =menuBarWidth-7-3;//last spacing!
+	ui->menuBar->setMaximumWidth(menuBarWidth);
+
 
 	//Inserting items of menus
 	menuFile->addAction(actionInstance("actionNewTab"));
 	menuFile->addAction(actionInstance("actionNewWindow"));
 	menuFile->addAction(actionInstance("actionCloseTab"));
+	menuFile->addSeparator();
+	//submenus
+	menuFile->addMenu(menuOpenedTabs);
+	menuFile->addMenu(menuClosedTabs);
 	menuFile->addSeparator();
 	menuFile->addAction(actionInstance("actionExportAsPDF"));
 	menuFile->addAction(actionInstance("actionExport"));
@@ -1318,6 +1538,24 @@ void MainWindow::setupUi()
 	menuNavigation->addSeparator();
 	menuNavigation->addAction(actionInstance("actionFaal"));
 	menuNavigation->addAction(actionInstance("actionRandom"));
+
+	menuView->addAction(actionInstance("Show Photo at Home"));
+
+	menuView->addSeparator();
+	QMenu *toolbarsView = new QMenu(tr("ToolBars"), menuView);
+	toolbarsView->addAction(ui->menuToolBar->toggleViewAction());
+	toolbarsView->addAction(ui->mainToolBar->toggleViewAction());
+	toolbarsView->addAction(ui->searchToolBar->toggleViewAction());
+	toolbarsView->addAction(parentCatsToolBar->toggleViewAction());
+	toolbarsView->addSeparator();
+	toolbarsView->addAction(actionInstance("Lock ToolBars"));
+	menuView->addMenu(toolbarsView);
+
+	toolBarViewActions(ui->mainToolBar, menuView, true);
+	menuView->addSeparator();
+	//checked actions, must be after above line
+	toolbarViewChanges(actionInstance(Settings::READ("MainToolBar Style").toString()));
+	toolbarViewChanges(actionInstance(Settings::READ("MainToolBar Size").toString()));
 
 	menuView->addAction(actionInstance("actionFullScreen"));
 
@@ -1400,11 +1638,15 @@ QAction *MainWindow::actionInstance(const QString actionObjectName, QString icon
 				iconThemePath = settingsIconThemePath;
 			iconPath = iconThemePath+"/"+actionObjectName+".png";
 		}*/
+		
+		action = new QAction(displayName, this);
+		if ( QFile::exists(iconPath) )
+			action->setIcon(QIcon(iconPath));
 
-		action = new QAction(QIcon(iconPath), displayName, this);
 		action->setObjectName(actionObjectName);
 		allActionMap.insert(actionObjectName, action);
 	}
+	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
 	return action;
 }
 
@@ -1452,12 +1694,21 @@ void MainWindow::createConnections()
 void MainWindow::globalSettings()
 {
 	Settings *settingsDlg = new Settings(this);
-	
+	connect(settingsDlg->ui->pushButtonRandomOptions, SIGNAL(clicked()), this, SLOT(customizeRandomDialog()));
+
 	/************initializing saved state of Settings dialog object!************/
+	settingsDlg->ui->pushButtonActionBottom->setIcon(QIcon(currentIconThemePath()+"/down.png"));
+	settingsDlg->ui->pushButtonActionTop->setIcon(QIcon(currentIconThemePath()+"/up.png"));
+
 	if (QApplication::layoutDirection() == Qt::RightToLeft)
 	{
-		settingsDlg->ui->pushButtonActionAdd->setIcon(QIcon(":/resources/images/left.png"));
-		settingsDlg->ui->pushButtonActionRemove->setIcon(QIcon(":/resources/images/right.png"));
+		settingsDlg->ui->pushButtonActionAdd->setIcon(QIcon(currentIconThemePath()+"/left.png"));
+		settingsDlg->ui->pushButtonActionRemove->setIcon(QIcon(currentIconThemePath()+"/right.png"));
+	}
+	else
+	{
+		settingsDlg->ui->pushButtonActionAdd->setIcon(QIcon(currentIconThemePath()+"/right.png"));
+		settingsDlg->ui->pushButtonActionRemove->setIcon(QIcon(currentIconThemePath()+"/left.png"));
 	}
 
 	settingsDlg->ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
@@ -1469,10 +1720,9 @@ void MainWindow::globalSettings()
 	connect( settingsDlg->ui->pushButtonDataBasePath, SIGNAL(clicked()), settingsDlg, SLOT(browseForDataBasePath()));
 
 	//font
-	//QFontDatabase fontDb;
+	/*
 	settingsDlg->ui->comboBoxFontFamily->setWritingSystem(QFontDatabase::Arabic);
-	//settingsDlg->ui->comboBoxFontFamily->addItems( fontDb.families() );
-	//settingsDlg->ui->comboBoxFontFamily->setCurrentIndex(settingsDlg->ui->comboBoxFontFamily->findText(SaagharWidget::tableFont.family(), Qt::MatchExactly));
+	*/
 	settingsDlg->ui->comboBoxFontFamily->setCurrentFont(SaagharWidget::tableFont);
 	settingsDlg->ui->spinBoxFontSize->setValue(SaagharWidget::tableFont.pointSize());
 	
@@ -1509,7 +1759,7 @@ void MainWindow::globalSettings()
 	connect(settingsDlg->ui->pushButtonActionAdd, SIGNAL(clicked()), settingsDlg, SLOT(addActionToToolbarTable()));
 	connect(settingsDlg->ui->pushButtonActionRemove, SIGNAL(clicked()), settingsDlg, SLOT(removeActionFromToolbarTable()));
 	/************end of initialization************/
-	
+
 	if (settingsDlg->exec())
 	{
 		/************setup new settings************/
@@ -1523,6 +1773,7 @@ void MainWindow::globalSettings()
 		//font
 		//QFont font(settingsDlg->ui->comboBoxFontFamily->currentText(), settingsDlg->ui->spinBoxFontSize->value());
 		SaagharWidget::tableFont = settingsDlg->ui->comboBoxFontFamily->currentFont(); //font;
+		SaagharWidget::tableFont.setPointSize(settingsDlg->ui->spinBoxFontSize->value());
 		
 		SaagharWidget::showBeytNumbers = settingsDlg->ui->checkBoxBeytNumbers->isChecked();
 	
@@ -1548,6 +1799,9 @@ void MainWindow::globalSettings()
 				mainToolBarItems.append(item->data(Qt::UserRole+1).toString());
 			}
 		}
+
+		Settings::WRITE("Main ToolBar Items", mainToolBarItems.join("|"));
+
 		/************end of setup new settings************/
 
 		ui->mainToolBar->clear();
@@ -1582,7 +1836,17 @@ void MainWindow::globalSettings()
 		//apply new text and background color, and also background picture
 		loadTabWidgetSettings();
 #endif
-		saveGlobalSettings();//save new settings to disk
+		saveSettings();//save new settings to disk
+
+		//////////////////////////////////////////////////////
+		//set for refreshed all pages
+		for (int i = 0; i < mainTabWidget->count(); ++i)
+		{
+			SaagharWidget *tmp = getSaagharWidget(i);
+			tmp->setDirty();//needs to be refreshed
+		}
+		saagharWidget->refresh();
+		//////////////////////////////////////////////////////
 	}
 }
 
@@ -1606,26 +1870,23 @@ void MainWindow::loadGlobalSettings()
 {
 	QSettings *config = getSettingsObject();
 
-	restoreState( config->value("MainWindowState").toByteArray(), 1);
-	restoreGeometry(config->value("Mainwindow Geometry").toByteArray());
+	Settings::LOAD_VARIABLES(config->value("VariableHash").toHash());
 
-	mainToolBarItems = config->value("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").toString().split("|", QString::SkipEmptyParts);
-	QString tmp = mainToolBarItems.join("");
-	tmp.remove("action", Qt::CaseInsensitive);
-	tmp.remove("Separator", Qt::CaseInsensitive);
-	if (tmp.isEmpty() || tmp.contains(" "))
-		mainToolBarItems = QString("actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").split("|", QString::SkipEmptyParts);
+	restoreState( Settings::READ("MainWindowState").toByteArray(), 1);
+	restoreGeometry(Settings::READ("Mainwindow Geometry").toByteArray());
 
-	openedTabs = config->value("openedTabs", "").toString();
+	openedTabs = config->value("openedTabs", "").toStringList();
+	config->setValue("openedTabs", "");
 
 	SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
 	
 	//search options
 	//SaagharWidget::newSearchFlag = config->value("New Search",true).toBool();
 	SaagharWidget::newSearchSkipNonAlphabet  = config->value("New Search non-Alphabet",false).toBool();
+	SearchResultWidget::maxItemPerPage  = config->value("Max Search Results Per Page", 100).toInt();
 
 	SaagharWidget::backgroundImageState = config->value("Background State",false).toBool();
-	SaagharWidget::backgroundImagePath = config->value("Background Path", "").toString();
+	SaagharWidget::backgroundImagePath = Settings::READ("Background Path", "").toString();
 	settingsIconThemeState = config->value("Icon Theme State",false).toBool();
 	settingsIconThemePath = config->value("Icon Theme Path", "").toString();
 
@@ -1637,11 +1898,48 @@ void MainWindow::loadGlobalSettings()
 	QFont fnt(fontFamily,fontSize);
 	SaagharWidget::tableFont = fnt;
 	SaagharWidget::showBeytNumbers = config->value("Show Beyt Numbers",true).toBool();
-	SaagharWidget::textColor=config->value("Text Color",QColor(0x23,0x65, 0xFF)).value<QColor>();
-	SaagharWidget::matchedTextColor=config->value("Matched Text Color",QColor(0x5E, 0xFF, 0x13)).value<QColor>();
-	SaagharWidget::backgroundColor=config->value("Background Color",QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
+	SaagharWidget::textColor = Settings::READ("Text Color",QColor(0x23,0x65, 0xFF)).value<QColor>();
+	SaagharWidget::matchedTextColor = Settings::READ("Matched Text Color",QColor(0x5E, 0xFF, 0x13)).value<QColor>();
+	SaagharWidget::backgroundColor = Settings::READ("Background Color",QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
 
 	autoCheckForUpdatesState = config->value("Auto Check For Updates",true).toBool();
+
+	selectedRandomRange = config->value("Selected Random Range", "").toStringList();
+	selectedSearchRange = config->value("Selected Search Range", "").toStringList();
+
+	randomOpenInNewTab = config->value("Random Open New Tab", true).toBool();
+
+//	mainToolBarItems = config->value("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").toString().split("|", QString::SkipEmptyParts);
+//	QString tmp = mainToolBarItems.join("");
+//	tmp.remove("action", Qt::CaseInsensitive);
+//	tmp.remove("Separator", Qt::CaseInsensitive);
+//	if (tmp.isEmpty() || tmp.contains(" "))
+//		mainToolBarItems = QString("actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").split("|", QString::SkipEmptyParts);
+
+
+	//initialize variableHash
+//	S_R("Show Photo at Home", true);
+//	S_R("Lock ToolBars", true);//default locked
+
+	//config->setValue("VariableHash", QVariant(Settings::VariablesHash));
+	QHash<QString, QVariant> vHash = config->value("VariableHash").toHash();
+
+	mainToolBarItems = Settings::READ("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").toString().split("|", QString::SkipEmptyParts);
+//	QString tmp = mainToolBarItems.join("");
+//	tmp.remove("action", Qt::CaseInsensitive);
+//	tmp.remove("Separator", Qt::CaseInsensitive);
+//	if (tmp.isEmpty() || tmp.contains(" "))
+//		mainToolBarItems = QString("actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").split("|", QString::SkipEmptyParts);
+
+///////////////
+	//variable hash
+	QHash<QString, QVariant>::const_iterator it = /*Settings::VariablesHash*/vHash.constBegin();
+	while (it != vHash.constEnd())
+	{
+		qDebug() << "vHash--key=" << it.key() << "vHash--Value=" << it.value();
+		++it;
+	}
+//////////////////////
 }
 
 void MainWindow::loadTabWidgetSettings()
@@ -1659,16 +1957,16 @@ void MainWindow::loadTabWidgetSettings()
 	mainTabWidget->setPalette(p);
 }
 
-void MainWindow::saveGlobalSettings()
+void MainWindow::saveSettings()
 {
 	QSettings *config = getSettingsObject();
 
-	config->setValue("Main ToolBar Items", mainToolBarItems.join("|"));
+	//config->setValue("Main ToolBar Items", mainToolBarItems.join("|"));
 
 	config->setValue("Max Poets Per Group", SaagharWidget::maxPoetsPerGroup);
 
 	config->setValue("Background State", SaagharWidget::backgroundImageState);
-	config->setValue("Background Path", SaagharWidget::backgroundImagePath);
+	Settings::WRITE("Background Path", SaagharWidget::backgroundImagePath);
 	config->setValue("Icon Theme State", settingsIconThemeState);
 	config->setValue("Icon Theme Path", settingsIconThemePath);
 
@@ -1677,11 +1975,68 @@ void MainWindow::saveGlobalSettings()
 	config->setValue( "Font Size", SaagharWidget::tableFont.pointSize());
 
 	config->setValue("Show Beyt Numbers", SaagharWidget::showBeytNumbers);
-	config->setValue("Text Color", SaagharWidget::textColor);
-	config->setValue("Matched Text Color", SaagharWidget::matchedTextColor);
-	config->setValue("Background Color", SaagharWidget::backgroundColor);
+
+	//colors
+	Settings::WRITE("Text Color", SaagharWidget::textColor);
+	Settings::WRITE("Matched Text Color", SaagharWidget::matchedTextColor);
+	Settings::WRITE("Background Color", SaagharWidget::backgroundColor);
 
 	config->setValue("Auto Check For Updates", autoCheckForUpdatesState);
+
+	///////////////////////////////////////////////////
+	/////////////////////save state////////////////////
+	Settings::WRITE("MainWindowState", saveState(1));
+	Settings::WRITE("Mainwindow Geometry", saveGeometry());
+
+	openedTabs.clear();
+	for (int i = 0; i < mainTabWidget->count(); ++i)
+	{
+		SaagharWidget *tmp = getSaagharWidget(i);
+		QString tabViewType;
+		if (tmp->currentPoem > 0)
+			tabViewType = "PoemID="+QString::number(tmp->currentPoem);
+		else
+			tabViewType = "CatID="+QString::number(tmp->currentCat);
+		
+		openedTabs << tabViewType;
+	}
+	config->setValue("openedTabs", openedTabs);
+
+	//database path
+	config->setValue("DataBase Path", QGanjoorDbBrowser::dataBasePath.join(";"));
+
+	//search options
+	//config->setValue("New Search", SaagharWidget::newSearchFlag);
+	config->setValue("New Search non-Alphabet", SaagharWidget::newSearchSkipNonAlphabet);
+	config->setValue("Max Search Results Per Page", SearchResultWidget::maxItemPerPage);
+
+	//Search and Random Range
+	config->setValue("Selected Random Range", selectedRandomRange);
+
+	QList<QListWidgetItem *> selectedItems = selectSearchRange->getSelectedItemList();
+
+	selectedSearchRange.clear();
+	foreach(QListWidgetItem *item, selectedItems)
+	{
+		selectedSearchRange << item->data(Qt::UserRole).toString();
+	}
+
+	config->setValue("Selected Search Range", selectedSearchRange);
+
+	config->setValue("Random Open New Tab", randomOpenInNewTab);
+
+	/////////////////////save state////////////////////
+	///////////////////////////////////////////////////
+
+	//variable hash
+	config->setValue("VariableHash", Settings::GET_VARIABLES_VARIANT());
+//	QHash<QString, QVariant> vHash = Settings::GET_VARIABLES_VARIANT().toHash();
+//	QHash<QString, QVariant>::const_iterator it = vHash.constBegin();
+//	while (it != vHash.constEnd())
+//	{
+//		config->setValue(it.key(), it.value());
+//		++it;
+//	}
 }
 
 QString MainWindow::tableToString(QTableWidget *table, QString mesraSeparator, QString beytSeparator, int startRow, int startColumn, int endRow, int endColumn)
@@ -1775,37 +2130,8 @@ void MainWindow::resizeEvent( QResizeEvent * event )
 void MainWindow::closeEvent( QCloseEvent * event )
 {
 	QFontDatabase::removeAllApplicationFonts();
-	saveSaagharState();
+	saveSettings();
 	event->accept();
-}
-
-void MainWindow::saveSaagharState()
-{
-	QSettings *config = getSettingsObject();
-
-	config->setValue("MainWindowState", saveState(1));
-	config->setValue("Mainwindow Geometry", saveGeometry());
-
-	QString openedTabs = "";
-	for (int i = 0; i < mainTabWidget->count(); ++i)
-	{
-		SaagharWidget *tmp = getSaagharWidget(i);
-		QString tabViewType;
-		if (tmp->currentPoem > 0)
-			tabViewType = "PoemID="+QString::number(tmp->currentPoem);
-		else
-			tabViewType = "CatID="+QString::number(tmp->currentCat);
-		
-		openedTabs += tabViewType+"|";
-	}
-	config->setValue("openedTabs", openedTabs);
-
-	//database path
-	config->setValue("DataBase Path", QGanjoorDbBrowser::dataBasePath.join(";"));
-
-	//search options
-	//config->setValue("New Search", SaagharWidget::newSearchFlag);
-	config->setValue("New Search non-Alphabet", SaagharWidget::newSearchSkipNonAlphabet);
 }
 
 void MainWindow::tableItemMouseOver(QTableWidgetItem *item)
@@ -1940,7 +2266,7 @@ void MainWindow::importDataBase(const QString fileName)
 	SaagharWidget::ganjoorDataBase->dBConnection.transaction();
 
 	if ( !poetsConflictList.isEmpty() )
-    {
+	{
 		QMessageBox warnAboutConflict(this);
 		warnAboutConflict.setWindowTitle(tr("Warning!"));
 		warnAboutConflict.setIcon(QMessageBox::Warning);
@@ -1960,7 +2286,7 @@ void MainWindow::importDataBase(const QString fileName)
 
 		foreach(GanjoorPoet *poet, poetsConflictList)
 			SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poet->_ID);
-    }
+	}
 
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
@@ -1968,7 +2294,9 @@ void MainWindow::importDataBase(const QString fileName)
 	{
 		SaagharWidget::ganjoorDataBase->dBConnection.commit();
 		comboBoxSearchRegion->clear();
-		searchRegionsInitialize();
+		QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
+		multiSelectObjectInitialize(selectSearchRange, selectedSearchRange);
+		item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
 		//update visible region of searchToolBar
 		bool tmpFlag = labelMaxResultAction->isVisible();
 		labelMaxResultAction->setVisible(!tmpFlag);
@@ -1976,11 +2304,467 @@ void MainWindow::importDataBase(const QString fileName)
 		QApplication::processEvents();
 		labelMaxResultAction->setVisible(tmpFlag);
 	}
-    else
+	else
 	{
 		SaagharWidget::ganjoorDataBase->dBConnection.rollback();
 		QMessageBox::warning(this, tr("Error!"), tr("There are some errors, the import procedure was not completed"));
 	}
 
 	QApplication::restoreOverrideCursor();
+}
+
+void MainWindow::getMaxResultPerPage()
+{
+	bool Ok = false;
+	int max = QInputDialog::getInt(this, tr("Results Per Page"), tr("Set max results per page:"), SearchResultWidget::maxItemPerPage, 0, 5000, 5, &Ok );
+	if (Ok)
+	{
+		emit maxItemPerPageChanged(max);
+		SearchResultWidget::maxItemPerPage = max;
+		//SearchResultWidget::setMaxItemPerPage(max);
+	}
+}
+
+void MainWindow::toolBarContextMenu(const QPoint &/*pos*/)
+{
+	QMenu *contextMenu = new QMenu(0);
+	toolBarViewActions(ui->mainToolBar, contextMenu, false);
+
+	//it has not a friendly view!
+//	contextMenu->addSeparator();
+//	QMenu *otherActions =	contextMenu->addMenu(tr("Other Actions"));
+//	QMap<QString, QAction *>::const_iterator actIterator = allActionMap.constBegin();
+//	while (actIterator != allActionMap.constEnd())
+//	{
+//		if (!mainToolBarItems.contains(actIterator.key()))
+//		{
+//			otherActions->addAction(actIterator.value());
+//		}
+//		++actIterator;
+//	}
+
+	QAction *customizeRandom;
+	if (mainToolBarItems.contains("actionFaal", Qt::CaseInsensitive) || mainToolBarItems.contains("actionRandom", Qt::CaseInsensitive) )
+	{
+		contextMenu->addSeparator();
+		customizeRandom = contextMenu->addAction(tr("Customize Faal && Random...")/*, customizeRandomButtons()*/);
+	}
+//	else
+//	{
+//		customizeRandom = otherActions->addAction(tr("Customize Faal && Random...")/*, customizeRandomButtons()*/);
+//	}
+
+	if (contextMenu->exec(QCursor::pos()) == customizeRandom)
+	{
+		customizeRandomDialog();
+	}
+
+	delete contextMenu;
+}
+
+void MainWindow::customizeRandomDialog()
+{
+	CustomizeRandomDialog *randomSetting = new CustomizeRandomDialog(this, randomOpenInNewTab);
+
+	QListWidgetItem *firstItem = randomSetting->selectRandomRange->insertRow(0, tr("Current tab's subsections"), true, "CURRENT_TAB_SUBSECTIONS", Qt::UserRole, true);
+	multiSelectObjectInitialize(randomSetting->selectRandomRange, selectedRandomRange);
+	firstItem->setCheckState(selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS") ? Qt::Checked : Qt::Unchecked);
+
+	if (randomSetting->exec())
+	{
+		randomSetting->acceptSettings(&randomOpenInNewTab);
+		//randomSetting->selectRandomRange->updateSelectedLists();
+		QList<QListWidgetItem *> selectedItems = randomSetting->selectRandomRange->getSelectedItemList();
+
+		selectedRandomRange.clear();
+		foreach(QListWidgetItem *item, selectedItems)
+		{
+			selectedRandomRange << item->data(Qt::UserRole).toString();
+		}
+
+		qDebug() << "selectedItems-size="<<selectedItems.size();
+		qDebug() << "STR="<<randomSetting->selectRandomRange->getSelectedString();
+		qDebug() << selectedRandomRange.join("|");
+		qDebug() << "randomOpenInNewTab=" << randomOpenInNewTab;
+	}
+	delete randomSetting;
+	randomSetting = 0;
+}
+#include<QActionGroup>
+void MainWindow::toolBarViewActions(QToolBar *toolBar, QMenu *menu, bool subMenu)
+{
+	QMenu *toolbarMenu = menu;
+	if (subMenu)
+	{
+		toolbarMenu = new QMenu( toolBar->windowTitle() , menu );
+		menu->addMenu(toolbarMenu);
+	}
+
+	toolbarMenu->addAction(actionInstance("actionToolBarSizeLargeIcon","",tr("&Large Icon")) );
+	QActionGroup *toolBarIconSize = actionInstance("actionToolBarSizeLargeIcon")->actionGroup();
+	if (!toolBarIconSize)
+	{
+		toolBarIconSize = new QActionGroup(this);
+		qDebug() << "toolBarIconSize CREATED";
+	}
+	const int normalSize = toolBar->style()->pixelMetric(QStyle::PM_ToolBarIconSize);
+	const int largeSize = toolBar->style()->pixelMetric(QStyle::PM_LargeIconSize);
+	const int smallSize = toolBar->style()->pixelMetric(QStyle::PM_SmallIconSize);
+
+	actionInstance("actionToolBarSizeLargeIcon")->setParent(toolBar);
+	actionInstance("actionToolBarSizeLargeIcon")->setActionGroup(toolBarIconSize);
+	actionInstance("actionToolBarSizeLargeIcon")->setCheckable(true);
+	actionInstance("actionToolBarSizeLargeIcon")->setData(largeSize);
+
+	toolbarMenu->addAction(actionInstance("actionToolBarSizeMediumIcon","",tr("&Medium Icon")) );
+	actionInstance("actionToolBarSizeMediumIcon")->setParent(toolBar);
+	actionInstance("actionToolBarSizeMediumIcon")->setActionGroup(toolBarIconSize);
+	actionInstance("actionToolBarSizeMediumIcon")->setCheckable(true);
+	actionInstance("actionToolBarSizeMediumIcon")->setData(normalSize);
+
+	toolbarMenu->addAction(actionInstance("actionToolBarSizeSmallIcon","",tr("&Small Icon")) );
+	actionInstance("actionToolBarSizeSmallIcon")->setParent(toolBar);
+	actionInstance("actionToolBarSizeSmallIcon")->setActionGroup(toolBarIconSize);
+	actionInstance("actionToolBarSizeSmallIcon")->setCheckable(true);
+	actionInstance("actionToolBarSizeSmallIcon")->setData(smallSize);//qMax(normalSize-16, normalSize/2) );//qMin(normalSize, 16) == 16 ? normalSize-16 : normalSize/2 );//we sure we don't set it to zero!
+
+	toolbarMenu->addSeparator();
+
+	toolbarMenu->addAction(actionInstance("actionToolBarStyleOnlyIcon","",tr("Only &Icon")) );
+	QActionGroup *toolBarButtonStyle = actionInstance("actionToolBarStyleOnlyIcon")->actionGroup();
+	if (!toolBarButtonStyle)
+	{
+		toolBarButtonStyle = new QActionGroup(this);
+		qDebug() << "toolBarButtonStyle CREATED";
+	}
+	actionInstance("actionToolBarStyleOnlyIcon")->setParent(toolBar);
+	actionInstance("actionToolBarStyleOnlyIcon")->setActionGroup(toolBarButtonStyle);
+	actionInstance("actionToolBarStyleOnlyIcon")->setCheckable(true);
+	actionInstance("actionToolBarStyleOnlyIcon")->setData(Qt::ToolButtonIconOnly);
+
+	toolbarMenu->addAction(actionInstance("actionToolBarStyleOnlyText","",tr("Only &Text")) );
+	actionInstance("actionToolBarStyleOnlyText")->setParent(toolBar);
+	actionInstance("actionToolBarStyleOnlyText")->setActionGroup(toolBarButtonStyle);
+	actionInstance("actionToolBarStyleOnlyText")->setCheckable(true);
+	actionInstance("actionToolBarStyleOnlyText")->setData(Qt::ToolButtonTextOnly);
+
+	toolbarMenu->addAction(actionInstance("actionToolBarStyleTextIcon","",tr("&Both Text && Icon")) );
+	actionInstance("actionToolBarStyleTextIcon")->setParent(toolBar);
+	actionInstance("actionToolBarStyleTextIcon")->setActionGroup(toolBarButtonStyle);
+	actionInstance("actionToolBarStyleTextIcon")->setCheckable(true);
+	actionInstance("actionToolBarStyleTextIcon")->setData(Qt::ToolButtonTextUnderIcon);
+
+	//checked actions
+	actionInstance(Settings::READ("MainToolBar Style", "actionToolBarStyleTextIcon").toString())->setChecked(true);
+	actionInstance(Settings::READ("MainToolBar Size", "actionToolBarSizeMediumIcon").toString())->setChecked(true);
+
+	//create actiongroups connections
+	connect(toolBarIconSize, SIGNAL(triggered(QAction*)), this, SLOT(toolbarViewChanges(QAction*)));
+	connect(toolBarButtonStyle, SIGNAL(triggered(QAction*)), this, SLOT(toolbarViewChanges(QAction*)));
+}
+
+void MainWindow::toolbarViewChanges(QAction *action)
+{
+	if (!action) return;
+	QToolBar *toolbar = qobject_cast<QToolBar *>(action->parent());
+	if (!toolbar)
+	{
+		qDebug() << "toolbar is not recived";
+		return;
+	}
+
+	bool ok = false;
+	int data = action->data().toInt(&ok);
+	if (!ok)
+	{
+		qDebug() << "data is nor recived";
+		return;
+	}
+
+	disconnect(action->actionGroup(), SIGNAL(triggered(QAction*)), this, SLOT(toolbarViewChanges(QAction*)));
+
+	QString actionId = allActionMap.key(action);
+	QString actionType = actionId.contains("Size") ? "SizeType" : "StyleType";
+	qDebug() << "actionType=" << actionType;
+	if (actionType == "SizeType")
+	{
+		toolbar->setIconSize(QSize(data, data));
+		Settings::WRITE("MainToolBar Size", actionId);
+	}
+	else if (actionType == "StyleType")
+	{
+		toolbar->setToolButtonStyle((Qt::ToolButtonStyle)data);
+		Settings::WRITE("MainToolBar Style", actionId);
+	}
+
+	connect(action->actionGroup(), SIGNAL(triggered(QAction*)), this, SLOT(toolbarViewChanges(QAction*)));
+}
+
+bool MainWindow::eventFilter(QObject* receiver, QEvent* event)
+{
+//	if (skipSearchToolBarResize)
+//	{
+//		qDebug() << "skipSearchToolBarResize=TRUE";
+//		skipSearchToolBarResize = false;
+//		return false;
+//	}
+//	else
+//		skipSearchToolBarResize = true;
+	switch (event->type())
+	{
+		case QEvent::Move :
+		{
+			QMoveEvent *resEvent = static_cast<QMoveEvent*>(event);
+			if (resEvent && receiver == ui->searchToolBar)
+			{
+				if (searchToolBarBoxLayout->direction() != QBoxLayout::LeftToRight && ui->searchToolBar->isFloating())
+				{
+					qDebug()<<"isFloating()=" << ui->searchToolBar->isFloating();
+					searchToolBarBoxLayout->setDirection(QBoxLayout::LeftToRight);
+					searchToolBarBoxLayout->setSpacing(4);
+					searchToolBarBoxLayout->setContentsMargins(1,1,1,1);
+
+//					if (searchToolBarBoxLayout->itemAt(0))
+//						searchToolBarBoxLayout->itemAt(0)->setAlignment(Qt::AlignJustify|Qt::AlignCenter);
+//					if (searchToolBarBoxLayout->itemAt(1))
+//						searchToolBarBoxLayout->itemAt(1)->setAlignment(Qt::AlignJustify|Qt::AlignCenter);
+
+					ui->searchToolBar->adjustSize(); //resize(QSize(ui->searchToolBar->width(), qMax(comboBoxSearchRegion->height()/*+searchToolBarBoxLayout->spacing()*2*/, lineEditSearchText->height()/*+searchToolBarBoxLayout->spacing()*2*/) ));
+					//ui->searchToolBar->repaint();
+					//QApplication::processEvents();
+				}
+				int height = comboBoxSearchRegion->height()+lineEditSearchText->height()+1+1+2;//margins and spacing
+				if (ui->searchToolBar->size().height()>=height && !ui->searchToolBar->isFloating())
+				{
+					qDebug() << "searchToolBar-RESIZE=" << ui->searchToolBar->size().height()<<"height="<<height;
+
+qDebug() << "aligment0=" << searchToolBarBoxLayout->itemAt(0)->alignment();
+//					if (searchToolBarBoxLayout->itemAt(0))
+//						searchToolBarBoxLayout->itemAt(0)->setAlignment(QFlags<Qt::AlignmentFlag>());
+//					if (searchToolBarBoxLayout->itemAt(1))
+//						searchToolBarBoxLayout->itemAt(1)->setAlignment(QFlags<Qt::AlignmentFlag>());
+
+					qDebug() << "aligment1=" << searchToolBarBoxLayout->itemAt(1)->alignment();
+				searchToolBarBoxLayout->setDirection(QBoxLayout::TopToBottom);
+				searchToolBarBoxLayout->setSpacing(2);
+				searchToolBarBoxLayout->setContentsMargins(1,1,1,1);
+
+				////comboBoxSearchRegion->resize(lineEditSearchText->width(), comboBoxSearchRegion->height());
+				//ui->searchToolBar->repaint();
+				//QApplication::processEvents();
+				qDebug() << "count="<<searchToolBarBoxLayout->count() << "lEditW=" << lineEditSearchText->width() << "lComboW=" << comboBoxSearchRegion->width();
+//					searchVerLayout->addWidget(lineEditSearchText);
+//					searchVerLayout->addWidget(comboBoxSearchRegion);
+//					ui->searchToolBar->clear();
+//					searchVerWidget->show();
+//					ui->searchToolBar->addWidget(searchVerWidget);
+//				QVBoxLayout *lsearchVerLayout = new QVBoxLayout();
+//				////QHBoxLayout *searchVerLayout = new QHBoxLayout();
+//				lineEditSearchText->setParent(this);
+//				comboBoxSearchRegion->setParent(this);
+//				ui->searchToolBar->clear();
+//				lsearchVerLayout->setSpacing(6);
+//				lsearchVerLayout->addWidget(lineEditSearchText);
+//				lsearchVerLayout->addWidget(comboBoxSearchRegion);
+//				QWidget *lsearchVerWidget = new QWidget(ui->searchToolBar);
+//				lsearchVerWidget->setLayout(lsearchVerLayout);
+//				ui->searchToolBar->addWidget(lsearchVerWidget);
+				//lsearchVerWidget->hide();
+				}
+//				else
+//				{
+//					searchToolBarBoxLayout->setDirection(QBoxLayout::RightToLeft);
+//				}
+			}
+		}
+			break;
+		default:
+			break;
+	}
+	skipSearchToolBarResize = false;
+	return false;
+}
+
+void MainWindow::setupSearchToolBarUi()
+{
+	//initialize Search ToolBar
+	QString clearIconPath = currentIconThemePath()+"/clear-left.png";
+	if (layoutDirection() == Qt::RightToLeft)
+		clearIconPath = currentIconThemePath()+"/clear-right.png";
+	lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, currentIconThemePath()+"/search-options.png");
+	lineEditSearchText->setObjectName(QString::fromUtf8("lineEditSearchText"));
+	lineEditSearchText->setMaximumSize(QSize(170, 16777215));
+	lineEditSearchText->setLayoutDirection(Qt::RightToLeft);
+	
+	selectSearchRange = new QMultiSelectWidget(ui->searchToolBar);
+	comboBoxSearchRegion = selectSearchRange->getComboWidgetInstance();
+	comboBoxSearchRegion->setObjectName(QString::fromUtf8("comboBoxSearchRegion"));
+	comboBoxSearchRegion->setLayoutDirection(Qt::RightToLeft);
+	comboBoxSearchRegion->setMaximumSize(QSize(170, 16777215));
+	comboBoxSearchRegion->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
+	comboBoxSearchRegion->setEditable(true);
+	#if QT_VERSION > 0x040700
+	lineEditSearchText->setPlaceholderText(tr("Enter Search Phrase"));
+	comboBoxSearchRegion->lineEdit()->setPlaceholderText(tr("Select Search Scope..."));
+	#else
+	QLabel *labelSearchPhrase = new QLabel(ui->searchToolBar);
+	labelSearchPhrase->setObjectName(QString::fromUtf8("labelSearchPhrase"));
+	labelSearchPhrase->setText(tr("Search Phrase"));
+	ui->searchToolBar->addWidget(labelSearchPhrase);
+	ui->searchToolBar->addWidget(lineEditSearchText);
+	ui->searchToolBar->addSeparator();
+	QLabel *labelSearchIn = new QLabel(ui->searchToolBar);
+	labelSearchIn->setObjectName(QString::fromUtf8("labelSearchIn"));
+	labelSearchIn->setText(tr("Search in"));
+	ui->searchToolBar->addSeparator();
+	ui->searchToolBar->addWidget(labelSearchIn);
+	#endif
+	
+	//create layout and add widgets to it!
+	searchToolBarBoxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+	
+	searchToolBarBoxLayout->setSpacing(4);
+	searchToolBarBoxLayout->setContentsMargins(1,1,1,1);
+	
+	searchToolBarBoxLayout->addWidget(lineEditSearchText);
+	searchToolBarBoxLayout->addWidget(comboBoxSearchRegion);
+	QSpacerItem *horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+	searchToolBarBoxLayout->addItem(horizontalSpacer);
+	
+	QWidget *searchToolBarContent = new QWidget();
+	searchToolBarContent->setLayout(searchToolBarBoxLayout);
+	
+	ui->searchToolBar->addWidget(searchToolBarContent);
+	
+	searchOptionMenu = new QMenu(ui->searchToolBar);
+	
+	actionInstance("actionGetMaxResultPerPage", "", tr("Max Result per Page...") );
+	connect(actionInstance("actionGetMaxResultPerPage"), SIGNAL(triggered()), this, SLOT(getMaxResultPerPage()));
+	
+	actionInstance("actionNewSearchSkipNonAlphabet", "", tr("&Skip non-Alphabet") )->setCheckable(true);
+	actionInstance("actionNewSearchSkipNonAlphabet")->setChecked(SaagharWidget::newSearchSkipNonAlphabet);
+	
+	connect(actionInstance("actionNewSearchSkipNonAlphabet"), SIGNAL(toggled(bool)), this, SLOT(newSearchNonAlphabetChanged(bool)));
+	
+	searchOptionMenu->addAction(actionInstance("actionGetMaxResultPerPage"));
+	searchOptionMenu->addAction(actionInstance("separator"));
+	
+	searchOptionMenu->addAction(actionInstance("actionNewSearchSkipNonAlphabet"));
+	
+	connect(lineEditSearchText->optionsButton(), SIGNAL(clicked()), this, SLOT(showSearchOptionMenu()));
+}
+
+void MainWindow::namedActionTriggered(bool checked)
+{
+	QAction *action = qobject_cast<QAction *>(sender());
+	if (!action) return;
+	disconnect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
+
+	QString actionName = action->objectName();
+	//qDebug() << "triggred=" << actionName << "checked=" << checked;
+	QString text = action->text();text.remove("&");
+	if ( actionName == "Show Photo at Home" )
+	{
+		Settings::WRITE(actionName, checked);
+		//TODO: reload Home page!!!!!!!
+		for (int i = 0; i < mainTabWidget->count(); ++i)
+		{
+			SaagharWidget *tmp = getSaagharWidget(i);
+			if (tmp && tmp->currentCat==0)
+			{
+				tmp->setDirty();//needs to be refreshed
+			}
+		}
+
+		if (saagharWidget->isDirty())
+		{
+			saagharWidget->showHome();
+		//saagharWidget->showParentCategory(SaagharWidget::ganjoorDataBase->getCategory(saagharWidget->currentCat));//just update parentCatsToolbar
+		}
+	}
+	else if ( actionName == "menuOpenedTabsActions" )
+	{
+		QObject *obj = qvariant_cast<QObject *>(action->data());
+		QWidget *tabWidget = qobject_cast<QWidget *>(obj);
+		if (tabWidget)
+		{
+			mainTabWidget->setCurrentWidget(tabWidget);
+		}
+		return;//action is deleted by 'updateTabsSubMenus()'
+	}
+	else if ( actionName == "Lock ToolBars" )
+	{
+		Settings::WRITE(actionName, checked);
+		ui->mainToolBar->setMovable(!checked);
+		ui->menuToolBar->setMovable(!checked);
+		ui->searchToolBar->setMovable(!checked);
+		parentCatsToolBar->setMovable(!checked);
+	}
+
+	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
+}
+
+void MainWindow::updateTabsSubMenus()
+{
+	menuOpenedTabs->clear();
+	//menuOpenedTabs->setTearOffEnabled(true);
+	QAction *tabAction;
+	int numOfTabs = mainTabWidget->count();
+	for (int i=0; i<numOfTabs; ++i)
+	{
+		tabAction = new QAction(mainTabWidget->tabText(i), menuOpenedTabs);
+
+		QObject *obj = mainTabWidget->widget(i);
+		QVariant data = QVariant::fromValue(obj);
+		tabAction->setData(data);
+
+		tabAction->setObjectName("menuOpenedTabsActions");
+		connect(tabAction, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
+		menuOpenedTabs->addAction(tabAction);
+	}
+	qDebug() << "end::updateTabsSubMenus";
+}
+
+void MainWindow::actonClosedTabsClicked()
+{
+	QAction *action = qobject_cast<QAction *>(sender());
+	if (!action) return;
+	//QString tabType = action->data().toString();
+	QString type;
+	int id;
+	if ( dataFromIdentifier(action->data().toString(), &type, &id) )
+		newTabForItem(type, id, true);
+	//QStringList tabViewData = action->data().toString().split("=", QString::SkipEmptyParts);
+//	if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
+//	{
+//		bool Ok = false;
+//		int id = tabViewData.at(1).toInt(&Ok);
+//		if (Ok)
+//			newTabForItem(tabViewData.at(0), id, true);
+//	}
+	menuClosedTabs->removeAction(action);
+}
+
+bool MainWindow::dataFromIdentifier(const QString &identifier, QString *type, int *id)
+{
+	QStringList tabViewData = identifier.split("=", QString::SkipEmptyParts);
+	if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
+	{
+		bool Ok = false;
+		int ID = tabViewData.at(1).toInt(&Ok);
+		if (Ok)
+		{
+			if (type) *type = tabViewData.at(0);
+			if (id) *id = ID;
+			return true;
+		}
+	}
+	return false;
+}
+
+QString MainWindow::currentIconThemePath()
+{
+	if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
+		return settingsIconThemePath;
+	return ":/resources/images/";
 }
