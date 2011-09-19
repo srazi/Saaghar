@@ -19,6 +19,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#include "SearchPatternManager.h"
 #include "SearchItemDelegate.h"
 #include "QGanjoorDbStuff.h"
 #include "SaagharWidget.h"
@@ -26,7 +27,10 @@
 
 SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString phrase) : QStyledItemDelegate(parent)
 {
-	keyword = phrase;
+	keywordList.clear();
+	keywordList = SearchPatternManager::phraseToList(phrase);
+	keywordList.removeDuplicates();
+
 	tableStyle = style;
 }
 
@@ -48,27 +52,49 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 	QString text="";
 	QString cleanedText = "";
 	int lastX,x;
-	lastX = x = option.rect.x()+textHMargin;
 	const QFontMetrics fontMetric(option.fontMetrics);
-	
+	const QString tatweel = QString(0x0640);
+//qDebug() << "tatweel="<<tatweel;
 	if (index.data().isValid())
 	{
 		text = index.data().toString();
 		//if (SaagharWidget::newSearchFlag)
 		{
-			text = QGanjoorDbBrowser::cleanString(text/*, false*/);
 			cleanedText = QGanjoorDbBrowser::cleanString(text/*, SaagharWidget::newSearchSkipNonAlphabet*/);
+			if (text.contains( QString::fromLocal8Bit("پرپر شد ..."
+						/*"وَز ســوری و نــعــمـان وزد، هـر دم شـمـیـم عـنـبـریـن"*/)))
+			{
+				qDebug() << "textt="<<text;
+				qDebug() << "clean="<<cleanedText;
+			}
+			text = QGanjoorDbBrowser::cleanString(text/*, false*/);
 		}
 			//cleanedText = QGanjoorDbBrowser::cleanString(index.data().toString(), SaagharWidget::newSearchSkipNonAlphabet);
 		//text = fontMetric.elidedText(text, option.textElideMode, option.rect.width() );
 	}
-
+	//qDebug() << "text="<<text<<"cleanedText="<<cleanedText;
 	Qt::Alignment itemAlignment = 0;
 	QVariant alignValue = index.data(Qt::TextAlignmentRole);
 	
 	if (alignValue.isValid() && !alignValue.isNull())
 		itemAlignment = Qt::Alignment(alignValue.toInt());
 
+	int keywordsCount = keywordList.size();
+	for (int i=0; i<keywordsCount; ++i)
+	{
+		lastX = x = option.rect.x()+textHMargin;
+		//QString keyword = keywordList.isEmpty() ? "" : keywordList.at(0);
+		QString keyword = keywordList.at(i);
+		//temp
+		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
+//		qDebug() << "keyword1="<<keyword;
+		keyword = keyword.split("", QString::SkipEmptyParts).join(tatweel+"*");
+//		qDebug() << "keyword2="<<keyword;
+		QRegExp maybeTatweel(keyword, Qt::CaseInsensitive);
+		maybeTatweel.indexIn(text);
+//		qDebug() << text<<"count=" << anySearch.captureCount()<<anySearch.capturedTexts();
+//		qDebug() << "Match: "<<anySearch.cap(0);
+		keyword = maybeTatweel.cap(0);
 	if (!(keyword.isEmpty() || text.indexOf(keyword) == -1 ) )
 	{
 		QString txt;
@@ -143,13 +169,21 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 		painter->setOpacity(oldOpacity);
 		//painter->fillRect( rectf, itemBrush );
 	}
+	}
 	QStyledItemDelegate::paint(painter, option, index);
 }
 
 void SaagharItemDelegate::keywordChanged(const QString &text)
 {
-	keyword = text;
-	//qApp->activeWindow()->repaint();
+//	keyword = text;
+	//qDebug()<<"keyword="<<text;
+	//qDebug()<<"Cleaned-keyword-list="<<SearchPatternManager::phraseToList(text);
+	keywordList.clear();
+	QString tmp = text;
+	tmp.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by SPACE
+	keywordList = SearchPatternManager::phraseToList(tmp);
+	keywordList.removeDuplicates();
+
 	QTableWidget *table=qobject_cast<QTableWidget *>(parent());
 	if (table)
 	{

@@ -68,6 +68,9 @@ private slots:
 	void searchPageNavigationClicked(QAction *action);
 	void maxItemPerPageChange(int value);
 	void filterResults(const QString &text);
+
+signals:
+	void searchFiltered(const QString &);
 };
 
 #endif // SEARCHRESULTWIDGET_H

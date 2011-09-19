@@ -281,6 +281,8 @@ void MainWindow::searchStart()
 		QMessageBox::information(this, tr("Error"), tr("The search phrase can not be empty."));
 		return;
 	}
+	phrase = lineEditSearchText->text();
+	phrase.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
 
 	//QString currentItemData = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toString();
 
@@ -300,7 +302,7 @@ void MainWindow::searchStart()
 				//delete tmpDelegate;
 				//tmpDelegate = 0;
 				if (tmp)
-					tmp->scrollToFirstItemContains(lineEditSearchText->text());
+					tmp->scrollToFirstItemContains(phrase);
 				//tmp->tableViewWidget->setItemDelegate(new SaagharItemDelegate(tmp->tableViewWidget, saagharWidget->tableViewWidget->style(), lineEditSearchText->text()));
 			}
 		}
@@ -322,7 +324,7 @@ void MainWindow::searchStart()
 		{
 			//phrase = QGanjoorDbBrowser::cleanString(lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
 			//int poetID = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt();
-SearchPatternManager::setInputPhrase(lineEditSearchText->text()/*phrase*/);
+SearchPatternManager::setInputPhrase(phrase);
 SearchPatternManager::init();
 QVector<QStringList> phraseVectorList = SearchPatternManager::outputPhrases();
 QVector<QStringList> excludedVectorList = SearchPatternManager::outputExcludedLlist();
@@ -2343,7 +2345,7 @@ void MainWindow::toolBarContextMenu(const QPoint &/*pos*/)
 //		++actIterator;
 //	}
 
-	QAction *customizeRandom;
+	QAction *customizeRandom = 0;
 	if (mainToolBarItems.contains("actionFaal", Qt::CaseInsensitive) || mainToolBarItems.contains("actionRandom", Qt::CaseInsensitive) )
 	{
 		contextMenu->addSeparator();

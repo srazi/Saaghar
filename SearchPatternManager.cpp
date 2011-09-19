@@ -222,3 +222,23 @@ QString SearchPatternManager::clearedPhrase(const QString &str)
 
 	return clearedString;
 }
+
+/*static*/
+QStringList SearchPatternManager::phraseToList(const QString &str)
+{
+	QString tmp = SearchPatternManager::clearedPhrase(str);
+	tmp.replace(OP(Or), " ");
+	tmp.replace(OP(Any), " ");
+	tmp.replace(OP(And), " ");
+	tmp.replace(OP(WholeWord), " ");
+	tmp.replace(wildcardCharacter, " ");
+	QStringList list = tmp.split(" ", QString::SkipEmptyParts);
+	int listSize = list.size();
+	for (int i=0; i<listSize; ++i)
+	{
+		if (list.at(i).startsWith(OP(WithOut), Qt::CaseInsensitive))
+			list[i]="";
+	}
+	list.removeAll("");
+	return list;
+}

@@ -33,7 +33,7 @@ public:
 
 private:
 	QStyle *tableStyle;
-	QString keyword;
+	QStringList keywordList;
 	void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 private slots:

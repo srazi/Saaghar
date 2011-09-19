@@ -19,6 +19,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#include "SearchPatternManager.h"
 #include "SearchItemDelegate.h"
 #include "SaagharWidget.h"
 #include <QApplication>
@@ -1059,6 +1060,27 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 
 void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 {
+	QString keyword = "";
+	//tmp.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by SPACE
+
+//	int i = 0;
+	QStringList list = SearchPatternManager::phraseToList(phrase);
+	for (int i=0; i<list.size();++i)
+	{
+		keyword = list.at(i);
+		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
+		keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
+		if (!keyword.isEmpty())
+			break;
+	}
+//	while(keyword.isEmpty() && i<list.size());
+//	{
+//		keyword = list.at(i);
+//		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
+//		keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
+//		++i;
+//	}
+	//keywordList.removeDuplicates();
 	for (int row = 0; row < tableViewWidget->rowCount(); ++row)
 	{
 		for (int col = 0; col < tableViewWidget->columnCount(); ++col)
@@ -1069,7 +1091,12 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 				if (tmp)
 				{
 					QString text = QGanjoorDbBrowser::cleanString(tmp->text()/*, newSearchSkipNonAlphabet*/);
-					if (text.contains(phrase))
+					text.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
+					if (tmp->text() == QString::fromLocal8Bit("خـوار آن خـواری کـه بـرتـو زیـن سـپـس غـوغـاکند"))
+					{
+						qDebug()<<"keyword="<<keyword<<"text-clean="<<text<<"bool="<<text.contains(keyword);
+					}
+					if (text.contains(keyword))
 					{
 						tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
 						tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
@@ -1080,7 +1107,7 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 			}
 			else
 			{
-				if (tmp && tmp->text().contains(phrase))
+				if (tmp && tmp->text().contains(keyword))
 				{
 					tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
 					tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);

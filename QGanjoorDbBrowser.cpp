@@ -985,12 +985,12 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
 {
 	QString cleanedText = text;
 
-	cleanedText.replace(QChar(0x200C), " ", Qt::CaseInsensitive);//replace ZWNJ by SPACE
+	cleanedText.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
 
-	QChar tatweel = QChar(0x0640);
-	cleanedText.remove(tatweel);
+//	QChar tatweel = QChar(0x0640);
+//	cleanedText.remove(tatweel);
 
-	cleanedText = cleanedText.simplified();//new
+	//cleanedText = cleanedText.simplified();//new
 
 	for (int i=0; i<cleanedText.size(); ++i)
 	{
@@ -1001,12 +1001,19 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
 
 		QChar::Direction chDir = tmpChar.direction();
 
-		if (chDir != QChar::DirAL && chDir != QChar::DirL && chDir != QChar::DirR)
+		if (chDir == QChar::DirNSM)
 		{
 			cleanedText.remove(tmpChar);
 			--i;
 			continue;
 		}
+
+//		if (chDir != QChar::DirAL && chDir != QChar::DirL && chDir != QChar::DirR)
+//		{
+//			cleanedText.remove(tmpChar);
+//			--i;
+//			continue;
+//		}
 	}
 	return cleanedText;
 }

@@ -129,7 +129,11 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 	searchTable->horizontalHeader()->setStretchLastSection(true);
 
 	//install delagate on third column
-	searchTable->setItemDelegateForColumn(2, new SaagharItemDelegate(searchTable, searchTable->style(), phrase));
+	SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(searchTable, searchTable->style(), phrase);
+	searchTable->setItemDelegateForColumn(2, searchDelegate);
+	connect(this, SIGNAL(searchFiltered(const QString &)), searchDelegate, SLOT(keywordChanged(const QString &)) );
+
+	//searchTable->setItemDelegateForColumn(2, new SaagharItemDelegate(searchTable, searchTable->style(), phrase));
 
 	searchTableGridLayout->addWidget(searchTable, 0, 0, 1, 1);
 
@@ -432,10 +436,16 @@ void SearchResultWidget::filterResults(const QString &text)
 	if (text.isEmpty())
 	{
 		resultList = copyResultList;
+		emit searchFiltered(phrase);
 		showSearchResult(0);
 		return;
-	}
+	}//searchTable->setItemDelegateForColumn(2, new SaagharItemDelegate());
+
+	//SaagharItemDelegate *itemDelegate = searchTable->itemDelegateForColumn(2);
+	//itemDelegate->
+	emit searchFiltered(phrase+" "+text);
 	//QMap<int, QString> tmpList;
+
 	resultList.clear();
 	QMap<int, QString>::const_iterator it = copyResultList.constBegin();
 	const QMap<int, QString>::const_iterator endIterator = copyResultList.constEnd();
