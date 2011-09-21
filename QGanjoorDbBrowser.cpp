@@ -1033,7 +1033,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(const QStringList &phra
 		//search for firstPhrase then go for other ones
 		QString searchQueryPhrase = QGanjoorDbBrowser::cleanString(firstPhrase/*, skipNonAlphabet*/)
 				.split("",QString::SkipEmptyParts).join("%");
-		QMessageBox::information(qApp->activeWindow(),"DEBUG:Method2", searchQueryPhrase);
+//		QMessageBox::information(qApp->activeWindow(),"DEBUG:Method2", searchQueryPhrase);
 
 		int numOfFounded=0;
 

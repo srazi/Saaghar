@@ -433,8 +433,8 @@ int resultCount = 0;
 			connect(searchResultWidget->searchTable, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
 
 			//resize table on create and destroy
-			emitReSizeEvent();
-			connect(searchResultWidget, SIGNAL(destroyed()), this, SLOT(emitReSizeEvent()));
+//			emitReSizeEvent();
+//			connect(searchResultWidget, SIGNAL(destroyed()), this, SLOT(emitReSizeEvent()));
 
 			//we should create conection first and then break!
 			if (searchCanceled)
@@ -822,6 +822,8 @@ void MainWindow::insertNewTab()
 	tabTableWidget->verticalHeader()->setVisible(false);
 	tabTableWidget->setMouseTracking(true);
 	tabTableWidget->setAutoScroll(false);
+	//install event filter on viewport
+	tabTableWidget->viewport()->installEventFilter(this);
 	//install 'delegate' on QTableWidget
 	QAbstractItemDelegate *tmpDelegate = tabTableWidget->itemDelegate();
 	delete tmpDelegate;
@@ -2115,19 +2117,20 @@ void MainWindow::actionGanjoorSiteClicked()
 	}
 }
 
-void MainWindow::emitReSizeEvent()
-{
-	//maybe a Qt BUG
-	//before 'QMainWindow::show()' the computation of width of QMainWindow is not correct!
-	resizeEvent(0);
-}
+//void MainWindow::emitReSizeEvent()
+//{
+//	maybe a Qt BUG
+//	before 'QMainWindow::show()' the computation of width of QMainWindow is not correct!
+//	resizeEvent(0);
+//	eventFilter(saagharWidget->tableViewWidget->viewport(), 0);
+//}
 
-void MainWindow::resizeEvent( QResizeEvent * event )
-{
-	saagharWidget->resizeTable(saagharWidget->tableViewWidget);
-	if (event)
-		QMainWindow::resizeEvent(event);
-}
+//void MainWindow::resizeEvent( QResizeEvent * event )
+//{
+//	saagharWidget->resizeTable(saagharWidget->tableViewWidget);
+//	if (event)
+//		QMainWindow::resizeEvent(event);
+//}
 
 void MainWindow::closeEvent( QCloseEvent * event )
 {
@@ -2512,8 +2515,24 @@ bool MainWindow::eventFilter(QObject* receiver, QEvent* event)
 //	}
 //	else
 //		skipSearchToolBarResize = true;
-	switch (event->type())
+	QEvent::Type eventType = QEvent::None;
+	if (event)
+		eventType = event->type();
+		
+	switch (eventType/*event->type()*/)
 	{
+		case QEvent::Resize :
+		case QEvent::None :
+		{
+//			QResizeEvent *resizeEvent = static_cast<QResizeEvent*>(event);
+			if (saagharWidget &&
+				saagharWidget->tableViewWidget &&
+				receiver == saagharWidget->tableViewWidget->viewport())
+			{
+				saagharWidget->resizeTable(saagharWidget->tableViewWidget);
+			}
+		}
+			break;
 		case QEvent::Move :
 		{
 			QMoveEvent *resEvent = static_cast<QMoveEvent*>(event);

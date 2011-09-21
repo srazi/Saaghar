@@ -48,8 +48,8 @@ class MainWindow : public QMainWindow
 //		void emitReSizeEvent();
 		static bool autoCheckForUpdatesState;
 
-	public slots:
-		void emitReSizeEvent();
+//	public slots:
+//		void emitReSizeEvent();
 
 	private:
 		QString currentIconThemePath();
@@ -164,7 +164,7 @@ class MainWindow : public QMainWindow
 		void showSearchOptionMenu();
 
 	protected:
-		void resizeEvent( QResizeEvent * event );
+//		void resizeEvent( QResizeEvent * event );
 		void closeEvent( QCloseEvent * event );
 	
 	signals:
