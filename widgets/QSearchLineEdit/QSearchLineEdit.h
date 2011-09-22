@@ -28,6 +28,10 @@
 
 class QToolButton;
 
+//embeded progress-bar
+#include <QProgressBar>
+#include <QToolTip>
+
 class QSearchLineEdit : public QLineEdit
 {
 	Q_OBJECT
@@ -35,6 +39,7 @@ class QSearchLineEdit : public QLineEdit
 public:
 	QSearchLineEdit(QWidget *parent = 0, const QString &clearIconFileName = "", const QString &optionsIconFileName = "");
 	QToolButton *optionsButton();
+	void notFound();
 	
 
 protected:
@@ -42,15 +47,36 @@ protected:
 
 private slots:
 	void updateCloseButton(const QString &text);
+	void resetNotFound();
 
 private:
 	void moveToRight(QToolButton *button);
 	void moveToLeft(QToolButton *button);
 	QToolButton *clearButton;
 	QToolButton *optionButton;
+	bool maybeFound;
 
 signals:
 	void clearButtonPressed();
+
+//embeded progress-bar
+public:
+	bool searchWasCanceled();
+	QProgressBar *searchProgressBar();
+
+public slots:
+	void searchStart(bool *canceled = 0, int min = 0, int max = 0);
+	void searchStop();
+	void setSearchProgressText(const QString &str);
+
+private:
+	QProgressBar *sPbar;
+	QToolButton *stopButton;
+	bool searchStarted;
+	bool *cancelPointer;
+
+signals:
+	void searchCanceled();
 };
 
 #endif // QSEARCHLINEEDIT_H

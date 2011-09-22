@@ -1018,7 +1018,8 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
 	return cleanedText;
 }
 
-QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(const QStringList &phraseList, int PoetID, const QStringList &excludedList, bool skipNonAlphabet, bool *Canceled, QProgressDialog *progress, int resultCount)
+QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList,
+													bool *Canceled, int resultCount)
 {
 	QMap<int, QString> idList;
 	if (isConnected())
@@ -1142,9 +1143,9 @@ bool excludeCurrentVerse = false;
 				}
 			}
 
-			if (progress && progress->wasCanceled())
+			if (Canceled && *Canceled /*progress && progress->wasCanceled()*/)
 			{
-				*Canceled = true;
+				//*Canceled = true;
 				break;
 			}
 
@@ -1159,10 +1160,11 @@ bool excludeCurrentVerse = false;
 			GanjoorPoem gPoem = getPoem(poemID);
 			idList.insert(poemID, "verseText="+verseText+"|poemTitle="+gPoem._Title+"|poetName="+getPoetForCat(gPoem._CatID)._Name);//.append(poemID);
 
-			if(progress)
+			if(true/*progress*/)
 			{
 				QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
-				progress->setLabelText(labelText);
+				//progress->setLabelText(labelText);
+				emit searchStatusChanged(labelText);
 				QApplication::processEvents(QEventLoop::WaitForMoreEvents, 3);//max wait 3 miliseconds 
 //				if (progress->wasCanceled())
 //				{

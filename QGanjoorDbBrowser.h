@@ -80,7 +80,7 @@ class QGanjoorDbBrowser : public QObject
 		//QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
 		//QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
 		//another new approch
-		QMap<int, QString> getPoemIDsByPhrase(const QStringList &phraseList, int PoetID, const QStringList &excludedList = QStringList(), bool skipNonAlphabet = false, bool *canceled = 0, QProgressDialog *progress = 0, int resultCount = 0);
+		QMap<int, QString> getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList = QStringList(), bool *canceled = 0, int resultCount = 0);
 
 		//Faal
 		int getRandomPoemID(int *CatID);
@@ -102,6 +102,9 @@ class QGanjoorDbBrowser : public QObject
 		//QSqlDatabase dBConnection;
 		static bool comparePoetsByName(GanjoorPoet *poet1, GanjoorPoet *poet2);
 		static bool compareCategoriesByName(GanjoorCat *cat1, GanjoorCat *cat2);
+
+	signals:
+		void searchStatusChanged(const QString &);
 
 #ifdef EMBEDDED_SQLITE
 	private:

@@ -272,6 +272,9 @@ MainWindow::~MainWindow()
 
 void MainWindow::searchStart()
 {
+	if (!lineEditSearchText->searchWasCanceled())
+		return;
+
 	QString phrase = lineEditSearchText->text();
 	phrase.remove(" ");
 	phrase.remove("\t");
@@ -368,7 +371,12 @@ searchProgress.setWindowModality(Qt::WindowModal);
 searchProgress.setFixedSize(searchProgress.size());
 searchProgress.setMinimumDuration(0);
 //searchProgress.setValue(0);
-searchProgress.show();
+//searchProgress.show();
+
+lineEditSearchText->searchStart(&searchCanceled);
+connect(SaagharWidget::ganjoorDataBase, SIGNAL(searchStatusChanged(const QString &)), lineEditSearchText, SLOT(setSearchProgressText(const QString &)));
+//emit SaagharWidget::ganjoorDataBase->searchStatusChanged(tr("Searching Data Base..."));
+lineEditSearchText->setSearchProgressText(tr("Searching Data Base..."));
 QApplication::processEvents();
 int resultCount = 0;
 			for (int j=0;j<vectorSize;++j)
@@ -376,11 +384,14 @@ int resultCount = 0;
 				QStringList phrases = phraseVectorList.at(j);
 //				int phraseCount = phrases.size();
 				QStringList excluded = excludedVectorList.at(j);
-
+				qDebug() << "searchCanceled1=" << searchCanceled;
 				QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->
-				getPoemIDsByPhrase(phrases, poetID, excluded,
-													SaagharWidget::newSearchSkipNonAlphabet, &searchCanceled, 
-													&searchProgress, resultCount);
+				getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, resultCount);
+				qDebug() << "searchCanceled2=" << searchCanceled;
+				//old version
+				//getPoemIDsByPhrase(phrases, poetID, excluded,
+					//								SaagharWidget::newSearchSkipNonAlphabet, &searchCanceled, 
+						//							&searchProgress, resultCount);
 //				for (int k=0;k<phraseCount;++k)
 //				{
 //					QString kphrase = phrases.at(k);
@@ -401,11 +412,11 @@ int resultCount = 0;
 //					resultCount = finalResult.size();
 //					qDebug() << "resultCount=" << resultCount;
 
-					if (searchProgress.wasCanceled())
+					/*if (searchProgress.wasCanceled())
 					{
 						searchCanceled = true;
 						break;
-					}
+					}*/
 
 					if (searchCanceled)
 						break;
@@ -414,12 +425,15 @@ int resultCount = 0;
 				if (searchCanceled)
 					break;
 			}
+lineEditSearchText->searchStop();
 ///////////////////////////////////////////////////////////
 			//searchResultWidget->setResultList( SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(phrase, poetID, SaagharWidget::newSearchSkipNonAlphabet, &searchCanceled) );
 			searchResultWidget->setResultList( finalResult );
 			if (!searchResultWidget->init(this, currentIconThemePath()))
 			{
-				QMessageBox::information(this, tr("Search"), tr("Current Scope: %1\nNo match found.").arg(poetName));
+				//QMessageBox::information(this, tr("Search"), tr("Current Scope: %1\nNo match found.").arg(poetName));
+				lineEditSearchText->notFound();
+				lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(poetName));
 				delete searchResultWidget;
 				searchResultWidget = 0;
 				continue;
@@ -2656,7 +2670,7 @@ void MainWindow::setupSearchToolBarUi()
 	searchToolBarContent->setLayout(searchToolBarBoxLayout);
 	
 	ui->searchToolBar->addWidget(searchToolBarContent);
-	
+
 	searchOptionMenu = new QMenu(ui->searchToolBar);
 	
 	actionInstance("actionGetMaxResultPerPage", "", tr("Max Result per Page...") );

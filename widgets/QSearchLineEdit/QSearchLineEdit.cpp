@@ -28,6 +28,12 @@
 QSearchLineEdit::QSearchLineEdit(QWidget *parent, const QString &clearIconFileName, const QString &optionsIconFileName)
 	: QLineEdit(parent)
 {
+	maybeFound = true;
+
+	searchStarted = false;
+	sPbar = 0;
+	stopButton = 0;
+
 	QSize msz = minimumSizeHint();
 
 	QPixmap optionsPixmap(optionsIconFileName);
@@ -48,8 +54,9 @@ QSearchLineEdit::QSearchLineEdit(QWidget *parent, const QString &clearIconFileNa
 
 
 
-	connect(clearButton, SIGNAL(clicked()), this, SLOT(clear()));
 	connect(clearButton, SIGNAL(clicked()), this, SIGNAL(clearButtonPressed()));
+	connect(clearButton, SIGNAL(clicked()), this, SLOT(clear()));
+	connect(clearButton, SIGNAL(clicked()), this, SLOT(resetNotFound()));
 	connect(this, SIGNAL(textChanged(const QString&)), this, SLOT(updateCloseButton(const QString&)));
 
 	setMinimumSize(qMax(msz.width(), optionButton->sizeHint().width()+clearButton->sizeHint().width() ),
@@ -89,9 +96,92 @@ void QSearchLineEdit::resizeEvent(QResizeEvent *)
 void QSearchLineEdit::updateCloseButton(const QString& text)
 {
 	clearButton->setVisible(!text.isEmpty());
+	resetNotFound();
+	if (!maybeFound)
+	{
+		resetNotFound();
+	}
 }
 
 QToolButton *QSearchLineEdit::optionsButton()
 {
 	return optionButton;
+}
+
+void QSearchLineEdit::notFound()
+{
+	maybeFound = false;
+	setStyleSheet(QString("QLineEdit { background: #FF7B7B; padding-left: %1px; padding-right: %2px; } ").arg(clearButton->sizeHint().width() ).arg(optionButton->sizeHint().width() ));
+}
+
+void QSearchLineEdit::resetNotFound()
+{
+	setStyleSheet(QString("QLineEdit { padding-left: %1px; padding-right: %2px; } ").arg(clearButton->sizeHint().width() ).arg(optionButton->sizeHint().width() ));
+	maybeFound = true;
+}
+
+//embeded progress-bar
+bool QSearchLineEdit::searchWasCanceled()
+{
+	return !searchStarted;
+}
+
+QProgressBar *QSearchLineEdit::searchProgressBar()
+{
+	return sPbar;
+}
+
+void QSearchLineEdit::searchStart(bool *canceled, int min, int max)
+{
+//	if (searchStarted)
+//	{
+//		setSearchProgressText(tr("Another search in progress!"));
+//		return;
+//	}
+	cancelPointer = canceled;
+	searchStarted = true;
+	if (cancelPointer)
+		*cancelPointer = false;
+
+	if (!maybeFound)
+	{
+		searchStop();
+		setSearchProgressText(tr("Please try with another phrase!"));
+	}
+
+	sPbar = new QProgressBar(this);
+	sPbar->setStyleSheet(" QProgressBar { background: transparent; border: none; /*padding-right: 32px; padding-left: 32px; border-radius: 5px;*/ }");
+	sPbar->setRange(min, max);
+	sPbar->setFixedSize(width()/*-stopButton->iconSize().width()*/, height());
+
+	stopButton = new QToolButton(this);
+	QPixmap stopPixmap("D:/Z[Work]/Saaghar/images/close-tab.png"/*optionsIconFileName*/);
+	stopPixmap = stopPixmap.scaledToHeight((height()*5)/6 , Qt::SmoothTransformation);
+	stopButton->setIcon(QIcon(stopPixmap));
+	stopButton->setIconSize(stopPixmap.size());
+	stopButton->setCursor(Qt::ArrowCursor);
+	stopButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
+
+	stopButton->show();
+	sPbar->show();
+
+	connect(stopButton, SIGNAL(clicked()), this, SLOT(searchStop()));
+}
+
+void QSearchLineEdit::searchStop()
+{
+	searchStarted = false;
+	if (cancelPointer)
+		*cancelPointer = true;
+	emit searchCanceled();
+	delete sPbar;
+	sPbar = 0;
+	delete stopButton;
+	stopButton = 0;
+	setSearchProgressText("");
+}
+
+void QSearchLineEdit::setSearchProgressText(const QString &str)
+{
+	QToolTip::showText(this->mapToGlobal(QPoint(0,0)), str /*tr("Searching Data Base...")*/ /*"<p></p><b>Busy</b><p></p>"*/ /*, sPbar*/);
 }
