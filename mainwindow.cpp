@@ -888,6 +888,7 @@ void MainWindow::newTabForItem(QString type, int id, bool noError)
 {
 	insertNewTab();
 	saagharWidget->processClickedItem(type, id, noError);
+	updateTabsSubMenus();
 }
 
 void MainWindow::updateCaption()
@@ -2269,6 +2270,7 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 		saagharWidget->tableViewWidget->setItemDelegate(new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchDataList.at(0)));
 	}
 
+	updateTabsSubMenus();
 	connect(senderTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
 }
 
@@ -2667,8 +2669,14 @@ void MainWindow::setupSearchToolBarUi()
 	searchToolBarBoxLayout->addItem(horizontalSpacer);
 	
 	QWidget *searchToolBarContent = new QWidget();
-	searchToolBarContent->setLayout(searchToolBarBoxLayout);
-	
+
+	QHBoxLayout *horizontalStretch = new QHBoxLayout;
+	horizontalStretch->setSpacing(0);
+	horizontalStretch->setContentsMargins(0,0,0,0);
+	horizontalStretch->addLayout(searchToolBarBoxLayout);
+	horizontalStretch->addStretch(10000);
+	searchToolBarContent->setLayout(horizontalStretch);
+
 	ui->searchToolBar->addWidget(searchToolBarContent);
 
 	searchOptionMenu = new QMenu(ui->searchToolBar);
