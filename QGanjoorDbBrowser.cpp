@@ -1051,7 +1051,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		int miliSec= end-start;
 		qDebug() << "duration=" << miliSec;
 
-		int numOfNearResult=0;
+		int numOfNearResult=0, nextStep = 0;
 		
 		//progress dialog
 //		int maxOfProgressBar = 800000;//50000;
@@ -1061,11 +1061,13 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		while( q.next() )
 		{
 			++numOfNearResult;
-			/*if (numOfNearResult > maxOfProgressBar)
+			if (numOfNearResult > nextStep)
 			{
-				////maxOfProgressBar+=30000;
+				nextStep+=300;
+				//qDebug() << "step="<<nextStep<<"numOfNearResult="<<numOfNearResult<<"numOfFounded="<<numOfFounded;
+				QApplication::processEvents(/*QEventLoop::AllEvents|*/QEventLoop::ExcludeUserInputEvents|QEventLoop::WaitForMoreEvents);
 				////progress.setMaximum(maxOfProgressBar);
-			}*/
+			}
 			////progress.setValue(numOfNearResult);
 
 			 /*if (progress.wasCanceled())
@@ -1083,10 +1085,20 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 			QString verseText = qrec.value(1).toString();
 
 			//QStringList verseTexts = getVerseListContainingPhrase(qrec.value(0).toInt(), ch);
-			
+//			//////////////////
+//			if (value.contains(
+//					QString::fromLocal8Bit("پسر چون ز مادر بران گونه زاد")
+//					)
+//			)
+//			{
+//				qDebug() << "value="<<value;
+//				qDebug() << "valueContains="<<value.contains(text, Qt::CaseInsensitive);
+//			}
+//			///////////////////////////
 			QString foundedVerse = QGanjoorDbBrowser::cleanString(verseText/*, skipNonAlphabet*/);
 			foundedVerse = " "+foundedVerse+" ";//for whole word option when word is in the start or end of verse
-			if (foundedVerse.contains(QString::fromLocal8Bit("باسحاب"
+			if (foundedVerse.contains(QString::fromLocal8Bit("پسر چون ز مادر بران گونه زاد"
+			                              /*"باسحاب"*/
 										  /*"وین چشم رمد دیده من سرمه اقبال"*/
 															 /*"من از یمن اقبال این خاندان"*/)))
 			{QMessageBox::information(0, "ifffffffffff","iffffffffffff");
@@ -1151,7 +1163,7 @@ bool excludeCurrentVerse = false;
 
 			if (excludeCurrentVerse)
 			{
-				QApplication::processEvents(QEventLoop::WaitForMoreEvents, 1);//max wait 1 milisecond 
+				QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 10 milisecond 
 				continue;
 			}
 
@@ -1165,7 +1177,7 @@ bool excludeCurrentVerse = false;
 				QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
 				//progress->setLabelText(labelText);
 				emit searchStatusChanged(labelText);
-				QApplication::processEvents(QEventLoop::WaitForMoreEvents, 3);//max wait 3 miliseconds 
+				QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 10 miliseconds 
 //				if (progress->wasCanceled())
 //				{
 //					*Canceled = true;

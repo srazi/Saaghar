@@ -284,8 +284,7 @@ void Settings::browseForIconTheme()
 CustomizeRandomDialog::CustomizeRandomDialog(QWidget *parent, bool openInNewTab) : QDialog(parent, Qt::WindowTitleHint | Qt::WindowSystemMenuHint)
 {
 	setupui();
-	this->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-	this->setFixedSize(this->size());
+	this->setFixedSize(this->sizeHint());
 	connect(pushButtonOk, SIGNAL(clicked()), this, SLOT(accept()));
 	connect(pushButtonCancel, SIGNAL(clicked()), this, SLOT(reject()));
 	checkBox->setChecked(openInNewTab);

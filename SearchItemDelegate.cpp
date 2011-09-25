@@ -32,11 +32,18 @@ SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString
 	keywordList.removeDuplicates();
 
 	tableStyle = style;
+	if (parent->objectName()=="searchTable")
+		qDebug() << keywordList;
 }
 
 void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 						 const QModelIndex &index) const
 {
+	if (parent()->objectName()=="searchTable")
+{
+qDebug() << keywordList;
+//QMessageBox::information(0, "searchTable", QString("keyword=*%1*").arg(keywordList.join("!-!")) );
+}
 	const bool flagRightToLeft = true;
 	int textHMargin = 0;
 	if (tableStyle)
@@ -61,7 +68,9 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 		//if (SaagharWidget::newSearchFlag)
 		{
 			cleanedText = QGanjoorDbBrowser::cleanString(text/*, SaagharWidget::newSearchSkipNonAlphabet*/);
-			if (text.contains( QString::fromLocal8Bit("پرپر شد ..."
+			if (text.contains( QString::fromLocal8Bit(
+			                      "پسر چون ز مادر بران گونه زاد"
+//			                      "پرپر شد ..."
 						/*"وَز ســوری و نــعــمـان وزد، هـر دم شـمـیـم عـنـبـریـن"*/)))
 			{
 				qDebug() << "textt="<<text;

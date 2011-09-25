@@ -1406,14 +1406,40 @@ void MainWindow::setupUi()
 	setupSearchToolBarUi();
 	ui->searchToolBar->hide();
 
-	//Initialize main menu items
-	QHBoxLayout *menuBarLayout = new QHBoxLayout();
-	menuBarLayout->addWidget(ui->menuBar,0,Qt::AlignCenter|Qt::AlignLeft);
-	menuBarLayout->setContentsMargins(1,1,1,1);
-	QWidget *menuBarContainer = new QWidget(this);
-	menuBarContainer->setLayout(menuBarLayout);
-	ui->menuToolBar->addWidget(menuBarContainer);
+	//remove menuToolBar if it's not needed!
+		bool flagUnityGlobalMenu = false;
+		foreach(QObject *o, ui->menuBar->children())
+		{
+			if (o->inherits("QDBusServiceWatcher"))
+			{
+				flagUnityGlobalMenu = true;
+				break;
+			}
+		}
+	
+		if (flagUnityGlobalMenu)
+		{
+			qDebug() << "It seems that you are running Unity Desktop with global menubar!";
+			delete ui->menuToolBar;
+			ui->menuToolBar = 0;
+		}
+	
+	#ifdef Q_WS_MAC
+		delete ui->menuToolBar;
+		ui->menuToolBar = 0;
+	#endif
 
+	if (ui->menuToolBar)
+	{
+		QHBoxLayout *menuBarLayout = new QHBoxLayout();
+		menuBarLayout->addWidget(ui->menuBar,0,Qt::AlignCenter|Qt::AlignLeft);
+		menuBarLayout->setContentsMargins(1,1,1,1);
+		QWidget *menuBarContainer = new QWidget(this);
+		menuBarContainer->setLayout(menuBarLayout);
+		ui->menuToolBar->addWidget(menuBarContainer);
+	}
+
+	//Initialize main menu items
 	menuFile = new QMenu(tr("&File"), ui->menuBar);
 	menuFile->setObjectName(QString::fromUtf8("menuFile"));
 
@@ -1503,7 +1529,8 @@ void MainWindow::setupUi()
 	actionInstance("Lock ToolBars", iconThemePath+"/lock-toolbars.png", tr("&Lock ToolBars"))->setCheckable(true);
 	actionInstance("Lock ToolBars")->setChecked( Settings::READ("Lock ToolBars", true).toBool() );
 	ui->mainToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
-	ui->menuToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
+	if (ui->menuToolBar)
+		ui->menuToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
 	ui->searchToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
 	parentCatsToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
 
@@ -1562,7 +1589,8 @@ void MainWindow::setupUi()
 
 	menuView->addSeparator();
 	QMenu *toolbarsView = new QMenu(tr("ToolBars"), menuView);
-	toolbarsView->addAction(ui->menuToolBar->toggleViewAction());
+	if (ui->menuToolBar)
+		toolbarsView->addAction(ui->menuToolBar->toggleViewAction());
 	toolbarsView->addAction(ui->mainToolBar->toggleViewAction());
 	toolbarsView->addAction(ui->searchToolBar->toggleViewAction());
 	toolbarsView->addAction(parentCatsToolBar->toggleViewAction());
@@ -2150,6 +2178,8 @@ void MainWindow::actionGanjoorSiteClicked()
 void MainWindow::closeEvent( QCloseEvent * event )
 {
 	QFontDatabase::removeAllApplicationFonts();
+	if (lineEditSearchText)
+		lineEditSearchText->searchStop();
 	saveSettings();
 	event->accept();
 }
@@ -2644,17 +2674,19 @@ void MainWindow::setupSearchToolBarUi()
 	lineEditSearchText->setPlaceholderText(tr("Enter Search Phrase"));
 	comboBoxSearchRegion->lineEdit()->setPlaceholderText(tr("Select Search Scope..."));
 	#else
-	QLabel *labelSearchPhrase = new QLabel(ui->searchToolBar);
-	labelSearchPhrase->setObjectName(QString::fromUtf8("labelSearchPhrase"));
-	labelSearchPhrase->setText(tr("Search Phrase"));
-	ui->searchToolBar->addWidget(labelSearchPhrase);
-	ui->searchToolBar->addWidget(lineEditSearchText);
-	ui->searchToolBar->addSeparator();
-	QLabel *labelSearchIn = new QLabel(ui->searchToolBar);
-	labelSearchIn->setObjectName(QString::fromUtf8("labelSearchIn"));
-	labelSearchIn->setText(tr("Search in"));
-	ui->searchToolBar->addSeparator();
-	ui->searchToolBar->addWidget(labelSearchIn);
+	lineEditSearchText->setToolTip(tr("Enter Search Phrase"));
+	comboBoxSearchRegion->lineEdit()->setToolTip(tr("Select Search Scope..."));
+//	QLabel *labelSearchPhrase = new QLabel(ui->searchToolBar);
+//	labelSearchPhrase->setObjectName(QString::fromUtf8("labelSearchPhrase"));
+//	labelSearchPhrase->setText(tr("Search Phrase"));
+//	ui->searchToolBar->addWidget(labelSearchPhrase);
+//	ui->searchToolBar->addWidget(lineEditSearchText);
+//	ui->searchToolBar->addSeparator();
+//	QLabel *labelSearchIn = new QLabel(ui->searchToolBar);
+//	labelSearchIn->setObjectName(QString::fromUtf8("labelSearchIn"));
+//	labelSearchIn->setText(tr("Search in"));
+//	ui->searchToolBar->addSeparator();
+//	ui->searchToolBar->addWidget(labelSearchIn);
 	#endif
 	
 	//create layout and add widgets to it!
@@ -2739,7 +2771,8 @@ void MainWindow::namedActionTriggered(bool checked)
 	{
 		Settings::WRITE(actionName, checked);
 		ui->mainToolBar->setMovable(!checked);
-		ui->menuToolBar->setMovable(!checked);
+		if (ui->menuToolBar)
+			ui->menuToolBar->setMovable(!checked);
 		ui->searchToolBar->setMovable(!checked);
 		parentCatsToolBar->setMovable(!checked);
 	}

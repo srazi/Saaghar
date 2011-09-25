@@ -30,6 +30,8 @@ QSearchLineEdit::QSearchLineEdit(QWidget *parent, const QString &clearIconFileNa
 {
 	maybeFound = true;
 
+	cancelPointer = 0;
+
 	searchStarted = false;
 	sPbar = 0;
 	stopButton = 0;
@@ -111,7 +113,8 @@ QToolButton *QSearchLineEdit::optionsButton()
 void QSearchLineEdit::notFound()
 {
 	maybeFound = false;
-	setStyleSheet(QString("QLineEdit { background: #FF7B7B; padding-left: %1px; padding-right: %2px; } ").arg(clearButton->sizeHint().width() ).arg(optionButton->sizeHint().width() ));
+	setStyleSheet(QString("QLineEdit { background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 white, stop:1 #FF7B7B);"
+					"padding-left: %1px; padding-right: %2px; } ").arg(clearButton->sizeHint().width() ).arg(optionButton->sizeHint().width() ));
 }
 
 void QSearchLineEdit::resetNotFound()
@@ -150,19 +153,20 @@ void QSearchLineEdit::searchStart(bool *canceled, int min, int max)
 	}
 
 	sPbar = new QProgressBar(this);
-	sPbar->setStyleSheet(" QProgressBar { background: transparent; border: none; /*padding-right: 32px; padding-left: 32px; border-radius: 5px;*/ }");
 	sPbar->setRange(min, max);
-	sPbar->setFixedSize(width()/*-stopButton->iconSize().width()*/, height());
 
-	stopButton = new QToolButton(this);
-	QPixmap stopPixmap("D:/Z[Work]/Saaghar/images/close-tab.png"/*optionsIconFileName*/);
+	stopButton = new QToolButton(sPbar);
+	QPixmap stopPixmap(":/resources/images/close-tab.png"/*optionsIconFileName*/);
 	stopPixmap = stopPixmap.scaledToHeight((height()*5)/6 , Qt::SmoothTransformation);
 	stopButton->setIcon(QIcon(stopPixmap));
 	stopButton->setIconSize(stopPixmap.size());
 	stopButton->setCursor(Qt::ArrowCursor);
 	stopButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
 
-	stopButton->show();
+	sPbar->setStyleSheet(QString(" QProgressBar { background: transparent; border: none; padding-left: %1px; /*padding-left: 32px; border-radius: 5px;*/ }").arg(0/*stopButton->sizeHint().width()*/));
+	sPbar->setFixedSize(width()/*-stopButton->sizeHint().width()*/, height());
+
+	//stopButton->show();
 	sPbar->show();
 
 	connect(stopButton, SIGNAL(clicked()), this, SLOT(searchStop()));
@@ -176,12 +180,12 @@ void QSearchLineEdit::searchStop()
 	emit searchCanceled();
 	delete sPbar;
 	sPbar = 0;
-	delete stopButton;
+	//delete stopButton;
 	stopButton = 0;
 	setSearchProgressText("");
 }
 
 void QSearchLineEdit::setSearchProgressText(const QString &str)
 {
-	QToolTip::showText(this->mapToGlobal(QPoint(0,0)), str /*tr("Searching Data Base...")*/ /*"<p></p><b>Busy</b><p></p>"*/ /*, sPbar*/);
+	QToolTip::showText(this->mapToGlobal(QPoint(0,this->height())), str /*tr("Searching Data Base...")*/ /*"<p></p><b>Busy</b><p></p>"*/ /*, sPbar*/);
 }
