@@ -156,15 +156,16 @@ void QSearchLineEdit::searchStart(bool *canceled, int min, int max)
 	sPbar->setRange(min, max);
 
 	stopButton = new QToolButton(sPbar);
-	QPixmap stopPixmap(":/resources/images/close-tab.png"/*optionsIconFileName*/);
+	QPixmap stopPixmap(":/resources/images/close-tab.png");
 	stopPixmap = stopPixmap.scaledToHeight((height()*5)/6 , Qt::SmoothTransformation);
 	stopButton->setIcon(QIcon(stopPixmap));
 	stopButton->setIconSize(stopPixmap.size());
 	stopButton->setCursor(Qt::ArrowCursor);
 	stopButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
 
-	sPbar->setStyleSheet(QString(" QProgressBar { background: transparent; border: none; padding-left: %1px; /*padding-left: 32px; border-radius: 5px;*/ }").arg(0/*stopButton->sizeHint().width()*/));
-	sPbar->setFixedSize(width()/*-stopButton->sizeHint().width()*/, height());
+//	sPbar->setStyleSheet(QString(" QProgressBar { background: transparent; border: none; padding-left: %1px; /*padding-left: 32px; border-radius: 5px;*/ }").arg(0/*stopButton->sizeHint().width()*/));
+	sPbar->setStyleSheet(QString(" QProgressBar { background: transparent; border: none; padding-top: %1px; }").arg(qMax((sizeHint().height()-sPbar->sizeHint().height())/2, 0)));
+	sPbar->setFixedSize(width(), height());
 
 	//stopButton->show();
 	sPbar->show();

@@ -1059,13 +1059,17 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		//progress.setWindowModality(Qt::WindowModal);
 
 		while( q.next() )
-		{
+		{//				QApplication::processEvents(QEventLoop::AllEvents);
 			++numOfNearResult;
 			if (numOfNearResult > nextStep)
 			{
-				nextStep+=300;
+				nextStep+=300;//500
 				//qDebug() << "step="<<nextStep<<"numOfNearResult="<<numOfNearResult<<"numOfFounded="<<numOfFounded;
-				QApplication::processEvents(/*QEventLoop::AllEvents|*/QEventLoop::ExcludeUserInputEvents|QEventLoop::WaitForMoreEvents);
+#ifdef Q_WS_X11
+				QApplication::processEvents(QEventLoop::ExcludeUserInputEvents|QEventLoop::WaitForMoreEvents);
+#else
+				QApplication::processEvents(QEventLoop::AllEvents);
+#endif
 				////progress.setMaximum(maxOfProgressBar);
 			}
 			////progress.setValue(numOfNearResult);
@@ -1163,7 +1167,9 @@ bool excludeCurrentVerse = false;
 
 			if (excludeCurrentVerse)
 			{
-				QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 10 milisecond 
+#ifdef Q_WS_X11
+				QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds 
+#endif
 				continue;
 			}
 
@@ -1177,7 +1183,9 @@ bool excludeCurrentVerse = false;
 				QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
 				//progress->setLabelText(labelText);
 				emit searchStatusChanged(labelText);
-				QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 10 miliseconds 
+#ifdef Q_WS_X11
+				QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds 
+#endif
 //				if (progress->wasCanceled())
 //				{
 //					*Canceled = true;
@@ -1203,6 +1211,12 @@ QString QGanjoorDbBrowser::justifiedText(const QString &text, const QFontMetrics
 		tatweel = QChar(QChar::Null);
 		tatweelWidth = 0;
 	}
+
+//force justification by space on MacOSX
+#ifdef Q_WS_MAC
+	tatweel = QChar(QChar::Null);
+	tatweelWidth = 0;
+#endif
 
 	int spaceWidth = fontmetric.width(" ");
 
@@ -1337,4 +1351,10 @@ QString QGanjoorDbBrowser::snippedText(const QString &text, const QString &str, 
 		return elideString+snippedList.join("");
 	else
 		return snippedList.join("")+elideString;
+}
+
+QString QGanjoorDbBrowser::qStringMacHelper(const QString &str)
+{
+	QString tmp = str;
+	return tmp.replace("\u200C", "\u200F\u200C\u200F", Qt::CaseInsensitive);
 }

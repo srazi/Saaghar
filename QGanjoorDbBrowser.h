@@ -46,6 +46,7 @@ class QGanjoorDbBrowser : public QObject
 	public:
 		QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
 		~QGanjoorDbBrowser();
+		static QString qStringMacHelper(const QString &str);
 		static QString cleanString(const QString &text, const QStringList &excludeList = QStringList() << " ");
 		static QString justifiedText(const QString &text, const QFontMetrics &fontmetric, int width);
 		static QString snippedText(const QString &text, const QString &str, int from = 0, int maxNumOfWords = 10, bool elided = true, Qt::TextElideMode elideMode = Qt::ElideRight);

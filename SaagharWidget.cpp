@@ -516,10 +516,10 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 	//the parents of this category
 	QList<GanjoorCat> ancestors = ganjoorDataBase->getParentCategories(category);
 
-	QHBoxLayout *parentCatLayout = new QHBoxLayout();
-	QWidget *parentCatWidget = new QWidget();
-	parentCatLayout->setSpacing(0);
-	parentCatLayout->setContentsMargins(0,0,0,0);
+//	QHBoxLayout *parentCatLayout = new QHBoxLayout();
+//	QWidget *parentCatWidget = new QWidget();
+//	parentCatLayout->setSpacing(0);
+//	parentCatLayout->setContentsMargins(0,0,0,0);
 
 	for (int i = 0; i < ancestors.size(); i++)
 	{
@@ -574,8 +574,8 @@ QString styleSheetStr = QString("QPushButton {\
 		parentCatButton->setStyleSheet(styleSheetStr);
 		//(QString("QPushButton{border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde); min-width: %1px; min-height: %2px; text margin-left:1px; margin-right:1px } QPushButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa); } QPushButton:flat { border: none; } QPushButton:default { border-color: red; }").arg(minWidth).arg(parentCatButton->fontMetrics().height()+2));
 		
-//		parentCatsToolBar->addWidget(parentCatButton);
-		parentCatLayout->addWidget(parentCatButton);
+		parentCatsToolBar->addWidget(parentCatButton);
+//		parentCatLayout->addWidget(parentCatButton);
 	}
 
 	if (!category._Text.isEmpty())
@@ -602,11 +602,12 @@ QString styleSheetStr = QString("QPushButton {\
 						// background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);
 		parentCatButton->setStyleSheet(styleSheetStr);
 		//QString("QPushButton{border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde); min-width: %1px; min-height: %2px; text margin-left:1px; margin-right:1px } QPushButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa); } QPushButton:flat { border: none; } QPushButton:default { border-color: red; }").arg(minWidth).arg(parentCatButton->fontMetrics().height()+2));
-		//parentCatsToolBar->addWidget(parentCatButton);
-		parentCatLayout->addWidget(parentCatButton);
+		parentCatsToolBar->addWidget(parentCatButton);
+//		parentCatLayout->addWidget(parentCatButton);
 	}
-	parentCatWidget->setLayout(parentCatLayout);
-	parentCatsToolBar->addWidget(parentCatWidget);
+//	parentCatWidget->setLayout(parentCatLayout);
+//	parentCatsToolBar->addWidget(parentCatWidget);
+	parentCatsToolBar->setStyleSheet("QToolBar { spacing: 0px; /* spacing between items in the tool bar */ }");
 
 	currentCat = !category.isNull() ? category._ID : 0;
 }
@@ -673,7 +674,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	minMesraWidth = 0;
 	singleColumnHeightMap.clear();
 
-#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
+//#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
 	const bool justified = true;//temp
 	int maxWidth = -1;
 	if (justified)
@@ -688,17 +689,22 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 				maxWidth = temp;
 		}
 	}
-#endif
+//#endif
 
 	for (int i = 0; i < verses.size(); i++)
 	{
 		QString currentVerseText = verses.at(i)->_Text;
 
-#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
+//#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
 		if (justified)
 		{
 			currentVerseText = QGanjoorDbBrowser::justifiedText(currentVerseText, fontMetric, maxWidth);
 		}
+//#endif
+
+#ifdef Q_WS_MAC
+		//replace ZWNJ by RTLed ZWNJ
+		currentVerseText = QGanjoorDbBrowser::qStringMacHelper(currentVerseText);
 #endif
 
 		if (currentVerseText.isEmpty())
