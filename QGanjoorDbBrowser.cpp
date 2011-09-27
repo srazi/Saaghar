@@ -1064,9 +1064,11 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 			if (numOfNearResult > nextStep)
 			{
 				nextStep+=300;//500
-				//qDebug() << "step="<<nextStep<<"numOfNearResult="<<numOfNearResult<<"numOfFounded="<<numOfFounded;
+		QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
+		emit searchStatusChanged(labelText);
+				qDebug() << "step="<<nextStep<<"numOfNearResult="<<numOfNearResult<<"numOfFounded="<<numOfFounded;
 #ifdef Q_WS_X11
-				QApplication::processEvents(QEventLoop::ExcludeUserInputEvents|QEventLoop::WaitForMoreEvents);
+				QApplication::processEvents(/*QEventLoop::ExcludeUserInputEvents|QEventLoop::WaitForMoreEvents*/);
 #else
 				QApplication::processEvents(QEventLoop::AllEvents);
 #endif
@@ -1180,9 +1182,9 @@ bool excludeCurrentVerse = false;
 
 			if(true/*progress*/)
 			{
-				QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
+		//QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
 				//progress->setLabelText(labelText);
-				emit searchStatusChanged(labelText);
+		//emit searchStatusChanged(labelText);
 #ifdef Q_WS_X11
 				QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds 
 #endif
@@ -1353,8 +1355,8 @@ QString QGanjoorDbBrowser::snippedText(const QString &text, const QString &str, 
 		return snippedList.join("")+elideString;
 }
 
-QString QGanjoorDbBrowser::qStringMacHelper(const QString &str)
-{
-	QString tmp = str;
-	return tmp.replace("\u200C", "\u200F\u200C\u200F", Qt::CaseInsensitive);
-}
+//QString QGanjoorDbBrowser::qStringMacHelper(const QString &str)
+//{
+//	QString tmp = str;
+//	return tmp.replace("\u200C", "\u200F\u200C\u200F", Qt::CaseInsensitive);
+//}

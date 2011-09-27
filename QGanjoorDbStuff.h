@@ -24,6 +24,13 @@
 
 #include <QString>
 
+inline QString qStringMacHelper(const QString &str)
+{
+	QString tmp = str;
+	tmp = tmp.replace(QChar(0x200C), QString(0x200F)+QString(0x200C)+QString(0x200F), Qt::CaseInsensitive);
+	return tmp;
+}
+
 enum VersePosition
 {
 	Right = 0,//مصرع اول
@@ -31,7 +38,7 @@ enum VersePosition
 	CenteredVerse1 = 2,// مصرع اول یا تنهای ابیات ترجیع یا ترکیب
 	CenteredVerse2 = 3,// مصرع دوم ابیات ترجیع یا ترکیب
 	Single = 4, //مصرعهای شعرهای نیمایی یا آزاد
-	Paragraph = -1, //نثر
+	Paragraph = -1 //نثر
 };
 
 class GanjoorVerse
@@ -55,7 +62,11 @@ class GanjoorVerse
 		_PoemID = PoemID;
 		_Order = Order;
 		_Position = Position;
+#ifdef Q_WS_MAC
+		_Text = qStringMacHelper(Text);
+#else
 		_Text = Text;
+#endif
 	}
 };
 
@@ -83,7 +94,11 @@ class GanjoorPoem
 	{
 		_ID = ID;
 		_CatID = CatID;
+#ifdef Q_WS_MAC
+		_Title = qStringMacHelper(Title);
+#else
 		_Title = Title;
+#endif
 		_Url = Url;
 		_Faved = Faved;
 		_HighlightText = HighlightText;
@@ -118,10 +133,15 @@ class GanjoorPoet
 
 	inline void init(int ID=-1, QString Name=QString(), int CatID=-1, QString description=QString())
 	{
-		_Name = Name;
 		_ID = ID;
 		_CatID = CatID;
+#ifdef Q_WS_MAC
+		_Name = qStringMacHelper(Name);
+		_Description = qStringMacHelper(description);
+#else
+		_Name = Name;
 		_Description = description;
+#endif
 	}
 
 	inline bool isNull() const {return _ID == -1;}
@@ -158,7 +178,11 @@ class GanjoorCat
 	{
 		_ID = ID;
 		_PoetID = PoetID;
+#ifdef Q_WS_MAC
+		_Text = qStringMacHelper(Text);
+#else
 		_Text = Text;
+#endif
 		_ParentID = ParentID;
 		_Url = Url;
 	}

@@ -349,10 +349,15 @@ void SearchResultWidget::showSearchResult(int start)
 		if ( tmpWidth > maxPoemWidth )
 			maxPoemWidth = tmpWidth;
 
-		QString cleanedFirstVerse = QGanjoorDbBrowser::cleanString(firstVerse/*, false*/);
-		QString snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, phrase, 0, 8, true);
+//		QString cleanedFirstVerse = QGanjoorDbBrowser::cleanString(firstVerse/*, false*/);
+//		QString snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, phrase, 0, 8, true);
+//		if (snippedFirstVerse.isEmpty())
+//			snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, "", 0, 8, true);
+
+		//change 'cleanedFirstVerse' to 'firstVerse' maybe this conflicts with 'snippedText()' algorithm!
+		QString snippedFirstVerse = QGanjoorDbBrowser::snippedText(firstVerse, phrase, 0, 8, true);
 		if (snippedFirstVerse.isEmpty())
-			snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, "", 0, 8, true);
+			snippedFirstVerse = QGanjoorDbBrowser::snippedText(firstVerse, "", 0, 8, true);
 
 		QTableWidgetItem *verseItem = new QTableWidgetItem(snippedFirstVerse);
 		verseItem->setFlags(Qt::ItemIsEnabled/*Qt::NoItemFlags*/);

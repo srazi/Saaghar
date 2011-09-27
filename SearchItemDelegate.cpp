@@ -24,7 +24,8 @@
 #include "QGanjoorDbStuff.h"
 #include "SaagharWidget.h"
 #include <QtGui>
-
+#include <QIcon>
+#define QStyledItemDelegate QItemDelegate
 SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString phrase) : QStyledItemDelegate(parent)
 {
 	keywordList.clear();
@@ -62,9 +63,18 @@ qDebug() << keywordList;
 	const QFontMetrics fontMetric(option.fontMetrics);
 	const QString tatweel = QString(0x0640);
 //qDebug() << "tatweel="<<tatweel;
+	int iconWidth = 0;
+
 	if (index.data().isValid())
 	{
 		text = index.data().toString();
+
+		if (index.data(Qt::DecorationRole).isValid())
+		{
+			QIcon icon = index.data(Qt::DecorationRole).value<QIcon>();
+			//qDebug()<<"Qt::DecorationRole="	<<	
+			iconWidth = icon.pixmap(100, 100).width()+5;
+		}
 		//if (SaagharWidget::newSearchFlag)
 		{
 			cleanedText = QGanjoorDbBrowser::cleanString(text/*, SaagharWidget::newSearchSkipNonAlphabet*/);
@@ -162,6 +172,7 @@ qDebug() << keywordList;
 				QRectF rectf(lastX , option.rect.y()+((option.rect.height()-qMin(option.rect.height(), fontMetric.height()))/2), sz.width(), fontMetric.height() );
 				qreal oldOpacity = painter->opacity();
 				painter->setOpacity(0.65);
+				rectf.adjust(-iconWidth, 0, -iconWidth, 0);
 				painter->fillRect( rectf, itemBrush );
 				painter->setOpacity(oldOpacity);
 				//painter->fillRect( rectf, itemBrush );

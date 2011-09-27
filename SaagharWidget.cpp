@@ -607,7 +607,7 @@ QString styleSheetStr = QString("QPushButton {\
 	}
 //	parentCatWidget->setLayout(parentCatLayout);
 //	parentCatsToolBar->addWidget(parentCatWidget);
-	parentCatsToolBar->setStyleSheet("QToolBar { spacing: 0px; /* spacing between items in the tool bar */ }");
+	parentCatsToolBar->setStyleSheet("QToolBar { padding: 3px; spacing: 0px; /* spacing between items in the tool bar */ }");
 
 	currentCat = !category.isNull() ? category._ID : 0;
 }
@@ -701,11 +701,6 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 			currentVerseText = QGanjoorDbBrowser::justifiedText(currentVerseText, fontMetric, maxWidth);
 		}
 //#endif
-
-#ifdef Q_WS_MAC
-		//replace ZWNJ by RTLed ZWNJ
-		currentVerseText = QGanjoorDbBrowser::qStringMacHelper(currentVerseText);
-#endif
 
 		if (currentVerseText.isEmpty())
 		{
@@ -1066,6 +1061,9 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 
 void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 {
+	if (phrase.isEmpty())
+		return;
+
 	QString keyword = "";
 	//tmp.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by SPACE
 
@@ -1073,7 +1071,7 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 	QStringList list = SearchPatternManager::phraseToList(phrase);
 	for (int i=0; i<list.size();++i)
 	{
-		keyword = list.at(i);
+		keyword = list.at(list.size()-1-i);//start from last, probably it's the new one!
 		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
 		keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
 		if (!keyword.isEmpty())

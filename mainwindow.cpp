@@ -2264,12 +2264,12 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 	//search data
 	QVariant searchData = item->data(ITEM_SEARCH_DATA);
 	QStringList searchDataList = QStringList();
-	bool setupSaagharItemDelegate = false;
+	QString searchPhraseData = "";
 	if (searchData.isValid() && !searchData.isNull())
 	{
 		searchDataList = searchData.toString().split("|", QString::SkipEmptyParts);
-		if (!searchDataList.at(0).isEmpty())
-			setupSaagharItemDelegate = true;
+
+		searchPhraseData = searchDataList.at(0);
 	}
 
 	bool OK = false;
@@ -2278,27 +2278,29 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 
 	if (OK && SaagharWidget::ganjoorDataBase)
 		noError = true;
+
 	//right click event
 	if (pressedMouseButton == Qt::RightButton)
 	{
 		//qDebug() << "tableItemClick-Qt::RightButton";
 
 		newTabForItem(itemData.at(0), idData, noError);
-		if (setupSaagharItemDelegate)
-		{
-			saagharWidget->scrollToFirstItemContains(searchDataList.at(0));
-			saagharWidget->tableViewWidget->setItemDelegate(new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchDataList.at(0)));
-		}
+
+		saagharWidget->scrollToFirstItemContains(searchPhraseData);
+		SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchPhraseData);
+		saagharWidget->tableViewWidget->setItemDelegate(searchDelegate);
+		connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), searchDelegate, SLOT(keywordChanged(const QString &)) );
+
 		connect(senderTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
 		return;
 	}
 
 	saagharWidget->processClickedItem(itemData.at(0), idData, noError);
-	if (setupSaagharItemDelegate)
-	{
-		saagharWidget->scrollToFirstItemContains(searchDataList.at(0));
-		saagharWidget->tableViewWidget->setItemDelegate(new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchDataList.at(0)));
-	}
+
+	saagharWidget->scrollToFirstItemContains(searchPhraseData);
+	SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchPhraseData);
+	saagharWidget->tableViewWidget->setItemDelegate(searchDelegate);
+	connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), searchDelegate, SLOT(keywordChanged(const QString &)) );
 
 	updateTabsSubMenus();
 	connect(senderTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));

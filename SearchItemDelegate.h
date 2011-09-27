@@ -22,9 +22,9 @@
 #ifndef SEARCHITEMDELEGATE_H
 #define SEARCHITEMDELEGATE_H
 
-#include <QStyledItemDelegate>
+#include <QItemDelegate>
 
-class SaagharItemDelegate : public QStyledItemDelegate
+class SaagharItemDelegate : public QItemDelegate
 { 
 	Q_OBJECT
 
