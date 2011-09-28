@@ -2146,14 +2146,14 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 
 	//search data
 	QVariant searchData = item->data(ITEM_SEARCH_DATA);
-	QStringList searchDataList = QStringList();
-	QString searchPhraseData = "";
-	if (searchData.isValid() && !searchData.isNull())
-	{
-		searchDataList = searchData.toString().split("|", QString::SkipEmptyParts);
+//	QStringList searchDataList = QStringList();
+	QString searchPhraseData = searchData.toString();
+//	if (searchData.isValid() && !searchData.isNull())
+//	{
+//		searchDataList = searchData.toString().split("|", QString::SkipEmptyParts);
 
-		searchPhraseData = searchDataList.at(0);
-	}
+//		searchPhraseData = searchDataList.at(0);
+//	}
 
 	bool OK = false;
 	int idData = itemData.at(1).toInt(&OK);

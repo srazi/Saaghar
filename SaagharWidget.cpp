@@ -1047,52 +1047,63 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 	if (phrase.isEmpty())
 		return;
 
-	QString keyword = "";
-
 	QStringList list = SearchPatternManager::phraseToList(phrase);
-	for (int i=0; i<list.size();++i)
-	{
-		keyword = list.at(list.size()-1-i);//start from last, probably it's the new one!
-		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-		keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
-		if (!keyword.isEmpty())
-			break;
-	}
+
+	QString keyword = list.join("#");
+	keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
+	keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
+	list = keyword.split("#", QString::SkipEmptyParts);
+	list.removeAll("");
+	if (list.isEmpty())
+		return;
+	int listSize = list.size();
+	
+//	for (int i=0; i<list.size();++i)
+//	{
+//		keyword = list.at(list.size()-1-i);//start from last, probably it's the new one!
+//		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
+//		keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
+//		if (!keyword.isEmpty())
+//			break;
+//	}
 
 	for (int row = 0; row < tableViewWidget->rowCount(); ++row)
 	{
 		for (int col = 0; col < tableViewWidget->columnCount(); ++col)
 		{
 			QTableWidgetItem *tmp = tableViewWidget->item(row, col);
-			if (true /*SaagharWidget::newSearchFlag*/)
-			{
+//			if (true /*SaagharWidget::newSearchFlag*/)
+//			{
 				if (tmp)
 				{
 					QString text = QGanjoorDbBrowser::cleanString(tmp->text()/*, newSearchSkipNonAlphabet*/);
 					text.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
-					if (tmp->text() == QString::fromLocal8Bit("خـوار آن خـواری کـه بـرتـو زیـن سـپـس غـوغـاکند"))
+
+
+					for (int i=0; i<listSize;++i)
 					{
-						qDebug()<<"keyword="<<keyword<<"text-clean="<<text<<"bool="<<text.contains(keyword);
-					}
-					if (text.contains(keyword))
-					{
-						tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
-						tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
-						row = tableViewWidget->rowCount()+1;
-						break;
+						keyword = list.at(listSize-1-i);//start from last, probably it's the new one!
+						if (text.contains(keyword))
+						{
+							tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
+							tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
+							row = tableViewWidget->rowCount()+1;
+							col = tableViewWidget->columnCount()+1;
+							break;
+						}
 					}
 				}
-			}
-			else
-			{
-				if (tmp && tmp->text().contains(keyword))
-				{
-					tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
-					tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
-					row = tableViewWidget->rowCount()+1;
-					break;
-				}
-			}
+//			}
+//			else
+//			{
+//				if (tmp && tmp->text().contains(keyword))
+//				{
+//					tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
+//					tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
+//					row = tableViewWidget->rowCount()+1;
+//					break;
+//				}
+//			}
 		}
 	}
 }
