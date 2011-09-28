@@ -24,7 +24,7 @@
 #include "QSearchLineEdit.h"
 #include <QToolButton>
 #include <QStyle>
-#include<QDebug>
+//#include <QDebug>
 
 QSearchLineEdit::QSearchLineEdit(QWidget *parent, const QString &clearIconFileName, const QString &optionsIconFileName)
 	: QLineEdit(parent)
@@ -170,15 +170,14 @@ void QSearchLineEdit::searchStart(bool *canceled, int min, int max)
 	//stopButton->show();
 	sPbar->show();
 
-	qDebug() << "sizeHint-TOP=" <<(sizeHint().height()-sPbar->sizeHint().height())/2;
-	qDebug() << "size-TOP=" <<(height()-sPbar->height())/2;
+//	qDebug() << "sizeHint-TOP=" <<(sizeHint().height()-sPbar->sizeHint().height())/2;
+//	qDebug() << "size-TOP=" <<(height()-sPbar->height())/2;
 	sPbar->setStyleSheet(QString(" QProgressBar { background: transparent; padding-top: %1px; border: none; /* border-radius: 5px;*/}").arg(qMax((height()-sPbar->sizeHint().height())/2, 0)));
-	//sPbar->setStyleSheet(QString(" QProgressBar { background: transparent; padding-top: %1px; border: none; /* border-radius: 5px;*/}").arg(qMax((height()-sPbar->height())/2, 0)));
 	sPbar->setFixedSize(width(), height());
-	qDebug() << "prog-height=" <<sPbar->height();
-	qDebug() << "prog-Hint-height=" <<sPbar->sizeHint().height();
-	qDebug() << "lineEdit-height=" <<height();
-	qDebug() << "lineEdit-Hint-height=" <<sizeHint().height();
+//	qDebug() << "prog-height=" <<sPbar->height();
+//	qDebug() << "prog-Hint-height=" <<sPbar->sizeHint().height();
+//	qDebug() << "lineEdit-height=" <<height();
+//	qDebug() << "lineEdit-Hint-height=" <<sizeHint().height();
 
 	connect(stopButton, SIGNAL(clicked()), this, SLOT(searchStop()));
 }

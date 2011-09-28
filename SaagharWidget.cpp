@@ -379,15 +379,6 @@ void SaagharWidget::showCategory(GanjoorCat category)
 	///Initialize Table//TODO: I need to check! maybe it's not needed
 	tableViewWidget->clearContents();
 
-//	QHeaderView *header = tableViewWidget->horizontalHeader();
-//	header->setStretchLastSection(true);
-//	header->hide();
-//	tableViewWidget->setHorizontalHeader(header);
-//	header = tableViewWidget->verticalHeader();
-//	header->hide();
-//	tableViewWidget->setVerticalHeader(header);
-
-	//tableViewWidget->setAttribute(Qt::WA_OpaquePaintEvent, true);
 	tableViewWidget->setLayoutDirection(Qt::RightToLeft);
 
 	int startRow = 0;
@@ -550,20 +541,20 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 			}
 		}
 
-QString styleSheetStr = QString("QPushButton {\
-						color: #606060;\
-						min-height: 22px;\
-						width: %1px;\
-						padding-left: 15px;\
-						border-image: url(%2) 0 15 0 15;\
-						border-top: 0px transparent;\
-						border-bottom: 0px transparent;\
-						border-right: 15px transparent;\
-						border-left: 15px transparent; }\
-						QPushButton:hover { font: bold; color: black; border-image: url(%3) 0 15 0 15; }\
-						QPushButton:pressed { color: grey; border-image: url(%4) 0 15 0 15; }\
-						").arg(minWidth).arg(buttonImage).arg(buttonHomeHovered).arg(buttonHomePressed);
-			//background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #fafbee);
+		QString styleSheetStr = QString("QPushButton {\
+				color: #606060;\
+				min-height: 22px;\
+				width: %1px;\
+				padding-left: 15px;\
+				border-image: url(%2) 0 15 0 15;\
+				border-top: 0px transparent;\
+				border-bottom: 0px transparent;\
+				border-right: 15px transparent;\
+				border-left: 15px transparent; }\
+				QPushButton:hover { font: bold; color: black; border-image: url(%3) 0 15 0 15; }\
+				QPushButton:pressed { color: grey; border-image: url(%4) 0 15 0 15; }\
+				").arg(minWidth).arg(buttonImage).arg(buttonHomeHovered).arg(buttonHomePressed);
+
 		if (i==0)
 			parentCatButton->setText("");
 		else
@@ -586,20 +577,19 @@ QString styleSheetStr = QString("QPushButton {\
 		connect(parentCatButton, SIGNAL(clicked(bool)), this, SLOT(parentCatClicked()));
 		int minWidth = parentCatButton->fontMetrics().width(category._Text)+6;
 		QString styleSheetStr = QString("QPushButton {\
-						color: #707070;\
-						min-height: 22px;\
-						min-width: %1px;\
-						padding-left: 15px;\
-						border-image: url(%2) 0 15 0 15;\
-						border-top: 0px transparent;\
-						border-bottom: 0px transparent;\
-						border-right: 15px transparent;\
-						border-left: 15px transparent; }\
-						QPushButton:hover { color: black; }\
-						QPushButton:pressed { color: grey; }\
-						").arg(minWidth).arg(":/resources/images/cats-buttons/button-last.png");
-						
-						// background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde);
+				color: #707070;\
+				min-height: 22px;\
+				min-width: %1px;\
+				padding-left: 15px;\
+				border-image: url(%2) 0 15 0 15;\
+				border-top: 0px transparent;\
+				border-bottom: 0px transparent;\
+				border-right: 15px transparent;\
+				border-left: 15px transparent; }\
+				QPushButton:hover { color: black; }\
+				QPushButton:pressed { color: grey; }\
+				").arg(minWidth).arg(":/resources/images/cats-buttons/button-last.png");
+
 		parentCatButton->setStyleSheet(styleSheetStr);
 		//QString("QPushButton{border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde); min-width: %1px; min-height: %2px; text margin-left:1px; margin-right:1px } QPushButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa); } QPushButton:flat { border: none; } QPushButton:default { border-color: red; }").arg(minWidth).arg(parentCatButton->fontMetrics().height()+2));
 		parentCatsToolBar->addWidget(parentCatButton);
@@ -816,12 +806,6 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 					totalWidth = tableViewWidget->viewport()->width();
 					//numOfRow = textWidth/totalWidth;
 					{
-						/*QTextEdit *paraEdit = new QTextEdit(this);
-						paraEdit->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-						paraEdit->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-						paraEdit->setFrameShape(QFrame::NoFrame);
-						paraEdit->setPlainText(mesraItem->text());
-						tableViewWidget->setCellWidget(row, 1, paraEdit);*/
 						QTableWidgetItem *tmp = new QTableWidgetItem("");
 						tmp->setFlags(versesItemFlag);
 						tableViewWidget->setItem(row, 3, tmp);
@@ -829,9 +813,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 						tableViewWidget->setItem(row, 1, mesraItem);
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
-					//tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
-					////tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
-					singleColumnHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
+
+					singleColumnHeightMap.insert(row, textWidth);
 					MissedMesras++;
 					break;
 
@@ -1065,9 +1048,7 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 		return;
 
 	QString keyword = "";
-	//tmp.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by SPACE
 
-//	int i = 0;
 	QStringList list = SearchPatternManager::phraseToList(phrase);
 	for (int i=0; i<list.size();++i)
 	{
@@ -1077,14 +1058,7 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 		if (!keyword.isEmpty())
 			break;
 	}
-//	while(keyword.isEmpty() && i<list.size());
-//	{
-//		keyword = list.at(i);
-//		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-//		keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
-//		++i;
-//	}
-	//keywordList.removeDuplicates();
+
 	for (int row = 0; row < tableViewWidget->rowCount(); ++row)
 	{
 		for (int col = 0; col < tableViewWidget->columnCount(); ++col)
@@ -1140,8 +1114,6 @@ void SaagharWidget::pressedOnItem(int row,int /*col*/)
 
 void SaagharWidget::clickedOnItem(int row,int /*col*/)
 {
-	//connect(this->tableViewWidget, SIGNAL(cellClicked(int,int)), this, SLOT(clickedOnItem(int,int)));
-	//disconnect(this->tableViewWidget, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(clickedOnItem(QTableWidgetItem*)));
 	if (pressedPosition != QCursor::pos())
 	{
 		pressedPosition = QPoint(-1, -1);

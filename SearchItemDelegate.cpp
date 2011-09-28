@@ -40,11 +40,10 @@ SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString
 void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
 						 const QModelIndex &index) const
 {
-	if (parent()->objectName()=="searchTable")
-{
-qDebug() << keywordList;
-//QMessageBox::information(0, "searchTable", QString("keyword=*%1*").arg(keywordList.join("!-!")) );
-}
+//	if (parent()->objectName()=="searchTable")
+//	{
+//		qDebug() << keywordList;
+//	}
 	const bool flagRightToLeft = true;
 	int textHMargin = 0;
 	if (tableStyle)
@@ -62,7 +61,7 @@ qDebug() << keywordList;
 	int lastX,x;
 	const QFontMetrics fontMetric(option.fontMetrics);
 	const QString tatweel = QString(0x0640);
-//qDebug() << "tatweel="<<tatweel;
+
 	int iconWidth = 0;
 
 	if (index.data().isValid())
@@ -72,24 +71,19 @@ qDebug() << keywordList;
 		if (index.data(Qt::DecorationRole).isValid())
 		{
 			QIcon icon = index.data(Qt::DecorationRole).value<QIcon>();
-			//qDebug()<<"Qt::DecorationRole="	<<	
 			iconWidth = icon.pixmap(100, 100).width()+5;
 		}
-		//if (SaagharWidget::newSearchFlag)
-		{
-			cleanedText = QGanjoorDbBrowser::cleanString(text/*, SaagharWidget::newSearchSkipNonAlphabet*/);
-			if (text.contains( QString::fromLocal8Bit(
-			                      "پسر چون ز مادر بران گونه زاد"
-//			                      "پرپر شد ..."
-						/*"وَز ســوری و نــعــمـان وزد، هـر دم شـمـیـم عـنـبـریـن"*/)))
-			{
-				qDebug() << "textt="<<text;
-				qDebug() << "clean="<<cleanedText;
-			}
-			text = QGanjoorDbBrowser::cleanString(text/*, false*/);
-		}
-			//cleanedText = QGanjoorDbBrowser::cleanString(index.data().toString(), SaagharWidget::newSearchSkipNonAlphabet);
-		//text = fontMetric.elidedText(text, option.textElideMode, option.rect.width() );
+
+		cleanedText = QGanjoorDbBrowser::cleanString(text/*, SaagharWidget::newSearchSkipNonAlphabet*/);
+//		if (text.contains( QString::fromLocal8Bit(
+//							  "پسر چون ز مادر بران گونه زاد"
+////			                      "پرپر شد ..."
+//					/*"وَز ســوری و نــعــمـان وزد، هـر دم شـمـیـم عـنـبـریـن"*/)))
+//		{
+//			qDebug() << "textt="<<text;
+//			qDebug() << "clean="<<cleanedText;
+//		}
+		text = QGanjoorDbBrowser::cleanString(text/*, false*/);
 	}
 	//qDebug() << "text="<<text<<"cleanedText="<<cleanedText;
 	Qt::Alignment itemAlignment = 0;
@@ -104,7 +98,7 @@ qDebug() << keywordList;
 		lastX = x = option.rect.x()+textHMargin;
 		//QString keyword = keywordList.isEmpty() ? "" : keywordList.at(0);
 		QString keyword = keywordList.at(i);
-		//temp
+
 		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
 //		qDebug() << "keyword1="<<keyword;
 		keyword = keyword.split("", QString::SkipEmptyParts).join(tatweel+"*");
@@ -116,11 +110,7 @@ qDebug() << keywordList;
 		keyword = maybeTatweel.cap(0);
 	if (!(keyword.isEmpty() || text.indexOf(keyword) == -1 ) )
 	{
-		QString txt;
-		/*if ( //SaagharWidget::newSearchFlag)
-			txt = cleanedText;
-		else*/
-			txt = text;
+		QString txt = text;
 		while (txt.size() > 0)
 		{
 			int index = txt.indexOf(keyword);
@@ -195,19 +185,15 @@ qDebug() << keywordList;
 
 void SaagharItemDelegate::keywordChanged(const QString &text)
 {
-//	keyword = text;
-	//qDebug()<<"keyword="<<text;
-	//qDebug()<<"Cleaned-keyword-list="<<SearchPatternManager::phraseToList(text);
 	keywordList.clear();
 	QString tmp = text;
-	tmp.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by SPACE
+	tmp.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
 	keywordList = SearchPatternManager::phraseToList(tmp);
 	keywordList.removeDuplicates();
 
 	QTableWidget *table=qobject_cast<QTableWidget *>(parent());
 	if (table)
 	{
-		//table->viewport()->repaint();
 		table->viewport()->update();
 	}
 }

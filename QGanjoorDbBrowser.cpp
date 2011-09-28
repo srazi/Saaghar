@@ -118,13 +118,6 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 
 QGanjoorDbBrowser::~QGanjoorDbBrowser()
 {
-	//we should change 'dBConnection' to a local varible!
-	/*foreach(const QString& connectionName, QSqlDatabase::connectionNames())
-	{
-		QSqlDatabase::database(connectionName, false).close();
-		QSqlDatabase::database(connectionName, false).~QSqlDatabase();
-		QSqlDatabase::removeDatabase(connectionName);
-	}*/
 }
 
 bool QGanjoorDbBrowser::isConnected(const QString& connectionID)
@@ -142,7 +135,7 @@ QList<GanjoorPoet *> QGanjoorDbBrowser::getPoets(const QString& connectionID, bo
 	{
 		QSqlDatabase dataBaseObject = dBConnection;
 		if (!connectionID.isEmpty())
-			/*dBConnection*/ dataBaseObject = QSqlDatabase::database(connectionID);
+			dataBaseObject = QSqlDatabase::database(connectionID);
 		QSqlQuery q(dataBaseObject);
 		bool descriptionExists = false;
 		if ( q.exec("SELECT id, name, cat_id, description FROM poet") )
@@ -279,13 +272,6 @@ QString QGanjoorDbBrowser::getFirstMesra(int PoemID) //just first Mesra
 		q.first();
 		while( q.isValid() && q.isActive() )
 		{
-			/*QStringList words = q.record().value(1).toString().split(QRegExp("\\b"));
-			int length = qMin(words.size(), 30);
-			QString text = "";
-			if ( length<words.size() )
-				text = "...";
-			words = words.mid(0, length);
-			return words.join("")+text;*/
 			return snippedText(q.record().value(1).toString(), "", 0, 12, true);
 		}
 	}
@@ -485,47 +471,6 @@ GanjoorPoet QGanjoorDbBrowser::getPoet(QString PoetName)
 	}
 	return gPoet;
 }
-
-//QList<int> QGanjoorDbBrowser::getPoemIDsContainingPhrase(QString phrase, int PageStart, int Count, int PoetID)
-//{
-//	QList<int> idList;
-//	if (isConnected())
-//	{
-//		QString strQuery;
-//		if (PoetID == 0)
-//			strQuery=QString("SELECT poem_id FROM verse WHERE text LIKE \'%" + phrase + "%\' GROUP BY poem_id LIMIT "+QString::number(PageStart)+","+QString::number(Count));
-//		else
-//			strQuery=QString("SELECT poem_id FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + phrase + "%\' AND poet_id=" + QString::number(PoetID) + " GROUP BY poem_id LIMIT " + QString::number(PageStart) + "," + QString::number(Count));
-		
-//		QSqlQuery q(dBConnection);
-//		q.exec(strQuery);
-
-//		while( q.next() )
-//		{
-//			QSqlRecord qrec = q.record();
-//			idList.append(qrec.value(0).toInt());
-//		}
-//		return idList;
-//	}
-//	return idList;
-//}
-
-//QString QGanjoorDbBrowser::getFirstVerseContainingPhrase(int PoemID, QString phrase)
-//{
-//	QString text = "";
-//	if (isConnected())
-//	{
-//		QString strQuery="SELECT text FROM verse WHERE poem_id="+QString::number(PoemID)+" AND text LIKE\'%"+phrase+"%\' LIMIT 0,1";
-//		QSqlQuery q(dBConnection);
-//		q.exec(strQuery);
-//		if ( q.next() )
-//		{
-//			QSqlRecord qrec = q.record();
-//			text = qrec.value(0).toString();
-//		}
-//	}
-//	return text;
-//}
 
 int QGanjoorDbBrowser::getRandomPoemID(int *CatID)
 {
@@ -1052,37 +997,18 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		qDebug() << "duration=" << miliSec;
 
 		int numOfNearResult=0, nextStep = 0;
-		
-		//progress dialog
-//		int maxOfProgressBar = 800000;//50000;
-		//QProgressDialog progress(QGanjoorDbBrowser::tr("Searching Data Base..."), QGanjoorDbBrowser::tr("Cancel"), 0, maxOfProgressBar, qApp->activeWindow());
-		//progress.setWindowModality(Qt::WindowModal);
 
 		while( q.next() )
-		{//				QApplication::processEvents(QEventLoop::AllEvents);
+		{
 			++numOfNearResult;
 			if (numOfNearResult > nextStep)
 			{
 				nextStep+=300;//500
-		QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
-		emit searchStatusChanged(labelText);
-				qDebug() << "step="<<nextStep<<"numOfNearResult="<<numOfNearResult<<"numOfFounded="<<numOfFounded;
-#ifdef Q_WS_X11
-				QApplication::processEvents(/*QEventLoop::ExcludeUserInputEvents|QEventLoop::WaitForMoreEvents*/);
-#else
+				emit searchStatusChanged(QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount));
+				//qDebug() << "step="<<nextStep<<"numOfNearResult="<<numOfNearResult<<"numOfFounded="<<numOfFounded;
 				QApplication::processEvents(QEventLoop::AllEvents);
-#endif
-				////progress.setMaximum(maxOfProgressBar);
 			}
-			////progress.setValue(numOfNearResult);
 
-			 /*if (progress.wasCanceled())
-			 {
-				 if (Canceled)
-					*Canceled = true;
-				 progress.hide();
-				 break;
-			 }*/
 			QSqlRecord qrec = q.record();
 			int poemID = qrec.value(0).toInt();
 			if (idList.contains(poemID))
@@ -1090,7 +1016,6 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 
 			QString verseText = qrec.value(1).toString();
 
-			//QStringList verseTexts = getVerseListContainingPhrase(qrec.value(0).toInt(), ch);
 //			//////////////////
 //			if (value.contains(
 //					QString::fromLocal8Bit("پسر چون ز مادر بران گونه زاد")
@@ -1101,23 +1026,22 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 //				qDebug() << "valueContains="<<value.contains(text, Qt::CaseInsensitive);
 //			}
 //			///////////////////////////
-			QString foundedVerse = QGanjoorDbBrowser::cleanString(verseText/*, skipNonAlphabet*/);
+			QString foundedVerse = QGanjoorDbBrowser::cleanString(verseText);
 			foundedVerse = " "+foundedVerse+" ";//for whole word option when word is in the start or end of verse
-			if (foundedVerse.contains(QString::fromLocal8Bit("پسر چون ز مادر بران گونه زاد"
-			                              /*"باسحاب"*/
-										  /*"وین چشم رمد دیده من سرمه اقبال"*/
-															 /*"من از یمن اقبال این خاندان"*/)))
-			{QMessageBox::information(0, "ifffffffffff","iffffffffffff");
-				foundedVerse = QGanjoorDbBrowser::cleanString(foundedVerse/*, skipNonAlphabet*/);
-//				qDebug() << "foundedVerse="<<foundedVerse<<"phraseForSearch="<<phraseForSearch;
-				foundedVerse = " "+foundedVerse+" ";
-			}
-		//	if (true/*foundedVerse.contains(phraseForSearch, Qt::CaseInsensitive)*/)
-		//	{
-//////////////////////////////////////////
-//excluded list
-int excludedCount = excludedList.size();
-bool excludeCurrentVerse = false;
+//			if (foundedVerse.contains(QString::fromLocal8Bit("پسر چون ز مادر بران گونه زاد"
+//			                              /*"باسحاب"*/
+//										  /*"وین چشم رمد دیده من سرمه اقبال"*/
+//															 /*"من از یمن اقبال این خاندان"*/)))
+//			{
+//				//QMessageBox::information(0, "ifffffffffff","iffffffffffff");
+//				foundedVerse = QGanjoorDbBrowser::cleanString(foundedVerse/*, skipNonAlphabet*/);
+//				//qDebug() << "foundedVerse="<<foundedVerse<<"phraseForSearch="<<phraseForSearch;
+//				foundedVerse = " "+foundedVerse+" ";
+//			}
+
+			//excluded list
+			int excludedCount = excludedList.size();
+			bool excludeCurrentVerse = false;
 			for (int t=0;t<excludedCount;++t)
 			{
 				QString tphrase = phraseList.at(t);
@@ -1126,8 +1050,6 @@ bool excludeCurrentVerse = false;
 					//qDebug() <<"excludeCurrentVerse->TRUE-verse=" << verseText<< "tPharse="<<tphrase<<"tExcluded="<<excludedList.at(t);
 					excludeCurrentVerse = true;
 					break;
-					//mapResult.erase(it);
-					//break;//break to while
 				}
 			}
 
@@ -1161,9 +1083,8 @@ bool excludeCurrentVerse = false;
 				}
 			}
 
-			if (Canceled && *Canceled /*progress && progress->wasCanceled()*/)
+			if (Canceled && *Canceled)
 			{
-				//*Canceled = true;
 				break;
 			}
 
@@ -1176,27 +1097,18 @@ bool excludeCurrentVerse = false;
 			}
 
 			++numOfFounded;
-			//progress.setValue(numOfNearResult);
 			GanjoorPoem gPoem = getPoem(poemID);
-			idList.insert(poemID, "verseText="+verseText+"|poemTitle="+gPoem._Title+"|poetName="+getPoetForCat(gPoem._CatID)._Name);//.append(poemID);
-
-			if(true/*progress*/)
-			{
-		//QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
-				//progress->setLabelText(labelText);
-		//emit searchStatusChanged(labelText);
+			idList.insert(poemID, "verseText="+verseText+"|poemTitle="+gPoem._Title+"|poetName="+getPoetForCat(gPoem._CatID)._Name);
+			//QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
+			//emit searchStatusChanged(labelText);
 #ifdef Q_WS_X11
-				QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds 
+			QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds 
 #endif
-//				if (progress->wasCanceled())
-//				{
-//					*Canceled = true;
-//					break;
-//				}
-			}
-		//	}
+
 		}
-		//progress.setValue(maxOfProgressBar);
+
+		//for the last result
+		emit searchStatusChanged(QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount));
 
 		return idList;
 	}
@@ -1354,9 +1266,3 @@ QString QGanjoorDbBrowser::snippedText(const QString &text, const QString &str, 
 	else
 		return snippedList.join("")+elideString;
 }
-
-//QString QGanjoorDbBrowser::qStringMacHelper(const QString &str)
-//{
-//	QString tmp = str;
-//	return tmp.replace("\u200C", "\u200F\u200C\u200F", Qt::CaseInsensitive);
-//}

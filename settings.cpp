@@ -112,19 +112,7 @@ void Settings::initializeActionTables(const QMap<QString, QAction *> &actionsMap
 {
 	//table for all actions
 	ui->tableWidgetAllActions->setRowCount(1);
-	/*int width = ui->tableWidgetAllActions->columnWidth(0);
-	int dashWidth = ui->tableWidgetAllActions->fontMetrics().width("-");
-	width-=ui->tableWidgetAllActions->fontMetrics().width(tr("Separator"));
-	QString dashStr="";
-	if (width>0)
-	{
-		int numberOfDash = width/dashWidth;
-		numberOfDash/=2;
-		for (int i=0; i < numberOfDash; ++i)
-		{
-			dashStr+="-";
-		}
-	}*/
+
 	QTableWidgetItem *item = new QTableWidgetItem("------"+tr("Separator")+"------");
 	item->setData(Qt::UserRole+1, "separator");
 	item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
@@ -342,9 +330,7 @@ void CustomizeRandomDialog::setupui()
 	
 	
 	retranslateUi();
-	
-	//QMetaObject::connectSlotsByName(this);
-} // setupUi
+}
 
 void CustomizeRandomDialog::retranslateUi()
 {
@@ -353,7 +339,7 @@ void CustomizeRandomDialog::retranslateUi()
 	label->setText(QApplication::translate("CustomizeRandomDialog", "Select Random Range:", 0, QApplication::UnicodeUTF8));
 	pushButtonOk->setText(QApplication::translate("CustomizeRandomDialog", "Ok", 0, QApplication::UnicodeUTF8));
 	pushButtonCancel->setText(QApplication::translate("CustomizeRandomDialog", "Cancel", 0, QApplication::UnicodeUTF8));
-} // retranslateUi
+}
 
 
 void CustomizeRandomDialog::acceptSettings(bool *checked)

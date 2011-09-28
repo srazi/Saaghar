@@ -177,10 +177,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	cornerButton->setMenu(cornerMenu);
 	mainTabWidget->setCornerWidget(cornerButton);
 
-//	QString iconThemePath=":/resources/images/";
-//	if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
-//		iconThemePath = settingsIconThemePath;
-
 	if (windowState() & Qt::WindowFullScreen)
 	{
 		actionInstance("actionFullScreen")->setChecked(true);
@@ -193,12 +189,6 @@ MainWindow::MainWindow(QWidget *parent) :
 		actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
 		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/fullscreen.png"));
 	}
-
-//	//create Tab Widget
-//	mainTabWidget = new QTabWidget(ui->centralWidget);
-//	mainTabWidget->setDocumentMode(true);
-//	mainTabWidget->setUsesScrollButtons(true);
-//	mainTabWidget->setMovable(true);
 
 	//searchin database-path for database-file
 	for (int i=0; i<QGanjoorDbBrowser::dataBasePath.size(); ++i)
@@ -327,14 +317,14 @@ void MainWindow::searchStart()
 		{
 			//phrase = QGanjoorDbBrowser::cleanString(lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
 			//int poetID = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt();
-SearchPatternManager::setInputPhrase(phrase);
-SearchPatternManager::init();
-QVector<QStringList> phraseVectorList = SearchPatternManager::outputPhrases();
-QVector<QStringList> excludedVectorList = SearchPatternManager::outputExcludedLlist();
-int vectorSize = phraseVectorList.size();
-qDebug() << "SearchPatternManager::finished!";
-qDebug() << "phraseVectorList=" <<phraseVectorList;
-qDebug() << "excludedVectorList="<<excludedVectorList;
+			SearchPatternManager::setInputPhrase(phrase);
+			SearchPatternManager::init();
+			QVector<QStringList> phraseVectorList = SearchPatternManager::outputPhrases();
+			QVector<QStringList> excludedVectorList = SearchPatternManager::outputExcludedLlist();
+			int vectorSize = phraseVectorList.size();
+//			qDebug() << "SearchPatternManager::finished!";
+//			qDebug() << "phraseVectorList=" <<phraseVectorList;
+//			qDebug() << "excludedVectorList="<<excludedVectorList;
 
 			bool ok = false;
 			int poetID = currentItemData.toInt(&ok);
@@ -358,76 +348,52 @@ qDebug() << "excludedVectorList="<<excludedVectorList;
 
 			SearchResultWidget *searchResultWidget = new SearchResultWidget(searchResultContents, lineEditSearchText->text(), SearchResultWidget::maxItemPerPage, poetName);
 
-//			QString iconThemePath=":/resources/images/";
-//			if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
-//				iconThemePath = settingsIconThemePath;
 
 			bool searchCanceled = false;
-//////////////////////////////////////////////////////
-QMap<int, QString> finalResult;
-QProgressDialog searchProgress(tr("Searching Data Base..."),  tr("Cancel"), 0, 0, this);
-connect( &searchProgress, SIGNAL( canceled() ), &searchProgress, SLOT( hide() ) );
-searchProgress.setWindowModality(Qt::WindowModal);
-searchProgress.setFixedSize(searchProgress.size());
-searchProgress.setMinimumDuration(0);
-//searchProgress.setValue(0);
-//searchProgress.show();
 
-lineEditSearchText->searchStart(&searchCanceled);
-connect(SaagharWidget::ganjoorDataBase, SIGNAL(searchStatusChanged(const QString &)), lineEditSearchText, SLOT(setSearchProgressText(const QString &)));
-//emit SaagharWidget::ganjoorDataBase->searchStatusChanged(tr("Searching Data Base..."));
-lineEditSearchText->setSearchProgressText(tr("Searching Data Base..."));
-QApplication::processEvents();
-int resultCount = 0;
+			/////////////////////////////////////
+			QMap<int, QString> finalResult;
+//			QProgressDialog searchProgress(tr("Searching Data Base..."),  tr("Cancel"), 0, 0, this);
+//			connect( &searchProgress, SIGNAL( canceled() ), &searchProgress, SLOT( hide() ) );
+//			searchProgress.setWindowModality(Qt::WindowModal);
+//			searchProgress.setFixedSize(searchProgress.size());
+//			searchProgress.setMinimumDuration(0);
+//			//searchProgress.setValue(0);
+//			//searchProgress.show();
+			
+			lineEditSearchText->searchStart(&searchCanceled);
+			connect(SaagharWidget::ganjoorDataBase, SIGNAL(searchStatusChanged(const QString &)), lineEditSearchText, SLOT(setSearchProgressText(const QString &)));
+			//emit SaagharWidget::ganjoorDataBase->searchStatusChanged(tr("Searching Data Base..."));
+			lineEditSearchText->setSearchProgressText(tr("Searching Data Base..."));
+			QApplication::processEvents();
+			int resultCount = 0;
 			for (int j=0;j<vectorSize;++j)
 			{
 				QStringList phrases = phraseVectorList.at(j);
 //				int phraseCount = phrases.size();
 				QStringList excluded = excludedVectorList.at(j);
-				qDebug() << "searchCanceled1=" << searchCanceled;
-				QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->
-				getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, resultCount);
-				qDebug() << "searchCanceled2=" << searchCanceled;
-				//old version
-				//getPoemIDsByPhrase(phrases, poetID, excluded,
-					//								SaagharWidget::newSearchSkipNonAlphabet, &searchCanceled, 
-						//							&searchProgress, resultCount);
-//				for (int k=0;k<phraseCount;++k)
-//				{
-//					QString kphrase = phrases.at(k);
-//					if (kphrase.remove("%").isEmpty()) continue;
-//					qDebug() << "kphrase=" << kphrase;
-//					QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(phrases.at(k), poetID, excluded, SaagharWidget::newSearchSkipNonAlphabet, &searchCanceled, &searchProgress, resultCount);
+
+				QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, resultCount);
+
+				QMap<int, QString>::const_iterator it = mapResult.constBegin();
 
 //				qDebug() << "mapResult-size" << mapResult.size();
+				while (it != mapResult.constEnd())
+				{
+					finalResult.insert(it.key(), it.value());//insertMulti for more than one result from a poem
+					++it;
+				}
+				resultCount = finalResult.size();
+//				qDebug() << "resultCount=" << resultCount;
 
-					QMap<int, QString>::const_iterator it = mapResult.constBegin();
-
-//					qDebug() << "mapResult-size" << mapResult.size();
-					while (it != mapResult.constEnd())
-					{
-						finalResult.insert(it.key(), it.value());//insertMulti for more than one result from a poem
-						++it;
-					}
-//					resultCount = finalResult.size();
-//					qDebug() << "resultCount=" << resultCount;
-
-					/*if (searchProgress.wasCanceled())
-					{
-						searchCanceled = true;
-						break;
-					}*/
-
-					if (searchCanceled)
-						break;
-//				}
 				qDebug() << "finalResult-size" << finalResult.size();
 				if (searchCanceled)
 					break;
 			}
-lineEditSearchText->searchStop();
-///////////////////////////////////////////////////////////
-			//searchResultWidget->setResultList( SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(phrase, poetID, SaagharWidget::newSearchSkipNonAlphabet, &searchCanceled) );
+
+			lineEditSearchText->searchStop();
+			///////////////////////////////////////
+
 			searchResultWidget->setResultList( finalResult );
 			if (!searchResultWidget->init(this, currentIconThemePath()))
 			{
@@ -439,7 +405,6 @@ lineEditSearchText->searchStop();
 				continue;
 			}
 
-			//connect(spinBoxMaxSearchResult, SIGNAL(valueChanged(int)), searchResultWidget, SLOT(maxItemPerPageChange(int)));
 			connect(this, SIGNAL(maxItemPerPageChanged(int)), searchResultWidget, SLOT(maxItemPerPageChange(int)));
 
 			//create connections for mouse signals
@@ -459,11 +424,6 @@ lineEditSearchText->searchStop();
 
 void MainWindow::multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidget, const QStringList &selectedData)
 {
-	//	/*comboBoxSearchRegion->addItem(tr("All Opened Tab"), "ALL_OPENED_TAB");
-	//	comboBoxSearchRegion->setItemCheckState(0, Qt::Checked);
-	//	comboBoxSearchRegion->addItem(tr("All"), "0");*/
-
-	//multiSelectWidget->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
 	QListWidgetItem *rootItem = multiSelectWidget->insertRow(1, tr("All"), true, "0", Qt::UserRole);
 
 	QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
@@ -479,74 +439,6 @@ void MainWindow::multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidg
 		rootItem->setCheckState(Qt::Checked);
 
 	multiSelectWidget->updateSelectedLists();
-/////////////////////////////////////
-////QListWidget *tmp=new QListWidget(mainTabWidget);
-////QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
-////	for(int i=0; i<poets.size(); ++i)
-////	{
-////	QListWidgetItem *item = new QListWidgetItem(poets.at(i)->_Name );
-////		//item = new QStandardItem(poets.at(i)->_Name);
-////		item->setData(Qt::UserRole, QString::number(poets.at(i)->_ID));
-////		item->setCheckState(Qt::Unchecked);
-////		tmp->insertItem(i, item);
-		
-////		//item->setTristate(true);
-////		//comboBoxSearchRegion->addItem(poets.at(i)->_Name, QString::number(poets.at(i)->_ID));
-////		//rootItem
-////		//rootItem->setChild(i+2, item /*standardModel->item(i+2)*/);   //CheckState(Qt::PartiallyChecked);
-		
-////		//standardModel->setItem(i+1, item);
-////	}//comboBoxSearchRegion->setModel(standardModel);
-//////////////////////////////////////
-
-//	/*comboBoxSearchRegion->addItem(tr("All Opened Tab"), "ALL_OPENED_TAB");
-//	comboBoxSearchRegion->setItemCheckState(0, Qt::Checked);
-//	comboBoxSearchRegion->addItem(tr("All"), "0");*/
-	
-//	//comboBoxSearchRegion
-
-//selectSearchRange->insertPoets( SaagharWidget::ganjoorDataBase->getPoets() );
-
-////	QxtCheckComboModel *standardModel = static_cast<QxtCheckComboModel *>(comboBoxSearchRegion->model());
-////	if (!standardModel)
-////	{
-////		qDebug() << "there is NO standardModel";
-////		return;
-////		//standardModel->item(0)->setCheckState(Qt::PartiallyChecked);//able(false);
-////	}
-
-////		QStandardItem *allTabsItem = new QStandardItem(tr("All Opened Tab"));
-////		allTabsItem->setCheckable(false);
-////		allTabsItem->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled);
-		
-////standardModel->setItem(0,allTabsItem );
-
-////	////comboBoxSearchRegion->addItem(tr("Current Tab"), "CURRENT_TAB");
-////	//comboBoxSearchRegion->addItem(tr("All Opened Tab"), "ALL_OPENED_TAB");
-
-////	//comboBoxSearchRegion->addItem(tr("All"), "0");
-////		QStandardItem *rootItem = new QStandardItem(tr("All"));
-////		rootItem->setTristate(true);
-//////standardModel->setItem(1,rootItem );
-//	QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
-////standardModel->setRowCount(poets.size()+2);
-//QStandardItem *item;
-//	QStandardItemModel *itemModel = new QStandardItemModel();
-//	itemModel->setColumnCount(1);
-//	itemModel->setRowCount(poets.size());
-//	for(int i=0; i<poets.size(); ++i)
-//	{
-//		item = new QStandardItem(poets.at(i)->_Name);
-//		item->setData(QString::number(poets.at(i)->_ID));
-//		//item->setTristate(true);
-//		item->setCheckState(Qt::Checked);
-//		//comboBoxSearchRegion->addItem(poets.at(i)->_Name, QString::number(poets.at(i)->_ID));
-//		////rootItem
-//		//rootItem->setChild(i+2, item /*standardModel->item(i+2)*/);   //CheckState(Qt::PartiallyChecked);
-		
-//		itemModel->setItem(i, 0, item);
-//	}//comboBoxSearchRegion->setModel(itemModel);
-////	standardModel->setItem(1, rootItem);
 }
 
 void MainWindow::actionRemovePoet()
@@ -1635,15 +1527,6 @@ void MainWindow::setupUi()
 	mainToolBarItems = temp.split("|", QString::SkipEmptyParts);
 }
 
-//void MainWindow::newSearchFlagChanged(bool checked)
-//{
-//	actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(checked);
-//	labelMaxResultSeparator->setVisible(!checked);
-//	labelMaxResultAction->setVisible(!checked);
-//	spinBoxMaxSearchResultAction->setVisible(!checked);
-//	//SaagharWidget::newSearchFlag = checked;
-//}
-
 void MainWindow::showSearchOptionMenu()
 {
 	if (!searchOptionMenu || !lineEditSearchText || !lineEditSearchText->optionsButton()) return;
@@ -2592,53 +2475,14 @@ bool MainWindow::eventFilter(QObject* receiver, QEvent* event)
 					searchToolBarBoxLayout->setDirection(QBoxLayout::LeftToRight);
 					searchToolBarBoxLayout->setSpacing(4);
 					searchToolBarBoxLayout->setContentsMargins(1,1,1,1);
-
-//					if (searchToolBarBoxLayout->itemAt(0))
-//						searchToolBarBoxLayout->itemAt(0)->setAlignment(Qt::AlignJustify|Qt::AlignCenter);
-//					if (searchToolBarBoxLayout->itemAt(1))
-//						searchToolBarBoxLayout->itemAt(1)->setAlignment(Qt::AlignJustify|Qt::AlignCenter);
-
-					ui->searchToolBar->adjustSize(); //resize(QSize(ui->searchToolBar->width(), qMax(comboBoxSearchRegion->height()/*+searchToolBarBoxLayout->spacing()*2*/, lineEditSearchText->height()/*+searchToolBarBoxLayout->spacing()*2*/) ));
-					//ui->searchToolBar->repaint();
-					//QApplication::processEvents();
+					ui->searchToolBar->adjustSize();
 				}
 				int height = comboBoxSearchRegion->height()+lineEditSearchText->height()+1+1+2;//margins and spacing
 				if (ui->searchToolBar->size().height()>=height && !ui->searchToolBar->isFloating())
 				{
-					qDebug() << "searchToolBar-RESIZE=" << ui->searchToolBar->size().height()<<"height="<<height;
-
-qDebug() << "aligment0=" << searchToolBarBoxLayout->itemAt(0)->alignment();
-//					if (searchToolBarBoxLayout->itemAt(0))
-//						searchToolBarBoxLayout->itemAt(0)->setAlignment(QFlags<Qt::AlignmentFlag>());
-//					if (searchToolBarBoxLayout->itemAt(1))
-//						searchToolBarBoxLayout->itemAt(1)->setAlignment(QFlags<Qt::AlignmentFlag>());
-
-					qDebug() << "aligment1=" << searchToolBarBoxLayout->itemAt(1)->alignment();
-				searchToolBarBoxLayout->setDirection(QBoxLayout::TopToBottom);
-				searchToolBarBoxLayout->setSpacing(2);
-				searchToolBarBoxLayout->setContentsMargins(1,1,1,1);
-
-				////comboBoxSearchRegion->resize(lineEditSearchText->width(), comboBoxSearchRegion->height());
-				//ui->searchToolBar->repaint();
-				//QApplication::processEvents();
-				qDebug() << "count="<<searchToolBarBoxLayout->count() << "lEditW=" << lineEditSearchText->width() << "lComboW=" << comboBoxSearchRegion->width();
-//					searchVerLayout->addWidget(lineEditSearchText);
-//					searchVerLayout->addWidget(comboBoxSearchRegion);
-//					ui->searchToolBar->clear();
-//					searchVerWidget->show();
-//					ui->searchToolBar->addWidget(searchVerWidget);
-//				QVBoxLayout *lsearchVerLayout = new QVBoxLayout();
-//				////QHBoxLayout *searchVerLayout = new QHBoxLayout();
-//				lineEditSearchText->setParent(this);
-//				comboBoxSearchRegion->setParent(this);
-//				ui->searchToolBar->clear();
-//				lsearchVerLayout->setSpacing(6);
-//				lsearchVerLayout->addWidget(lineEditSearchText);
-//				lsearchVerLayout->addWidget(comboBoxSearchRegion);
-//				QWidget *lsearchVerWidget = new QWidget(ui->searchToolBar);
-//				lsearchVerWidget->setLayout(lsearchVerLayout);
-//				ui->searchToolBar->addWidget(lsearchVerWidget);
-				//lsearchVerWidget->hide();
+					searchToolBarBoxLayout->setDirection(QBoxLayout::TopToBottom);
+					searchToolBarBoxLayout->setSpacing(2);
+					searchToolBarBoxLayout->setContentsMargins(1,1,1,1);
 				}
 //				else
 //				{
@@ -2672,24 +2516,13 @@ void MainWindow::setupSearchToolBarUi()
 	comboBoxSearchRegion->setMaximumSize(QSize(170, 16777215));
 	comboBoxSearchRegion->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
 	comboBoxSearchRegion->setEditable(true);
-	#if QT_VERSION > 0x040700
+#if QT_VERSION > 0x040700
 	lineEditSearchText->setPlaceholderText(tr("Enter Search Phrase"));
 	comboBoxSearchRegion->lineEdit()->setPlaceholderText(tr("Select Search Scope..."));
-	#else
+#else
 	lineEditSearchText->setToolTip(tr("Enter Search Phrase"));
 	comboBoxSearchRegion->lineEdit()->setToolTip(tr("Select Search Scope..."));
-//	QLabel *labelSearchPhrase = new QLabel(ui->searchToolBar);
-//	labelSearchPhrase->setObjectName(QString::fromUtf8("labelSearchPhrase"));
-//	labelSearchPhrase->setText(tr("Search Phrase"));
-//	ui->searchToolBar->addWidget(labelSearchPhrase);
-//	ui->searchToolBar->addWidget(lineEditSearchText);
-//	ui->searchToolBar->addSeparator();
-//	QLabel *labelSearchIn = new QLabel(ui->searchToolBar);
-//	labelSearchIn->setObjectName(QString::fromUtf8("labelSearchIn"));
-//	labelSearchIn->setText(tr("Search in"));
-//	ui->searchToolBar->addSeparator();
-//	ui->searchToolBar->addWidget(labelSearchIn);
-	#endif
+#endif
 	
 	//create layout and add widgets to it!
 	searchToolBarBoxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
