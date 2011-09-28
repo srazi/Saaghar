@@ -1,12 +1,21 @@
 TEMPLATE = app
 TARGET = Saaghar
 
-DEPENDPATH += . build
-INCLUDEPATH += . $UI_DIR sqlite sqlite-driver/sqlite
+SOURCE_DIR = .
+
+DEPENDPATH += $${SOURCE_DIR}/ $${SOURCE_DIR}/build \
+		$${SOURCE_DIR}/widgets/QMultiSelectWidget \
+		$${SOURCE_DIR}/widgets/QSearchLineEdit
+
+INCLUDEPATH += $${SOURCE_DIR}/ $UI_DIR $${SOURCE_DIR}/sqlite $${SOURCE_DIR}/sqlite-driver/sqlite \
+		$${SOURCE_DIR}/widgets/QMultiSelectWidget \
+		$${SOURCE_DIR}/widgets/QSearchLineEdit
+
 # Qxt/
 # $$QMAKE_INCDIR_QT/QtSql/private
 
-CONFIG	+= qt warn_off
+CONFIG	+= qt 
+#warn_off
 
 #for static building un-comment the following two lines
 #CONFIG	+= static
@@ -15,37 +24,32 @@ CONFIG	+= qt warn_off
 QT += sql network
 
 # Input
-HEADERS += mainwindow.h \
-	SearchItemDelegate.h \
-	SaagharWidget.h \
-	QGanjoorDbBrowser.h \
-	QGanjoorDbStuff.h \
-	settings.h \
-	SearchResultWidget.h \
-#	SearchPatternManager.h \
-	QSearchLineEdit.h \
-	Qxt/QxtCheckComboBox.h \
-	#Qxt/QxtCheckComboBox_p.h \
-#	Qxt/qxtnamespace.h \
-#	Qxt/qxtglobal.h \
-	version.h
+HEADERS += $${SOURCE_DIR}/mainwindow.h \
+	$${SOURCE_DIR}/SearchItemDelegate.h \
+	$${SOURCE_DIR}/SaagharWidget.h \
+	$${SOURCE_DIR}/QGanjoorDbBrowser.h \
+	$${SOURCE_DIR}/QGanjoorDbStuff.h \
+	$${SOURCE_DIR}/settings.h \
+	$${SOURCE_DIR}/SearchResultWidget.h \
+	$${SOURCE_DIR}/SearchPatternManager.h \
+	$${SOURCE_DIR}/version.h
 
-FORMS += mainwindow.ui \
-	settings.ui
+FORMS += $${SOURCE_DIR}/mainwindow.ui \
+	$${SOURCE_DIR}/settings.ui \
+#	$${SOURCE_DIR}/random-settings.ui
 
-SOURCES += main.cpp \
-	mainwindow.cpp \
-	SearchItemDelegate.cpp \
-	SaagharWidget.cpp \
-	QGanjoorDbBrowser.cpp \
-	settings.cpp \
-	SearchResultWidget.cpp \
-#	SearchPatternManager.cpp \
-	QSearchLineEdit.cpp \
-	Qxt/QxtCheckComboBox.cpp
-#	 \
-#	Qxt/qxtglobal.cpp
+SOURCES += $${SOURCE_DIR}/main.cpp \
+	$${SOURCE_DIR}/mainwindow.cpp \
+	$${SOURCE_DIR}/SearchItemDelegate.cpp \
+	$${SOURCE_DIR}/SaagharWidget.cpp \
+	$${SOURCE_DIR}/QGanjoorDbBrowser.cpp \
+	$${SOURCE_DIR}/settings.cpp \
+	$${SOURCE_DIR}/SearchResultWidget.cpp \
+	$${SOURCE_DIR}/SearchPatternManager.cpp
 
+
+include($${SOURCE_DIR}/widgets/QMultiSelectWidget/QMultiSelectWidget.pri)
+include($${SOURCE_DIR}/widgets/QSearchLineEdit/QSearchLineEdit.pri)
 
 
 
@@ -68,9 +72,9 @@ SOURCES += main.cpp \
 # SOURCES		+= $$QMAKE_INCDIR_QT/../src/sql/drivers/sqlite/qsql_sqlite.cpp
 
 
-RESOURCES += saaghar.qrc
+RESOURCES += $${SOURCE_DIR}/saaghar.qrc
 
-TRANSLATIONS += saaghar_fa.ts
+TRANSLATIONS += $${SOURCE_DIR}/saaghar_fa.ts
 
 message("'make install' doesn't overwrite existing 'database file', do that manually!")
 
@@ -85,80 +89,80 @@ win32-g++{
 	DEFINES += D_MINGW_CC
 }
 
-RC_FILE = win.rc
+RC_FILE = $${SOURCE_DIR}/win.rc
 	
 target.path = Saaghar-Win
 INSTALLS = target
 utilities.path = Saaghar-Win
-utilities.files = utilities/AUTHORS \
-	utilities/CHANGELOG \
-	utilities/COPYING \
-	utilities/README \
-	utilities/TODO \
-	utilities/Saaghar-Manual.pdf \
-	utilities/saaghar_fa.qm \
-	utilities/qt_fa.qm \
-	saaghar.ico
+utilities.files = $${SOURCE_DIR}/utilities/AUTHORS \
+	$${SOURCE_DIR}/utilities/CHANGELOG \
+	$${SOURCE_DIR}/utilities/COPYING \
+	$${SOURCE_DIR}/utilities/README \
+	$${SOURCE_DIR}/utilities/TODO \
+	$${SOURCE_DIR}/utilities/Saaghar-Manual.pdf \
+	$${SOURCE_DIR}/utilities/saaghar_fa.qm \
+	$${SOURCE_DIR}/utilities/qt_fa.qm \
+	$${SOURCE_DIR}/saaghar.ico
 
 poetsImage.path = Saaghar-Win/poets_images
-poetsImage.files = utilities/poets_images/10.png \
-	utilities/poets_images/11.png \
-	utilities/poets_images/12.png \
-	utilities/poets_images/13.png \
-	utilities/poets_images/14.png \
-	utilities/poets_images/15.png \
-	utilities/poets_images/16.png \
-	utilities/poets_images/17.png \
-	utilities/poets_images/18.png \
-	utilities/poets_images/19.png \
-	utilities/poets_images/2.png \
-	utilities/poets_images/20.png \
-	utilities/poets_images/21.png \
-	utilities/poets_images/22.png \
-	utilities/poets_images/23.png \
-	utilities/poets_images/24.png \
-	utilities/poets_images/25.png \
-	utilities/poets_images/26.png \
-	utilities/poets_images/27.png \
-	utilities/poets_images/28.png \
-	utilities/poets_images/29.png \
-	utilities/poets_images/3.png \
-	utilities/poets_images/30.png \
-	utilities/poets_images/31.png \
-	utilities/poets_images/32.png \
-	utilities/poets_images/33.png \
-	utilities/poets_images/34.png \
-	utilities/poets_images/35.png \
-	utilities/poets_images/37.png \
-	utilities/poets_images/38.png \
-	utilities/poets_images/39.png \
-	utilities/poets_images/4.png \
-	utilities/poets_images/40.png \
-	utilities/poets_images/41.png \
-	utilities/poets_images/42.png \
-	utilities/poets_images/43.png \
-	utilities/poets_images/44.png \
-	utilities/poets_images/45.png \
-	utilities/poets_images/46.png \
-	utilities/poets_images/47.png \
-	utilities/poets_images/5.png \
-	utilities/poets_images/501.png \
-	utilities/poets_images/502.png \
-	utilities/poets_images/503.png \
-	utilities/poets_images/504.png \
-	utilities/poets_images/505.png \
-	utilities/poets_images/6.png \
-	utilities/poets_images/600.png \
-	utilities/poets_images/602.png \
-	utilities/poets_images/7.png \
-	utilities/poets_images/8.png \
-	utilities/poets_images/9.png \
-	utilities/poets_images/48.png \
-	utilities/poets_images/49.png \
-	utilities/poets_images/50.png \
-	utilities/poets_images/506.png \
-	utilities/poets_images/51.png \
-	utilities/poets_images/610.png
+poetsImage.files = $${SOURCE_DIR}/utilities/poets_images/10.png \
+	$${SOURCE_DIR}/utilities/poets_images/11.png \
+	$${SOURCE_DIR}/utilities/poets_images/12.png \
+	$${SOURCE_DIR}/utilities/poets_images/13.png \
+	$${SOURCE_DIR}/utilities/poets_images/14.png \
+	$${SOURCE_DIR}/utilities/poets_images/15.png \
+	$${SOURCE_DIR}/utilities/poets_images/16.png \
+	$${SOURCE_DIR}/utilities/poets_images/17.png \
+	$${SOURCE_DIR}/utilities/poets_images/18.png \
+	$${SOURCE_DIR}/utilities/poets_images/19.png \
+	$${SOURCE_DIR}/utilities/poets_images/2.png \
+	$${SOURCE_DIR}/utilities/poets_images/20.png \
+	$${SOURCE_DIR}/utilities/poets_images/21.png \
+	$${SOURCE_DIR}/utilities/poets_images/22.png \
+	$${SOURCE_DIR}/utilities/poets_images/23.png \
+	$${SOURCE_DIR}/utilities/poets_images/24.png \
+	$${SOURCE_DIR}/utilities/poets_images/25.png \
+	$${SOURCE_DIR}/utilities/poets_images/26.png \
+	$${SOURCE_DIR}/utilities/poets_images/27.png \
+	$${SOURCE_DIR}/utilities/poets_images/28.png \
+	$${SOURCE_DIR}/utilities/poets_images/29.png \
+	$${SOURCE_DIR}/utilities/poets_images/3.png \
+	$${SOURCE_DIR}/utilities/poets_images/30.png \
+	$${SOURCE_DIR}/utilities/poets_images/31.png \
+	$${SOURCE_DIR}/utilities/poets_images/32.png \
+	$${SOURCE_DIR}/utilities/poets_images/33.png \
+	$${SOURCE_DIR}/utilities/poets_images/34.png \
+	$${SOURCE_DIR}/utilities/poets_images/35.png \
+	$${SOURCE_DIR}/utilities/poets_images/37.png \
+	$${SOURCE_DIR}/utilities/poets_images/38.png \
+	$${SOURCE_DIR}/utilities/poets_images/39.png \
+	$${SOURCE_DIR}/utilities/poets_images/4.png \
+	$${SOURCE_DIR}/utilities/poets_images/40.png \
+	$${SOURCE_DIR}/utilities/poets_images/41.png \
+	$${SOURCE_DIR}/utilities/poets_images/42.png \
+	$${SOURCE_DIR}/utilities/poets_images/43.png \
+	$${SOURCE_DIR}/utilities/poets_images/44.png \
+	$${SOURCE_DIR}/utilities/poets_images/45.png \
+	$${SOURCE_DIR}/utilities/poets_images/46.png \
+	$${SOURCE_DIR}/utilities/poets_images/47.png \
+	$${SOURCE_DIR}/utilities/poets_images/5.png \
+	$${SOURCE_DIR}/utilities/poets_images/501.png \
+	$${SOURCE_DIR}/utilities/poets_images/502.png \
+	$${SOURCE_DIR}/utilities/poets_images/503.png \
+	$${SOURCE_DIR}/utilities/poets_images/504.png \
+	$${SOURCE_DIR}/utilities/poets_images/505.png \
+	$${SOURCE_DIR}/utilities/poets_images/6.png \
+	$${SOURCE_DIR}/utilities/poets_images/600.png \
+	$${SOURCE_DIR}/utilities/poets_images/602.png \
+	$${SOURCE_DIR}/utilities/poets_images/7.png \
+	$${SOURCE_DIR}/utilities/poets_images/8.png \
+	$${SOURCE_DIR}/utilities/poets_images/9.png \
+	$${SOURCE_DIR}/utilities/poets_images/48.png \
+	$${SOURCE_DIR}/utilities/poets_images/49.png \
+	$${SOURCE_DIR}/utilities/poets_images/50.png \
+	$${SOURCE_DIR}/utilities/poets_images/506.png \
+	$${SOURCE_DIR}/utilities/poets_images/51.png \
+	$${SOURCE_DIR}/utilities/poets_images/610.png
 
 INSTALLS += utilities \
 	poetsImage
@@ -167,7 +171,7 @@ INSTALLS += utilities \
 mac {
 LOG = $$system(mkdir ~/Library/)
 LOG += $$system(mkdir ~/Library/Saaghar)
-LOG += $$system(cp -n utilities/* ~/Library/Saaghar/)
+LOG += $$system(cp -n $${SOURCE_DIR}/utilities/* ~/Library/Saaghar/)
 
 CONFIG += link_prl x86
 QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
@@ -176,79 +180,79 @@ QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.5
 target.path = /Applications
 INSTALLS = target
 utilities.path = Contents/Resources
-utilities.files = utilities/AUTHORS \
-	utilities/CHANGELOG \
-	utilities/COPYING \
-	utilities/README \
-	utilities/Saaghar-Manual.pdf \
-	utilities/saaghar_fa.qm \
-	utilities/qt_fa.qm \
-	utilities/TODO
+utilities.files = $${SOURCE_DIR}/utilities/AUTHORS \
+	$${SOURCE_DIR}/utilities/CHANGELOG \
+	$${SOURCE_DIR}/utilities/COPYING \
+	$${SOURCE_DIR}/utilities/README \
+	$${SOURCE_DIR}/utilities/Saaghar-Manual.pdf \
+	$${SOURCE_DIR}/utilities/saaghar_fa.qm \
+	$${SOURCE_DIR}/utilities/qt_fa.qm \
+	$${SOURCE_DIR}/utilities/TODO
 
 poetsImage.path = Contents/Resources/poets_images
-poetsImage.files = utilities/poets_images/10.png \
-	utilities/poets_images/11.png \
-	utilities/poets_images/12.png \
-	utilities/poets_images/13.png \
-	utilities/poets_images/14.png \
-	utilities/poets_images/15.png \
-	utilities/poets_images/16.png \
-	utilities/poets_images/17.png \
-	utilities/poets_images/18.png \
-	utilities/poets_images/19.png \
-	utilities/poets_images/2.png \
-	utilities/poets_images/20.png \
-	utilities/poets_images/21.png \
-	utilities/poets_images/22.png \
-	utilities/poets_images/23.png \
-	utilities/poets_images/24.png \
-	utilities/poets_images/25.png \
-	utilities/poets_images/26.png \
-	utilities/poets_images/27.png \
-	utilities/poets_images/28.png \
-	utilities/poets_images/29.png \
-	utilities/poets_images/3.png \
-	utilities/poets_images/30.png \
-	utilities/poets_images/31.png \
-	utilities/poets_images/32.png \
-	utilities/poets_images/33.png \
-	utilities/poets_images/34.png \
-	utilities/poets_images/35.png \
-	utilities/poets_images/37.png \
-	utilities/poets_images/38.png \
-	utilities/poets_images/39.png \
-	utilities/poets_images/4.png \
-	utilities/poets_images/40.png \
-	utilities/poets_images/41.png \
-	utilities/poets_images/42.png \
-	utilities/poets_images/43.png \
-	utilities/poets_images/44.png \
-	utilities/poets_images/45.png \
-	utilities/poets_images/46.png \
-	utilities/poets_images/47.png \
-	utilities/poets_images/5.png \
-	utilities/poets_images/501.png \
-	utilities/poets_images/502.png \
-	utilities/poets_images/503.png \
-	utilities/poets_images/504.png \
-	utilities/poets_images/505.png \
-	utilities/poets_images/6.png \
-	utilities/poets_images/600.png \
-	utilities/poets_images/602.png \
-	utilities/poets_images/7.png \
-	utilities/poets_images/8.png \
-	utilities/poets_images/9.png \
-	utilities/poets_images/48.png \
-	utilities/poets_images/49.png \
-	utilities/poets_images/50.png \
-	utilities/poets_images/506.png \
-	utilities/poets_images/51.png \
-	utilities/poets_images/610.png
+poetsImage.files = $${SOURCE_DIR}/utilities/poets_images/10.png \
+	$${SOURCE_DIR}/utilities/poets_images/11.png \
+	$${SOURCE_DIR}/utilities/poets_images/12.png \
+	$${SOURCE_DIR}/utilities/poets_images/13.png \
+	$${SOURCE_DIR}/utilities/poets_images/14.png \
+	$${SOURCE_DIR}/utilities/poets_images/15.png \
+	$${SOURCE_DIR}/utilities/poets_images/16.png \
+	$${SOURCE_DIR}/utilities/poets_images/17.png \
+	$${SOURCE_DIR}/utilities/poets_images/18.png \
+	$${SOURCE_DIR}/utilities/poets_images/19.png \
+	$${SOURCE_DIR}/utilities/poets_images/2.png \
+	$${SOURCE_DIR}/utilities/poets_images/20.png \
+	$${SOURCE_DIR}/utilities/poets_images/21.png \
+	$${SOURCE_DIR}/utilities/poets_images/22.png \
+	$${SOURCE_DIR}/utilities/poets_images/23.png \
+	$${SOURCE_DIR}/utilities/poets_images/24.png \
+	$${SOURCE_DIR}/utilities/poets_images/25.png \
+	$${SOURCE_DIR}/utilities/poets_images/26.png \
+	$${SOURCE_DIR}/utilities/poets_images/27.png \
+	$${SOURCE_DIR}/utilities/poets_images/28.png \
+	$${SOURCE_DIR}/utilities/poets_images/29.png \
+	$${SOURCE_DIR}/utilities/poets_images/3.png \
+	$${SOURCE_DIR}/utilities/poets_images/30.png \
+	$${SOURCE_DIR}/utilities/poets_images/31.png \
+	$${SOURCE_DIR}/utilities/poets_images/32.png \
+	$${SOURCE_DIR}/utilities/poets_images/33.png \
+	$${SOURCE_DIR}/utilities/poets_images/34.png \
+	$${SOURCE_DIR}/utilities/poets_images/35.png \
+	$${SOURCE_DIR}/utilities/poets_images/37.png \
+	$${SOURCE_DIR}/utilities/poets_images/38.png \
+	$${SOURCE_DIR}/utilities/poets_images/39.png \
+	$${SOURCE_DIR}/utilities/poets_images/4.png \
+	$${SOURCE_DIR}/utilities/poets_images/40.png \
+	$${SOURCE_DIR}/utilities/poets_images/41.png \
+	$${SOURCE_DIR}/utilities/poets_images/42.png \
+	$${SOURCE_DIR}/utilities/poets_images/43.png \
+	$${SOURCE_DIR}/utilities/poets_images/44.png \
+	$${SOURCE_DIR}/utilities/poets_images/45.png \
+	$${SOURCE_DIR}/utilities/poets_images/46.png \
+	$${SOURCE_DIR}/utilities/poets_images/47.png \
+	$${SOURCE_DIR}/utilities/poets_images/5.png \
+	$${SOURCE_DIR}/utilities/poets_images/501.png \
+	$${SOURCE_DIR}/utilities/poets_images/502.png \
+	$${SOURCE_DIR}/utilities/poets_images/503.png \
+	$${SOURCE_DIR}/utilities/poets_images/504.png \
+	$${SOURCE_DIR}/utilities/poets_images/505.png \
+	$${SOURCE_DIR}/utilities/poets_images/6.png \
+	$${SOURCE_DIR}/utilities/poets_images/600.png \
+	$${SOURCE_DIR}/utilities/poets_images/602.png \
+	$${SOURCE_DIR}/utilities/poets_images/7.png \
+	$${SOURCE_DIR}/utilities/poets_images/8.png \
+	$${SOURCE_DIR}/utilities/poets_images/9.png \
+	$${SOURCE_DIR}/utilities/poets_images/48.png \
+	$${SOURCE_DIR}/utilities/poets_images/49.png \
+	$${SOURCE_DIR}/utilities/poets_images/50.png \
+	$${SOURCE_DIR}/utilities/poets_images/506.png \
+	$${SOURCE_DIR}/utilities/poets_images/51.png \
+	$${SOURCE_DIR}/utilities/poets_images/610.png
  
 QMAKE_BUNDLE_DATA += utilities\
                      poetsImage
-ICON = saaghar.icns
-QMAKE_INFO_PLIST = Info.plist
+ICON = $${SOURCE_DIR}/saaghar.icns
+QMAKE_INFO_PLIST = $${SOURCE_DIR}/Info.plist
 
 message("'make uninstall' doesn't remove "$$(HOME)/Library/Saaghar" directory and its contents especially 'database file', do that manually!")
 }
@@ -257,7 +261,7 @@ unix:!macx {
 TARGET = saaghar
 LOG = $$system(mkdir ~/.Pojh)
 LOG += $$system(mkdir ~/.Pojh/Saaghar)
-LOG  += $$system(cp -n utilities/* ~/.Pojh/Saaghar/)
+LOG  += $$system(cp -n $${SOURCE_DIR}/utilities/* ~/.Pojh/Saaghar/)
 
 PREFIX = /usr
 DESKTOPDIR = $${PREFIX}/share/applications
@@ -267,83 +271,83 @@ target.path = $${PREFIX}/bin
 INSTALLS = target
 
 utilities.path = $${PREFIX}/share/saaghar
-utilities.files = utilities/AUTHORS \
-	utilities/CHANGELOG \
-	utilities/COPYING \
-	utilities/README \
-	utilities/Saaghar-Manual.pdf \
-	utilities/saaghar_fa.qm \
-	utilities/qt_fa.qm \
-	utilities/TODO
+utilities.files = $${SOURCE_DIR}/utilities/AUTHORS \
+	$${SOURCE_DIR}/utilities/CHANGELOG \
+	$${SOURCE_DIR}/utilities/COPYING \
+	$${SOURCE_DIR}/utilities/README \
+	$${SOURCE_DIR}/utilities/Saaghar-Manual.pdf \
+	$${SOURCE_DIR}/utilities/saaghar_fa.qm \
+	$${SOURCE_DIR}/utilities/qt_fa.qm \
+	$${SOURCE_DIR}/utilities/TODO
 
 poetsImage.path = $${PREFIX}/share/saaghar/poets_images
-poetsImage.files = utilities/poets_images/10.png \
-	utilities/poets_images/11.png \
-	utilities/poets_images/12.png \
-	utilities/poets_images/13.png \
-	utilities/poets_images/14.png \
-	utilities/poets_images/15.png \
-	utilities/poets_images/16.png \
-	utilities/poets_images/17.png \
-	utilities/poets_images/18.png \
-	utilities/poets_images/19.png \
-	utilities/poets_images/2.png \
-	utilities/poets_images/20.png \
-	utilities/poets_images/21.png \
-	utilities/poets_images/22.png \
-	utilities/poets_images/23.png \
-	utilities/poets_images/24.png \
-	utilities/poets_images/25.png \
-	utilities/poets_images/26.png \
-	utilities/poets_images/27.png \
-	utilities/poets_images/28.png \
-	utilities/poets_images/29.png \
-	utilities/poets_images/3.png \
-	utilities/poets_images/30.png \
-	utilities/poets_images/31.png \
-	utilities/poets_images/32.png \
-	utilities/poets_images/33.png \
-	utilities/poets_images/34.png \
-	utilities/poets_images/35.png \
-	utilities/poets_images/37.png \
-	utilities/poets_images/38.png \
-	utilities/poets_images/39.png \
-	utilities/poets_images/4.png \
-	utilities/poets_images/40.png \
-	utilities/poets_images/41.png \
-	utilities/poets_images/42.png \
-	utilities/poets_images/43.png \
-	utilities/poets_images/44.png \
-	utilities/poets_images/45.png \
-	utilities/poets_images/46.png \
-	utilities/poets_images/47.png \
-	utilities/poets_images/5.png \
-	utilities/poets_images/501.png \
-	utilities/poets_images/502.png \
-	utilities/poets_images/503.png \
-	utilities/poets_images/504.png \
-	utilities/poets_images/505.png \
-	utilities/poets_images/6.png \
-	utilities/poets_images/600.png \
-	utilities/poets_images/602.png \
-	utilities/poets_images/7.png \
-	utilities/poets_images/8.png \
-	utilities/poets_images/9.png \
-	utilities/poets_images/48.png \
-	utilities/poets_images/49.png \
-	utilities/poets_images/50.png \
-	utilities/poets_images/506.png \
-	utilities/poets_images/51.png \
-	utilities/poets_images/610.png
+poetsImage.files = $${SOURCE_DIR}/utilities/poets_images/10.png \
+	$${SOURCE_DIR}/utilities/poets_images/11.png \
+	$${SOURCE_DIR}/utilities/poets_images/12.png \
+	$${SOURCE_DIR}/utilities/poets_images/13.png \
+	$${SOURCE_DIR}/utilities/poets_images/14.png \
+	$${SOURCE_DIR}/utilities/poets_images/15.png \
+	$${SOURCE_DIR}/utilities/poets_images/16.png \
+	$${SOURCE_DIR}/utilities/poets_images/17.png \
+	$${SOURCE_DIR}/utilities/poets_images/18.png \
+	$${SOURCE_DIR}/utilities/poets_images/19.png \
+	$${SOURCE_DIR}/utilities/poets_images/2.png \
+	$${SOURCE_DIR}/utilities/poets_images/20.png \
+	$${SOURCE_DIR}/utilities/poets_images/21.png \
+	$${SOURCE_DIR}/utilities/poets_images/22.png \
+	$${SOURCE_DIR}/utilities/poets_images/23.png \
+	$${SOURCE_DIR}/utilities/poets_images/24.png \
+	$${SOURCE_DIR}/utilities/poets_images/25.png \
+	$${SOURCE_DIR}/utilities/poets_images/26.png \
+	$${SOURCE_DIR}/utilities/poets_images/27.png \
+	$${SOURCE_DIR}/utilities/poets_images/28.png \
+	$${SOURCE_DIR}/utilities/poets_images/29.png \
+	$${SOURCE_DIR}/utilities/poets_images/3.png \
+	$${SOURCE_DIR}/utilities/poets_images/30.png \
+	$${SOURCE_DIR}/utilities/poets_images/31.png \
+	$${SOURCE_DIR}/utilities/poets_images/32.png \
+	$${SOURCE_DIR}/utilities/poets_images/33.png \
+	$${SOURCE_DIR}/utilities/poets_images/34.png \
+	$${SOURCE_DIR}/utilities/poets_images/35.png \
+	$${SOURCE_DIR}/utilities/poets_images/37.png \
+	$${SOURCE_DIR}/utilities/poets_images/38.png \
+	$${SOURCE_DIR}/utilities/poets_images/39.png \
+	$${SOURCE_DIR}/utilities/poets_images/4.png \
+	$${SOURCE_DIR}/utilities/poets_images/40.png \
+	$${SOURCE_DIR}/utilities/poets_images/41.png \
+	$${SOURCE_DIR}/utilities/poets_images/42.png \
+	$${SOURCE_DIR}/utilities/poets_images/43.png \
+	$${SOURCE_DIR}/utilities/poets_images/44.png \
+	$${SOURCE_DIR}/utilities/poets_images/45.png \
+	$${SOURCE_DIR}/utilities/poets_images/46.png \
+	$${SOURCE_DIR}/utilities/poets_images/47.png \
+	$${SOURCE_DIR}/utilities/poets_images/5.png \
+	$${SOURCE_DIR}/utilities/poets_images/501.png \
+	$${SOURCE_DIR}/utilities/poets_images/502.png \
+	$${SOURCE_DIR}/utilities/poets_images/503.png \
+	$${SOURCE_DIR}/utilities/poets_images/504.png \
+	$${SOURCE_DIR}/utilities/poets_images/505.png \
+	$${SOURCE_DIR}/utilities/poets_images/6.png \
+	$${SOURCE_DIR}/utilities/poets_images/600.png \
+	$${SOURCE_DIR}/utilities/poets_images/602.png \
+	$${SOURCE_DIR}/utilities/poets_images/7.png \
+	$${SOURCE_DIR}/utilities/poets_images/8.png \
+	$${SOURCE_DIR}/utilities/poets_images/9.png \
+	$${SOURCE_DIR}/utilities/poets_images/48.png \
+	$${SOURCE_DIR}/utilities/poets_images/49.png \
+	$${SOURCE_DIR}/utilities/poets_images/50.png \
+	$${SOURCE_DIR}/utilities/poets_images/506.png \
+	$${SOURCE_DIR}/utilities/poets_images/51.png \
+	$${SOURCE_DIR}/utilities/poets_images/610.png
 
 desktop.path = $${DESKTOPDIR}
-desktop.files = utilities/Saaghar.desktop
+desktop.files = $${SOURCE_DIR}/utilities/Saaghar.desktop
 INSTALLS += desktop \
 			poetsImage \
 			utilities
 
 icon.path = $${ICONDIR}
-icon.files = images/saaghar.png
+icon.files = $${SOURCE_DIR}/images/saaghar.png
 INSTALLS += icon
 
 message("'make uninstall' doesn't remove "$$(HOME)/.Pojh/Saaghar" directory and its contents especially 'database file', do that manually!")
