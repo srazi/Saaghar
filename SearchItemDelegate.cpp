@@ -163,7 +163,9 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 				qreal oldOpacity = painter->opacity();
 				painter->setOpacity(0.65);
 				rectf.adjust(-iconWidth, 0, -iconWidth, 0);
-				painter->fillRect( rectf, itemBrush );
+				QPainterPath roundedRect;
+				roundedRect.addRoundRect(rectf, 50, 50);
+				painter->fillPath( roundedRect, itemBrush );
 				painter->setOpacity(oldOpacity);
 				//painter->fillRect( rectf, itemBrush );
 			}
