@@ -165,8 +165,12 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 				rectf.adjust(-iconWidth, 0, -iconWidth, 0);
 				QPainterPath roundedRect;
 				roundedRect.addRoundRect(rectf, 50, 50);
+				QPen defaultPen(painter->pen());
+				painter->setPen(SaagharWidget::matchedTextColor.darker(150));
+				painter->drawPath(roundedRect);
 				painter->fillPath( roundedRect, itemBrush );
 				painter->setOpacity(oldOpacity);
+				painter->setPen(defaultPen);
 				//painter->fillRect( rectf, itemBrush );
 			}
 			x += option.fontMetrics.width(thisPart);
