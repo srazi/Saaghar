@@ -974,11 +974,15 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		if (phraseList.isEmpty()) return idList;
 
 		QString firstPhrase = phraseList.at(0);
-
+		firstPhrase.remove("%");
+		int andedPhraseCount = phraseList.size();
+		int excludedCount = excludedList.size();
 		//TODO: remove skipNonAlphabet and replace it with NEAR operator
 		//search for firstPhrase then go for other ones
-		QString searchQueryPhrase = QGanjoorDbBrowser::cleanString(firstPhrase/*, skipNonAlphabet*/)
-				.split("",QString::SkipEmptyParts).join("%");
+		firstPhrase = firstPhrase.simplified();
+		QString searchQueryPhrase = firstPhrase;
+		if (!firstPhrase.contains(" "))
+			searchQueryPhrase = QGanjoorDbBrowser::cleanString(firstPhrase).split("",QString::SkipEmptyParts).join("%");
 //		QMessageBox::information(qApp->activeWindow(),"DEBUG:Method2", searchQueryPhrase);
 
 		int numOfFounded=0;
@@ -1040,11 +1044,9 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 //			}
 
 			//excluded list
-			int excludedCount = excludedList.size();
 			bool excludeCurrentVerse = false;
 			for (int t=0;t<excludedCount;++t)
 			{
-				QString tphrase = phraseList.at(t);
 				if ( foundedVerse.contains(excludedList.at(t)) )
 				{
 					//qDebug() <<"excludeCurrentVerse->TRUE-verse=" << verseText<< "tPharse="<<tphrase<<"tExcluded="<<excludedList.at(t);
@@ -1053,7 +1055,6 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 				}
 			}
 
-			int andedPhraseCount = phraseList.size();
 			if (!excludeCurrentVerse)
 			{
 				for (int t=0;t<andedPhraseCount;++t)

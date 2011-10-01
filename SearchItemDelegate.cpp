@@ -34,7 +34,7 @@ SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString
 
 	tableStyle = style;
 	if (parent->objectName()=="searchTable")
-		qDebug() << keywordList;
+		qDebug() << "delegate-searchTable="<< keywordList;
 }
 
 void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,

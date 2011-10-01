@@ -1113,8 +1113,8 @@ int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidt
 	if (width <=0 || textWidth<=0) return 4*(fontMetric.height()/3);
 	if (height == 0)
 		height = (4*fontMetric.height())/3;
-	int numOfRow = textWidth/width ;
-	return height+((fontMetric.height()*numOfRow));
+	int numOfRow = (textWidth*5)/(width*4);//(5/4) is an empirical value
+	return height+(fontMetric.height()*numOfRow);
 }
 
 void SaagharWidget::pressedOnItem(int row,int /*col*/)
