@@ -66,6 +66,7 @@ SaagharWidget::SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidge
 	loadSettings();
 
 	currentCat = currentPoem = 0;
+	currentParentID = 0;
 	currentCaption = tr("Home");
 	pressedPosition = QPoint(-1, -1);
 
@@ -600,6 +601,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 	parentCatsToolBar->setStyleSheet("QToolBar { padding: 3px; spacing: 0px; /* spacing between items in the tool bar */ }");
 
 	currentCat = !category.isNull() ? category._ID : 0;
+	currentParentID = !category.isNull() ? category._ParentID : 0;
 }
 
 void SaagharWidget::showPoem(GanjoorPoem poem)
@@ -979,11 +981,18 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 		//resize description's row
 		if (currentCat != 0  && currentPoem == 0 && table->columnCount() == 1)
 		{//using column count here is a tricky way
-			GanjoorCat gCat = SaagharWidget::ganjoorDataBase->getCategory(currentCat);
-			if (gCat._ParentID == 0)
+			if (currentParentID == 0)
 			{
-				GanjoorPoet gPoet = SaagharWidget::ganjoorDataBase->getPoetForCat(gCat._ID);
-				QString itemText = gPoet._Description;
+				QString itemText;
+				if (table->item(0,0))
+				{
+					itemText = table->item(0,0)->text();
+				}
+				else
+				{
+					GanjoorPoet gPoet = SaagharWidget::ganjoorDataBase->getPoetForCat(currentCat);
+					itemText = gPoet._Description;
+				}
 				if (!itemText.isEmpty())
 				{
 					int textWidth = table->fontMetrics().boundingRect(itemText).width();

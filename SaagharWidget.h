@@ -79,6 +79,7 @@ public:
 
 	int currentPoem;
 	int currentCat;
+	int currentParentID;
 	void homeResizeColsRows();
 	inline bool isDirty()
 		{return dirty;}
