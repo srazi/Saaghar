@@ -974,17 +974,24 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		if (phraseList.isEmpty()) return idList;
 
 		QString firstPhrase = phraseList.at(0);
-		firstPhrase.remove("%");
+		QStringList anyWordedList = firstPhrase.split("%%", QString::SkipEmptyParts);
+		for (int i=0; i<anyWordedList.size();++i)
+		{
+			QString subPhrase = anyWordedList.at(i);
+			subPhrase.remove("%");
+			//TODO: remove skipNonAlphabet and replace it with NEAR operator
+			//search for firstPhrase then go for other ones
+			subPhrase = subPhrase.simplified();
+			if (!subPhrase.contains(" "))
+				subPhrase = QGanjoorDbBrowser::cleanString(subPhrase).split("",QString::SkipEmptyParts).join("%");
+			anyWordedList[i] = subPhrase;
+		}
+
+		QString searchQueryPhrase = anyWordedList.join("%");
+		qDebug() << "searchQueryPhrase="<<searchQueryPhrase;
+//		QMessageBox::information(qApp->activeWindow(),"DEBUG:Method2", searchQueryPhrase);
 		int andedPhraseCount = phraseList.size();
 		int excludedCount = excludedList.size();
-		//TODO: remove skipNonAlphabet and replace it with NEAR operator
-		//search for firstPhrase then go for other ones
-		firstPhrase = firstPhrase.simplified();
-		QString searchQueryPhrase = firstPhrase;
-		if (!firstPhrase.contains(" "))
-			searchQueryPhrase = QGanjoorDbBrowser::cleanString(firstPhrase).split("",QString::SkipEmptyParts).join("%");
-//		QMessageBox::information(qApp->activeWindow(),"DEBUG:Method2", searchQueryPhrase);
-
 		int numOfFounded=0;
 
 		if (PoetID == 0)

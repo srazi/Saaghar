@@ -37,8 +37,7 @@ HEADERS += $${SOURCE_DIR}/mainwindow.h \
 	$${SOURCE_DIR}/version.h
 
 FORMS += $${SOURCE_DIR}/mainwindow.ui \
-	$${SOURCE_DIR}/settings.ui \
-#	$${SOURCE_DIR}/random-settings.ui
+	$${SOURCE_DIR}/settings.ui
 
 SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/mainwindow.cpp \
