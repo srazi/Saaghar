@@ -1,7 +1,9 @@
 TEMPLATE = app
 TARGET = Saaghar
 
+isEmpty( SOURCE_DIR ) {
 SOURCE_DIR = .
+}
 
 DEPENDPATH += $${SOURCE_DIR}/ $${SOURCE_DIR}/build \
 		$${SOURCE_DIR}/widgets/QMultiSelectWidget \
@@ -76,7 +78,7 @@ RESOURCES += $${SOURCE_DIR}/saaghar.qrc
 
 TRANSLATIONS += $${SOURCE_DIR}/saaghar_fa.ts
 
-message("'make install' doesn't overwrite existing 'database file', do that manually!")
+!build_pass:message("'make install' doesn't overwrite existing 'database file', do that manually!")
 
 win32 {
 
@@ -254,7 +256,7 @@ QMAKE_BUNDLE_DATA += utilities\
 ICON = $${SOURCE_DIR}/saaghar.icns
 QMAKE_INFO_PLIST = $${SOURCE_DIR}/Info.plist
 
-message("'make uninstall' doesn't remove "$$(HOME)/Library/Saaghar" directory and its contents especially 'database file', do that manually!")
+!build_pass:message("'make uninstall' doesn't remove "$$(HOME)/Library/Saaghar" directory and its contents especially 'database file', do that manually!")
 }
 
 unix:!macx {
@@ -350,5 +352,5 @@ icon.path = $${ICONDIR}
 icon.files = $${SOURCE_DIR}/images/saaghar.png
 INSTALLS += icon
 
-message("'make uninstall' doesn't remove "$$(HOME)/.Pojh/Saaghar" directory and its contents especially 'database file', do that manually!")
+!build_pass:message("'make uninstall' doesn't remove "$$(HOME)/.Pojh/Saaghar" directory and its contents especially 'database file', do that manually!")
 }
