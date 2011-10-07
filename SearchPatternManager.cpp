@@ -193,6 +193,9 @@ QString SearchPatternManager::clearedPhrase(const QString &str)
 	clearedString = clearedString.split(OP(Or), QString::SkipEmptyParts).join(OP(Or));
 	clearedString = clearedString.split(OP(And), QString::SkipEmptyParts).join(OP(And));
 
+	//maybe we change this behaivior
+	clearedString.replace(OP(Any), wildcardCharacter);
+
 	QStringList wholeWordList = clearedString.split(OP(WholeWord));
 	//The odd indices are the ones enclosed by SearchPatternManager::WholeWord
 	//remove operators from wholeword phrase
@@ -206,7 +209,7 @@ QString SearchPatternManager::clearedPhrase(const QString &str)
 			tmp.remove(OP(Any));
 			tmp.remove(OP(And));
 			tmp.remove(OP(WithOut));
-			tmp.remove(wildcardCharacter);
+			//tmp.remove(wildcardCharacter);
 			//tmp.replace(" ", OP(WithOut)+OP(WithOut));//a temporary raplacement
 		}
 		else
@@ -216,9 +219,6 @@ QString SearchPatternManager::clearedPhrase(const QString &str)
 		wholeWordList[i] = tmp;
 	}
 	clearedString = wholeWordList.join(OP(WholeWord));
-
-	//maybe we change this behaivior
-	clearedString.replace(OP(Any), wildcardCharacter);
 
 	return clearedString;
 }
