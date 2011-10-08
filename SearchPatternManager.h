@@ -52,7 +52,7 @@ public:
 	static QVector<QStringList> outputPhrases();
 	static QVector<QStringList> outputExcludedLlist();
 	static void filterResults(QStringList *resultList);
-	static QStringList phraseToList(const QString &str);
+	static QStringList phraseToList(const QString &str, bool removeWildCard = true);
 	//static void setSpaceOperator(SearchPatternManager::Operator op);
 	static int uniqueKeysCount;
 

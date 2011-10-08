@@ -29,7 +29,7 @@
 SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString phrase) : QStyledItemDelegate(parent)
 {
 	keywordList.clear();
-	keywordList = SearchPatternManager::phraseToList(phrase);
+	keywordList = SearchPatternManager::phraseToList(phrase, false);
 	keywordList.removeDuplicates();
 
 	tableStyle = style;
@@ -100,13 +100,15 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 		QString keyword = keywordList.at(i);
 
 		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-//		qDebug() << "keyword1="<<keyword;
+		//qDebug() << "keyword1="<<keyword;
 		keyword = keyword.split("", QString::SkipEmptyParts).join(tatweel+"*");
-//		qDebug() << "keyword2="<<keyword;
+		//qDebug() << "keyword2="<<keyword;
+		keyword.replace("@"+tatweel+"*", "\\S*", Qt::CaseInsensitive);//replace wildcard by word chars
+		//qDebug() << "keyword3="<<keyword;
 		QRegExp maybeTatweel(keyword, Qt::CaseInsensitive);
 		maybeTatweel.indexIn(text);
-//		qDebug() << text<<"count=" << anySearch.captureCount()<<anySearch.capturedTexts();
-//		qDebug() << "Match: "<<anySearch.cap(0);
+		//qDebug() << text<<"count=" << maybeTatweel.captureCount()<<maybeTatweel.capturedTexts();
+		//qDebug() << "Match: "<<maybeTatweel.cap(0);
 		keyword = maybeTatweel.cap(0);
 	if (!(keyword.isEmpty() || text.indexOf(keyword) == -1 ) )
 	{
@@ -194,7 +196,7 @@ void SaagharItemDelegate::keywordChanged(const QString &text)
 	keywordList.clear();
 	QString tmp = text;
 	tmp.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-	keywordList = SearchPatternManager::phraseToList(tmp);
+	keywordList = SearchPatternManager::phraseToList(tmp, false);
 	keywordList.removeDuplicates();
 
 	QTableWidget *table=qobject_cast<QTableWidget *>(parent());

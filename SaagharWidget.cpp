@@ -1053,66 +1053,51 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 
 void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 {
-	if (phrase.isEmpty())
-		return;
-
-	QStringList list = SearchPatternManager::phraseToList(phrase);
-
-	QString keyword = list.join("#");
+	QString keyword = phrase;
 	keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
 	keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
-	list = keyword.split("#", QString::SkipEmptyParts);
-	list.removeAll("");
+	if (keyword.isEmpty())
+		return;
+
+	QStringList list = SearchPatternManager::phraseToList(keyword, false);
 	if (list.isEmpty())
 		return;
 	int listSize = list.size();
-	
-//	for (int i=0; i<list.size();++i)
-//	{
-//		keyword = list.at(list.size()-1-i);//start from last, probably it's the new one!
-//		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-//		keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
-//		if (!keyword.isEmpty())
-//			break;
-//	}
 
-	for (int row = 0; row < tableViewWidget->rowCount(); ++row)
-	{
+	for (int row = 1; row < tableViewWidget->rowCount(); ++row)
+	{//start from second row, we need to skip poem's title.
 		for (int col = 0; col < tableViewWidget->columnCount(); ++col)
 		{
 			QTableWidgetItem *tmp = tableViewWidget->item(row, col);
-//			if (true /*SaagharWidget::newSearchFlag*/)
-//			{
-				if (tmp)
+			if (tmp)
+			{
+				QString text = QGanjoorDbBrowser::cleanString(tmp->text());
+				text.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
+				if (text.isEmpty()) continue;
+
+				for (int i=0; i<listSize;++i)
 				{
-					QString text = QGanjoorDbBrowser::cleanString(tmp->text()/*, newSearchSkipNonAlphabet*/);
-					text.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
+					keyword = list.at(listSize-1-i);//start from last, probably it's the new one!
 
-
-					for (int i=0; i<listSize;++i)
+					if (keyword.contains("@"))
 					{
-						keyword = list.at(listSize-1-i);//start from last, probably it's the new one!
-						if (text.contains(keyword))
-						{
-							tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
-							tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
-							row = tableViewWidget->rowCount()+1;
-							col = tableViewWidget->columnCount()+1;
-							break;
-						}
+						keyword.replace("@", "\\S*", Qt::CaseInsensitive);//replace wildcard by word chars
+						QRegExp regExp(keyword, Qt::CaseInsensitive);
+						regExp.indexIn(text);
+						keyword = regExp.cap(0);
+						if (keyword.isEmpty()) continue;
+					}
+
+					if (text.contains(keyword))
+					{
+						tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
+						tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
+						row = tableViewWidget->rowCount()+1;
+						col = tableViewWidget->columnCount()+1;
+						break;
 					}
 				}
-//			}
-//			else
-//			{
-//				if (tmp && tmp->text().contains(keyword))
-//				{
-//					tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
-//					tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
-//					row = tableViewWidget->rowCount()+1;
-//					break;
-//				}
-//			}
+			}
 		}
 	}
 }
