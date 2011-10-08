@@ -603,7 +603,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 	currentCat = !category.isNull() ? category._ID : 0;
 	currentParentID = !category.isNull() ? category._ParentID : 0;
 }
-
+//#include<QTextEdit>
 void SaagharWidget::showPoem(GanjoorPoem poem)
 {
 	if ( poem.isNull() )
@@ -683,6 +683,9 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	}
 //#endif
 
+	//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
+	bool rightVerseFlag = false;
+
 	for (int i = 0; i < verses.size(); i++)
 	{
 		QString currentVerseText = verses.at(i)->_Text;
@@ -734,12 +737,19 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 		mesraItem->setData(Qt::UserRole, "VerseData=|"+verseData);
 
 		bool spacerColumnIsPresent = false;
+		VersePosition versePosition = verses.at(i)->_Position;
+		//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
+		if (!rightVerseFlag && versePosition==Left)
+		{
+			versePosition = Paragraph;
+		}
 
 		if (centeredView)
 		{
-			switch (verses.at(i)->_Position)
+			switch (versePosition)
 			{
 				case Right :
+					rightVerseFlag = true;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
 					spacerColumnIsPresent = true;
 					if (!flagEmptyThirdColumn)
 					{
@@ -803,7 +813,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
 				case Paragraph :
 					textWidth = fontMetric.boundingRect(mesraItem->data(Qt::DisplayRole).toString()).width();
-					totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+					//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
 
 					totalWidth = tableViewWidget->viewport()->width();
 					//numOfRow = textWidth/totalWidth;
@@ -813,6 +823,16 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 						tableViewWidget->setItem(row, 3, tmp);
 						mesraItem->setTextAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 						tableViewWidget->setItem(row, 1, mesraItem);
+//tableViewWidget->insertRow(row);
+//QTextEdit *para = new QTextEdit();
+//para->setStyleSheet("QTextEdit{background: transparent; border: transparent;}");
+////para->setAlignment(Qt::AlignJustify);
+//para->setFont(SaagharWidget::tableFont);
+//para->setTextColor(SaagharWidget::textColor);
+//para->setReadOnly(true);
+//para->setText(currentVerseText);
+//para->setLayoutDirection(currentVerseText.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight);
+//tableViewWidget->setCellWidget(row, 1, para);
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
 
@@ -885,7 +905,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 				numItem->setFlags(Qt::NoItemFlags);
 				tableViewWidget->setItem(row, 0, numItem);
 			}
-
+			rightVerseFlag=false;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
 			++row;
 			if (i != verses.size()-1)
 				tableViewWidget->insertRow(row);
