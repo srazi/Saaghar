@@ -74,7 +74,7 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 			iconWidth = icon.pixmap(100, 100).width()+5;
 		}
 
-		cleanedText = QGanjoorDbBrowser::cleanString(text/*, SaagharWidget::newSearchSkipNonAlphabet*/);
+		cleanedText = QGanjoorDbBrowser::cleanString(text);
 //		if (text.contains( QString::fromLocal8Bit(
 //							  "پسر چون ز مادر بران گونه زاد"
 ////			                      "پرپر شد ..."

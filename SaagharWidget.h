@@ -66,7 +66,7 @@ public:
 	static bool backgroundImageState;
 	static bool centeredView;
 	//static bool newSearchFlag;
-	static bool newSearchSkipNonAlphabet;
+	//static bool newSearchSkipNonAlphabet;
 	static QString backgroundImagePath;
 	static QColor textColor;
 	static QColor matchedTextColor;

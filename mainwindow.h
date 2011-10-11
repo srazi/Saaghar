@@ -127,7 +127,7 @@ class MainWindow : public QMainWindow
 		void checkForUpdates();
 		void actFullScreenClicked(bool checked);
 		void actionRemovePoet();
-		void newSearchNonAlphabetChanged(bool checked);
+		//void newSearchNonAlphabetChanged(bool checked);
 		//void newSearchFlagChanged(bool checked);
 		void actionImportNewSet();
 		void closeCurrentTab();

@@ -27,6 +27,7 @@
 #include "settings.h"
 #include "SearchResultWidget.h"
 #include "SearchPatternManager.h"
+#include "QTextBrowserDialog.h"
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -1533,11 +1534,10 @@ void MainWindow::showSearchOptionMenu()
 	searchOptionMenu->exec(lineEditSearchText->optionsButton()->mapToGlobal(QPoint(0, lineEditSearchText->optionsButton()->height()))/*QCursor::pos()*/);
 }
 
-void MainWindow::newSearchNonAlphabetChanged(bool checked)
-{
-	//actionInstance("actionNewSearchSkipNonAlphabet")->setEnabled(checked);
-	SaagharWidget::newSearchSkipNonAlphabet = checked;
-}
+//void MainWindow::newSearchNonAlphabetChanged(bool checked)
+//{
+//	SaagharWidget::newSearchSkipNonAlphabet = checked;
+//}
 
 QAction *MainWindow::actionInstance(const QString actionObjectName, QString iconPath, QString displayName)
 {
@@ -1812,7 +1812,7 @@ void MainWindow::loadGlobalSettings()
 	
 	//search options
 	//SaagharWidget::newSearchFlag = config->value("New Search",true).toBool();
-	SaagharWidget::newSearchSkipNonAlphabet  = config->value("New Search non-Alphabet",false).toBool();
+	//SaagharWidget::newSearchSkipNonAlphabet  = config->value("New Search non-Alphabet",false).toBool();
 	SearchResultWidget::maxItemPerPage  = config->value("Max Search Results Per Page", 100).toInt();
 
 	SaagharWidget::backgroundImageState = config->value("Background State",false).toBool();
@@ -1937,7 +1937,7 @@ void MainWindow::saveSettings()
 
 	//search options
 	//config->setValue("New Search", SaagharWidget::newSearchFlag);
-	config->setValue("New Search non-Alphabet", SaagharWidget::newSearchSkipNonAlphabet);
+	//config->setValue("New Search non-Alphabet", SaagharWidget::newSearchSkipNonAlphabet);
 	config->setValue("Max Search Results Per Page", SearchResultWidget::maxItemPerPage);
 
 	//Search and Random Range
@@ -2551,16 +2551,14 @@ void MainWindow::setupSearchToolBarUi()
 	actionInstance("actionGetMaxResultPerPage", "", tr("Max Result per Page...") );
 	connect(actionInstance("actionGetMaxResultPerPage"), SIGNAL(triggered()), this, SLOT(getMaxResultPerPage()));
 	
-	actionInstance("actionNewSearchSkipNonAlphabet", "", tr("&Skip non-Alphabet") )->setCheckable(true);
-	actionInstance("actionNewSearchSkipNonAlphabet")->setChecked(SaagharWidget::newSearchSkipNonAlphabet);
-	
-	connect(actionInstance("actionNewSearchSkipNonAlphabet"), SIGNAL(toggled(bool)), this, SLOT(newSearchNonAlphabetChanged(bool)));
-	
+	actionInstance("actionSearchTips", "", tr("&Search Tips...") );
+
+	//connect(actionInstance("actionSearchTips"), SIGNAL(toggled(bool)), this, SLOT(newSearchNonAlphabetChanged(bool)));
+
 	searchOptionMenu->addAction(actionInstance("actionGetMaxResultPerPage"));
 	searchOptionMenu->addAction(actionInstance("separator"));
-	
-	searchOptionMenu->addAction(actionInstance("actionNewSearchSkipNonAlphabet"));
-	
+	searchOptionMenu->addAction(actionInstance("actionSearchTips"));
+
 	connect(lineEditSearchText->optionsButton(), SIGNAL(clicked()), this, SLOT(showSearchOptionMenu()));
 }
 
@@ -2610,6 +2608,31 @@ void MainWindow::namedActionTriggered(bool checked)
 			ui->menuToolBar->setMovable(!checked);
 		ui->searchToolBar->setMovable(!checked);
 		parentCatsToolBar->setMovable(!checked);
+	}
+	else if ( actionName == "actionSearchTips" )
+	{
+		QString searchTips = tr("<b>Tip1:</b> Search operators and commands:"
+					"%5"
+					"<TR><TD%3 id=\"and-operator\"><b>%1+%2</b></TD>%8<TD%4>Mesras containing both <b>%1</b> and <b>%2</b>, <i>at any order</i>.</TD></TR>"
+					"<TR><TD%3><b>%1**%2</b></TD>%8<TD%4>Mesras containing both <b>%1</b> and <b>%2</b>, <i>at this order</i>.</TD></TR>"
+					"<TR><TD%3><b>%1 %2</b></TD>%8<TD%4>Same as <b><a href=\"#and-operator\">%1+%2</a></b>.</TD></TR>"
+					"<TR><TD%3><b>%1 | %2</b></TD>%8<TD%4>Mesras containing <b>%1</b> or <b>%2</b>, or both.</TD></TR>"
+					"<TR><TD%3><b>%1 -%2</b></TD>%8<TD%4>Mesras containing <b>%1</b>, but not <b>%2</b>.</TD></TR>"
+					"<TR><TD%3><b>\"%1\"</b></TD>%8<TD%4>Mesras containing the whole word <b>%1</b>.</TD></TR>"
+					"<TR><TD%3><b>\"%1 %2\"</b></TD>%8<TD%4>Mesras containing the whole mixed word <b>%1 %2</b>.</TD></TR>"
+					"<TR><TD%3><b>Sp*ng</b></TD>%8<TD%4>Mesras containing any phrase started with <b>Sp</b> and ended with <b>ng</b>; i.e: Mesras containing <b>Spring</b> or <b>Spying</b> or <b>Spoking</b> or...</TD></TR>"
+					"</TBODY></TABLE><br />"
+					"<br /><b>Tip2:</b> All search queries are case insensitive.<br />"
+					"<br /><b>Tip3:</b> User can use an operator more than once;"
+						"<br />i.e: <b>%1+%2+%6</b>, <b>%1 -%6 -%7</b>, <b>%1**%2**%7</b> and <b>S*r*g</b> are valid search terms.<br />"
+					"<br /><b>Tip4:</b> User can use operators mixed together;"
+						"<br />i.e: <b>\"%1\"+\"%2\"+%6</b>, <b>%1+%2|%6 -%7</b>, <b>\"%1\"**\"%2\"</b>, <b>S*r*g -Spring</b> and <b>\"Gr*en\"</b> are valid search terms.<br />"
+					"<br />")
+				.arg(tr("Spring")).arg(tr("Flower")).arg(" ALIGN=CENTER").arg(" ALIGN=Left")
+				.arg("<TABLE FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0><TBODY>").arg(tr("Rain")).arg(tr("Sunny"))
+				.arg("<TD  ALIGN=Left>:</TD>");
+		QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(currentIconThemePath()+"/search.png").scaledToHeight(64, Qt::SmoothTransformation));
+		searchTipsDialog.exec();
 	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
