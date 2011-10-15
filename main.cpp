@@ -22,6 +22,8 @@
 #include <QTranslator>
 #include <QtGui/QApplication>
 //#include<QMessageBox>
+
+#include "QExtendedSplashScreen.h"
 #include "mainwindow.h"
 
 #ifdef Q_WS_WIN
@@ -55,9 +57,16 @@ int main(int argc, char *argv[])
 	//'At Development Stage' message
 	//QMessageBox::information(0, QObject::tr("At Development Stage"), QObject::tr("This is an experimental version! Don\'t release it!\nWWW: http://pojh.iblogger.org/saaghar"));
 
-	MainWindow w;
+	QPixmap pixmap;
+	QExtendedSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
+	splash.setMessageOptions(QRect(pixmap.rect().topLeft()+QPoint(30,445), pixmap.rect().bottomRight()+QPoint(-340,0)), Qt::AlignLeft|Qt::AlignBottom, Qt::blue);
+	splash.show();
+	splash.showMessage(QObject::tr("<i><b>Loading...</b></i>"));
+
+	MainWindow w(0, &splash);
 	w.show();
-	
+
+	splash.finish(&w);
 //	w.emitReSizeEvent();//maybe a Qt BUG//before 'QMainWindow::show()' the computation of width of QMainWindow is not correct!
 
 	return a.exec();

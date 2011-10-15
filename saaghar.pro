@@ -8,14 +8,16 @@ SOURCE_DIR = .
 DEPENDPATH += $${SOURCE_DIR}/ $${SOURCE_DIR}/build \
 		$${SOURCE_DIR}/widgets/QMultiSelectWidget \
 		$${SOURCE_DIR}/widgets/QSearchLineEdit \
-		$${SOURCE_DIR}/widgets/QTextBrowserDialog
+		$${SOURCE_DIR}/widgets/QTextBrowserDialog \
+		$${SOURCE_DIR}/widgets/QExtendedSplashScreen
 
 INCLUDEPATH += $${SOURCE_DIR}/ $UI_DIR $${SOURCE_DIR}/sqlite $${SOURCE_DIR}/sqlite-driver/sqlite \
 		$${SOURCE_DIR}/widgets/QMultiSelectWidget \
 		$${SOURCE_DIR}/widgets/QSearchLineEdit \
-		$${SOURCE_DIR}/widgets/QTextBrowserDialog
+		$${SOURCE_DIR}/widgets/QTextBrowserDialog \
+		$${SOURCE_DIR}/widgets/QExtendedSplashScreen
 
-# Qxt/
+
 # $$QMAKE_INCDIR_QT/QtSql/private
 
 CONFIG	+= qt 
@@ -54,6 +56,7 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 include($${SOURCE_DIR}/widgets/QMultiSelectWidget/QMultiSelectWidget.pri)
 include($${SOURCE_DIR}/widgets/QSearchLineEdit/QSearchLineEdit.pri)
 include($${SOURCE_DIR}/widgets/QTextBrowserDialog/QTextBrowserDialog.pri)
+include($${SOURCE_DIR}/widgets/QExtendedSplashScreen/QExtendedSplashScreen.pri)
 
 
 

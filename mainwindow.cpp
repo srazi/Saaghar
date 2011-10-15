@@ -58,10 +58,12 @@
 
 bool MainWindow::autoCheckForUpdatesState = true;
 
-MainWindow::MainWindow(QWidget *parent) :
+MainWindow::MainWindow(QWidget *parent, QObject *splashScreen) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
 {
+	if (splashScreen)
+		connect(this, SIGNAL(loadingStatusText(const QString &)), splashScreen, SLOT(showMessage(const QString &)));
 	QCoreApplication::setOrganizationName("Pojh");
 	QCoreApplication::setApplicationName("Saaghar");
 	QCoreApplication::setOrganizationDomain("Pojh.iBlogger.org");
@@ -126,7 +128,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	SaagharWidget::poetsImagesDir = resourcesPath + "/poets_images/";
 	
 	//loading application fonts
-	QString applicationFontsPath = resourcesPath + "/fonts/";
+	//QString applicationFontsPath = resourcesPath + "/fonts/";
 	QDir fontsDir(resourcesPath + "/fonts/");
 	QStringList fontsList = fontsDir.entryList(QDir::Files|QDir::NoDotAndDotDot);
 	for (int i=0; i<fontsList.size(); ++i)
@@ -151,7 +153,16 @@ MainWindow::MainWindow(QWidget *parent) :
 	mainTabWidget->setUsesScrollButtons(true);
 	mainTabWidget->setMovable(true);
 
+	emit loadingStatusText(tr("<i><b>Loading settings...</b></i>"));
 	loadGlobalSettings();
+
+	if (autoCheckForUpdatesState)
+	{
+		emit loadingStatusText(tr("<i><b>Checking for update...</b></i>"));
+		QCoreApplication::processEvents();
+		checkForUpdates();
+	}
+
 	setupUi();
 
 	//setup corner widget
@@ -242,9 +253,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	multiSelectObjectInitialize(selectSearchRange, selectedSearchRange);
 	item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
 
-	if (autoCheckForUpdatesState)
-		checkForUpdates();
-
 	//seeding random function
 	uint numOfSecs = QDateTime::currentDateTime().toTime_t();
 	uint seed = QCursor::pos().x()+QCursor::pos().y()+numOfSecs+QDateTime::currentDateTime().time().msec();
@@ -253,6 +261,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	//install search pattern manager
 	SearchPatternManager *searchPatternManager = new SearchPatternManager();
 	searchPatternManager->setWildcardCharacter("%");
+
+	emit loadingStatusText(tr("<i><b>Saaghar is starting...</b></i>"));
 }
 
 MainWindow::~MainWindow()
@@ -601,7 +611,7 @@ void MainWindow::checkForUpdates()
 
 	updateProgress.setWindowModality(Qt::WindowModal);
 	updateProgress.setFixedSize(updateProgress.size());
-	updateProgress.show();
+	if (action) updateProgress.show();
 
 	connect( &updateProgress, SIGNAL( canceled() ), &loop, SLOT( quit() ) );
 	connect( reply, SIGNAL( finished() ), &updateProgress, SLOT( hide() ) );
@@ -617,7 +627,9 @@ void MainWindow::checkForUpdates()
 
 	if( reply->error() )
 	{
+		emit loadingStatusText(tr("!QTransparentSplashInternalCommands:HIDE"));
 		QMessageBox::critical(this, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()));
+		emit loadingStatusText(tr("!QTransparentSplashInternalCommands:SHOW"));
 		return;
 	}
 	QStringList data = QString::fromUtf8( reply->readAll() ).split("|", QString::SkipEmptyParts);
@@ -640,6 +652,7 @@ void MainWindow::checkForUpdates()
 	
 	if (serverAppVerion > runningAppVersion)
 	{
+		emit loadingStatusText(tr("!QTransparentSplashInternalCommands:CLOSE"));
 		QMessageBox updateIsAvailable(this);
 		updateIsAvailable.setTextFormat(Qt::RichText);
 		updateIsAvailable.setWindowTitle(tr("New Saaghar Version Available"));
@@ -747,6 +760,8 @@ void MainWindow::insertNewTab()
 	saagharWidget = new SaagharWidget( tabContent, parentCatsToolBar, tabTableWidget);
 	saagharWidget->setObjectName(QString::fromUtf8("saagharWidget"));
 
+	connect(saagharWidget, SIGNAL(loadingStatusText(QString)), this, SIGNAL(loadingStatusText(QString)));
+
 	//connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), saagharWidget, SLOT(scrollToFirstItemContains(const QString &)) );
 
 	connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateCaption()));
@@ -781,6 +796,7 @@ void MainWindow::newTabForItem(QString type, int id, bool noError)
 {
 	insertNewTab();
 	saagharWidget->processClickedItem(type, id, noError);
+	emit loadingStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":")+1), "", 0, 6, false, Qt::ElideRight)));
 	updateTabsSubMenus();
 }
 

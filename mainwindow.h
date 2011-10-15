@@ -42,7 +42,7 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 	public:
-		explicit MainWindow(QWidget *parent = 0);
+		explicit MainWindow(QWidget *parent = 0, QObject *splashScreen = 0);
 		~MainWindow();
 		SaagharWidget *saagharWidget;
 //		void emitReSizeEvent();
@@ -169,5 +169,6 @@ class MainWindow : public QMainWindow
 	
 	signals:
 		void maxItemPerPageChanged(int);
+		void loadingStatusText(const QString &);
 };
 #endif // MAINWINDOW_H

@@ -669,9 +669,10 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 //#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
 	const bool justified = true;//temp
 	int maxWidth = -1;
+	int numberOfVerses = verses.size();
 	if (justified)
 	{
-		for (int i = 0; i < verses.size(); i++)
+		for (int i = 0; i < numberOfVerses; i++)
 		{
 			QString verseText = verses.at(i)->_Text;
 			
@@ -685,11 +686,17 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
 	//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
 	bool rightVerseFlag = false;
+	int step = 100;
 
-	for (int i = 0; i < verses.size(); i++)
+	for (int i = 0; i < numberOfVerses; i++)
 	{
 		QString currentVerseText = verses.at(i)->_Text;
 
+		if (i>step)
+		{
+			emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)));
+			step = step + 100;
+		}
 //#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
 		if (justified)
 		{

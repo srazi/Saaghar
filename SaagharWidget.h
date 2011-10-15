@@ -108,5 +108,6 @@ signals:
 	void captionChanged();
 	void navNextActionState(bool);
 	void navPreviousActionState(bool);
+	void loadingStatusText(const QString &);
 };
 #endif // SAAGHARWIDGET_H
