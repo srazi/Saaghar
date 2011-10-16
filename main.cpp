@@ -37,6 +37,10 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
+	bool fresh = false;
+	if (QCoreApplication::arguments().contains("-fresh", Qt::CaseInsensitive))
+		fresh = true;
+
 	QTranslator* appTranslator=new QTranslator();
 	QTranslator* basicTranslator=new QTranslator();
 
@@ -63,7 +67,7 @@ int main(int argc, char *argv[])
 	splash.show();
 	splash.showMessage(QObject::tr("<i><b>Loading...</b></i>"));
 
-	MainWindow w(0, &splash);
+	MainWindow w(0, &splash, fresh);
 	w.show();
 
 	splash.finish(&w);

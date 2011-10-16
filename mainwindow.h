@@ -42,7 +42,7 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 	public:
-		explicit MainWindow(QWidget *parent = 0, QObject *splashScreen = 0);
+		explicit MainWindow(QWidget *parent = 0, QObject *splashScreen = 0, bool fresh = false);
 		~MainWindow();
 		SaagharWidget *saagharWidget;
 //		void emitReSizeEvent();

@@ -58,7 +58,7 @@
 
 bool MainWindow::autoCheckForUpdatesState = true;
 
-MainWindow::MainWindow(QWidget *parent, QObject *splashScreen) :
+MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
 {
@@ -156,7 +156,7 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen) :
 	emit loadingStatusText(tr("<i><b>Loading settings...</b></i>"));
 	loadGlobalSettings();
 
-	if (autoCheckForUpdatesState)
+	if (autoCheckForUpdatesState && !fresh)
 	{
 		emit loadingStatusText(tr("<i><b>Checking for update...</b></i>"));
 		QCoreApplication::processEvents();
@@ -221,15 +221,18 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen) :
 	
 	ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
 
-	for (int i=0; i<openedTabs.size(); ++i)
+	if (!fresh)
 	{
-		QStringList tabViewData = openedTabs.at(i).split("=", QString::SkipEmptyParts);
-		if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
+		for (int i=0; i<openedTabs.size(); ++i)
 		{
-			bool Ok = false;
-			int id = tabViewData.at(1).toInt(&Ok);
-			if (Ok)
-				newTabForItem(tabViewData.at(0), id, true);
+			QStringList tabViewData = openedTabs.at(i).split("=", QString::SkipEmptyParts);
+			if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
+			{
+				bool Ok = false;
+				int id = tabViewData.at(1).toInt(&Ok);
+				if (Ok)
+					newTabForItem(tabViewData.at(0), id, true);
+			}
 		}
 	}
 
@@ -1182,7 +1185,7 @@ QString MainWindow::convertToTeX(SaagharWidget *saagharObject)
 
 void MainWindow::actionNewWindowClicked()
 {
-	QProcess::startDetached("\""+QCoreApplication::applicationFilePath()+"\"");
+	QProcess::startDetached("\""+QCoreApplication::applicationFilePath()+"\"",QStringList() << "-fresh");
 }
 
 void MainWindow::actionNewTabClicked()
@@ -1822,7 +1825,6 @@ void MainWindow::loadGlobalSettings()
 	restoreGeometry(Settings::READ("Mainwindow Geometry").toByteArray());
 
 	openedTabs = config->value("openedTabs", "").toStringList();
-	config->setValue("openedTabs", "");
 
 	SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
 	

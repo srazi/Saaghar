@@ -666,6 +666,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	minMesraWidth = 0;
 	singleColumnHeightMap.clear();
 
+	emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)));
+
 //#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
 	const bool justified = true;//temp
 	int maxWidth = -1;
