@@ -153,10 +153,12 @@ void QSearchLineEdit::searchStart(bool *canceled, int min, int max)
 		setSearchProgressText(tr("Please try with another phrase!"));
 	}
 
-	sPbar = new QProgressBar(this);
+	if (!sPbar)
+		sPbar = new QProgressBar(this);
 	sPbar->setRange(min, max);
 
-	stopButton = new QToolButton(sPbar);
+	if (!stopButton)
+		stopButton = new QToolButton(sPbar);
 	QPixmap stopPixmap(":/resources/images/close-tab.png");
 	stopPixmap = stopPixmap.scaledToHeight((height()*5)/6 , Qt::SmoothTransformation);
 	stopButton->setIcon(QIcon(stopPixmap));

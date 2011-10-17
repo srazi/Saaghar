@@ -964,7 +964,7 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
 }
 
 QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList,
-													bool *Canceled, int resultCount)
+													bool *Canceled, int resultCount, bool slowSearch)
 {
 	QMap<int, QString> idList;
 	if (isConnected())
@@ -1007,14 +1007,16 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		int miliSec= end-start;
 		qDebug() << "duration=" << miliSec;
 
-		int numOfNearResult=0, nextStep = 0;
+		int numOfNearResult=0, nextStep = 0, stepLenght = 300;
+		if (slowSearch)
+			stepLenght = 30;
 
 		while( q.next() )
 		{
 			++numOfNearResult;
 			if (numOfNearResult > nextStep)
 			{
-				nextStep+=300;//500
+				nextStep+=stepLenght;//500
 				emit searchStatusChanged(QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount));
 				//qDebug() << "step="<<nextStep<<"numOfNearResult="<<numOfNearResult<<"numOfFounded="<<numOfFounded;
 				QApplication::processEvents(QEventLoop::AllEvents);

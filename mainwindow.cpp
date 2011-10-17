@@ -294,6 +294,12 @@ void MainWindow::searchStart()
 	//QString currentItemData = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toString();
 
 	QList<QListWidgetItem *> selectList = selectSearchRange->getSelectedItemList();
+
+	bool searchCanceled = false;
+	bool slowSearch = false;//more calls of 'processEvents'
+	if (selectList.size()>1)
+		slowSearch = true;
+
 	for (int i=0; i<selectList.size(); ++i)
 	{
 		QVariant currentItemData = selectList.at(i)->data(Qt::UserRole);
@@ -301,9 +307,9 @@ void MainWindow::searchStart()
 
 		if (currentItemData.toString() == "ALL_OPENED_TAB")
 		{
-			for (int i = 0; i < mainTabWidget->count(); ++i)
+			for (int j = 0; j < mainTabWidget->count(); ++j)
 			{
-				SaagharWidget *tmp = getSaagharWidget(i);
+				SaagharWidget *tmp = getSaagharWidget(j);
 				//QAbstractItemDelegate *tmpDelegate = tmp->tableViewWidget->itemDelegate();
 	
 				//delete tmpDelegate;
@@ -362,9 +368,6 @@ void MainWindow::searchStart()
 
 			SearchResultWidget *searchResultWidget = new SearchResultWidget(searchResultContents, lineEditSearchText->text(), SearchResultWidget::maxItemPerPage, poetName);
 
-
-			bool searchCanceled = false;
-
 			/////////////////////////////////////
 			QMap<int, QString> finalResult;
 //			QProgressDialog searchProgress(tr("Searching Data Base..."),  tr("Cancel"), 0, 0, this);
@@ -378,7 +381,7 @@ void MainWindow::searchStart()
 			lineEditSearchText->searchStart(&searchCanceled);
 			connect(SaagharWidget::ganjoorDataBase, SIGNAL(searchStatusChanged(const QString &)), lineEditSearchText, SLOT(setSearchProgressText(const QString &)));
 			//emit SaagharWidget::ganjoorDataBase->searchStatusChanged(tr("Searching Data Base..."));
-			lineEditSearchText->setSearchProgressText(tr("Searching Data Base..."));
+			lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(poetName));
 			QApplication::processEvents();
 			int resultCount = 0;
 			for (int j=0;j<vectorSize;++j)
@@ -387,7 +390,7 @@ void MainWindow::searchStart()
 //				int phraseCount = phrases.size();
 				QStringList excluded = excludedVectorList.at(j);
 
-				QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, resultCount);
+				QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, resultCount, slowSearch);
 
 				QMap<int, QString>::const_iterator it = mapResult.constBegin();
 
@@ -405,18 +408,19 @@ void MainWindow::searchStart()
 					break;
 			}
 
-			lineEditSearchText->searchStop();
+			if (i == selectList.size()-1)
+				lineEditSearchText->searchStop();
 			///////////////////////////////////////
 
 			searchResultWidget->setResultList( finalResult );
-			if (!searchResultWidget->init(this, currentIconThemePath()))
+			if (!searchResultWidget->init(this, currentIconThemePath()) && (i == selectList.size()-1))
 			{
 				//QMessageBox::information(this, tr("Search"), tr("Current Scope: %1\nNo match found.").arg(poetName));
 				lineEditSearchText->notFound();
 				lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(poetName));
 				delete searchResultWidget;
 				searchResultWidget = 0;
-				continue;
+				break;
 			}
 
 			connect(this, SIGNAL(maxItemPerPageChanged(int)), searchResultWidget, SLOT(maxItemPerPageChange(int)));
@@ -428,11 +432,10 @@ void MainWindow::searchStart()
 			//resize table on create and destroy
 //			emitReSizeEvent();
 //			connect(searchResultWidget, SIGNAL(destroyed()), this, SLOT(emitReSizeEvent()));
-
-			//we should create conection first and then break!
-			if (searchCanceled)
-				break;//search is canceled
 		}
+		//we should create conection first and then break!
+		if (searchCanceled)
+			break;//search is canceled
 	}
 }
 
@@ -630,9 +633,9 @@ void MainWindow::checkForUpdates()
 
 	if( reply->error() )
 	{
-		emit loadingStatusText(tr("!QTransparentSplashInternalCommands:HIDE"));
+		emit loadingStatusText("!QTransparentSplashInternalCommands:HIDE");
 		QMessageBox::critical(this, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()));
-		emit loadingStatusText(tr("!QTransparentSplashInternalCommands:SHOW"));
+		emit loadingStatusText("!QTransparentSplashInternalCommands:SHOW");
 		return;
 	}
 	QStringList data = QString::fromUtf8( reply->readAll() ).split("|", QString::SkipEmptyParts);
@@ -655,7 +658,7 @@ void MainWindow::checkForUpdates()
 	
 	if (serverAppVerion > runningAppVersion)
 	{
-		emit loadingStatusText(tr("!QTransparentSplashInternalCommands:CLOSE"));
+		emit loadingStatusText("!QTransparentSplashInternalCommands:CLOSE");
 		QMessageBox updateIsAvailable(this);
 		updateIsAvailable.setTextFormat(Qt::RichText);
 		updateIsAvailable.setWindowTitle(tr("New Saaghar Version Available"));
@@ -2354,7 +2357,7 @@ void MainWindow::toolBarViewActions(QToolBar *toolBar, QMenu *menu, bool subMenu
 		menu->addMenu(toolbarMenu);
 	}
 
-	toolbarMenu->addAction(actionInstance("actionToolBarSizeLargeIcon","",tr("&Large Icon")) );
+	toolbarMenu->addAction(actionInstance("actionToolBarSizeLargeIcon","",QObject::tr("&Large Icon")) );
 	QActionGroup *toolBarIconSize = actionInstance("actionToolBarSizeLargeIcon")->actionGroup();
 	if (!toolBarIconSize)
 	{
@@ -2370,13 +2373,13 @@ void MainWindow::toolBarViewActions(QToolBar *toolBar, QMenu *menu, bool subMenu
 	actionInstance("actionToolBarSizeLargeIcon")->setCheckable(true);
 	actionInstance("actionToolBarSizeLargeIcon")->setData(largeSize);
 
-	toolbarMenu->addAction(actionInstance("actionToolBarSizeMediumIcon","",tr("&Medium Icon")) );
+	toolbarMenu->addAction(actionInstance("actionToolBarSizeMediumIcon","",QObject::tr("&Medium Icon")) );
 	actionInstance("actionToolBarSizeMediumIcon")->setParent(toolBar);
 	actionInstance("actionToolBarSizeMediumIcon")->setActionGroup(toolBarIconSize);
 	actionInstance("actionToolBarSizeMediumIcon")->setCheckable(true);
 	actionInstance("actionToolBarSizeMediumIcon")->setData(normalSize);
 
-	toolbarMenu->addAction(actionInstance("actionToolBarSizeSmallIcon","",tr("&Small Icon")) );
+	toolbarMenu->addAction(actionInstance("actionToolBarSizeSmallIcon","",QObject::tr("&Small Icon")) );
 	actionInstance("actionToolBarSizeSmallIcon")->setParent(toolBar);
 	actionInstance("actionToolBarSizeSmallIcon")->setActionGroup(toolBarIconSize);
 	actionInstance("actionToolBarSizeSmallIcon")->setCheckable(true);
@@ -2384,7 +2387,7 @@ void MainWindow::toolBarViewActions(QToolBar *toolBar, QMenu *menu, bool subMenu
 
 	toolbarMenu->addSeparator();
 
-	toolbarMenu->addAction(actionInstance("actionToolBarStyleOnlyIcon","",tr("Only &Icon")) );
+	toolbarMenu->addAction(actionInstance("actionToolBarStyleOnlyIcon","",QObject::tr("Only &Icon")) );
 	QActionGroup *toolBarButtonStyle = actionInstance("actionToolBarStyleOnlyIcon")->actionGroup();
 	if (!toolBarButtonStyle)
 	{
@@ -2396,13 +2399,13 @@ void MainWindow::toolBarViewActions(QToolBar *toolBar, QMenu *menu, bool subMenu
 	actionInstance("actionToolBarStyleOnlyIcon")->setCheckable(true);
 	actionInstance("actionToolBarStyleOnlyIcon")->setData(Qt::ToolButtonIconOnly);
 
-	toolbarMenu->addAction(actionInstance("actionToolBarStyleOnlyText","",tr("Only &Text")) );
+	toolbarMenu->addAction(actionInstance("actionToolBarStyleOnlyText","",QObject::tr("Only &Text")) );
 	actionInstance("actionToolBarStyleOnlyText")->setParent(toolBar);
 	actionInstance("actionToolBarStyleOnlyText")->setActionGroup(toolBarButtonStyle);
 	actionInstance("actionToolBarStyleOnlyText")->setCheckable(true);
 	actionInstance("actionToolBarStyleOnlyText")->setData(Qt::ToolButtonTextOnly);
 
-	toolbarMenu->addAction(actionInstance("actionToolBarStyleTextIcon","",tr("&Both Text && Icon")) );
+	toolbarMenu->addAction(actionInstance("actionToolBarStyleTextIcon","",QObject::tr("&Both Text && Icon")) );
 	actionInstance("actionToolBarStyleTextIcon")->setParent(toolBar);
 	actionInstance("actionToolBarStyleTextIcon")->setActionGroup(toolBarButtonStyle);
 	actionInstance("actionToolBarStyleTextIcon")->setCheckable(true);
@@ -2646,9 +2649,9 @@ void MainWindow::namedActionTriggered(bool checked)
 					"<br /><b>Tip4:</b> User can use operators mixed together;"
 						"<br />i.e: <b>\"%1\"+\"%2\"+%6</b>, <b>%1+%2|%6 -%7</b>, <b>\"%1\"**\"%2\"</b>, <b>S*r*g -Spring</b> and <b>\"Gr*en\"</b> are valid search terms.<br />"
 					"<br />")
-				.arg(tr("Spring")).arg(tr("Flower")).arg(" ALIGN=CENTER").arg(" ALIGN=Left")
-				.arg("<TABLE FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0><TBODY>").arg(tr("Rain")).arg(tr("Sunny"))
-				.arg("<TD  ALIGN=Left>:</TD>");
+				.arg(tr("Spring")).arg(tr("Flower")).arg(tr(" ALIGN=CENTER")).arg(tr(" ALIGN=Left"))
+				.arg(tr("<TABLE DIR=LTR FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0><TBODY>")).arg(tr("Rain")).arg(tr("Sunny"))
+				.arg(tr("<TD  ALIGN=Left>:</TD>"));
 		QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(currentIconThemePath()+"/search.png").scaledToHeight(64, Qt::SmoothTransformation));
 		searchTipsDialog.exec();
 	}
