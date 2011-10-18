@@ -295,6 +295,7 @@ void MainWindow::searchStart()
 
 	QList<QListWidgetItem *> selectList = selectSearchRange->getSelectedItemList();
 
+	int numOfResults = 0;
 	bool searchCanceled = false;
 	bool slowSearch = false;//more calls of 'processEvents'
 	if (selectList.size()>1)
@@ -403,24 +404,36 @@ void MainWindow::searchStart()
 				resultCount = finalResult.size();
 //				qDebug() << "resultCount=" << resultCount;
 
+				QApplication::processEvents();
+
 				qDebug() << "finalResult-size" << finalResult.size();
 				if (searchCanceled)
 					break;
 			}
+
+			numOfResults+=resultCount;
 
 			if (i == selectList.size()-1)
 				lineEditSearchText->searchStop();
 			///////////////////////////////////////
 
 			searchResultWidget->setResultList( finalResult );
-			if (!searchResultWidget->init(this, currentIconThemePath()) && (i == selectList.size()-1))
+			if ( !searchResultWidget->init(this, currentIconThemePath()) )
 			{
-				//QMessageBox::information(this, tr("Search"), tr("Current Scope: %1\nNo match found.").arg(poetName));
-				lineEditSearchText->notFound();
-				lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(poetName));
+				if ( numOfResults == 0 && (i == selectList.size()-1) )
+				{
+					//QMessageBox::information(this, tr("Search"), tr("Current Scope: %1\nNo match found.").arg(poetName));
+					lineEditSearchText->notFound();
+					connect(selectSearchRange, SIGNAL(itemCheckStateChanged(QListWidgetItem*)), lineEditSearchText, SLOT(resetNotFound()));
+					lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(selectSearchRange->getSelectedStringList().join("-")));
+				}
 				delete searchResultWidget;
 				searchResultWidget = 0;
-				break;
+
+				if (searchCanceled)
+					break;//search is canceled
+				else
+					continue;
 			}
 
 			connect(this, SIGNAL(maxItemPerPageChanged(int)), searchResultWidget, SLOT(maxItemPerPageChange(int)));

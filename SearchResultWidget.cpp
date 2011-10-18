@@ -100,7 +100,7 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 	QString clearIconPath = iconThemePath+"/clear-left.png";
 	if (searchResultContents->layoutDirection() == Qt::RightToLeft)
 		clearIconPath = iconThemePath+"/clear-right.png";
-	filterLineEdit = new QSearchLineEdit(searchResultContents, clearIconPath, iconThemePath+"/search.png");
+	filterLineEdit = new QSearchLineEdit(searchResultContents, clearIconPath, iconThemePath+"/filter.png");
 	filterLineEdit->setObjectName(QString::fromUtf8("filterLineEdit"));
 	connect(filterLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(filterResults(const QString &)));
 	filterHorizontalLayout->addWidget(filterLineEdit);
