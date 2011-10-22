@@ -478,18 +478,22 @@ void MainWindow::actionRemovePoet()
 	items << tr("Select a name...");
 	QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
 	for (int i=0; i<poets.size(); ++i)
-		items << poets.at(i)->_Name;
+		items << poets.at(i)->_Name+"("+tr("poet's code=")+QString::number(poets.at(i)->_ID)+")";
 	QString item = QInputDialog::getItem(this, tr("Remove Poet"), tr("Select a poet name and click on 'OK' button, for remove it from database."), items, 0, false, &ok);
 	if (ok && !item.isEmpty() && item != tr("Select a name...") )
-	{
-		int poetID = SaagharWidget::ganjoorDataBase->getPoet(item)._ID;
+	{ 
+		qDebug() <<"item="<< item;
+		qDebug() <<"int="<< item.toInt();
+		qDebug() <<"Int-itemleft="<< item.mid(item.indexOf("("+tr("poet's code="))+tr("poet's code=").size()+1).remove(")").toInt();
+		
+		//int poetID = SaagharWidget::ganjoorDataBase->getPoet(item.left(item.indexOf("(")))._ID;
+		int poetID = item.mid(item.indexOf("("+tr("poet's code="))+tr("poet's code=").size()+1).remove(")").toInt();
 		if (poetID>0)
 		{
-			////
 			QMessageBox warnAboutDelete(this);
 			warnAboutDelete.setWindowTitle(tr("Please Notice!"));
 			warnAboutDelete.setIcon(QMessageBox::Warning);
-			warnAboutDelete.setText(tr("Are you sure for removing \"%1\", from database?").arg(item));
+			warnAboutDelete.setText(tr("Are you sure for removing \"%1\", from database?").arg(SaagharWidget::ganjoorDataBase->getPoet(poetID)._Name/*item*/));
 			warnAboutDelete.addButton(tr("Continue"), QMessageBox::AcceptRole);
 			warnAboutDelete.setStandardButtons(QMessageBox::Cancel);
 			warnAboutDelete.setEscapeButton(QMessageBox::Cancel);
@@ -497,7 +501,7 @@ void MainWindow::actionRemovePoet()
 			int ret = warnAboutDelete.exec();
 			if ( ret == QMessageBox::Cancel)
 				return;
-			///////
+
 			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 			SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poetID);
 			comboBoxSearchRegion->clear();
@@ -505,12 +509,12 @@ void MainWindow::actionRemovePoet()
 			multiSelectObjectInitialize(selectSearchRange, selectedSearchRange);
 			item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
 			//update visible region of searchToolBar
-			bool tmpFlag = labelMaxResultAction->isVisible();
-			labelMaxResultAction->setVisible(!tmpFlag);
-			ui->searchToolBar->update();
-			QApplication::processEvents();
-			labelMaxResultAction->setVisible(tmpFlag);
-
+//			bool tmpFlag = labelMaxResultAction->isVisible();
+//			labelMaxResultAction->setVisible(!tmpFlag);
+//			ui->searchToolBar->update();
+//			QApplication::processEvents();
+//			labelMaxResultAction->setVisible(tmpFlag);
+			setHomeAsDirty();
 			QApplication::restoreOverrideCursor();
 		}
 	}
@@ -721,7 +725,7 @@ void MainWindow::tabCloser(int tabIndex)
 
 	QAction *tabAct = new QAction(mainTabWidget->tabText(tabIndex), menuClosedTabs);
 	tabAct->setData( getSaagharWidget(tabIndex)->identifier());
-	connect(tabAct, SIGNAL(triggered()), this, SLOT(actonClosedTabsClicked()) );
+	connect(tabAct, SIGNAL(triggered()), this, SLOT(actionClosedTabsClicked()) );
 	menuClosedTabs->addAction(tabAct);
 
 //	QAction *tabAction = new QAction(mainTabWidget->tabText(i), menuOpenedTabs);
@@ -2267,12 +2271,13 @@ void MainWindow::importDataBase(const QString fileName)
 		QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
 		multiSelectObjectInitialize(selectSearchRange, selectedSearchRange);
 		item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
+		setHomeAsDirty();
 		//update visible region of searchToolBar
-		bool tmpFlag = labelMaxResultAction->isVisible();
-		labelMaxResultAction->setVisible(!tmpFlag);
-		ui->searchToolBar->update();
-		QApplication::processEvents();
-		labelMaxResultAction->setVisible(tmpFlag);
+//		bool tmpFlag = labelMaxResultAction->isVisible();
+//		labelMaxResultAction->setVisible(!tmpFlag);
+//		ui->searchToolBar->update();
+//		QApplication::processEvents();
+//		labelMaxResultAction->setVisible(tmpFlag);
 	}
 	else
 	{
@@ -2609,20 +2614,7 @@ void MainWindow::namedActionTriggered(bool checked)
 	{
 		Settings::WRITE(actionName, checked);
 		//TODO: reload Home page!!!!!!!
-		for (int i = 0; i < mainTabWidget->count(); ++i)
-		{
-			SaagharWidget *tmp = getSaagharWidget(i);
-			if (tmp && tmp->currentCat==0)
-			{
-				tmp->setDirty();//needs to be refreshed
-			}
-		}
-
-		if (saagharWidget->isDirty())
-		{
-			saagharWidget->showHome();
-		//saagharWidget->showParentCategory(SaagharWidget::ganjoorDataBase->getCategory(saagharWidget->currentCat));//just update parentCatsToolbar
-		}
+		setHomeAsDirty();
 	}
 	else if ( actionName == "menuOpenedTabsActions" )
 	{
@@ -2693,7 +2685,7 @@ void MainWindow::updateTabsSubMenus()
 	qDebug() << "end::updateTabsSubMenus";
 }
 
-void MainWindow::actonClosedTabsClicked()
+void MainWindow::actionClosedTabsClicked()
 {
 	QAction *action = qobject_cast<QAction *>(sender());
 	if (!action) return;
@@ -2735,4 +2727,19 @@ QString MainWindow::currentIconThemePath()
 	if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
 		return settingsIconThemePath;
 	return ":/resources/images/";
+}
+
+void MainWindow::setHomeAsDirty()
+{
+	for (int i = 0; i < mainTabWidget->count(); ++i)
+	{
+		SaagharWidget *tmp = getSaagharWidget(i);
+		if (tmp && tmp->currentCat==0)
+		{
+			tmp->setDirty();//needs to be refreshed
+		}
+	}
+
+	if (saagharWidget && saagharWidget->isDirty())
+		saagharWidget->showHome();
 }

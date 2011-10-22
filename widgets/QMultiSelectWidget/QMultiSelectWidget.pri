@@ -1,10 +1,10 @@
 ##############################################
-#The 'QMultiSelectWidget' Qt widget!                       #
-#Copy Right by S. Razi Alavizadeh 2011                   #
+#The 'QMultiSelectWidget' Qt widget!         #
+#Copy Right by S. Razi Alavizadeh 2011       #
 ##############################################
 
-DEPENDPATH += .
-INCLUDEPATH += .
+DEPENDPATH += $${PWD}/.
+INCLUDEPATH += $${PWD}/.
 
 # Input
 HEADERS += QMultiSelectWidget.h

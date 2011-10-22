@@ -110,7 +110,7 @@ class MainWindow : public QMainWindow
 
 		QMap<QString, QAction *> allActionMap;
 		QAction *labelMaxResultSeparator;
-		QAction *labelMaxResultAction;
+		//QAction *labelMaxResultAction;
 		QAction *spinBoxMaxSearchResultAction;
 		QMenu *searchOptionMenu;
 		QString mainToolBarSizeAction;
@@ -118,7 +118,8 @@ class MainWindow : public QMainWindow
 		bool dataFromIdentifier(const QString &identifier, QString *type = 0, int *id = 0);
 
 	private slots:
-		void actonClosedTabsClicked();
+		void setHomeAsDirty();
+		void actionClosedTabsClicked();
 		void namedActionTriggered(bool checked);
 		void toolbarViewChanges(QAction *action);
 		void customizeRandomDialog();
