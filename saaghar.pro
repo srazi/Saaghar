@@ -49,11 +49,7 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/SearchResultWidget.cpp \
 	$${SOURCE_DIR}/SearchPatternManager.cpp
 
-
-include($${SOURCE_DIR}/widgets/QMultiSelectWidget/QMultiSelectWidget.pri)
-include($${SOURCE_DIR}/widgets/QSearchLineEdit/QSearchLineEdit.pri)
-include($${SOURCE_DIR}/widgets/QTextBrowserDialog/QTextBrowserDialog.pri)
-include($${SOURCE_DIR}/widgets/QExtendedSplashScreen/QExtendedSplashScreen.pri)
+include($${SOURCE_DIR}/pQjWidgets/pQjWidgets.pri)
 
 
 
