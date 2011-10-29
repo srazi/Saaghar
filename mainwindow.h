@@ -23,8 +23,6 @@
 #define MAINWINDOW_H
 
 #include "SaagharWidget.h"
-#include "QSearchLineEdit.h"
-#include "QMultiSelectWidget.h"
 
 #include <QMainWindow>
 #include <QSettings>
@@ -32,6 +30,9 @@
 //#include <QComboBox>
 #include <QSpinBox>
 #include <QToolButton>
+
+class QSearchLineEdit;
+class QMultiSelectWidget;
 
 namespace Ui {
 	class MainWindow;
@@ -75,7 +76,7 @@ class MainWindow : public QMainWindow
 		void writeToFile(QString fileName, QString textToWrite);
 		QString convertToHtml(SaagharWidget *saagharObject);
 		QSettings *getSettingsObject();
-		QStringList openedTabs;
+		//QStringList openedTabs;
 		void scrollToFirstFoundedItem(QString phrase, int PoemID, int vorder);
 		QTabWidget *mainTabWidget;
 		void loadTabWidgetSettings();

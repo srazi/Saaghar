@@ -5,12 +5,11 @@ isEmpty( SOURCE_DIR ) {
 SOURCE_DIR = .
 }
 
+
 DEPENDPATH += $${SOURCE_DIR}/. \
 			$${SOURCE_DIR}/build
 
-
-INCLUDEPATH += $${SOURCE_DIR}/. \
-			$UI_DIR
+INCLUDEPATH += $${SOURCE_DIR}/.
 
 # $${SOURCE_DIR}/sqlite $${SOURCE_DIR}/sqlite-driver/sqlite
 
@@ -20,7 +19,11 @@ INCLUDEPATH += $${SOURCE_DIR}/. \
 CONFIG	+= qt 
 #warn_off
 
-#for static building un-comment the following two lines
+##un-comment the following two lines for skipping all warning and debug messages.
+DEFINES += QT_NO_WARNING_OUTPUT
+DEFINES += QT_NO_DEBUG_OUTPUT
+
+##for static building un-comment the following two lines
 #CONFIG	+= static
 #DEFINES += STATIC
 

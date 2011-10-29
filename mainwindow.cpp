@@ -27,7 +27,10 @@
 #include "settings.h"
 #include "SearchResultWidget.h"
 #include "SearchPatternManager.h"
-#include "QTextBrowserDialog.h"
+
+#include <QTextBrowserDialog>
+#include <QSearchLineEdit>
+#include <QMultiSelectWidget>
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -223,6 +226,7 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 
 	if (!fresh)
 	{
+		QStringList openedTabs = Settings::READ("Opened tabs from last session").toStringList();
 		for (int i=0; i<openedTabs.size(); ++i)
 		{
 			QStringList tabViewData = openedTabs.at(i).split("=", QString::SkipEmptyParts);
@@ -651,7 +655,9 @@ void MainWindow::checkForUpdates()
 	if( reply->error() )
 	{
 		emit loadingStatusText("!QTransparentSplashInternalCommands:HIDE");
-		QMessageBox::critical(this, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()));
+		QMessageBox criticalError(QMessageBox::Critical, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint );
+		criticalError.exec();
+		//QMessageBox::critical(this, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()));
 		emit loadingStatusText("!QTransparentSplashInternalCommands:SHOW");
 		return;
 	}
@@ -677,6 +683,7 @@ void MainWindow::checkForUpdates()
 	{
 		emit loadingStatusText("!QTransparentSplashInternalCommands:CLOSE");
 		QMessageBox updateIsAvailable(this);
+		updateIsAvailable.setWindowFlags(updateIsAvailable.windowFlags() | Qt::WindowStaysOnTopHint);
 		updateIsAvailable.setTextFormat(Qt::RichText);
 		updateIsAvailable.setWindowTitle(tr("New Saaghar Version Available"));
 		updateIsAvailable.setIcon(QMessageBox::Information);
@@ -1466,6 +1473,8 @@ void MainWindow::setupUi()
 	ui->searchToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
 	parentCatsToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
 
+	actionInstance("Ganjoor Verification", iconThemePath+"/ocr-verification.png", tr("&OCR Verification") );
+
 	//Inserting main menu items
 	ui->menuBar->addMenu(menuFile);
 	ui->menuBar->addMenu(menuNavigation);
@@ -1541,6 +1550,7 @@ void MainWindow::setupUi()
 	menuTools->addAction(actionInstance("searchToolbarAction"));
 	menuTools->addSeparator();
 	menuTools->addAction(actionInstance("actionViewInGanjoorSite"));
+	menuTools->addAction(actionInstance("Ganjoor Verification"));
 	menuTools->addSeparator();
 	menuTools->addAction(actionInstance("actionImportNewSet"));
 	menuTools->addAction(actionInstance("actionRemovePoet"));
@@ -1844,7 +1854,7 @@ void MainWindow::loadGlobalSettings()
 	restoreState( Settings::READ("MainWindowState").toByteArray(), 1);
 	restoreGeometry(Settings::READ("Mainwindow Geometry").toByteArray());
 
-	openedTabs = config->value("openedTabs", "").toStringList();
+	//openedTabs = config->value("openedTabs", "").toStringList();
 
 	SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
 	
@@ -1892,7 +1902,7 @@ void MainWindow::loadGlobalSettings()
 	//config->setValue("VariableHash", QVariant(Settings::VariablesHash));
 	QHash<QString, QVariant> vHash = config->value("VariableHash").toHash();
 
-	mainToolBarItems = Settings::READ("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").toString().split("|", QString::SkipEmptyParts);
+	mainToolBarItems = Settings::READ("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|Ganjoor Verification").toString().split("|", QString::SkipEmptyParts);
 //	QString tmp = mainToolBarItems.join("");
 //	tmp.remove("action", Qt::CaseInsensitive);
 //	tmp.remove("Separator", Qt::CaseInsensitive);
@@ -1956,7 +1966,8 @@ void MainWindow::saveSettings()
 	Settings::WRITE("MainWindowState", saveState(1));
 	Settings::WRITE("Mainwindow Geometry", saveGeometry());
 
-	openedTabs.clear();
+	QStringList openedTabs;
+	//openedTabs.clear();
 	for (int i = 0; i < mainTabWidget->count(); ++i)
 	{
 		SaagharWidget *tmp = getSaagharWidget(i);
@@ -1968,7 +1979,8 @@ void MainWindow::saveSettings()
 		
 		openedTabs << tabViewType;
 	}
-	config->setValue("openedTabs", openedTabs);
+	Settings::WRITE("Opened tabs from last session", openedTabs);
+	//config->setValue("openedTabs", openedTabs);
 
 	//database path
 	config->setValue("DataBase Path", QGanjoorDbBrowser::dataBasePath.join(";"));
@@ -2077,7 +2089,7 @@ void MainWindow::actionGanjoorSiteClicked()
 	}
 	else
 	{
-		 QDesktopServices::openUrl(saagharWidget->currentPageGanjoorUrl());
+		QDesktopServices::openUrl(QString("http://saaghar.sourceforge.net/redirect.php?sender=Saaghar&section=ganjoornet&url=%1").arg(saagharWidget->currentPageGanjoorUrl()));
 	}
 }
 
@@ -2543,7 +2555,7 @@ void MainWindow::setupSearchToolBarUi()
 	QString clearIconPath = currentIconThemePath()+"/clear-left.png";
 	if (layoutDirection() == Qt::RightToLeft)
 		clearIconPath = currentIconThemePath()+"/clear-right.png";
-	lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, currentIconThemePath()+"/search-options.png");
+	lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, currentIconThemePath()+"/search-options.png", currentIconThemePath()+"/cancel.png");
 	lineEditSearchText->setObjectName(QString::fromUtf8("lineEditSearchText"));
 	lineEditSearchText->setMaximumSize(QSize(170, 16777215));
 	lineEditSearchText->setLayoutDirection(Qt::RightToLeft);
@@ -2659,6 +2671,10 @@ void MainWindow::namedActionTriggered(bool checked)
 				.arg(tr("<TD  ALIGN=Left>:</TD>"));
 		QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(currentIconThemePath()+"/search.png").scaledToHeight(64, Qt::SmoothTransformation));
 		searchTipsDialog.exec();
+	}
+	else if ( actionName == "Ganjoor Verification" )
+	{
+		QDesktopServices::openUrl(QString("http://saaghar.sourceforge.net/redirect.php?sender=Saaghar&section=ganjoor-vocr&url=%1").arg("http://v.ganjoor.net"));
 	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));

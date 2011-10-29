@@ -23,7 +23,7 @@
 #include <QtGui/QApplication>
 //#include<QMessageBox>
 
-#include "QExtendedSplashScreen.h"
+#include <QExtendedSplashScreen>
 #include "mainwindow.h"
 
 #ifdef Q_WS_WIN
@@ -61,9 +61,9 @@ int main(int argc, char *argv[])
 	//'At Development Stage' message
 	//QMessageBox::information(0, QObject::tr("At Development Stage"), QObject::tr("This is an experimental version! Don\'t release it!\nWWW: http://pojh.iblogger.org/saaghar"));
 
-	QPixmap pixmap;
+	QPixmap pixmap(":/resources/images/saaghar-splash.png");
 	QExtendedSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
-	splash.setMessageOptions(QRect(pixmap.rect().topLeft()+QPoint(30,445), pixmap.rect().bottomRight()+QPoint(-340,0)), Qt::AlignLeft|Qt::AlignBottom, Qt::blue);
+	splash.setMessageOptions(QRect(pixmap.rect().topLeft()+QPoint(30,400), pixmap.rect().bottomRight()+QPoint(-300,0)), Qt::AlignLeft|Qt::AlignBottom, Qt::blue);
 	splash.show();
 	splash.showMessage(QObject::tr("<i><b>Loading...</b></i>"));
 

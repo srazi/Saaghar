@@ -22,14 +22,14 @@
 #ifndef SEARCHRESULTWIDGET_H
 #define SEARCHRESULTWIDGET_H
 
-#include "QSearchLineEdit.h"
-
 #include <QMainWindow>
 #include <QHash>
 #include <QTableWidget>
 #include <QToolButton>
 #include <QAction>
 #include <QLabel>
+
+class QSearchLineEdit;
 
 const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 

@@ -23,6 +23,8 @@
 #include "SearchItemDelegate.h"
 #include "QGanjoorDbBrowser.h"
 
+#include <QSearchLineEdit>
+
 #include <QMessageBox>
 #include <QDockWidget>
 #include <QProgressDialog>

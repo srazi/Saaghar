@@ -23,7 +23,7 @@
 #define SETTINGS_H
 
 #include "ui_settings.h"
-#include "QMultiSelectWidget.h"
+#include <QMultiSelectWidget>
 
 #include <QDialog>
 
