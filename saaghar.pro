@@ -96,79 +96,37 @@ RC_FILE = $${SOURCE_DIR}/win.rc
 	
 target.path = Saaghar-Win
 INSTALLS = target
-utilities.path = Saaghar-Win
-utilities.files = $${SOURCE_DIR}/utilities/AUTHORS \
-	$${SOURCE_DIR}/utilities/CHANGELOG \
-	$${SOURCE_DIR}/utilities/COPYING \
-	$${SOURCE_DIR}/utilities/README \
-	$${SOURCE_DIR}/utilities/TODO \
-	$${SOURCE_DIR}/utilities/Saaghar-Manual.pdf \
-	$${SOURCE_DIR}/utilities/saaghar_fa.qm \
-	$${SOURCE_DIR}/utilities/qt_fa.qm \
-	$${SOURCE_DIR}/saaghar.ico
 
-poetsImage.path = Saaghar-Win/poets_images
-poetsImage.files = $${SOURCE_DIR}/utilities/poets_images/10.png \
-	$${SOURCE_DIR}/utilities/poets_images/11.png \
-	$${SOURCE_DIR}/utilities/poets_images/12.png \
-	$${SOURCE_DIR}/utilities/poets_images/13.png \
-	$${SOURCE_DIR}/utilities/poets_images/14.png \
-	$${SOURCE_DIR}/utilities/poets_images/15.png \
-	$${SOURCE_DIR}/utilities/poets_images/16.png \
-	$${SOURCE_DIR}/utilities/poets_images/17.png \
-	$${SOURCE_DIR}/utilities/poets_images/18.png \
-	$${SOURCE_DIR}/utilities/poets_images/19.png \
-	$${SOURCE_DIR}/utilities/poets_images/2.png \
-	$${SOURCE_DIR}/utilities/poets_images/20.png \
-	$${SOURCE_DIR}/utilities/poets_images/21.png \
-	$${SOURCE_DIR}/utilities/poets_images/22.png \
-	$${SOURCE_DIR}/utilities/poets_images/23.png \
-	$${SOURCE_DIR}/utilities/poets_images/24.png \
-	$${SOURCE_DIR}/utilities/poets_images/25.png \
-	$${SOURCE_DIR}/utilities/poets_images/26.png \
-	$${SOURCE_DIR}/utilities/poets_images/27.png \
-	$${SOURCE_DIR}/utilities/poets_images/28.png \
-	$${SOURCE_DIR}/utilities/poets_images/29.png \
-	$${SOURCE_DIR}/utilities/poets_images/3.png \
-	$${SOURCE_DIR}/utilities/poets_images/30.png \
-	$${SOURCE_DIR}/utilities/poets_images/31.png \
-	$${SOURCE_DIR}/utilities/poets_images/32.png \
-	$${SOURCE_DIR}/utilities/poets_images/33.png \
-	$${SOURCE_DIR}/utilities/poets_images/34.png \
-	$${SOURCE_DIR}/utilities/poets_images/35.png \
-	$${SOURCE_DIR}/utilities/poets_images/37.png \
-	$${SOURCE_DIR}/utilities/poets_images/38.png \
-	$${SOURCE_DIR}/utilities/poets_images/39.png \
-	$${SOURCE_DIR}/utilities/poets_images/4.png \
-	$${SOURCE_DIR}/utilities/poets_images/40.png \
-	$${SOURCE_DIR}/utilities/poets_images/41.png \
-	$${SOURCE_DIR}/utilities/poets_images/42.png \
-	$${SOURCE_DIR}/utilities/poets_images/43.png \
-	$${SOURCE_DIR}/utilities/poets_images/44.png \
-	$${SOURCE_DIR}/utilities/poets_images/45.png \
-	$${SOURCE_DIR}/utilities/poets_images/46.png \
-	$${SOURCE_DIR}/utilities/poets_images/47.png \
-	$${SOURCE_DIR}/utilities/poets_images/5.png \
-	$${SOURCE_DIR}/utilities/poets_images/501.png \
-	$${SOURCE_DIR}/utilities/poets_images/502.png \
-	$${SOURCE_DIR}/utilities/poets_images/503.png \
-	$${SOURCE_DIR}/utilities/poets_images/504.png \
-	$${SOURCE_DIR}/utilities/poets_images/505.png \
-	$${SOURCE_DIR}/utilities/poets_images/6.png \
-	$${SOURCE_DIR}/utilities/poets_images/600.png \
-	$${SOURCE_DIR}/utilities/poets_images/602.png \
-	$${SOURCE_DIR}/utilities/poets_images/7.png \
-	$${SOURCE_DIR}/utilities/poets_images/8.png \
-	$${SOURCE_DIR}/utilities/poets_images/9.png \
-	$${SOURCE_DIR}/utilities/poets_images/48.png \
-	$${SOURCE_DIR}/utilities/poets_images/49.png \
-	$${SOURCE_DIR}/utilities/poets_images/50.png \
-	$${SOURCE_DIR}/utilities/poets_images/506.png \
-	$${SOURCE_DIR}/utilities/poets_images/51.png \
-	$${SOURCE_DIR}/utilities/poets_images/610.png
+RESOURCES_PATH = Saaghar-Win
 
-INSTALLS += utilities \
-	poetsImage
+utilities.files = $${SOURCE_DIR}/saaghar.ico
+
+!static {
+	##shared libs
+	depFiles.path = Saaghar-Win
+	depFiles.files = $$[QT_INSTALL_LIBS]/QtCore4.dll \
+					$$[QT_INSTALL_LIBS]/QtGui4.dll \
+					$$[QT_INSTALL_LIBS]/QtSql4.dll \
+					$$[QT_INSTALL_LIBS]/QtNetwork4.dll \
+					$$[QT_INSTALL_BINS]/mingwm10.dll \
+					$$[QT_INSTALL_BINS]/libgcc_s_dw2-1.dll
+
+	sqlPlugins.path = Saaghar-Win/sqldrivers
+	sqlPlugins.files = $$[QT_INSTALL_PLUGINS]/sqldrivers/qsqlite4.dll
+
+	imagePlugins.path = Saaghar-Win/imageformats
+	imagePlugins.files = $$[QT_INSTALL_PLUGINS]/imageformats/qgif4.dll \
+					$$[QT_INSTALL_PLUGINS]/imageformats/qico4.dll \
+					$$[QT_INSTALL_PLUGINS]/imageformats/qjpeg4.dll \
+					$$[QT_INSTALL_PLUGINS]/imageformats/qmng4.dll \
+					$$[QT_INSTALL_PLUGINS]/imageformats/qsvg4.dll \
+					$$[QT_INSTALL_PLUGINS]/imageformats/qtiff4.dll
+
+	INSTALLS += depFiles \
+				sqlPlugins \
+				imagePlugins
+	}
+
 }
 
 mac {
@@ -182,78 +140,9 @@ QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.5
 
 target.path = /Applications
 INSTALLS = target
-utilities.path = Contents/Resources
-utilities.files = $${SOURCE_DIR}/utilities/AUTHORS \
-	$${SOURCE_DIR}/utilities/CHANGELOG \
-	$${SOURCE_DIR}/utilities/COPYING \
-	$${SOURCE_DIR}/utilities/README \
-	$${SOURCE_DIR}/utilities/Saaghar-Manual.pdf \
-	$${SOURCE_DIR}/utilities/saaghar_fa.qm \
-	$${SOURCE_DIR}/utilities/qt_fa.qm \
-	$${SOURCE_DIR}/utilities/TODO
 
-poetsImage.path = Contents/Resources/poets_images
-poetsImage.files = $${SOURCE_DIR}/utilities/poets_images/10.png \
-	$${SOURCE_DIR}/utilities/poets_images/11.png \
-	$${SOURCE_DIR}/utilities/poets_images/12.png \
-	$${SOURCE_DIR}/utilities/poets_images/13.png \
-	$${SOURCE_DIR}/utilities/poets_images/14.png \
-	$${SOURCE_DIR}/utilities/poets_images/15.png \
-	$${SOURCE_DIR}/utilities/poets_images/16.png \
-	$${SOURCE_DIR}/utilities/poets_images/17.png \
-	$${SOURCE_DIR}/utilities/poets_images/18.png \
-	$${SOURCE_DIR}/utilities/poets_images/19.png \
-	$${SOURCE_DIR}/utilities/poets_images/2.png \
-	$${SOURCE_DIR}/utilities/poets_images/20.png \
-	$${SOURCE_DIR}/utilities/poets_images/21.png \
-	$${SOURCE_DIR}/utilities/poets_images/22.png \
-	$${SOURCE_DIR}/utilities/poets_images/23.png \
-	$${SOURCE_DIR}/utilities/poets_images/24.png \
-	$${SOURCE_DIR}/utilities/poets_images/25.png \
-	$${SOURCE_DIR}/utilities/poets_images/26.png \
-	$${SOURCE_DIR}/utilities/poets_images/27.png \
-	$${SOURCE_DIR}/utilities/poets_images/28.png \
-	$${SOURCE_DIR}/utilities/poets_images/29.png \
-	$${SOURCE_DIR}/utilities/poets_images/3.png \
-	$${SOURCE_DIR}/utilities/poets_images/30.png \
-	$${SOURCE_DIR}/utilities/poets_images/31.png \
-	$${SOURCE_DIR}/utilities/poets_images/32.png \
-	$${SOURCE_DIR}/utilities/poets_images/33.png \
-	$${SOURCE_DIR}/utilities/poets_images/34.png \
-	$${SOURCE_DIR}/utilities/poets_images/35.png \
-	$${SOURCE_DIR}/utilities/poets_images/37.png \
-	$${SOURCE_DIR}/utilities/poets_images/38.png \
-	$${SOURCE_DIR}/utilities/poets_images/39.png \
-	$${SOURCE_DIR}/utilities/poets_images/4.png \
-	$${SOURCE_DIR}/utilities/poets_images/40.png \
-	$${SOURCE_DIR}/utilities/poets_images/41.png \
-	$${SOURCE_DIR}/utilities/poets_images/42.png \
-	$${SOURCE_DIR}/utilities/poets_images/43.png \
-	$${SOURCE_DIR}/utilities/poets_images/44.png \
-	$${SOURCE_DIR}/utilities/poets_images/45.png \
-	$${SOURCE_DIR}/utilities/poets_images/46.png \
-	$${SOURCE_DIR}/utilities/poets_images/47.png \
-	$${SOURCE_DIR}/utilities/poets_images/5.png \
-	$${SOURCE_DIR}/utilities/poets_images/501.png \
-	$${SOURCE_DIR}/utilities/poets_images/502.png \
-	$${SOURCE_DIR}/utilities/poets_images/503.png \
-	$${SOURCE_DIR}/utilities/poets_images/504.png \
-	$${SOURCE_DIR}/utilities/poets_images/505.png \
-	$${SOURCE_DIR}/utilities/poets_images/6.png \
-	$${SOURCE_DIR}/utilities/poets_images/600.png \
-	$${SOURCE_DIR}/utilities/poets_images/602.png \
-	$${SOURCE_DIR}/utilities/poets_images/7.png \
-	$${SOURCE_DIR}/utilities/poets_images/8.png \
-	$${SOURCE_DIR}/utilities/poets_images/9.png \
-	$${SOURCE_DIR}/utilities/poets_images/48.png \
-	$${SOURCE_DIR}/utilities/poets_images/49.png \
-	$${SOURCE_DIR}/utilities/poets_images/50.png \
-	$${SOURCE_DIR}/utilities/poets_images/506.png \
-	$${SOURCE_DIR}/utilities/poets_images/51.png \
-	$${SOURCE_DIR}/utilities/poets_images/610.png
- 
-QMAKE_BUNDLE_DATA += utilities\
-                     poetsImage
+RESOURCES_PATH = Contents/Resources
+
 ICON = $${SOURCE_DIR}/saaghar.icns
 QMAKE_INFO_PLIST = $${SOURCE_DIR}/Info.plist
 
@@ -273,17 +162,33 @@ ICONDIR = $${PREFIX}/share/pixmaps
 target.path = $${PREFIX}/bin
 INSTALLS = target
 
-utilities.path = $${PREFIX}/share/saaghar
-utilities.files = $${SOURCE_DIR}/utilities/AUTHORS \
+RESOURCES_PATH = $${PREFIX}/share/saaghar
+
+desktop.path = $${DESKTOPDIR}
+desktop.files = $${SOURCE_DIR}/utilities/Saaghar.desktop
+
+icon.path = $${ICONDIR}
+icon.files = $${SOURCE_DIR}/images/saaghar.png
+
+INSTALLS += desktop \
+			icon
+
+!build_pass:message("'make uninstall' doesn't remove "$$(HOME)/.Pojh/Saaghar" directory and its contents especially 'database file', do that manually!")
+}
+
+##installation files
+utilities.path = $${RESOURCES_PATH}
+utilities.files += $${SOURCE_DIR}/utilities/AUTHORS \
 	$${SOURCE_DIR}/utilities/CHANGELOG \
 	$${SOURCE_DIR}/utilities/COPYING \
 	$${SOURCE_DIR}/utilities/README \
 	$${SOURCE_DIR}/utilities/Saaghar-Manual.pdf \
 	$${SOURCE_DIR}/utilities/saaghar_fa.qm \
 	$${SOURCE_DIR}/utilities/qt_fa.qm \
-	$${SOURCE_DIR}/utilities/TODO
+	$${SOURCE_DIR}/utilities/TODO \
+	$${SOURCE_DIR}/utilities/LICENSE
 
-poetsImage.path = $${PREFIX}/share/saaghar/poets_images
+poetsImage.path = $${RESOURCES_PATH}/poets_images
 poetsImage.files = $${SOURCE_DIR}/utilities/poets_images/10.png \
 	$${SOURCE_DIR}/utilities/poets_images/11.png \
 	$${SOURCE_DIR}/utilities/poets_images/12.png \
@@ -343,15 +248,41 @@ poetsImage.files = $${SOURCE_DIR}/utilities/poets_images/10.png \
 	$${SOURCE_DIR}/utilities/poets_images/51.png \
 	$${SOURCE_DIR}/utilities/poets_images/610.png
 
-desktop.path = $${DESKTOPDIR}
-desktop.files = $${SOURCE_DIR}/utilities/Saaghar.desktop
-INSTALLS += desktop \
-			poetsImage \
-			utilities
+backgrounds.path = $${RESOURCES_PATH}/themes/backgrounds
+backgrounds.files = $${SOURCE_DIR}/utilities/themes/backgrounds/bgpatterns_1.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/bgpatterns_2.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/bgpatterns_3.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/bgpatterns_4.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/grav-rand_1.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/grav-rand_2.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/grav-rand_3.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/grav-rand_4.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/saaghar-pattern_1.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/woodw-blue_1.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/woodw-golden_1.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/woodw-golden_2.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/woodw-green_1.png \
+	$${SOURCE_DIR}/utilities/themes/backgrounds/woodw_3d_1.png
 
-icon.path = $${ICONDIR}
-icon.files = $${SOURCE_DIR}/images/saaghar.png
-INSTALLS += icon
+exists( $${SOURCE_DIR}/OTHERS/fonts/*.ttf ) {
+	fonts.path = $${RESOURCES_PATH}/fonts
+	fonts.files = $$quote($${SOURCE_DIR}/OTHERS/fonts/XB Sols.ttf) \
+				$${SOURCE_DIR}/OTHERS/fonts/license.txt
+	mac {
+		QMAKE_BUNDLE_DATA += fonts
+	}
+	else {
+		INSTALLS += fonts
+	}
+}
 
-!build_pass:message("'make uninstall' doesn't remove "$$(HOME)/.Pojh/Saaghar" directory and its contents especially 'database file', do that manually!")
+mac {
+	QMAKE_BUNDLE_DATA += utilities\
+						poetsImage \
+						backgrounds
+}
+else {
+	INSTALLS += utilities \
+		poetsImage \
+		backgrounds
 }

@@ -80,6 +80,7 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 		warnDataBaseOpen.setStandardButtons(QMessageBox::Ok);
 		warnDataBaseOpen.setEscapeButton(QMessageBox::Ok);
 		warnDataBaseOpen.setDefaultButton(QMessageBox::Ok);
+		warnDataBaseOpen.setWindowFlags(Qt::WindowStaysOnTopHint);
 		int ret = warnDataBaseOpen.exec();
 		if ( ret != QMessageBox::Ok && errorString.simplified().isEmpty() )
 		{
