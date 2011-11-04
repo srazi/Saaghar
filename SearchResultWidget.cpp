@@ -111,9 +111,9 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 
 	pageLabel = new QLabel(searchResultContents);
 	pageLabel->setObjectName(QString::fromUtf8("pageLabel"));
-	filterHorizontalLayout->addWidget(pageLabel, 0, Qt::AlignRight|Qt::AlignCenter);
+//	filterHorizontalLayout->addWidget(pageLabel, 0, Qt::AlignRight|Qt::AlignCenter);
 
-	searchTableGridLayout->addLayout(filterHorizontalLayout, 1, 0, 1, 1);
+	//searchTableGridLayout->addLayout(filterHorizontalLayout, 1, 0, 1, 1);
 
 	//create QTableWidget
 	searchTable = new QTableWidget(searchResultContents);
@@ -139,15 +139,14 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 
 	searchTableGridLayout->addWidget(searchTable, 0, 0, 1, 1);
 
-	QVBoxLayout *searchNavVerticalLayout = new QVBoxLayout();
-	searchNavVerticalLayout->setSpacing(6);
-	searchNavVerticalLayout->setObjectName(QString::fromUtf8("searchNavVerticalLayout"));
+//	QVBoxLayout *searchNavVerticalLayout = new QVBoxLayout();
+//	searchNavVerticalLayout->setSpacing(6);
+//	searchNavVerticalLayout->setObjectName(QString::fromUtf8("searchNavVerticalLayout"));
 
 	searchNextPage = new QToolButton(searchResultContents);
 	searchNextPage->setObjectName(QString::fromUtf8("searchNextPage"));
 
 	actSearchNextPage = new QAction(searchResultContents);
-	//actSearchNextPage->setIcon(actionInstance("actionNextPoem")->icon());
 	searchNextPage->setDefaultAction(actSearchNextPage);
 
 	connect(searchNextPage, SIGNAL(triggered(QAction *)), this, SLOT(searchPageNavigationClicked(QAction *)));
@@ -155,13 +154,12 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 	searchNextPage->setEnabled(false);
 	searchNextPage->hide();
 	
-	searchNavVerticalLayout->addWidget(searchNextPage);
+	//searchNavVerticalLayout->addWidget(searchNextPage);
 
 	searchPreviousPage = new QToolButton(searchResultContents);
 	searchPreviousPage->setObjectName(QString::fromUtf8("searchPreviousPage"));
 	
 	actSearchPreviousPage = new QAction(searchResultContents);
-	//actSearchPreviousPage->setIcon(actionInstance("actionPreviousPoem")->icon());
 	searchPreviousPage->setDefaultAction(actSearchPreviousPage);
 
 	if (qmw->layoutDirection() == Qt::LeftToRight)
@@ -180,14 +178,19 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 	searchPreviousPage->setEnabled(false);
 	searchPreviousPage->hide();
 
-	searchNavVerticalLayout->addWidget(searchPreviousPage);
+//	searchNavVerticalLayout->addWidget(searchPreviousPage);
 
-	QSpacerItem *searchNavVerticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+	//QSpacerItem *searchNavVerticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
 
-	searchNavVerticalLayout->addItem(searchNavVerticalSpacer);
+	//searchNavVerticalLayout->addItem(searchNavVerticalSpacer);
 
-	if (moreThanOnePage)
-		horizontalLayout->addLayout(searchNavVerticalLayout);
+//	if (moreThanOnePage)
+//		horizontalLayout->addLayout(searchNavVerticalLayout);
+
+	filterHorizontalLayout->addWidget(searchPreviousPage);
+	filterHorizontalLayout->addWidget(searchNextPage);
+	filterHorizontalLayout->addWidget(pageLabel, 0, Qt::AlignRight|Qt::AlignCenter);
+	searchTableGridLayout->addLayout(filterHorizontalLayout, 1, 0, 1, 1);
 
 	horizontalLayout->addLayout(searchTableGridLayout);
 
