@@ -609,6 +609,9 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	if ( poem.isNull() )
 		return;
 
+	minMesraWidth = 0;
+	singleColumnHeightMap.clear();
+
 	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	showParentCategory(ganjoorDataBase->getCategory(poem._CatID));
@@ -662,9 +665,6 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
 	int firstEmptyThirdColumn = 1;
 	bool flagEmptyThirdColumn = false;
-	//very Big For loop
-	minMesraWidth = 0;
-	singleColumnHeightMap.clear();
 
 	if (this->isHidden())
 		emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)));
@@ -691,6 +691,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	bool rightVerseFlag = false;
 	int step = 100;
 
+	//very Big For loop
 	for (int i = 0; i < numberOfVerses; i++)
 	{
 		QString currentVerseText = verses.at(i)->_Text;
