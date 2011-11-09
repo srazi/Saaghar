@@ -1,3 +1,74 @@
+== 0.8.21-->0.9.69 ==
+New Features:
+--------------------------
+New: An advanced search method was implemented.
+New: The menubar is movable!(Windows and Linuxes without Unity Desktop)
+New: Added preview of fonts.
+New: Paged search results!
+New: Every image formats supported by Qt can be selected as background photo!
+New: Added ability to filtering search results(it's  realtime!).
+New: The search field widget has a better look and feel! It has an embeded progressbar!
+New: The current search result's page number and search result's pages count were added to 'SearchResultWidget'!
+New: User can search more than one poet for search range.
+New: The behavior of Random & Faal buttons are customizable.
+New: There is an option for disabling poet's photo in home page.
+New: Now, for better look, mouse click doesn't select the row.
+New: Auto Vertical layout for 'searchToolBar'!
+New: The ability to hide/show every toolbars.
+New: The ability to change button style and icon size of 'mainToolBar'.
+New: The ability to lock toolbars!
+New: Added list of opened and recently closed tabs!
+New: Added an shortcut menu to the corner of tab widget!
+New: The highlighter supports a list of words for highlighting!
+New: The 'qStringMacHelper()' was added, and it acts on database stuffs.
+New: Added a transparent splash-screen!
+New: Added the new command-line option '-fresh' for starting a fresh instance, for example, it's needed when 'new window' action is clicked.
+New: Added 'Ganjoor Verification' action.
+New: Added some backgrounds and 'splash' image.
+
+Improved Features:
+--------------------------
+Improved: The view of parent buttons are improved.
+Improved: Pages are auto-refreshed when needed.
+Improved: Now, the highlighter highlights whole of a word that contains TATWEEL!
+Improved: Better search for words that contain ZWNJ!
+Improved: Added text justification for MacOSX by using SPACE in replace of TATWEEL, forcely!
+Improved: The 'QWidget::setUpdatesEnabled()' added in some places with big visual effects!
+Improved: The display of search result was improved, the results are snipped.
+Improved: The category names are snipped, now.
+Improved: The way that settings dialog works, was changed!(internal)
+Improved: There is a better and normalized "Tab's Caption" and complete and long "Window's Title"
+Improved: The search result widget is improved and moved to the new 'SearchResultWidget' class.
+Improved: New method for writing and reading settings.(internal)
+Improved: All icons are customizable.
+Improved: Now, QGanjoorDbBrowser::cleanString() works better, 'skipNonAlphabet' flag was removed!
+Improved: A simpler method for action connection.(internal)
+Improved: Calling 'SaagharWidget::resizeTable()' on resizing of 'QTableWidget::viewport()'! By this fix resizing of search results pages are handeled!
+Improved: Replacing ZWNJ by RLM+ZWNJ+RLM for Qt bug about ZWNJ on MacOSX!
+Improved: Now, the highlighter highlights by rounded rectangles!
+Improved: The 'computeRowHeight()' improved by an empirical value! numOfRows = (5/4)*numOfRows
+Improved: Unnecessary database queries from 'resizeTable()' were removed.
+Improved: A temporary and tricky way for some problems with database!!(i.e.: defined second Mesra when there is no a defined first Mesra)
+improved: The 'new search method' was removed and merged to the 'advanced search algorithm'.
+Improved: A new icon for better look when background is dark.
+
+Fixed Bugs:
+--------------------------
+Fixed: There was a query bug when selecting a poet while searching! 'text' changed to 'verse.text'!
+Fixed: The 'Qt::WA_OpaquePaintEvent' attribute creates a bug on linux. The margin of 'QScrollBar' was not repainted correctly.
+Fixed: The bug about calculation of row's height for description and poem's title was fixed.
+Fixed: The 'select-mask.png' was corrected.
+Fixed: Clearing height's memory at start of 'showPoem()'! fixing the bug about computing second row's height.
+Fixed: 'SaagharWidget::scrollToFirstItemContains' was fixed for advanced search method.
+Fixed: Tabs opened from search-page were not connected to 'searchDelegate'.
+Fixed: The bug about highlighting search results on Linux with default style was fixed! replaced 'QStyledItemDelegate' by 'QItemDelegate'!
+Fixed: The highlighter supports highlighting items with icon.(e.g.: home's item)
+Fixed: The original(not cleaned) version of verses are shown on search results page!
+Fixed: Fixed a bug about searching selected poets.
+Fixed: Some fixes about translation part.
+Fixed: The old action 'labelMaxResultAction' was removed.
+Fixed: Some small bugs were fixed.
+
 == 0.8.13-->0.8.21 ==
 New Features:
 New: The Mesras are 'Justified', now,

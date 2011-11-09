@@ -1863,10 +1863,10 @@ void MainWindow::loadGlobalSettings()
 	//SaagharWidget::newSearchSkipNonAlphabet  = config->value("New Search non-Alphabet",false).toBool();
 	SearchResultWidget::maxItemPerPage  = config->value("Max Search Results Per Page", 100).toInt();
 
-	SaagharWidget::backgroundImageState = config->value("Background State",false).toBool();
-	SaagharWidget::backgroundImagePath = Settings::READ("Background Path", "").toString();
-	settingsIconThemeState = config->value("Icon Theme State",false).toBool();
-	settingsIconThemePath = config->value("Icon Theme Path", "").toString();
+	SaagharWidget::backgroundImageState = Settings::READ("Background State", true).toBool();
+	SaagharWidget::backgroundImagePath = Settings::READ("Background Path", resourcesPath+"/themes/backgrounds/saaghar-pattern_1.png").toString();
+	settingsIconThemeState = Settings::READ("Icon Theme State",false).toBool();
+	settingsIconThemePath = Settings::READ("Icon Theme Path", resourcesPath+"/themes/iconsets/light-gray/").toString();
 
 	QGanjoorDbBrowser::dataBasePath = config->value("DataBase Path", "").toString().split(";", QString::SkipEmptyParts);
 
@@ -1943,10 +1943,10 @@ void MainWindow::saveSettings()
 
 	config->setValue("Max Poets Per Group", SaagharWidget::maxPoetsPerGroup);
 
-	config->setValue("Background State", SaagharWidget::backgroundImageState);
+	Settings::WRITE("Background State", SaagharWidget::backgroundImageState);
 	Settings::WRITE("Background Path", SaagharWidget::backgroundImagePath);
-	config->setValue("Icon Theme State", settingsIconThemeState);
-	config->setValue("Icon Theme Path", settingsIconThemePath);
+	Settings::WRITE("Icon Theme State", settingsIconThemeState);
+	Settings::WRITE("Icon Theme Path", settingsIconThemePath);
 
 	//font
 	config->setValue("Font Family", SaagharWidget::tableFont.family());

@@ -22,18 +22,18 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VER_FILEVERSION             0,8,21,1386
-#define VER_FILEVERSION_STR         "0.8.21.1386\0"
+#define VER_FILEVERSION             0,9,69,1855
+#define VER_FILEVERSION_STR         "0.9.69.1855\0"
 
-#define VER_FILEBUILDTIME_STR       "22May2011, 03:40:42\0"
+#define VER_FILEBUILDTIME_STR       "09Nov2011, 20:05:34\0"
 
-#define VER_PRODUCTVERSION          0,8
-#define VER_PRODUCTVERSION_STR      "0.8\0"
+#define VER_PRODUCTVERSION          0,9
+#define VER_PRODUCTVERSION_STR      "0.9\0"
 
 #define VER_COMPANYNAME_STR         "Pojh"
-#define VER_FILEDESCRIPTION_STR     "A Persian Poetry Software"
+#define VER_FILEDESCRIPTION_STR     "Saaghar, a Persian Poetry Software"
 #define VER_INTERNALNAME_STR        "Saaghar"
-#define VER_LEGALCOPYRIGHT_STR      "Copyright © 2010, S. Razi Alavizadeh"
+#define VER_LEGALCOPYRIGHT_STR      "Copyright © 2010-2011, S. Razi Alavizadeh"
 #define VER_LEGALTRADEMARKS1_STR    "This program is licensed under GPL v.3"
 #define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
 #define VER_ORIGINALFILENAME_STR    "Saaghar.exe"

@@ -264,6 +264,44 @@ backgrounds.files = $${SOURCE_DIR}/utilities/themes/backgrounds/bgpatterns_1.png
 	$${SOURCE_DIR}/utilities/themes/backgrounds/woodw-green_1.png \
 	$${SOURCE_DIR}/utilities/themes/backgrounds/woodw_3d_1.png
 
+lightGrayIcons.path = $${RESOURCES_PATH}/themes/iconsets/light-gray
+lightGrayIcons.files = $${SOURCE_DIR}/utilities/themes/iconsets/light-gray/browse_net.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/cancel.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/check-updates.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/clear-left.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/clear-right.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/close-tab.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/copy.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/down.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/exit.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/export.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/export-pdf.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/faal.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/filter.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/fullscreen.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/home.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/import-to-database.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/left.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/new_tab.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/new_window.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/next.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/no-fullscreen.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/ocr-verification.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/previous.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/print.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/print-preview.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/qt-logo.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/random.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/README \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/remove-poet.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/right.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/search.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/search-options.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/select-mask.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/settings.png \
+	$${SOURCE_DIR}/utilities/themes/iconsets/light-gray/up.png
+
+
 exists( $${SOURCE_DIR}/OTHERS/fonts/*.ttf ) {
 	fonts.path = $${RESOURCES_PATH}/fonts
 	fonts.files = $$quote($${SOURCE_DIR}/OTHERS/fonts/XB Sols.ttf) \
@@ -279,10 +317,12 @@ exists( $${SOURCE_DIR}/OTHERS/fonts/*.ttf ) {
 mac {
 	QMAKE_BUNDLE_DATA += utilities\
 						poetsImage \
-						backgrounds
+						backgrounds \
+						lightGrayIcons
 }
 else {
 	INSTALLS += utilities \
 		poetsImage \
-		backgrounds
+		backgrounds \
+		lightGrayIcons
 }

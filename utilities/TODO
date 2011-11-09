@@ -4,10 +4,9 @@ Saaghar TODOs:
 - Possibility of Favorite/Un-Favorite poems
 - Creating a history of viewed poems
 - Better printing support
-- Better highlight when searching 
-- Extending Faal functionality
 - Import/Export sqlite database
 - Better UI
+- Better paragraph support
 
 and the big one ;)
 - Editing database within Saaghar
