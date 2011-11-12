@@ -1983,7 +1983,7 @@ void MainWindow::saveSettings()
 	//config->setValue("openedTabs", openedTabs);
 
 	//database path
-	config->setValue("DataBase Path", QGanjoorDbBrowser::dataBasePath.join(";"));
+	config->setValue("DataBase Path", QDir::toNativeSeparators( QGanjoorDbBrowser::dataBasePath.join(";") ) );
 
 	//search options
 	//config->setValue("New Search", SaagharWidget::newSearchFlag);
