@@ -947,7 +947,7 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
 
 		QChar::Direction chDir = tmpChar.direction();
 
-		if (chDir == QChar::DirNSM)
+		if (chDir == QChar::DirNSM || tmpChar.isSpace())
 		{
 			cleanedText.remove(tmpChar);
 			--i;
@@ -974,7 +974,18 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 
 		if (phraseList.isEmpty()) return idList;
 
+		bool findRhyme = false;
+		if (phraseList.contains("=", Qt::CaseInsensitive))
+			findRhyme = true;
+
 		QString firstPhrase = phraseList.at(0);
+
+		QStringList excludeWhenCleaning("");
+		if (!firstPhrase.contains("="))
+			excludeWhenCleaning << " ";
+		else
+			firstPhrase.remove("=");
+
 		QStringList anyWordedList = firstPhrase.split("%%", QString::SkipEmptyParts);
 		for (int i=0; i<anyWordedList.size();++i)
 		{
@@ -984,7 +995,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 			//search for firstPhrase then go for other ones
 			subPhrase = subPhrase.simplified();
 			if (!subPhrase.contains(" "))
-				subPhrase = QGanjoorDbBrowser::cleanString(subPhrase).split("",QString::SkipEmptyParts).join("%");
+				subPhrase = QGanjoorDbBrowser::cleanString(subPhrase, excludeWhenCleaning).split("",QString::SkipEmptyParts).join("%");
 			anyWordedList[i] = subPhrase;
 		}
 
@@ -996,10 +1007,10 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		int numOfFounded=0;
 
 		if (PoetID == 0)
-			strQuery=QString("SELECT poem_id, text FROM verse WHERE text LIKE \'%" + searchQueryPhrase + "%\'");
+			strQuery=QString("SELECT poem_id, text, vorder FROM verse WHERE text LIKE \'%" + searchQueryPhrase + "%\' ORDER BY poem_id");
 		else
-			strQuery=QString("SELECT verse.poem_id,verse.text FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + searchQueryPhrase + "%\' AND poet_id=" + QString::number(PoetID) );
-
+			strQuery=QString("SELECT verse.poem_id,verse.text, verse.vorder FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + searchQueryPhrase + "%\' AND poet_id=" + QString::number(PoetID)+ " ORDER BY poem_id" );
+//SELECT poem_id, text, vorder, position FROM verse WHERE text LIKE \'%" + searchQueryPhrase + "%\' AND (position=1 OR position=3) ORDER BY poem_id
 		//qDebug() <<"strQuery="<< strQuery <<"PoetID"<<PoetID ;
 		QSqlQuery q(dBConnection);
 		int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
@@ -1011,6 +1022,9 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		int numOfNearResult=0, nextStep = 0, stepLenght = 300;
 		if (slowSearch)
 			stepLenght = 30;
+
+		int lastPoemID = -1;
+		QList<GanjoorVerse *> verses;
 
 		while( q.next() )
 		{
@@ -1029,6 +1043,8 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 				continue;//we need just first result
 
 			QString verseText = qrec.value(1).toString();
+			int verseOrder = qrec.value(2).toInt();
+			//int versePos = qrec.value(3).toInt();
 
 //			//////////////////
 //			if (value.contains(
@@ -1040,17 +1056,20 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 //				qDebug() << "valueContains="<<value.contains(text, Qt::CaseInsensitive);
 //			}
 //			///////////////////////////
-			QString foundedVerse = QGanjoorDbBrowser::cleanString(verseText);
+			QString foundedVerse = QGanjoorDbBrowser::cleanString(verseText, excludeWhenCleaning);
 			foundedVerse = " "+foundedVerse+" ";//for whole word option when word is in the start or end of verse
-//			if (foundedVerse.contains(QString::fromLocal8Bit("پسر چون ز مادر بران گونه زاد"
+//			if (verseText.contains(QString::fromLocal8Bit(
+//										  "ترا خوردنی هست و آب روان"
+////										  "تراخوردنيهستوآبروان"
+//										  /*"پسر چون ز مادر بران گونه زاد"*/
 //			                              /*"باسحاب"*/
 //										  /*"وین چشم رمد دیده من سرمه اقبال"*/
 //															 /*"من از یمن اقبال این خاندان"*/)))
 //			{
-//				//QMessageBox::information(0, "ifffffffffff","iffffffffffff");
-//				foundedVerse = QGanjoorDbBrowser::cleanString(foundedVerse/*, skipNonAlphabet*/);
+//				QMessageBox::information(0, "ifffffffffff",tr("poemID=%1").arg(poemID));
+//				//foundedVerse = QGanjoorDbBrowser::cleanString(foundedVerse/*, skipNonAlphabet*/);
 //				//qDebug() << "foundedVerse="<<foundedVerse<<"phraseForSearch="<<phraseForSearch;
-//				foundedVerse = " "+foundedVerse+" ";
+//				//foundedVerse = " "+foundedVerse+" ";
 //			}
 
 			//excluded list
@@ -1070,6 +1089,18 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 				for (int t=0;t<andedPhraseCount;++t)
 				{
 					QString tphrase = phraseList.at(t);
+					if (tphrase.contains("="))
+					{
+						tphrase.remove("=");
+						if (lastPoemID != poemID/* && findRhyme*/)
+						{
+							lastPoemID = poemID;
+							verses = getVerses(poemID);
+							//qDebug()<<"poemID="<<poemID<<"poemSize="<<verses.size();
+						}
+						excludeCurrentVerse = !isRhyme(verses, tphrase, verseOrder);
+						break;
+					}
 					if (!tphrase.contains("%"))
 					{
 						if (!foundedVerse.contains( tphrase) )
@@ -1276,4 +1307,106 @@ QString QGanjoorDbBrowser::snippedText(const QString &text, const QString &str, 
 		return elideString+snippedList.join("");
 	else
 		return snippedList.join("")+elideString;
+}
+
+bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QString &phrase, int verseOrder)
+{
+//qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<verseOrder<<versePos;
+	//verseOrder starts from 1 to verses.size()
+	if (verseOrder<=0 || verseOrder > verses.size())
+		return false;
+
+	//QList<GanjoorVerse *> verses = getVerses(PoemID);
+
+	QString cleanedVerse = QGanjoorDbBrowser::cleanString(verses.at(verseOrder-1)->_Text, QStringList(""));
+	//cleanedVerse = " "+cleanedVerse+" ";//just needed for whole word
+	QString cleanedPhrase = QGanjoorDbBrowser::cleanString(phrase, QStringList(""));
+
+	if (!cleanedVerse.contains(cleanedPhrase))
+	{
+		//verses.clear();
+		return false;
+	}
+
+	QString secondMesra = "";
+	int secondMesraOrder = -1;
+
+	switch (verses.at(verseOrder-1)->_Position)
+	{
+	case Right:
+	case CenteredVerse1:
+		if (verseOrder == verses.size()) //last single beyt! there is no 'CenteredVerse2' or a database error
+		{
+			//verses.clear();
+			return false;
+		}
+		if (verses.at(verseOrder)->_Position == Left || verses.at(verseOrder)->_Position == CenteredVerse2)
+			secondMesraOrder = verseOrder;
+		else
+		{
+			//verses.clear();
+			return false;
+		}//again database error
+		break;
+	case Left:
+	case CenteredVerse2:
+		if (verseOrder == 1) //there is just one beyt!! more probably a database error
+		{
+			//verses.clear();
+			return false;
+		}
+		if (verses.at(verseOrder-2)->_Position == Right || verses.at(verseOrder-2)->_Position == CenteredVerse1)
+			secondMesraOrder = verseOrder-2;
+		else
+		{
+			//verses.clear();
+			return false;
+		}//again database error
+		break;
+
+	default:
+		break;
+	}
+
+	if (secondMesraOrder != -1)
+		secondMesra = QGanjoorDbBrowser::cleanString(verses.at(secondMesraOrder)->_Text, QStringList(""));
+
+	if (!secondMesra.contains(cleanedPhrase))
+	{
+		//verses.clear();
+		return false;
+	}
+
+	QString firstEnding = cleanedVerse.mid(cleanedVerse.lastIndexOf(cleanedPhrase)+cleanedPhrase.size());
+	QString secondEnding = secondMesra.mid(secondMesra.lastIndexOf(cleanedPhrase)+cleanedPhrase.size());
+//	qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;
+//	if (firstEnding.isEmpty())
+//		qDebug()<<"------------------------------------------------------------------";
+//	qDebug()<<"secondMesra="<<secondMesra<<"secondEnding="<<secondEnding;
+//	if (secondEnding.isEmpty())
+//		qDebug()<<"------------------------------------------------------------------";
+
+	if (firstEnding != secondEnding)//they're not empty or RADIF
+		return false;
+
+//	if (firstEnding.isEmpty()) // and so secondEnding
+//	{
+	//if last character before phrase are similar this is not a Rhyme maybe its RADIF or a part of Rhyme.
+	//the following algorithm works good for Rhyme with similar spell and diffrent meanings.
+	int tmp1 = cleanedVerse.lastIndexOf(cleanedPhrase)-1;
+	int tmp2 = secondMesra.lastIndexOf(cleanedPhrase)-1;
+	if (tmp1<0 || tmp2<0)
+		return false;
+	qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;
+	qDebug()<<"1ch="<<cleanedVerse.at(tmp1);
+	qDebug()<<"secondMesra="<<secondMesra<<"secondEnding="<<secondEnding;
+	qDebug()<<"2ch="<<secondMesra.at(tmp2);
+	if ( cleanedVerse.at(tmp1) == secondMesra.at(tmp2) )
+		return false;
+	else
+		return true;
+//	}
+	
+//qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<"verseOrder="<<verseOrder<<getPoem(PoemID)._Title;
+//	return true;
 }

@@ -232,6 +232,11 @@ QStringList SearchPatternManager::phraseToList(const QString &str,  bool removeW
 	tmp.replace(OP(And), " ");
 	tmp.replace(OP(WholeWord), " ");
 	tmp.replace(wildcardCharacter+wildcardCharacter, " ");
+	/**********************************************/
+	//TODO: CHANGE THIS!!
+	//for Rhyme finder need to changed
+	tmp.remove("=");
+	/**********************************************/
 
 	if (removeWildCard)
 		tmp.replace(wildcardCharacter, " ");

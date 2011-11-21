@@ -54,6 +54,8 @@ class QGanjoorDbBrowser : public QObject
 
 		bool isConnected(const QString& connectionID = "");
 
+		bool isRhyme(const QList<GanjoorVerse *> &verses, const QString &phrase, int verseOrder = -1);
+
 		QList<GanjoorPoet *> getDataBasePoets(const QString fileName);
 		QList<GanjoorPoet *> getConflictingPoets(const QString fileName);
 		QList<GanjoorPoet *> getPoets(const QString& connectionID = "", bool sort = true);

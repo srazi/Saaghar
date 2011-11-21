@@ -155,7 +155,10 @@ LOG = $$system(mkdir ~/.Pojh)
 LOG += $$system(mkdir ~/.Pojh/Saaghar)
 LOG  += $$system(cp -n $${SOURCE_DIR}/utilities/* ~/.Pojh/Saaghar/)
 
+isEmpty( PREFIX ) {
 PREFIX = /usr
+}
+
 DESKTOPDIR = $${PREFIX}/share/applications
 ICONDIR = $${PREFIX}/share/pixmaps
 
