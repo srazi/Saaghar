@@ -1095,6 +1095,13 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 						if (lastPoemID != poemID/* && findRhyme*/)
 						{
 							lastPoemID = poemID;
+							//verses.clear();
+							int versesSize = verses.size();
+							for (int j=0; j<versesSize; ++j)
+							{
+								delete verses[j];
+								verses[j]=0;
+							}
 							verses = getVerses(poemID);
 							//qDebug()<<"poemID="<<poemID<<"poemSize="<<verses.size();
 						}
@@ -1151,6 +1158,13 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 
 		//for the last result
 		emit searchStatusChanged(QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount));
+
+		int versesSize = verses.size();
+		for (int j=0; j<versesSize; ++j)
+		{
+			delete verses[j];
+			verses[j]=0;
+		}
 
 		return idList;
 	}
