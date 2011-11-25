@@ -368,8 +368,8 @@ void SearchResultWidget::showSearchResult(int start)
 		verseItem->setFlags(Qt::ItemIsEnabled/*Qt::NoItemFlags*/);
 		verseItem->setData(Qt::UserRole, "PoemID="+QString::number(poemId));
 		//set search data
-		verseItem->setData(ITEM_SEARCH_DATA, phrase);
-		poemItem->setData(ITEM_SEARCH_DATA, phrase);
+		verseItem->setData(ITEM_SEARCH_DATA, QStringList() << phrase << firstVerse);
+		poemItem->setData(ITEM_SEARCH_DATA, QStringList() << phrase << firstVerse);
 
 		//insert items to table
 		searchTable->setItem(i-start, 1, poemItem);

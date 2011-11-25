@@ -102,7 +102,7 @@ private slots:
 	void pressedOnItem(int row,int col);
 
 public slots:
-	void scrollToFirstItemContains(const QString &phrase);
+	void scrollToFirstItemContains(const QString &phrase, bool pharseIsList = true);
 
 signals:
 	void captionChanged();

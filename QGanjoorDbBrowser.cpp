@@ -1059,7 +1059,8 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 			QString foundedVerse = QGanjoorDbBrowser::cleanString(verseText, excludeWhenCleaning);
 			foundedVerse = " "+foundedVerse+" ";//for whole word option when word is in the start or end of verse
 //			if (verseText.contains(QString::fromLocal8Bit(
-//										  "ترا خوردنی هست و آب روان"
+//									   "که هر که در صف باغ است صاحب هنریست"
+//										  //"ترا خوردنی هست و آب روان"
 ////										  "تراخوردنيهستوآبروان"
 //										  /*"پسر چون ز مادر بران گونه زاد"*/
 //			                              /*"باسحاب"*/
@@ -1343,6 +1344,8 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QStri
 	}
 
 	QString secondMesra = "";
+	QList<int> mesraOrdersForCompare;
+	mesraOrdersForCompare  << -1 << -1 << -1;
 	int secondMesraOrder = -1;
 
 	switch (verses.at(verseOrder-1)->_Position)
@@ -1355,7 +1358,10 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QStri
 			return false;
 		}
 		if (verses.at(verseOrder)->_Position == Left || verses.at(verseOrder)->_Position == CenteredVerse2)
+		{
 			secondMesraOrder = verseOrder;
+			mesraOrdersForCompare[0] = verseOrder;
+		}
 		else
 		{
 			//verses.clear();
@@ -1370,8 +1376,15 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QStri
 			return false;
 		}
 		if (verses.at(verseOrder-2)->_Position == Right || verses.at(verseOrder-2)->_Position == CenteredVerse1)
+		{
 			secondMesraOrder = verseOrder-2;
-		else
+			mesraOrdersForCompare[0] = verseOrder-2;
+		}
+		if (verseOrder-3>=0 && (verses.at(verseOrder-3)->_Position == Left || verses.at(verseOrder-3)->_Position == CenteredVerse2) )
+			mesraOrdersForCompare[1] = verseOrder-3;//mesra above current mesra
+		if (verseOrder+1<=verses.size()-1 && (verses.at(verseOrder+1)->_Position == Left || verses.at(verseOrder+1)->_Position == CenteredVerse2) )
+			mesraOrdersForCompare[2] = verseOrder+1;//mesra above current mesra
+		if (mesraOrdersForCompare.at(0) == -1 && mesraOrdersForCompare.at(1) == -1 && mesraOrdersForCompare.at(2) == -1 )
 		{
 			//verses.clear();
 			return false;
@@ -1382,45 +1395,53 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QStri
 		break;
 	}
 
-	if (secondMesraOrder != -1)
+	for (int i=0; i<3;++i)
+	{
+		secondMesraOrder = mesraOrdersForCompare.at(i);
+		if (secondMesraOrder == -1)
+			continue;
 		secondMesra = QGanjoorDbBrowser::cleanString(verses.at(secondMesraOrder)->_Text, QStringList(""));
 
-	if (!secondMesra.contains(cleanedPhrase))
-	{
-		//verses.clear();
-		return false;
-	}
-
-	QString firstEnding = cleanedVerse.mid(cleanedVerse.lastIndexOf(cleanedPhrase)+cleanedPhrase.size());
-	QString secondEnding = secondMesra.mid(secondMesra.lastIndexOf(cleanedPhrase)+cleanedPhrase.size());
-//	qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;
-//	if (firstEnding.isEmpty())
-//		qDebug()<<"------------------------------------------------------------------";
-//	qDebug()<<"secondMesra="<<secondMesra<<"secondEnding="<<secondEnding;
-//	if (secondEnding.isEmpty())
-//		qDebug()<<"------------------------------------------------------------------";
-
-	if (firstEnding != secondEnding)//they're not empty or RADIF
-		return false;
-
-//	if (firstEnding.isEmpty()) // and so secondEnding
-//	{
-	//if last character before phrase are similar this is not a Rhyme maybe its RADIF or a part of Rhyme.
-	//the following algorithm works good for Rhyme with similar spell and diffrent meanings.
-	int tmp1 = cleanedVerse.lastIndexOf(cleanedPhrase)-1;
-	int tmp2 = secondMesra.lastIndexOf(cleanedPhrase)-1;
-	if (tmp1<0 || tmp2<0)
-		return false;
-	qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;
-	qDebug()<<"1ch="<<cleanedVerse.at(tmp1);
-	qDebug()<<"secondMesra="<<secondMesra<<"secondEnding="<<secondEnding;
-	qDebug()<<"2ch="<<secondMesra.at(tmp2);
-	if ( cleanedVerse.at(tmp1) == secondMesra.at(tmp2) )
-		return false;
-	else
-		return true;
-//	}
+		if (!secondMesra.contains(cleanedPhrase))
+		{
+			//verses.clear();
+			//return false;
+			continue;
+		}
 	
+		QString firstEnding = cleanedVerse.mid(cleanedVerse.lastIndexOf(cleanedPhrase)+cleanedPhrase.size());
+		QString secondEnding = secondMesra.mid(secondMesra.lastIndexOf(cleanedPhrase)+cleanedPhrase.size());
+	//	qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;
+	//	if (firstEnding.isEmpty())
+	//		qDebug()<<"------------------------------------------------------------------";
+	//	qDebug()<<"secondMesra="<<secondMesra<<"secondEnding="<<secondEnding;
+	//	if (secondEnding.isEmpty())
+	//		qDebug()<<"------------------------------------------------------------------";
+	
+		if (firstEnding != secondEnding)//they're not empty or RADIF
+			continue;//return false;
+
+		int tmp1 = cleanedVerse.lastIndexOf(cleanedPhrase)-1;
+		int tmp2 = secondMesra.lastIndexOf(cleanedPhrase)-1;
+		if (tmp1<0 || tmp2<0)
+			continue;//return false;
+		qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;
+		qDebug()<<"1ch="<<cleanedVerse.at(tmp1);
+		qDebug()<<"secondMesra="<<secondMesra<<"secondEnding="<<secondEnding;
+		qDebug()<<"2ch="<<secondMesra.at(tmp2);
+
+		if ( cleanedVerse.at(tmp1) == secondMesra.at(tmp2) &&
+			 firstEnding.isEmpty() )  // and so secondEnding
+		{
+			//if last character before phrase are similar this is not a Rhyme maybe its RADIF
+			//or a part!!! of Rhyme.
+			//the following algorithm works good for Rhyme with similar spell and diffrent meanings.
+			continue;//return false;
+		}
+		else
+			return true;
+	}
+	return false;
 //qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<"verseOrder="<<verseOrder<<getPoem(PoemID)._Title;
 //	return true;
 }

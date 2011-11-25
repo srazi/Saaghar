@@ -1085,7 +1085,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 	}
 }
 
-void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
+void SaagharWidget::scrollToFirstItemContains(const QString &phrase, bool pharseIsList)
 {
 	QString keyword = phrase;
 	keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
@@ -1093,7 +1093,10 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase)
 	if (keyword.isEmpty())
 		return;
 
-	QStringList list = SearchPatternManager::phraseToList(keyword, false);
+	QStringList list(keyword);
+	if (pharseIsList)
+		list = SearchPatternManager::phraseToList(keyword, false);
+
 	if (list.isEmpty())
 		return;
 	int listSize = list.size();

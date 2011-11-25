@@ -1,5 +1,5 @@
     Saaghar, a Persian poetry software
-    Copyright (C) 2010-2011 S. Razi Alavizadeh
+    Copyright (C) 2010-2012, S. Razi Alavizadeh
 
     Email: <s.r.alavizadeh@gmail.com>,
 	WWW:   <http://pojh.iblogger.org>
@@ -17,8 +17,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
     -------------------------------------------------------------------------
 
@@ -26,6 +25,8 @@ Saaghar is a cross-platform Persian poetry software. It uses "ganjoor.net" datab
 It has lots of features:
 * Tabbed UI
 * Tabbed and dockable search widgets
+* Advanced Search
+* Search for Rhymes
 * Print and Print Preview
 * Export, It supports exporting to "PDF", "HTML", "TeX", "CSV" and "TXT"
   * CSV: indeed is a "Tab Separated Value" version

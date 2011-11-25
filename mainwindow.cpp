@@ -2195,9 +2195,15 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 	}
 
 	//search data
-	QVariant searchData = item->data(ITEM_SEARCH_DATA);
+	QStringList searchDataList = item->data(ITEM_SEARCH_DATA).toStringList();
 //	QStringList searchDataList = QStringList();
-	QString searchPhraseData = searchData.toString();
+	QString searchPhraseData = "";//searchData.toString();
+	QString searchVerseData = "";
+	if (searchDataList.size() == 2)
+	{
+		searchPhraseData = searchDataList.at(0);
+		searchVerseData = searchDataList.at(1);
+	}
 //	if (searchData.isValid() && !searchData.isNull())
 //	{
 //		searchDataList = searchData.toString().split("|", QString::SkipEmptyParts);
@@ -2219,7 +2225,7 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 
 		newTabForItem(itemData.at(0), idData, noError);
 
-		saagharWidget->scrollToFirstItemContains(searchPhraseData);
+		saagharWidget->scrollToFirstItemContains(searchVerseData, false);
 		SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchPhraseData);
 		saagharWidget->tableViewWidget->setItemDelegate(searchDelegate);
 		connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), searchDelegate, SLOT(keywordChanged(const QString &)) );
@@ -2230,7 +2236,7 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 
 	saagharWidget->processClickedItem(itemData.at(0), idData, noError);
 
-	saagharWidget->scrollToFirstItemContains(searchPhraseData);
+	saagharWidget->scrollToFirstItemContains(searchVerseData, false);
 	SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchPhraseData);
 	saagharWidget->tableViewWidget->setItemDelegate(searchDelegate);
 	connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), searchDelegate, SLOT(keywordChanged(const QString &)) );
