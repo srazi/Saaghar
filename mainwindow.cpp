@@ -224,6 +224,85 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	
 	ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
 
+	/////////////////////////////////////////////////////////////////////////////
+	//emit loadingStatusText("!QTransparentSplashInternalCommands:CLOSE");
+	QDockWidget *bookMarkDock = new QDockWidget(tr("Bookmarks"), this);
+	bookMarkDock->setObjectName("bookMarkWidget");
+	SaagharWidget::bookmarks = new Bookmarks(this);
+	QFile bookmarkFile(resourcesPath+"/bookmarks.xbel");
+	bool readBookmarkFile = true;
+	if (!bookmarkFile.open(QFile::ReadOnly | QFile::Text))
+	{
+		if (!bookmarkFile.exists() && bookmarkFile.open(QFile::WriteOnly | QFile::Text))
+		{
+			//create an empty XBEL file.
+			QTextStream out(&bookmarkFile);
+			out.setCodec("utf-8");
+			out << "<?xml version='1.0' encoding='UTF-8'?>\n"
+				<<	"<!DOCTYPE xbel>\n"
+				<<	"<xbel version=\"1.0\">\n"
+				<<	"</xbel>";
+			bookmarkFile.close();
+			if (!bookmarkFile.open(QFile::ReadOnly | QFile::Text))
+			{
+				readBookmarkFile = false;
+			}
+		}
+		else
+			readBookmarkFile = false;
+		if (!readBookmarkFile)
+		{
+			QMessageBox::warning(this, tr("Bookmarks"),
+								 tr("Cannot load the bookmark file %1:\n%2.")
+								 .arg(bookmarkFile.fileName())
+								 .arg(bookmarkFile.errorString()));
+		}
+	}
+
+	if (readBookmarkFile)
+	{
+		if (!SaagharWidget::bookmarks->read(&bookmarkFile))
+		{
+			readBookmarkFile = false;
+			bookmarkFile.close();
+			if (bookmarkFile.open(QFile::WriteOnly | QFile::Text))
+			{
+				//create an empty XBEL file.
+				QTextStream out(&bookmarkFile);
+				out.setCodec("utf-8");
+				out << "<?xml version='1.0' encoding='UTF-8'?>\n"
+					<<	"<!DOCTYPE xbel>\n"
+					<<	"<xbel version=\"1.0\">\n"
+					<<	"</xbel>";
+				bookmarkFile.close();
+				if (!bookmarkFile.open(QFile::ReadOnly | QFile::Text))
+				{
+					readBookmarkFile = false;
+				}
+				else
+				{
+					if (SaagharWidget::bookmarks->read(&bookmarkFile))
+						readBookmarkFile = true;
+				}
+			}
+		}
+		if (readBookmarkFile)
+		{
+			bookMarkDock->setWidget(SaagharWidget::bookmarks);
+			addDockWidget(Qt::LeftDockWidgetArea, bookMarkDock);
+		}
+	}
+
+	if (!readBookmarkFile)
+	{
+		//bookmark not loaded!
+		delete SaagharWidget::bookmarks;
+		SaagharWidget::bookmarks = 0;
+		delete bookMarkDock;
+		bookMarkDock = 0;
+	}
+	////////////////////////////////////////////////////////////////////////////////////
+
 	if (!fresh)
 	{
 		QStringList openedTabs = Settings::READ("Opened tabs from last session").toStringList();
@@ -1937,6 +2016,19 @@ void MainWindow::loadTabWidgetSettings()
 
 void MainWindow::saveSettings()
 {
+	QFile bookmarkFile(resourcesPath+"/bookmarks.xbel");
+	if (!bookmarkFile.open(QFile::WriteOnly | QFile::Text))
+	{
+		QMessageBox::warning(this, tr("Bookmarks"), tr("Can not write the bookmark file %1:\n%2.")
+							 .arg(bookmarkFile.fileName())
+							 .arg(bookmarkFile.errorString()));
+	}
+	else
+	{
+		if (SaagharWidget::bookmarks)
+			SaagharWidget::bookmarks->write(&bookmarkFile);
+	}
+
 	QSettings *config = getSettingsObject();
 
 	//config->setValue("Main ToolBar Items", mainToolBarItems.join("|"));
@@ -2137,12 +2229,12 @@ void MainWindow::tableItemMouseOver(QTableWidgetItem *item)
 			{
 				senderTable->setCurrentItem(item);
 				QImage image(":/resources/images/select-mask.png");
-				item->setBackground(QBrush(image.scaledToHeight( senderTable->rowHeight( item->row() ) )));	
+				item->setBackground(QBrush(image.scaledToHeight( senderTable->rowHeight( item->row() ) )));
 			}
 			else
 			{
 				QImage image(":/resources/images/select-mask.png");
-				item->setBackground(QBrush(image.scaledToHeight( senderTable->rowHeight( item->row() ) )));			
+				item->setBackground(QBrush(image.scaledToHeight( senderTable->rowHeight( item->row() ) )));
 			}
 		}
 		else

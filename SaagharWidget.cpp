@@ -46,11 +46,14 @@ QColor SaagharWidget::matchedTextColor = QColor();
 QColor SaagharWidget::backgroundColor = QColor();
 QTableWidgetItem *SaagharWidget::lastOveredItem = 0;
 int SaagharWidget::maxPoetsPerGroup = 12;
+//bokmark widget
+Bookmarks *SaagharWidget::bookmarks = 0;
 //ganjoor data base browser
 QGanjoorDbBrowser *SaagharWidget::ganjoorDataBase = NULL;
 
 //Constants
-const Qt::ItemFlags numItemFlags = Qt::NoItemFlags;
+const int ITEM_BOOKMARKED_STATE = Qt::UserRole+20;
+const Qt::ItemFlags numItemFlags = Qt::ItemIsEnabled;//Qt::NoItemFlags;
 const Qt::ItemFlags catsItemFlag = Qt::ItemIsEnabled;
 const Qt::ItemFlags poemsItemFlag = Qt::ItemIsEnabled;
 const Qt::ItemFlags versesItemFlag = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
@@ -691,6 +694,13 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	bool rightVerseFlag = false;
 	int step = 100;
 
+	QStringList bookmarkedVerses("");
+	if (SaagharWidget::bookmarks)
+	{
+		qDebug() << "SHOW-POEM-->SaagharWidget::bookmarks";
+		bookmarkedVerses = SaagharWidget::bookmarks->bookmarkList("Verses");
+	}
+
 	//very Big For loop
 	for (int i = 0; i < numberOfVerses; i++)
 	{
@@ -871,6 +881,29 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 		simplifiedText.remove("\t");
 		simplifiedText.remove("\n");
 
+		//move from for scope!!
+//		QStringList bookmarkedVerses("");
+//		if (SaagharWidget::bookmarks)
+//		{
+//			qDebug() << "SHOW-POEM-->SaagharWidget::bookmarks";
+//			bookmarkedVerses = SaagharWidget::bookmarks->bookmarkList("Verses");
+//		}
+		QString currentVerseData = QString::number(verses.at(i)->_PoemID)+"|"+QString::number(verses.at(i)->_Order);
+		bool verseIsBookmarked = false;
+		if (bookmarkedVerses.contains(currentVerseData))
+		{
+			qDebug() << "SHOW-POEM-->verseIsBookmarked = true";
+			//QMessageBox::information(0,"booooooooook", verseData+verses.at(i)->_Text);
+			verseIsBookmarked = true;
+		}
+//		else
+//		{
+//			for (int t=0; t<bookmarkedVerses.size(); ++t)
+//			{
+//				qDebug() << "SHOW-POEM-->currentVerseData="<<currentVerseData<<"\n"<<bookmarkedVerses.at(t);
+//			}
+//		}
+
 		if ( !simplifiedText.isEmpty() && (( verses.at(i)->_Position == Single && !currentVerseText.isEmpty() ) ||
 			verses.at(i)->_Position == Right ||
 			verses.at(i)->_Position == CenteredVerse1)
@@ -886,22 +919,39 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 			else
 				BeytNum++;
 
-			if ( showBeytNumbers && !currentVerseText.isEmpty() )
+			if ( !currentVerseText.isEmpty() )
 			{//empty verse strings have been seen sometimes, it seems that we have some errors in our database
-				int itemNumber = isBand ? BandNum : BeytNum;
 				//QString verseData = QString::number(verses.at(i)->_PoemID)+"."+QString::number(verses.at(i)->_Order)+"."+QString::number((int)verses.at(i)->_Position);
+				QTableWidgetItem *numItem = new QTableWidgetItem("");
 
-				QString localizedNumber = SaagharWidget::persianIranLocal.toString(itemNumber);
-				QTableWidgetItem *numItem = new QTableWidgetItem(localizedNumber);
-				if (isBand)
+				if (showBeytNumbers)
 				{
-					QFont fnt = numItem->font();
-					fnt.setBold(true);
-					fnt.setItalic(true);
-					numItem->setFont(fnt);
-					numItem->setForeground(QBrush(QColor(Qt::yellow).darker(150)));
+					int itemNumber = isBand ? BandNum : BeytNum;
+					QString localizedNumber = SaagharWidget::persianIranLocal.toString(itemNumber);
+					numItem->setText(localizedNumber);
+					if (isBand)
+					{
+						QFont fnt = numItem->font();
+						fnt.setBold(true);
+						fnt.setItalic(true);
+						numItem->setFont(fnt);
+						numItem->setForeground(QBrush(QColor(Qt::yellow).darker(150)));
+					}
 				}
 				numItem->setFlags(numItemFlags);
+				QPixmap star(":/resources/images/bookmark-on.png");
+				QPixmap starOff(":/resources/images/bookmark-off.png");
+				star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row)-1, 22), Qt::SmoothTransformation);
+				starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row)-1, 22), Qt::SmoothTransformation);
+				QIcon bookmarkIcon;
+				bookmarkIcon.addPixmap(star, QIcon::Active, QIcon::On);
+				bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
+				numItem->setData(ITEM_BOOKMARKED_STATE, verseIsBookmarked);
+				if (verseIsBookmarked)
+					bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Active, QIcon::On);
+				else
+					bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
+				numItem->setIcon(bookmarkIcon);
 				tableViewWidget->setItem(row, 0, numItem);
 			}
 		}
@@ -916,7 +966,23 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 			if (!numItem)
 			{
 				numItem = new QTableWidgetItem("");
-				numItem->setFlags(Qt::NoItemFlags);
+				numItem->setFlags(numItemFlags);
+				if (verses.at(i)->_Position == Paragraph)
+				{
+					QPixmap star(":/resources/images/bookmark-on.png");
+					QPixmap starOff(":/resources/images/bookmark-off.png");
+					star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row)-1, 22), Qt::SmoothTransformation);
+					starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row)-1, 22), Qt::SmoothTransformation);
+					QIcon bookmarkIcon;
+					bookmarkIcon.addPixmap(star, QIcon::Active, QIcon::On);
+					bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
+					numItem->setData(ITEM_BOOKMARKED_STATE, verseIsBookmarked);
+					if (verseIsBookmarked)
+						bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Active, QIcon::On);
+					else
+						bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
+					numItem->setIcon(bookmarkIcon);
+				}
 				tableViewWidget->setItem(row, 0, numItem);
 			}
 			rightVerseFlag=false;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
@@ -1073,7 +1139,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 				table->setColumnWidth(2, (baseWidthSize*47)/100);
 				break;
 			case 4:
-				table->setColumnWidth(0, table->fontMetrics().width(QString::number(table->rowCount()*10)) );//numbers
+				table->setColumnWidth(0, table->fontMetrics().width(QString::number(table->rowCount()*10))+22 );//numbers
 				table->setColumnWidth(2, table->fontMetrics().height()*2 /*5/2*/ );//spacing between mesras
 				baseWidthSize = baseWidthSize - ( table->columnWidth(0)+table->columnWidth(2) );
 				table->setColumnWidth(1, qMax(minMesraWidth, baseWidthSize/2/* -table->columnWidth(0) */) );//mesra width
@@ -1151,11 +1217,51 @@ int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidt
 void SaagharWidget::pressedOnItem(int row,int /*col*/)
 {
 	pressedPosition = QCursor::pos();
-	clickedOnItem(row, 0);
+	clickedOnItem(row, -1);
 }
 
-void SaagharWidget::clickedOnItem(int row,int /*col*/)
+void SaagharWidget::clickedOnItem(int row,int column)
 {
+	if (column == 0)
+	{
+		QTableWidgetItem *item = tableViewWidget->item(row, 0);
+		QTableWidgetItem *verseItem = 0;
+		if (tableViewWidget->columnCount()>1)
+			verseItem = tableViewWidget->item(row, 1);
+		if (verseItem && item && !item->icon().isNull())
+		{
+			QStringList data = verseItem->data(Qt::UserRole).toString().split("|");
+			//url = url.mid(url.indexOf("|"));
+			if (data.size() != 4) return;
+
+			QPixmap star(":/resources/images/bookmark-on.png");
+			QPixmap starOff(":/resources/images/bookmark-off.png");
+			star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row)-1, 22), Qt::SmoothTransformation);
+			starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row)-1, 22), Qt::SmoothTransformation);
+			QIcon bookmarkIcon;
+			bookmarkIcon.addPixmap(star, QIcon::Active, QIcon::On);
+			bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
+			bool bookmarkState = !item->data(ITEM_BOOKMARKED_STATE).toBool();
+			item->setData(ITEM_BOOKMARKED_STATE, bookmarkState);
+			if (bookmarkState)
+				bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Active, QIcon::On);
+			else
+				bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
+			item->setIcon(bookmarkIcon);
+
+			QString verseText = verseItem->text();
+			verseText = verseText.simplified();
+			if (tableViewWidget->columnCount() == 4 && tableViewWidget->item(row, 3))
+				verseText+= "\n"+tableViewWidget->item(row, 3)->text();
+			QChar tatweel = QChar(0x0640);
+			verseText.remove(tatweel);
+
+			if (SaagharWidget::bookmarks)
+				SaagharWidget::bookmarks->updateBookmarkState("Verses", QStringList() << data.at(1) << data.at(2) << verseText/*+"\n"*/ << currentPageGanjoorUrl()+"/#"+data.at(2), bookmarkState);
+			qDebug()<<"ICON STATE CHANGED" << item->text()<< "row="<<row<<"col="<<column<<verseItem->data(Qt::UserRole).toString();
+		}
+	}
+
 	if (pressedPosition != QCursor::pos())
 	{
 		pressedPosition = QPoint(-1, -1);

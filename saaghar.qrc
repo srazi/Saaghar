@@ -46,5 +46,7 @@
 		<file>images/cats-buttons/button-last.png</file>
 		<file>images/cats-buttons/button-middle.png</file>
 		<file>images/corner-button.png</file>
+		<file>images/bookmark-off.png</file>
+		<file>images/bookmark-on.png</file>
 	</qresource>
 </RCC>

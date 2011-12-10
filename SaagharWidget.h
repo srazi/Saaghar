@@ -36,6 +36,8 @@
 #include "QGanjoorDbBrowser.h"
 #include "settings.h"
 
+#include "bookmarks.h"
+
 class SaagharWidget : public QWidget
 {
 Q_OBJECT
@@ -73,6 +75,10 @@ public:
 	static QColor backgroundColor;
 	static QTableWidgetItem *lastOveredItem;
 	static int maxPoetsPerGroup;
+
+	//bookmark widget
+	static Bookmarks *bookmarks;
+
 	//DataBase
 	static QGanjoorDbBrowser *ganjoorDataBase;
 	static int computeRowHeight(const QFontMetrics &fontMetric, int textWidth, int width, int height=0);

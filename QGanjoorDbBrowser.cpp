@@ -1359,7 +1359,6 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QStri
 		}
 		if (verses.at(verseOrder)->_Position == Left || verses.at(verseOrder)->_Position == CenteredVerse2)
 		{
-			secondMesraOrder = verseOrder;
 			mesraOrdersForCompare[0] = verseOrder;
 		}
 		else
@@ -1377,7 +1376,6 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QStri
 		}
 		if (verses.at(verseOrder-2)->_Position == Right || verses.at(verseOrder-2)->_Position == CenteredVerse1)
 		{
-			secondMesraOrder = verseOrder-2;
 			mesraOrdersForCompare[0] = verseOrder-2;
 		}
 		if (verseOrder-3>=0 && (verses.at(verseOrder-3)->_Position == Left || verses.at(verseOrder-3)->_Position == CenteredVerse2) )

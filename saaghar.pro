@@ -27,7 +27,7 @@ DEFINES += QT_NO_DEBUG_OUTPUT
 #CONFIG	+= static
 #DEFINES += STATIC
 
-QT += sql network
+QT += sql network xml
 
 # Input
 HEADERS += $${SOURCE_DIR}/mainwindow.h \
@@ -38,7 +38,8 @@ HEADERS += $${SOURCE_DIR}/mainwindow.h \
 	$${SOURCE_DIR}/settings.h \
 	$${SOURCE_DIR}/SearchResultWidget.h \
 	$${SOURCE_DIR}/SearchPatternManager.h \
-	$${SOURCE_DIR}/version.h
+	$${SOURCE_DIR}/version.h \
+	$${SOURCE_DIR}/bookmarks.h
 
 FORMS += $${SOURCE_DIR}/mainwindow.ui \
 	$${SOURCE_DIR}/settings.ui
@@ -50,7 +51,8 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/QGanjoorDbBrowser.cpp \
 	$${SOURCE_DIR}/settings.cpp \
 	$${SOURCE_DIR}/SearchResultWidget.cpp \
-	$${SOURCE_DIR}/SearchPatternManager.cpp
+	$${SOURCE_DIR}/SearchPatternManager.cpp \
+	$${SOURCE_DIR}/bookmarks.cpp
 
 include($${SOURCE_DIR}/pQjWidgets/pQjWidgets.pri)
 
