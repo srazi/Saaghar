@@ -86,6 +86,9 @@ public:
 	int currentPoem;
 	int currentCat;
 	int currentParentID;
+	QStringList currentLocationList;
+	QString currentPoemTitle;
+
 	void homeResizeColsRows();
 	inline bool isDirty()
 		{return dirty;}
@@ -108,7 +111,7 @@ private slots:
 	void pressedOnItem(int row,int col);
 
 public slots:
-	void scrollToFirstItemContains(const QString &phrase, bool pharseIsList = true);
+	QTableWidgetItem *scrollToFirstItemContains(const QString &phrase, bool pharseIsList = true, bool scroll = true);
 
 signals:
 	void captionChanged();

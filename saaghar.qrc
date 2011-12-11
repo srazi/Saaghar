@@ -48,5 +48,7 @@
 		<file>images/corner-button.png</file>
 		<file>images/bookmark-off.png</file>
 		<file>images/bookmark-on.png</file>
+		<file>images/un-bookmark.png</file>
+		<file>images/bookmark-folder.png</file>
 	</qresource>
 </RCC>

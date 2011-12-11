@@ -224,8 +224,6 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	
 	ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
 
-	setupBookmarkManagerUi();
-
 	if (!fresh)
 	{
 		QStringList openedTabs = Settings::READ("Opened tabs from last session").toStringList();
@@ -1401,6 +1399,9 @@ void MainWindow::setupUi()
 
 	ui->mainToolBar->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
 
+	//initialize BookmarkManager Ui
+	setupBookmarkManagerUi();
+
 	//Initialize Actions
 	actionInstance("actionHome", iconThemePath+"/home.png", tr("&Home") );
 
@@ -1550,6 +1551,7 @@ void MainWindow::setupUi()
 	menuView->addAction(actionInstance("actionFullScreen"));
 
 	menuTools->addAction(actionInstance("searchToolbarAction"));
+	menuTools->addAction(actionInstance("bookmarkManagerDockAction"));
 	menuTools->addSeparator();
 	menuTools->addAction(actionInstance("actionViewInGanjoorSite"));
 	menuTools->addAction(actionInstance("Ganjoor Verification"));
@@ -1904,7 +1906,7 @@ void MainWindow::loadGlobalSettings()
 	//config->setValue("VariableHash", QVariant(Settings::VariablesHash));
 	QHash<QString, QVariant> vHash = config->value("VariableHash").toHash();
 
-	mainToolBarItems = Settings::READ("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|Ganjoor Verification").toString().split("|", QString::SkipEmptyParts);
+	mainToolBarItems = Settings::READ("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionCopy|bookmarkManagerDockAction|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|Ganjoor Verification").toString().split("|", QString::SkipEmptyParts);
 //	QString tmp = mainToolBarItems.join("");
 //	tmp.remove("action", Qt::CaseInsensitive);
 //	tmp.remove("Separator", Qt::CaseInsensitive);
@@ -2785,6 +2787,7 @@ void MainWindow::setupBookmarkManagerUi()
 {
 	QDockWidget *bookmarkManagerWidget = new QDockWidget(tr("Bookmarks"), this);
 	bookmarkManagerWidget->setObjectName("bookMarkWidget");
+	bookmarkManagerWidget->hide();
 
 	QWidget *bookmarkContainer = new QWidget(bookmarkManagerWidget);
 	QVBoxLayout *bookmarkMainLayout = new QVBoxLayout;
@@ -2792,7 +2795,7 @@ void MainWindow::setupBookmarkManagerUi()
 
 	SaagharWidget::bookmarks = new Bookmarks(this);
 
-	connect(SaagharWidget::bookmarks, SIGNAL(showBookmarkedItem(QString,QString,QString)), this, SLOT(ensureVisibleBookmarkedItem(QString,QString,QString)));
+	connect(SaagharWidget::bookmarks, SIGNAL(showBookmarkedItem(QString,QString,QString,bool)), this, SLOT(ensureVisibleBookmarkedItem(QString,QString,QString,bool)));
 
 	QString clearIconPath = currentIconThemePath()+"/clear-left.png";
 	if (layoutDirection() == Qt::RightToLeft)
@@ -2800,10 +2803,17 @@ void MainWindow::setupBookmarkManagerUi()
 	QSearchLineEdit *bookmarkFilter = new QSearchLineEdit(bookmarkManagerWidget, clearIconPath, currentIconThemePath()+"/filter.png");
 	connect(bookmarkFilter, SIGNAL(textChanged(const QString &)), SaagharWidget::bookmarks, SLOT(filterItems(const QString &)));
 
+	QToolButton *unBookmarkButton = new QToolButton(bookmarkManagerWidget);
+	unBookmarkButton->setObjectName("unBookmarkButton");
+	unBookmarkButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
+
+	unBookmarkButton->setIcon(QIcon(currentIconThemePath()+"/un-bookmark.png"));
+	connect(unBookmarkButton, SIGNAL(clicked()), SaagharWidget::bookmarks, SLOT(unBookmarkItem()));
 
 	QSpacerItem *filterHorizSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 	bookmarkToolsLayout->addWidget(bookmarkFilter);
 	bookmarkToolsLayout->addItem(filterHorizSpacer);
+	bookmarkToolsLayout->addWidget(unBookmarkButton);
 	//bookmarkMainLayout->addWidget(bookmarkFilter);
 	bookmarkMainLayout->addLayout(bookmarkToolsLayout);
 	bookmarkMainLayout->addWidget(SaagharWidget::bookmarks);
@@ -2848,6 +2858,9 @@ void MainWindow::setupBookmarkManagerUi()
 	{
 		bookmarkManagerWidget->setWidget(bookmarkContainer /*SaagharWidget::bookmarks*/);
 		addDockWidget(Qt::LeftDockWidgetArea, bookmarkManagerWidget);
+		allActionMap.insert("bookmarkManagerDockAction", bookmarkManagerWidget->toggleViewAction());
+		actionInstance("bookmarkManagerDockAction")->setIcon(QIcon(currentIconThemePath()+"/bookmark-folder.png"));
+		actionInstance("bookmarkManagerDockAction")->setObjectName(QString::fromUtf8("bookmarkManagerDockAction"));
 	}
 	else
 	{
@@ -2859,80 +2872,9 @@ void MainWindow::setupBookmarkManagerUi()
 		delete bookmarkManagerWidget;
 		bookmarkManagerWidget = 0;
 	}
-
-//	if (!bookmarkFile.open(QFile::ReadOnly | QFile::Text))
-//	{
-//		if (!bookmarkFile.exists() && bookmarkFile.open(QFile::WriteOnly | QFile::Text))
-//		{
-//			//create an empty XBEL file.
-//			QTextStream out(&bookmarkFile);
-//			out.setCodec("utf-8");
-//			out << "<?xml version='1.0' encoding='UTF-8'?>\n"
-//				<<	"<!DOCTYPE xbel>\n"
-//				<<	"<xbel version=\"1.0\">\n"
-//				<<	"</xbel>";
-//			bookmarkFile.close();
-//			if (!bookmarkFile.open(QFile::ReadOnly | QFile::Text))
-//			{
-//				readBookmarkFile = false;
-//			}
-//		}
-//		else
-//			readBookmarkFile = false;
-//		if (!readBookmarkFile)
-//		{
-//			QMessageBox::warning(this, tr("Bookmarks"),
-//								 tr("Cannot load the bookmark file %1:\n%2.")
-//								 .arg(bookmarkFile.fileName())
-//								 .arg(bookmarkFile.errorString()));
-//		}
-//	}
-
-//	if (readBookmarkFile)
-//	{
-//		if (!SaagharWidget::bookmarks->read(&bookmarkFile))
-//		{
-//			readBookmarkFile = false;
-//			bookmarkFile.close();
-//			if (bookmarkFile.open(QFile::WriteOnly | QFile::Text))
-//			{
-//				//create an empty XBEL file.
-//				QTextStream out(&bookmarkFile);
-//				out.setCodec("utf-8");
-//				out << "<?xml version='1.0' encoding='UTF-8'?>\n"
-//					<<	"<!DOCTYPE xbel>\n"
-//					<<	"<xbel version=\"1.0\">\n"
-//					<<	"</xbel>";
-//				bookmarkFile.close();
-//				if (!bookmarkFile.open(QFile::ReadOnly | QFile::Text))
-//				{
-//					readBookmarkFile = false;
-//				}
-//				else
-//				{
-//					if (SaagharWidget::bookmarks->read(&bookmarkFile))
-//						readBookmarkFile = true;
-//				}
-//			}
-//		}
-//		if (readBookmarkFile)
-//		{
-//			bookmarkManagerWidget->setWidget(SaagharWidget::bookmarks);
-//			addDockWidget(Qt::LeftDockWidgetArea, bookmarkManagerWidget);
-//		}
-//	}
-
-//	if (!readBookmarkFile)
-//	{
-//		//bookmark not loaded!
-//		delete SaagharWidget::bookmarks;
-//		SaagharWidget::bookmarks = 0;
-//		delete bookmarkManagerWidget;
-//		bookmarkManagerWidget = 0;
-//	}
 }
 
-void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data)
+void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible)
 {
 	if (type == "Verses")
 	{
@@ -2945,14 +2887,52 @@ void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString 
 			{
 				if (tmp->identifier() == poemIdentifier)
 				{
-					mainTabWidget->setCurrentIndex(i);
-					qDebug() << "tmp="<<tmp<<"saagharWidget="<<saagharWidget<<saagharWidget->currentPoem<<poemIdentifier;
-					saagharWidget->scrollToFirstItemContains(itemText, false);
-					return;
+					if (ensureVisible)
+					{
+						mainTabWidget->setCurrentIndex(i);
+						saagharWidget->scrollToFirstItemContains(itemText, false, true);
+						return;
+					}
+
+					QTableWidgetItem *item = tmp->scrollToFirstItemContains(itemText, false, ensureVisible);
+					if (!ensureVisible)
+					{
+						//un-bookmarking operation!!
+						if (item)
+						{
+							QTableWidgetItem *numItem = tmp->tableViewWidget->item(item->row(), 0);
+							if (numItem)
+							{
+								QPixmap starOff(":/resources/images/bookmark-off.png");
+								starOff = starOff.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(numItem->row())-1, 22), Qt::SmoothTransformation);
+								//QIcon bookmarkIcon;
+								//bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
+								//= numItem->icon().pixmap(starOff.size(), QIcon::Disabled, QIcon::Off);
+
+								numItem->setIcon(QIcon(starOff));
+								const int ITEM_BOOKMARKED_STATE = Qt::UserRole+20;
+								numItem->setData(ITEM_BOOKMARKED_STATE, false);
+
+//								QIcon bookmarkIcon;
+//								bookmarkIcon.addPixmap(star, QIcon::Active, QIcon::On);
+//								bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
+//								bool bookmarkState = !item->data(ITEM_BOOKMARKED_STATE).toBool();
+					
+//								if (bookmarkState)
+//									bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Active, QIcon::On);
+//								else
+//									bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
+							}
+						}
+					}
 				}
 			}
 		}
-		newTabForItem("PoemID", poemID, true);
-		saagharWidget->scrollToFirstItemContains(itemText, false);
+
+		if (ensureVisible)
+		{
+			newTabForItem("PoemID", poemID, true);
+			saagharWidget->scrollToFirstItemContains(itemText, false, true);
+		}
 	}
 }

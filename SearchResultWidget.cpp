@@ -145,6 +145,7 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 
 	searchNextPage = new QToolButton(searchResultContents);
 	searchNextPage->setObjectName(QString::fromUtf8("searchNextPage"));
+	searchNextPage->setStyleSheet("QToolButton { border: none; padding: 0px; }");
 
 	actSearchNextPage = new QAction(searchResultContents);
 	searchNextPage->setDefaultAction(actSearchNextPage);
@@ -158,6 +159,7 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 
 	searchPreviousPage = new QToolButton(searchResultContents);
 	searchPreviousPage->setObjectName(QString::fromUtf8("searchPreviousPage"));
+	searchPreviousPage->setStyleSheet("QToolButton { border: none; padding: 0px; }");
 	
 	actSearchPreviousPage = new QAction(searchResultContents);
 	searchPreviousPage->setDefaultAction(actSearchPreviousPage);

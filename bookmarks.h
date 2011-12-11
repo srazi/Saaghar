@@ -64,6 +64,7 @@ public:
 	QStringList bookmarkList(const QString &type);
 
 private slots:
+	bool unBookmarkItem(QTreeWidgetItem *item = 0);
 	void doubleClicked(QTreeWidgetItem *item, int column);
 	void updateDomElement(QTreeWidgetItem *item, int column);
 	void filterItems(const QString &str);
@@ -82,7 +83,7 @@ private:
 	QIcon bookmarkIcon;
 
 signals:
-	void showBookmarkedItem(const QString &, const QString &, const QString &);
+	void showBookmarkedItem(const QString &, const QString &, const QString &, bool);
 };
 
 #endif

@@ -346,6 +346,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 	showParentCategory(category);
 	currentPoem = 0;//from showParentCategory
+	currentPoemTitle = "";
 
 	//new Caption
 	currentCaption = (currentCat == 0) ? tr("Home") : ganjoorDataBase->getPoetForCat(currentCat)._Name;//for Tab Title
@@ -505,6 +506,8 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 void SaagharWidget::showParentCategory(GanjoorCat category)
 {
+	currentLocationList.clear();
+
 	parentCatsToolBar->clear();
 	parentCatsToolBar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	parentCatsToolBar->setAllowedAreas(Qt::TopToolBarArea|Qt::BottomToolBarArea|Qt::NoToolBarArea);
@@ -571,6 +574,9 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 		
 		parentCatsToolBar->addWidget(parentCatButton);
 //		parentCatLayout->addWidget(parentCatButton);
+
+		if (i!=0)
+			currentLocationList << parentCatButton->text();
 	}
 
 	if (!category._Text.isEmpty())
@@ -598,6 +604,8 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 		//QString("QPushButton{border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde); min-width: %1px; min-height: %2px; text margin-left:1px; margin-right:1px } QPushButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa); } QPushButton:flat { border: none; } QPushButton:default { border-color: red; }").arg(minWidth).arg(parentCatButton->fontMetrics().height()+2));
 		parentCatsToolBar->addWidget(parentCatButton);
 //		parentCatLayout->addWidget(parentCatButton);
+
+		currentLocationList << parentCatButton->text();
 	}
 //	parentCatWidget->setLayout(parentCatLayout);
 //	parentCatsToolBar->addWidget(parentCatWidget);
@@ -632,6 +640,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
 	tableViewWidget->setRowCount(2);
 	tableViewWidget->setColumnCount(4);
+
+	currentPoemTitle = poem._Title;
 
 	//new Caption
 	currentCaption = (currentCat == 0) ? tr("Home") : ganjoorDataBase->getPoetForCat(currentCat)._Name;//for Tab Title
@@ -1151,7 +1161,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 	}
 }
 
-void SaagharWidget::scrollToFirstItemContains(const QString &phrase, bool pharseIsList)
+QTableWidgetItem *SaagharWidget::scrollToFirstItemContains(const QString &phrase, bool pharseIsList, bool scroll)
 {
 	QString keyword = phrase;
 	keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
@@ -1161,14 +1171,14 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase, bool pharse
 		keyword = QGanjoorDbBrowser::cleanString(keyword);
 
 	if (keyword.isEmpty())
-		return;
+		return 0;
 
 	QStringList list(keyword);
 	if (pharseIsList)
 		list = SearchPatternManager::phraseToList(keyword, false);
 
 	if (list.isEmpty())
-		return;
+		return 0;
 	int listSize = list.size();
 
 	for (int row = 1; row < tableViewWidget->rowCount(); ++row)
@@ -1197,16 +1207,21 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase, bool pharse
 
 					if (text.contains(keyword))
 					{
-						tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
-						tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
-						row = tableViewWidget->rowCount()+1;
-						col = tableViewWidget->columnCount()+1;
-						break;
+						if (scroll)
+						{
+							tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
+							tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
+						}
+						//row = tableViewWidget->rowCount()+1;
+						//col = tableViewWidget->columnCount()+1;
+						//break;
+						return tmp;
 					}
 				}
 			}
 		}
 	}
+	return 0;
 }
 
 int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidth, int width, int height)
@@ -1254,6 +1269,11 @@ void SaagharWidget::clickedOnItem(int row,int column)
 
 			QString verseText = verseItem->text();
 			verseText = verseText.simplified();
+			QString currentLocation = currentLocationList.join(">");
+			if (!currentPoemTitle.isEmpty())
+				currentLocation+=">"+currentPoemTitle;
+
+			verseText.prepend(currentLocation+"\n");
 			if (tableViewWidget->columnCount() == 4 && tableViewWidget->item(row, 3))
 				verseText+= "\n"+tableViewWidget->item(row, 3)->text();
 			QChar tatweel = QChar(0x0640);

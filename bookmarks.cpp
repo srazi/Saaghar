@@ -61,7 +61,7 @@ Bookmarks::Bookmarks(QWidget *parent)
 						 QIcon::Normal, QIcon::Off);
 	folderIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirOpenIcon),
 						 QIcon::Normal, QIcon::On);
-	//bookmarkIcon.addPixmap(style()->standardPixmap(QStyle::SP_FileIcon));
+
 	bookmarkIcon.addPixmap(QPixmap(":/resources/images/bookmark-on.png"));
 
 	setAlternatingRowColors(true);
@@ -327,29 +327,18 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 				qDebug() << "REMOVE OPERATION" << "size=" << countOfChildren << "tex="<<childItem->text(0)<<"\nfor="<<data.toStringList().at(2)<<"\n"<<childItem->data(0, Qt::UserRole).toString()<<data.toStringList().at(0)+"|"+data.toStringList().at(1);
 				if (childItem->data(0, Qt::UserRole).toString() == data.toStringList().at(0)+"|"+data.toStringList().at(1))
 				{++numOfDel;
-					qDebug() << "REMOVED!!";
 					QDomElement elementForRemoving = domElementForItem.value(childItem);
-					bool delThisChild = true;
-					QString itemComment = elementForRemoving.firstChildElement("desc").text();
-					if ( !itemComment.isEmpty() )
+					if (unBookmarkItem(childItem))
 					{
-						QMessageBox bookmarkCommentWarning(QMessageBox::Warning, tr("Bookmark"), tr("This bookmark has comment if you remove it, the comment will be deleted, too.\nThis operation can not be undoed!\nBookmark's' Title:\n%1\n\nBookmark's Comment:\n%2").arg(childItem->text(0)).arg(itemComment), QMessageBox::Ok|QMessageBox::Cancel,  parentWidget());
+//						if (!elementForRemoving.isNull())
+//							verseNode.removeChild(elementForRemoving);
 
-						if (bookmarkCommentWarning.exec() == QMessageBox::Cancel)
-						{
-							delThisChild = false;
-							allMatchedRemoved = false;
-						}
-					}
-					if (delThisChild)
-					{
-						if (!elementForRemoving.isNull())
-							verseNode.removeChild(elementForRemoving);
-						//deleteList << i;
-						delete childItem;
 						--i;//because one of children was deleted
 						--countOfChildren;
-						//childItem->setBackgroundColor(1, QColor(Qt::red));
+					}
+					else
+					{
+						allMatchedRemoved = false;
 					}
 				}
 			}
@@ -424,10 +413,12 @@ void Bookmarks::doubleClicked(QTreeWidgetItem *item, int column)
 		if (column == 0)
 		{
 			QString text = item->text(0);
-			qDebug() << "text-before="<<text;
-			text = text.left(text.indexOf("\n"));
-			qDebug() << "text-after="<<text;
-			emit showBookmarkedItem(item->parent()->text(0), text, item->data(0, Qt::UserRole).toString());
+			int newLineIndex = text.indexOf("\n")+1;
+			int secondNewLineIndex = text.indexOf("\n", newLineIndex);
+			int length = secondNewLineIndex > 0 ? secondNewLineIndex-newLineIndex : text.size()-newLineIndex;
+			text = text.mid(newLineIndex, length);//text.left(text.indexOf("\n"));
+			qDebug() << "text-after="<<text<<"newLineIndex="<<newLineIndex<<"secondNewLineIndex="<<secondNewLineIndex<<"length="<<length;
+			emit showBookmarkedItem(item->parent()->text(0), text, item->data(0, Qt::UserRole).toString(), true);
 		}
 	}
 }
@@ -443,7 +434,6 @@ void Bookmarks::filterItems(const QString &str)
 			QTreeWidgetItem *child = ithRootChild->child(j);
 			QString text = child->text(0)+child->text(1);
 			text = QGanjoorDbBrowser::cleanString(text);
-			qDebug() << "teeeeeeeeext"<<text;
 			if (!str.isEmpty() && !text.contains(str))
 				child->setHidden(true);
 			else
@@ -452,3 +442,43 @@ void Bookmarks::filterItems(const QString &str)
 	}
 }
 
+bool Bookmarks::unBookmarkItem(QTreeWidgetItem *item)
+{
+	if (!item)
+		item = currentItem();
+	if (!item || !item->parent()) return false;
+
+	qDebug() << "REMOVED!!";
+	QDomElement elementForRemoving = domElementForItem.value(item);
+	bool deleteItem = true;
+	QString itemComment = elementForRemoving.firstChildElement("desc").text();
+	if ( !itemComment.isEmpty() )
+	{
+		QMessageBox bookmarkCommentWarning(QMessageBox::Warning, tr("Bookmark"), tr("This bookmark has comment if you remove it, the comment will be deleted, too.\nThis operation can not be undoed!\nBookmark's' Title:\n%1\n\nBookmark's Comment:\n%2").arg(item->text(0)).arg(itemComment), QMessageBox::Ok|QMessageBox::Cancel,  parentWidget());
+
+		if (bookmarkCommentWarning.exec() == QMessageBox::Cancel)
+		{
+			deleteItem = false;
+			//allMatchedRemoved = false;
+		}
+	}
+	if (deleteItem)
+	{
+		if (!elementForRemoving.isNull())
+			elementForRemoving.parentNode().removeChild(elementForRemoving);
+		//deleteList << i;
+		QString text = item->text(0);
+		qDebug() << "text-before="<<text;
+		int newLineIndex = text.indexOf("\n")+1;
+		int secondNewLineIndex = text.indexOf("\n", newLineIndex);
+		int length = secondNewLineIndex > 0 ? secondNewLineIndex-newLineIndex : text.size()-newLineIndex;
+		text = text.mid(newLineIndex, length);
+		qDebug() << "text-after="<<text<<"newLineIndex="<<newLineIndex<<"secondNewLineIndex="<<secondNewLineIndex<<"length="<<length;
+		emit showBookmarkedItem(item->parent()->text(0), text, item->data(0, Qt::UserRole).toString(), false);
+		delete item;
+		item = 0;
+		//--i;//because one of children was deleted
+		//--countOfChildren;
+	}
+	return deleteItem;
+}
