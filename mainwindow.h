@@ -53,6 +53,7 @@ class MainWindow : public QMainWindow
 //		void emitReSizeEvent();
 
 	private:
+		void setupBookmarkManagerUi();
 		QString currentIconThemePath();
 		QBoxLayout *searchToolBarBoxLayout;
 		bool skipSearchToolBarResize;
@@ -119,6 +120,7 @@ class MainWindow : public QMainWindow
 		bool dataFromIdentifier(const QString &identifier, QString *type = 0, int *id = 0);
 
 	private slots:
+		void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data);
 		void setHomeAsDirty();
 		void actionClosedTabsClicked();
 		void namedActionTriggered(bool checked);

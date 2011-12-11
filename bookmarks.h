@@ -60,12 +60,13 @@ public:
 
 	bool read(QIODevice *device);
 	bool write(QIODevice *device);
-	void updateBookmarkState(const QString &type, const QVariant &data, bool state);
+	bool updateBookmarkState(const QString &type, const QVariant &data, bool state);
 	QStringList bookmarkList(const QString &type);
 
 private slots:
 	void doubleClicked(QTreeWidgetItem *item, int column);
 	void updateDomElement(QTreeWidgetItem *item, int column);
+	void filterItems(const QString &str);
 
 private:
 	QMultiHash<QString, QString> bookmarkHash;
@@ -81,7 +82,7 @@ private:
 	QIcon bookmarkIcon;
 
 signals:
-	void showBookmarkedItem(const QString &type, const QString &data);
+	void showBookmarkedItem(const QString &, const QString &, const QString &);
 };
 
 #endif

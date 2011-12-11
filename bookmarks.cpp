@@ -46,6 +46,7 @@
 #include <QtGui>
 
 #include "bookmarks.h"
+#include "QGanjoorDbBrowser.h"
 
 Bookmarks::Bookmarks(QWidget *parent)
 	: QTreeWidget(parent)
@@ -125,7 +126,7 @@ bool Bookmarks::write(QIODevice *device)
 }
 
 void Bookmarks::updateDomElement(QTreeWidgetItem *item, int column)
-{
+{qDebug() << "itemChangedddddddd";
 	QDomElement element = domElementForItem.value(item);
 	if (!element.isNull())
 	{
@@ -151,7 +152,8 @@ void Bookmarks::updateDomElement(QTreeWidgetItem *item, int column)
 				element.setAttribute("href", item->data(1, Qt::UserRole).toString());
 			}
 		}
-		sortItems(0, Qt::AscendingOrder);
+		//sortItems(0, Qt::AscendingOrder);
+		//closePersistentEditor(item, 1);
 	}
 }
 
@@ -270,7 +272,7 @@ QStringList Bookmarks::bookmarkList(const QString &type)
 	return bookmarkedItemList;
 }
 
-void Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, bool state)
+bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, bool state)
 {
 	if (type == "Verses")
 	{
@@ -317,6 +319,7 @@ void Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 			//qDebug() << "REMOVE----OPERATION" << "size=" << items.size() << data.toStringList().at(2);
 			int numOfDel = 0;
 			//QList<int> deleteList;
+			bool allMatchedRemoved = true;
 			for (int i=0; i< countOfChildren; ++i)
 			{
 				QTreeWidgetItem *childItem = parentItem->child(i);
@@ -326,18 +329,33 @@ void Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 				{++numOfDel;
 					qDebug() << "REMOVED!!";
 					QDomElement elementForRemoving = domElementForItem.value(childItem);
-					if (!elementForRemoving.isNull())
-						verseNode.removeChild(elementForRemoving);
-					//deleteList << i;
-					delete childItem;
-					--i;//because one of children was deleted
-					--countOfChildren;
-					//childItem->setBackgroundColor(1, QColor(Qt::red));
+					bool delThisChild = true;
+					QString itemComment = elementForRemoving.firstChildElement("desc").text();
+					if ( !itemComment.isEmpty() )
+					{
+						QMessageBox bookmarkCommentWarning(QMessageBox::Warning, tr("Bookmark"), tr("This bookmark has comment if you remove it, the comment will be deleted, too.\nThis operation can not be undoed!\nBookmark's' Title:\n%1\n\nBookmark's Comment:\n%2").arg(childItem->text(0)).arg(itemComment), QMessageBox::Ok|QMessageBox::Cancel,  parentWidget());
+
+						if (bookmarkCommentWarning.exec() == QMessageBox::Cancel)
+						{
+							delThisChild = false;
+							allMatchedRemoved = false;
+						}
+					}
+					if (delThisChild)
+					{
+						if (!elementForRemoving.isNull())
+							verseNode.removeChild(elementForRemoving);
+						//deleteList << i;
+						delete childItem;
+						--i;//because one of children was deleted
+						--countOfChildren;
+						//childItem->setBackgroundColor(1, QColor(Qt::red));
+					}
 				}
 			}
 			qDebug() << "NUM OF DELETE-->REMOVE OPERATION=" << numOfDel;
 /////////////////////////////////////////////////
-			return;
+			return allMatchedRemoved;//allMatchedRemoved is false when at least one of matched items are not deleted!!
 		}
 
 		QString tmpT = "Parent ZERO";
@@ -370,7 +388,11 @@ void Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 		firstChild.text();
 		QTreeWidgetItem *item = createItem(bookmark, parentItem /*firstChild*/);  //new QTreeWidgetItem(SaagharWidget::bookmarks);
 		item->setIcon(0, bookmarkIcon);
-		//item->setFlags(item->flags() | Qt::ItemIsEditable);
+		item->setFlags(item->flags() | Qt::ItemIsEditable);
+		//QModelIndex indexSecondColumn = indexFromItem(item, 1);
+		//int flags = (int)(item->flags() | Qt::ItemIsEditable);
+		//model()->setData(indexSecondColumn, flags, Qt::UserRole-1);
+		//item->setData(1, Qt::UserRole-1, flags);
 		QString title = data.toStringList().at(2);
 		//title = title.replace("//","\n");
 		item->setText(0, title);
@@ -378,18 +400,55 @@ void Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 		item->setData(0, Qt::UserRole, data.toStringList().at(0)+"|"+data.toStringList().at(1));
 		item->setData(1, Qt::UserRole, data.toStringList().at(3));
 		bookmarkHash.insert("Verses", data.toStringList().at(0)+"|"+data.toStringList().at(1));
+		return true;
 	}
+
+	//an unknown type!!
+	return false;
 }
 
 void Bookmarks::doubleClicked(QTreeWidgetItem *item, int column)
 {
+	//setFlag() emits itemChanged() SIGNAL!
+	disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
+			this, SLOT(updateDomElement(QTreeWidgetItem*,int)));
+	//a tricky hack for enabling one column editing!!
+	if (column == 0)
+		item->setFlags(item->flags() & ~Qt::ItemIsEditable);
+	else if (column == 1)
+		item->setFlags(item->flags() | Qt::ItemIsEditable);
+	connect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
+			this, SLOT(updateDomElement(QTreeWidgetItem*,int)));
 	if (item->parent())
 	{
-		if (column == 1)
-			openPersistentEditor(item, 1);// return;//editItem(item, column);
-		else if (column == 0)
+		if (column == 0)
 		{
-			emit showBookmarkedItem(item->parent()->text(0), item->data(0, Qt::UserRole).toString());
+			QString text = item->text(0);
+			qDebug() << "text-before="<<text;
+			text = text.left(text.indexOf("\n"));
+			qDebug() << "text-after="<<text;
+			emit showBookmarkedItem(item->parent()->text(0), text, item->data(0, Qt::UserRole).toString());
 		}
 	}
 }
+
+void Bookmarks::filterItems(const QString &str)
+{
+	for (int i=0; i<topLevelItemCount();++i)
+	{
+		QTreeWidgetItem *ithRootChild = topLevelItem(i);
+		int childCount = ithRootChild->childCount();
+		for (int j=0; j<childCount;++j)
+		{
+			QTreeWidgetItem *child = ithRootChild->child(j);
+			QString text = child->text(0)+child->text(1);
+			text = QGanjoorDbBrowser::cleanString(text);
+			qDebug() << "teeeeeeeeext"<<text;
+			if (!str.isEmpty() && !text.contains(str))
+				child->setHidden(true);
+			else
+				child->setHidden(false);
+		}
+	}
+}
+

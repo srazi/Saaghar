@@ -1156,6 +1156,10 @@ void SaagharWidget::scrollToFirstItemContains(const QString &phrase, bool pharse
 	QString keyword = phrase;
 	keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
 	keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
+
+	if (!pharseIsList) //TODO: maybe when using list mode this create a bug
+		keyword = QGanjoorDbBrowser::cleanString(keyword);
+
 	if (keyword.isEmpty())
 		return;
 
@@ -1242,12 +1246,11 @@ void SaagharWidget::clickedOnItem(int row,int column)
 			bookmarkIcon.addPixmap(star, QIcon::Active, QIcon::On);
 			bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
 			bool bookmarkState = !item->data(ITEM_BOOKMARKED_STATE).toBool();
-			item->setData(ITEM_BOOKMARKED_STATE, bookmarkState);
+
 			if (bookmarkState)
 				bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Active, QIcon::On);
 			else
 				bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
-			item->setIcon(bookmarkIcon);
 
 			QString verseText = verseItem->text();
 			verseText = verseText.simplified();
@@ -1256,8 +1259,14 @@ void SaagharWidget::clickedOnItem(int row,int column)
 			QChar tatweel = QChar(0x0640);
 			verseText.remove(tatweel);
 
-			if (SaagharWidget::bookmarks)
-				SaagharWidget::bookmarks->updateBookmarkState("Verses", QStringList() << data.at(1) << data.at(2) << verseText/*+"\n"*/ << currentPageGanjoorUrl()+"/#"+data.at(2), bookmarkState);
+			if (SaagharWidget::bookmarks &&
+				SaagharWidget::bookmarks->updateBookmarkState("Verses", QStringList() << data.at(1) << data.at(2) << verseText/*+"\n"*/ << currentPageGanjoorUrl()+"/#"+data.at(2), bookmarkState)
+				)
+			{
+				item->setIcon(bookmarkIcon);
+				item->setData(ITEM_BOOKMARKED_STATE, bookmarkState);
+			}
+
 			qDebug()<<"ICON STATE CHANGED" << item->text()<< "row="<<row<<"col="<<column<<verseItem->data(Qt::UserRole).toString();
 		}
 	}
