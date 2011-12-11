@@ -463,9 +463,10 @@ void SearchResultWidget::filterResults(const QString &text)
 	const QMap<int, QString>::const_iterator endIterator = copyResultList.constEnd();
 	while (it != endIterator)
 	{
-		const QString value = it.value();
+		QString value = it.value();
+		value = QGanjoorDbBrowser::cleanString(value);
 		if (value.contains(text, Qt::CaseInsensitive))
-			resultList.insert(it.key(), value);
+			resultList.insert(it.key(), it.value());
 		++it;
 	}
 	if (resultList.isEmpty())
