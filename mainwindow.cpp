@@ -2734,9 +2734,12 @@ void MainWindow::actionClosedTabsClicked()
 	QAction *action = qobject_cast<QAction *>(sender());
 	if (!action) return;
 	//QString tabType = action->data().toString();
-	QString type;
-	int id;
-	if ( dataFromIdentifier(action->data().toString(), &type, &id) )
+	QString type = action->data().toStringList().at(0);
+	int id = action->data().toStringList().at(1).toInt();
+
+	if ( (type != "PoemID" && type != "CatID") || id <0 )
+		newTabForItem(type, id, false);
+	else
 		newTabForItem(type, id, true);
 	//QStringList tabViewData = action->data().toString().split("=", QString::SkipEmptyParts);
 //	if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
@@ -2749,22 +2752,22 @@ void MainWindow::actionClosedTabsClicked()
 	menuClosedTabs->removeAction(action);
 }
 
-bool MainWindow::dataFromIdentifier(const QString &identifier, QString *type, int *id)
-{
-	QStringList tabViewData = identifier.split("=", QString::SkipEmptyParts);
-	if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
-	{
-		bool Ok = false;
-		int ID = tabViewData.at(1).toInt(&Ok);
-		if (Ok)
-		{
-			if (type) *type = tabViewData.at(0);
-			if (id) *id = ID;
-			return true;
-		}
-	}
-	return false;
-}
+//bool MainWindow::dataFromIdentifier(const QString &identifier, QString *type, int *id)
+//{
+//	QStringList tabViewData = identifier.split("=", QString::SkipEmptyParts);
+//	if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
+//	{
+//		bool Ok = false;
+//		int ID = tabViewData.at(1).toInt(&Ok);
+//		if (Ok)
+//		{
+//			if (type) *type = tabViewData.at(0);
+//			if (id) *id = ID;
+//			return true;
+//		}
+//	}
+//	return false;
+//}
 
 QString MainWindow::currentIconThemePath()
 {
@@ -2895,13 +2898,13 @@ void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString 
 	if (type == "Verses" || type == tr("Verses"))
 	{
 		int poemID = data.split("|").at(0).toInt();
-		QString poemIdentifier = "PoemID="+data.split("|").at(0);
+		//QString poemIdentifier = "PoemID="+data.split("|").at(0);
 		for (int i = 0; i < mainTabWidget->count(); ++i)
 		{
 			SaagharWidget *tmp = getSaagharWidget(i);
 			if (tmp)
 			{
-				if (tmp->identifier() == poemIdentifier)
+				if (tmp->identifier().at(0) == "PoemID" && tmp->identifier().at(1).toInt() == poemID)
 				{
 					if (ensureVisible)
 					{

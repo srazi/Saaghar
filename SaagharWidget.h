@@ -94,7 +94,7 @@ public:
 		{return dirty;}
 	inline void setDirty()
 		{dirty = true;}
-	QString identifier();
+	QStringList identifier();
 	void refresh();
 
 private:

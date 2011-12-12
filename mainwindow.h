@@ -118,7 +118,7 @@ class MainWindow : public QMainWindow
 		QMenu *searchOptionMenu;
 		QString mainToolBarSizeAction;
 		QString mainToolBarStyleAction;
-		bool dataFromIdentifier(const QString &identifier, QString *type = 0, int *id = 0);
+		//bool dataFromIdentifier(const QString &identifier, QString *type = 0, int *id = 0);
 
 	private slots:
 		void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true);

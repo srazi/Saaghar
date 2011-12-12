@@ -123,12 +123,12 @@ void SaagharWidget::processClickedItem(QString type, int id, bool noError)
 {
 	if (type == "PoemID" || type == "CatID")
 		clearSaagharWidget();
+
+	if (!noError)
+		type = "CatID";
 	if ( type == "PoemID")
 	{
-		GanjoorPoem poem;
-		poem.init(0, 0, "", "", false, "");
-		if (noError)
-			poem = ganjoorDataBase->getPoem(id);
+		GanjoorPoem poem = ganjoorDataBase->getPoem(id);
 		showPoem(poem);
 	}
 	else if ( type == "CatID")
@@ -1327,13 +1327,13 @@ void SaagharWidget::clickedOnItem(int row,int column)
 	}
 }
 
-QString SaagharWidget::identifier()
+QStringList SaagharWidget::identifier()
 {
-	QString tabViewType;
+	QStringList tabViewType;
 	if (currentPoem > 0)
-		tabViewType = "PoemID="+QString::number(currentPoem);
+		tabViewType << "PoemID" << QString::number(currentPoem);
 	else
-		tabViewType = "CatID="+QString::number(currentCat);
+		tabViewType << "CatID" << QString::number(currentCat);
 	return tabViewType;
 }
 
