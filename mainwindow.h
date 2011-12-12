@@ -105,6 +105,7 @@ class MainWindow : public QMainWindow
 		QMenu *menuFile;
 		QMenu *menuHelp;
 		QMenu *menuView;
+		QMenu *menuBookmarks;
 
 		//submenus
 		QMenu *menuOpenedTabs, *menuClosedTabs;

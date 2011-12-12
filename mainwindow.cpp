@@ -1392,6 +1392,8 @@ void MainWindow::setupUi()
 	menuNavigation->setObjectName(QString::fromUtf8("menuNavigation"));
 	menuView = new QMenu(tr("&View"), ui->menuBar);
 	menuView->setObjectName(QString::fromUtf8("menuView"));
+	menuBookmarks = new QMenu(tr("&Bookmarks"), ui->menuBar);
+	menuBookmarks->setObjectName(QString::fromUtf8("menuBookmarks"));
 	menuTools = new QMenu(tr("&Tools"), ui->menuBar);
 	menuTools->setObjectName(QString::fromUtf8("menuTools"));
 	menuHelp = new QMenu(tr("&Help"), ui->menuBar);
@@ -1482,6 +1484,7 @@ void MainWindow::setupUi()
 	ui->menuBar->addMenu(menuFile);
 	ui->menuBar->addMenu(menuNavigation);
 	ui->menuBar->addMenu(menuView);
+	ui->menuBar->addMenu(menuBookmarks);
 	ui->menuBar->addMenu(menuTools);
 	ui->menuBar->addMenu(menuHelp);
 
@@ -1550,8 +1553,10 @@ void MainWindow::setupUi()
 
 	menuView->addAction(actionInstance("actionFullScreen"));
 
+	menuBookmarks->addAction(actionInstance("bookmarkManagerDockAction"));
+	menuBookmarks->addSeparator();
+
 	menuTools->addAction(actionInstance("searchToolbarAction"));
-	menuTools->addAction(actionInstance("bookmarkManagerDockAction"));
 	menuTools->addSeparator();
 	menuTools->addAction(actionInstance("actionViewInGanjoorSite"));
 	menuTools->addAction(actionInstance("Ganjoor Verification"));
@@ -2800,7 +2805,17 @@ void MainWindow::setupBookmarkManagerUi()
 	QString clearIconPath = currentIconThemePath()+"/clear-left.png";
 	if (layoutDirection() == Qt::RightToLeft)
 		clearIconPath = currentIconThemePath()+"/clear-right.png";
+
+	QLabel *bookmarkFilterLabel = new QLabel(bookmarkManagerWidget);
+	bookmarkFilterLabel->setObjectName(QString::fromUtf8("bookmarkFilterLabel"));
+	bookmarkFilterLabel->setText(tr("Filter:"));
 	QSearchLineEdit *bookmarkFilter = new QSearchLineEdit(bookmarkManagerWidget, clearIconPath, currentIconThemePath()+"/filter.png");
+	bookmarkFilter->setObjectName("bookmarkFilter");
+#if QT_VERSION > 0x040700
+	bookmarkFilter->setPlaceholderText(tr("Filter"));
+#else
+	bookmarkFilter->setToolTip(tr("Filter"));
+#endif
 	connect(bookmarkFilter, SIGNAL(textChanged(const QString &)), SaagharWidget::bookmarks, SLOT(filterItems(const QString &)));
 
 	QToolButton *unBookmarkButton = new QToolButton(bookmarkManagerWidget);
@@ -2811,6 +2826,7 @@ void MainWindow::setupBookmarkManagerUi()
 	connect(unBookmarkButton, SIGNAL(clicked()), SaagharWidget::bookmarks, SLOT(unBookmarkItem()));
 
 	QSpacerItem *filterHorizSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+	bookmarkToolsLayout->addWidget(bookmarkFilterLabel, 0, Qt::AlignRight|Qt::AlignCenter);
 	bookmarkToolsLayout->addWidget(bookmarkFilter);
 	bookmarkToolsLayout->addItem(filterHorizSpacer);
 	bookmarkToolsLayout->addWidget(unBookmarkButton);
@@ -2876,7 +2892,7 @@ void MainWindow::setupBookmarkManagerUi()
 
 void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible)
 {
-	if (type == "Verses")
+	if (type == "Verses" || type == tr("Verses"))
 	{
 		int poemID = data.split("|").at(0).toInt();
 		QString poemIdentifier = "PoemID="+data.split("|").at(0);

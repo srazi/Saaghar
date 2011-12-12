@@ -70,7 +70,7 @@ private slots:
 	void filterItems(const QString &str);
 
 private:
-	QMultiHash<QString, QString> bookmarkHash;
+	//QMultiHash<QString, QString> bookmarkHash;
 	QDomElement findChildNode(const QString &tagName, const QString &type);
 	void parseFolderElement(const QDomElement &element,
 							QTreeWidgetItem *parentItem = 0);

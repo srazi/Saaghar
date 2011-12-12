@@ -75,18 +75,20 @@ bool Bookmarks::read(QIODevice *device)
 	int errorLine;
 	int errorColumn;
 
-	if (!domDocument.setContent(device, true, &errorStr, &errorLine,
-								&errorColumn)) {
+	if (!domDocument.setContent(device, true, &errorStr, &errorLine, &errorColumn))
+	{
 		//QMessageBox::information(window(), tr("DOM Bookmarks"), tr("Parse error at line %1, column %2:\n%3").arg(errorLine).arg(errorColumn).arg(errorStr));
 		return false;
 	}
 
 	QDomElement root = domDocument.documentElement();
-	if (root.tagName() != "xbel") {
+	if (root.tagName() != "xbel")
+	{
 		//QMessageBox::information(window(), tr("DOM Bookmarks"), tr("The file is not an XBEL file."));
 		return false;
-	} else if (root.hasAttribute("version")
-			   && root.attribute("version") != "1.0") {
+	}
+	else if (root.hasAttribute("version") && root.attribute("version") != "1.0")
+	{
 		//QMessageBox::information(window(), tr("DOM Bookmarks"), tr("The file is not an XBEL version 1.0 file."));
 		return false;
 	}
@@ -97,7 +99,24 @@ bool Bookmarks::read(QIODevice *device)
 			this, SLOT(updateDomElement(QTreeWidgetItem*,int)));
 
 	QDomElement child = root.firstChildElement("folder");
-	while (!child.isNull()) {
+	while (!child.isNull())
+	{
+//TODO: we can save labguage within a 'metadata' tag of this 'folder'
+//		//update node title by new loaded translation
+//		QString title = child.firstChildElement("title").text();
+//		qDebug() <<"TIIIITLE="<< title << title.toStdString().data() << title.toLocal8Bit().data() << title.toUtf8().data();
+//		if ( title != tr(title.toLocal8Bit().data()) )
+//		{
+//			qDebug() << "DIFREEEEEENT TRANSLATIOOOOON" << title << tr(title.toLocal8Bit().data());
+	
+//			title = tr(title.toLocal8Bit().data());
+//			QDomElement oldTitleElement = child.firstChildElement("title");
+//			QDomElement newTitleElement = domDocument.createElement("title");
+//			QDomText newTitleText = domDocument.createTextNode(title);
+//			newTitleElement.appendChild(newTitleText);
+	
+//			child.replaceChild(newTitleElement, oldTitleElement);
+//		}
 		parseFolderElement(child);
 		child = child.nextSiblingElement("folder");
 	}
@@ -174,10 +193,29 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
 	setItemExpanded(item, !folded);
 
 	QDomElement child = element.firstChildElement();
-	while (!child.isNull()) {
-		if (child.tagName() == "folder") {
+	while (!child.isNull())
+	{
+		if (child.tagName() == "folder")
+		{
+//TODO: we can save labguage within a 'metadata' tag of this 'folder'
+//			//update node title by new loaded translation
+//			QString title = child.firstChildElement("title").text();
+//			if (title != tr(title.toLocal8Bit().data()))
+//			{
+//				qDebug() << "DIFREEEEEENT TRANSLATIOOOOON" << title << tr(title.toLocal8Bit().data());
+
+//				title = tr(title.toLocal8Bit().data());
+//				QDomElement oldTitleElement = child.firstChildElement("title");
+//				QDomElement newTitleElement = domDocument.createElement("title");
+//				QDomText newTitleText = domDocument.createTextNode(title);
+//				newTitleElement.appendChild(newTitleText);
+
+//				child.replaceChild(newTitleElement, oldTitleElement);
+//			}
 			parseFolderElement(child, item);
-		} else if (child.tagName() == "bookmark") {
+		}
+		else if (child.tagName() == "bookmark")
+		{
 			QTreeWidgetItem *childItem = createItem(child, item);
 
 			QString title = child.firstChildElement("title").text();
@@ -186,7 +224,8 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
 ////////////////////////////////////////////////////////////////////////////////
 			QDomElement infoChild = child.firstChildElement("info");
 			QDomElement metaData = infoChild.firstChildElement("metadata");
-			while (!metaData.isNull()) {
+			while (!metaData.isNull())
+			{
 				QString owner = metaData.attribute("owner");
 				if (owner == "http://pojh.iblogger.org/saaghar") break;
 				metaData = metaData.nextSiblingElement("metadata");
@@ -202,7 +241,9 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
 			childItem->setIcon(0, bookmarkIcon);
 			childItem->setText(0, title);
 			childItem->setText(1, child.firstChildElement("desc").text()/* attribute("href")*/);
-		} else if (child.tagName() == "separator") {
+		}
+		else if (child.tagName() == "separator")
+		{
 			QTreeWidgetItem *childItem = createItem(child, item);
 			childItem->setFlags(item->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
 			childItem->setText(0, QString(30, 0xB7));
@@ -215,9 +256,12 @@ QTreeWidgetItem *Bookmarks::createItem(const QDomElement &element,
 									  QTreeWidgetItem *parentItem)
 {
 	QTreeWidgetItem *item;
-	if (parentItem) {
+	if (parentItem)
+	{
 		item = new QTreeWidgetItem(parentItem);
-	} else {
+	}
+	else
+	{
 		item = new QTreeWidgetItem(this);
 	}
 	domElementForItem.insert(item, element);
@@ -228,15 +272,16 @@ QDomElement Bookmarks::findChildNode(const QString &tagName, const QString &type
 {
 	//QDomNodeList nodeList = domDocument.elementsByTagName("folder");
 	QDomElement n = domDocument.documentElement().firstChildElement(tagName);
-	while (!n.isNull()) {
-		if (n.firstChildElement("title").text() == tr(type.toUtf8().data()))
+	while (!n.isNull())
+	{
+		if (n.firstChildElement("title").text() == type || n.firstChildElement("title").text() == tr(type.toUtf8().data()))
 		{
-			qDebug() << type.toUtf8().data()<<"IIIIFFF BREAK" << "localName=" << n.localName() << "nodName=" << n.nodeName() << "title="<< n.firstChildElement("title").text();
+			//qDebug() << type.toUtf8().data()<<"IIIIFFF BREAK" << "localName=" << n.localName() << "nodName=" << n.nodeName() << "title="<< n.firstChildElement("title").text();
 			break;
 		}
 		QDomElement e = n.toElement();
-		qDebug() << "Element name: " << e.tagName();
-		qDebug() << "localName=" << n.localName() << "nodName=" << n.nodeName() << "title="<< n.firstChildElement("title").text();
+		//qDebug() << "Element name: " << e.tagName();
+		//qDebug() << "localName=" << n.localName() << "nodName=" << n.nodeName() << "title="<< n.firstChildElement("title").text();
 		n = n.nextSiblingElement(tagName);
 	}
 	return n;
@@ -245,7 +290,7 @@ QDomElement Bookmarks::findChildNode(const QString &tagName, const QString &type
 QStringList Bookmarks::bookmarkList(const QString &type)
 {
 	QStringList bookmarkedItemList;
-	if (type == "Verses")
+	if (type == "Verses" || type == tr("Verses"))
 	{
 		QDomElement verseNode = findChildNode("folder", "Verses");
 		qDebug() << "bookmarkList VERSE-NODE" << "localName=" << verseNode.localName() << "nodName=" << verseNode.nodeName() << "title="<< verseNode.firstChildElement("title").text();
@@ -274,7 +319,7 @@ QStringList Bookmarks::bookmarkList(const QString &type)
 
 bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, bool state)
 {
-	if (type == "Verses")
+	if (type == "Verses" || type == tr("Verses"))
 	{
 		QDomElement verseNode = findChildNode("folder", "Verses");
 		if (verseNode.isNull())
@@ -290,10 +335,6 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 			verseNode = root;
 			parseFolderElement(root);
 		}
-//		else
-//		{
-//			verseNode = n;
-//		}
 
 		QTreeWidgetItem *parentItem = domElementForItem.key(verseNode);
 //REMOVE OPERATION
@@ -327,7 +368,7 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 				qDebug() << "REMOVE OPERATION" << "size=" << countOfChildren << "tex="<<childItem->text(0)<<"\nfor="<<data.toStringList().at(2)<<"\n"<<childItem->data(0, Qt::UserRole).toString()<<data.toStringList().at(0)+"|"+data.toStringList().at(1);
 				if (childItem->data(0, Qt::UserRole).toString() == data.toStringList().at(0)+"|"+data.toStringList().at(1))
 				{++numOfDel;
-					QDomElement elementForRemoving = domElementForItem.value(childItem);
+					//QDomElement elementForRemoving = domElementForItem.value(childItem);
 					if (unBookmarkItem(childItem))
 					{
 //						if (!elementForRemoving.isNull())
@@ -377,18 +418,14 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 		firstChild.text();
 		QTreeWidgetItem *item = createItem(bookmark, parentItem /*firstChild*/);  //new QTreeWidgetItem(SaagharWidget::bookmarks);
 		item->setIcon(0, bookmarkIcon);
-		item->setFlags(item->flags() | Qt::ItemIsEditable);
-		//QModelIndex indexSecondColumn = indexFromItem(item, 1);
-		//int flags = (int)(item->flags() | Qt::ItemIsEditable);
-		//model()->setData(indexSecondColumn, flags, Qt::UserRole-1);
-		//item->setData(1, Qt::UserRole-1, flags);
+		//item->setFlags(item->flags() | Qt::ItemIsEditable);
 		QString title = data.toStringList().at(2);
 		//title = title.replace("//","\n");
 		item->setText(0, title);
 		//item->setText(1, data.toStringList().at(3));//"="+data.toStringList().at(0)+"|"+data.toStringList().at(1)
 		item->setData(0, Qt::UserRole, data.toStringList().at(0)+"|"+data.toStringList().at(1));
 		item->setData(1, Qt::UserRole, data.toStringList().at(3));
-		bookmarkHash.insert("Verses", data.toStringList().at(0)+"|"+data.toStringList().at(1));
+		//bookmarkHash.insert("Verses", data.toStringList().at(0)+"|"+data.toStringList().at(1));
 		return true;
 	}
 
@@ -404,7 +441,7 @@ void Bookmarks::doubleClicked(QTreeWidgetItem *item, int column)
 	//a tricky hack for enabling one column editing!!
 	if (column == 0)
 		item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-	else if (column == 1)
+	else if (column == 1 && item->parent())
 		item->setFlags(item->flags() | Qt::ItemIsEditable);
 	connect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
 			this, SLOT(updateDomElement(QTreeWidgetItem*,int)));
