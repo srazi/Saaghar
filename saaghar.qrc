@@ -50,5 +50,7 @@
 		<file>images/bookmark-on.png</file>
 		<file>images/un-bookmark.png</file>
 		<file>images/bookmark-folder.png</file>
+		<file>images/undo.png</file>
+		<file>images/redo.png</file>
 	</qresource>
 </RCC>

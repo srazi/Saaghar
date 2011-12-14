@@ -32,6 +32,7 @@
 #include <QHeaderView>
 #include <QPushButton>
 #include <QToolBar>
+#include <QUndoStack>
 
 #include "QGanjoorDbBrowser.h"
 #include "settings.h"
@@ -58,6 +59,7 @@ public:
 	void loadSettings();
 	void showParentCategory(GanjoorCat category);
 	void processClickedItem(QString type, int id, bool error);
+	void navigateToPage(QString type, int id, bool error);
 	int minMesraWidth;
 
 	//STATIC Variables
@@ -96,6 +98,9 @@ public:
 		{dirty = true;}
 	QStringList identifier();
 	void refresh();
+
+	//Undo FrameWork
+	QUndoStack *undoStack;
 
 private:
 	bool initializeCustomizedHome();

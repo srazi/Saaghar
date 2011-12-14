@@ -32,16 +32,30 @@ NavigateToPage::NavigateToPage(SaagharWidget *saagharWidget, const QString &type
 	{
 		previousType = m_saagharWidget->identifier().at(0);
 		previousId = m_saagharWidget->identifier().at(1).toInt();
-	
-		if (type != "PoemID" || type != "CatID" || pageId <0)
-			m_saagharWidget->processClickedItem(type, pageId, false);
+
+		previousText = m_saagharWidget->currentLocationList.join("-");
+		if (!m_saagharWidget->currentPoemTitle.isEmpty())
+			previousText+="-"+m_saagharWidget->currentPoemTitle;
+		if (previousText.isEmpty())
+			previousText = QObject::tr("Home");
+
+		if ( (type != "PoemID" && type != "CatID") || pageId <0)
+			m_saagharWidget->navigateToPage(type, pageId, false);
 		else
-			m_saagharWidget->processClickedItem(type, pageId, true);
+			m_saagharWidget->navigateToPage(type, pageId, true);
 	
 		newType = m_saagharWidget->identifier().at(0);
 		newId = m_saagharWidget->identifier().at(1).toInt();
-	
-		setText(QObject::tr("Navigate To %1").arg(m_saagharWidget->currentCaption));
+
+		newText = "";
+		if (!m_saagharWidget->currentLocationList.isEmpty())
+			newText = m_saagharWidget->currentLocationList.at(m_saagharWidget->currentLocationList.size()-1); //join("-");
+		if (!m_saagharWidget->currentPoemTitle.isEmpty())
+			newText = m_saagharWidget->currentPoemTitle;
+			//newText+="-"+m_saagharWidget->currentPoemTitle;
+		if (newText.isEmpty())
+			newText = QObject::tr("Home");
+		setText(QObject::tr("Navigate To %1").arg(newText));
 	}
 	else
 	{
@@ -56,22 +70,56 @@ void NavigateToPage::undo()
 {
 	if (!m_saagharWidget) return;
 
-	if (previousType != "PoemID" || previousType != "CatID" || previousId <0)
-		m_saagharWidget->processClickedItem(previousType, previousId, false);
+	if ( (previousType != "PoemID" && previousType != "CatID") || previousId <0)
+		m_saagharWidget->navigateToPage(previousType, previousId, false);
 	else
-		m_saagharWidget->processClickedItem(previousType, previousId, true);
+		m_saagharWidget->navigateToPage(previousType, previousId, true);
 
-	setText(QObject::tr("Navigate To %1").arg(m_saagharWidget->currentCaption));
+//	QString text = m_saagharWidget->currentLocationList.join("-");
+//	if (!m_saagharWidget->currentPoemTitle.isEmpty())
+//		text+="-"+m_saagharWidget->currentPoemTitle;
+//	if (text.isEmpty())
+//		text = QObject::tr("Home");
+
+	QString text = "";
+	if (m_saagharWidget->undoStack->index()>1)
+	{
+		const NavigateToPage *tmp = static_cast<const NavigateToPage *>(m_saagharWidget->undoStack->command(m_saagharWidget->undoStack->index()-1) );//qobject_cast<const NavigateToPage *>(m_saagharWidget->undoStack->command(m_saagharWidget->undoStack->index()-1));
+		qDebug() << "NavigateToPage="<<tmp;
+		if (tmp)
+			text = tmp->previousText;//m_saagharWidget->undoStack->command(m_saagharWidget->undoStack->index()-1);
+	}
+	//text = m_saagharWidget->undoStack->text(m_saagharWidget->undoStack->index());
+	//setText(QObject::tr("Navigate To %1").arg(text));
+
+	//setText(QObject::tr("Navigate To %1").arg(previousText));
+
+	qDebug() <<"undo-previous="<< previousType << previousId;
+	qDebug() <<"undo-NEW="<< newType << newId;
+	//setText(QObject::tr("Navigate To %1").arg(m_saagharWidget->currentCaption));
 }
 
 void NavigateToPage::redo()
 {
 	if (!m_saagharWidget) return;
 
-	if (newType != "PoemID" || newType != "CatID" || newId <0)
-		m_saagharWidget->processClickedItem(newType, newId, false);
+	if ( (newType != "PoemID" && newType != "CatID") || newId <0)
+		m_saagharWidget->navigateToPage(newType, newId, false);
 	else
-		m_saagharWidget->processClickedItem(newType, newId, true);
+		m_saagharWidget->navigateToPage(newType, newId, true);
 
-	setText(QObject::tr("Navigate To %1").arg(m_saagharWidget->currentCaption));
+//	QString text = m_saagharWidget->currentLocationList.join("-");
+//	if (!m_saagharWidget->currentPoemTitle.isEmpty())
+//		text+="-"+m_saagharWidget->currentPoemTitle;
+//	if (text.isEmpty())
+//		text = QObject::tr("Home");
+
+	//QString text = "";
+	//if (m_saagharWidget->undoStack->index()>1)
+	//text = m_saagharWidget->undoStack->text(m_saagharWidget->undoStack->index());
+	//setText(QObject::tr("Navigate To %1").arg(text));
+
+	qDebug() <<"redo-previous="<< previousType << previousId;
+	qDebug() <<"redo-NEW="<< newType << newId;
+	//setText(QObject::tr("Navigate To %1").arg(m_saagharWidget->currentCaption));
 }

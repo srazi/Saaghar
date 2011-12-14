@@ -30,6 +30,7 @@
 //#include <QComboBox>
 #include <QSpinBox>
 #include <QToolButton>
+#include <QUndoGroup>
 
 class QSearchLineEdit;
 class QMultiSelectWidget;
@@ -109,7 +110,7 @@ class MainWindow : public QMainWindow
 
 		//submenus
 		QMenu *menuOpenedTabs, *menuClosedTabs;
-		void updateTabsSubMenus();
+		//void updateTabsSubMenus();//move to slot section
 
 		QMap<QString, QAction *> allActionMap;
 		QAction *labelMaxResultSeparator;
@@ -119,6 +120,12 @@ class MainWindow : public QMainWindow
 		QString mainToolBarSizeAction;
 		QString mainToolBarStyleAction;
 		//bool dataFromIdentifier(const QString &identifier, QString *type = 0, int *id = 0);
+		
+		//Undo FrameWork
+		QUndoGroup *undoGroup;
+
+	public slots:
+		void updateTabsSubMenus();
 
 	private slots:
 		void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true);

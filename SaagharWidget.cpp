@@ -22,6 +22,8 @@
 #include "SearchPatternManager.h"
 #include "SearchItemDelegate.h"
 #include "SaagharWidget.h"
+#include "commands.h"
+
 #include <QApplication>
 #include <QWidget>
 #include <QLabel>
@@ -65,6 +67,9 @@ SaagharWidget::SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidge
 	dirty = true;
 	minMesraWidth = 0;
 	singleColumnHeightMap.clear();
+
+	//Undo FrameWork
+	undoStack = new QUndoStack(this);
 
 	loadSettings();
 
@@ -121,6 +126,22 @@ void SaagharWidget::loadSettings()
 
 void SaagharWidget::processClickedItem(QString type, int id, bool noError)
 {
+	if (!noError)
+	{
+		type = "CatID";
+		id = 0;
+	}
+	if ( (type == identifier().at(0)) && (id == identifier().at(1).toInt()) )
+		navigateToPage(type, id, true);//refresh and don't push to stack
+	else
+	{
+		NavigateToPage *navigateCommand = new NavigateToPage(this, type, id);
+		undoStack->push(navigateCommand);
+	}
+}
+
+void SaagharWidget::navigateToPage(QString type, int id, bool noError)
+{
 	if (type == "PoemID" || type == "CatID")
 		clearSaagharWidget();
 
@@ -144,30 +165,41 @@ void SaagharWidget::processClickedItem(QString type, int id, bool noError)
 void SaagharWidget::parentCatClicked()
 {
 	parentCatButton = qobject_cast<QPushButton *>(sender());
-	QString parentCatButtonData = parentCatButton->objectName();
-	if (!parentCatButtonData.startsWith("CATEGORY_ID=")) return;
-	parentCatButtonData.remove("CATEGORY_ID=");
+	QStringList itemData = parentCatButton->objectName().split("=");
+	if (itemData.size() != 2 || itemData.at(0) != "CatID") return;
 
-	GanjoorCat category;
-	category.init(0, 0, "", 0, "");
+	//using 'processClickedItem()'
 	bool OK = false;
-	int CatID = parentCatButtonData.toInt(&OK);
+	int idData = itemData.at(1).toInt(&OK);
+	bool noError = false;
 
-	//qDebug() << "parentCatButtonData=" << parentCatButtonData << "CatID=" << CatID;
+	if (OK && SaagharWidget::ganjoorDataBase)
+		noError = true;
+	processClickedItem("CatID", idData, noError);
 
-	if (OK && ganjoorDataBase)
-		category = ganjoorDataBase->getCategory(CatID);
+//	parentCatButtonData.remove("CATEGORY_ID=");
+//
+//	GanjoorCat category;
+//	category.init(0, 0, "", 0, "");
+//	bool OK = false;
+//	int CatID = parentCatButtonData.toInt(&OK);
 
-	clearSaagharWidget();
-	showCategory(category);
+//	//qDebug() << "parentCatButtonData=" << parentCatButtonData << "CatID=" << CatID;
+
+//	if (OK && ganjoorDataBase)
+//		category = ganjoorDataBase->getCategory(CatID);
+
+//	clearSaagharWidget();
+//	showCategory(category);
 }
 
 void SaagharWidget::showHome()
 {
-	GanjoorCat homeCat;
-	homeCat.init(0, 0, "", 0, "");
-	clearSaagharWidget();
-	showCategory(homeCat);
+	processClickedItem("CatID", 0, true);
+//	GanjoorCat homeCat;
+//	homeCat.init(0, 0, "", 0, "");
+//	clearSaagharWidget();
+//	showCategory(homeCat);
 }
 
 bool SaagharWidget::nextPoem()
@@ -177,8 +209,9 @@ bool SaagharWidget::nextPoem()
 		GanjoorPoem poem = ganjoorDataBase->getNextPoem(currentPoem, currentCat);
 		if (!poem.isNull())
 		{
-			clearSaagharWidget();
-			showPoem(poem);
+			processClickedItem("PoemID", poem._ID, true);
+//			clearSaagharWidget();
+//			showPoem(poem);
 			return true;
 		}
 	}
@@ -192,8 +225,9 @@ bool SaagharWidget::previousPoem()
 		GanjoorPoem poem = ganjoorDataBase->getPreviousPoem(currentPoem, currentCat);
 		if (!poem.isNull())
 		{
-			clearSaagharWidget();
-			showPoem(poem);
+			processClickedItem("PoemID", poem._ID, true);
+//			clearSaagharWidget();
+//			showPoem(poem);
 			return true;
 		}
 	}
@@ -338,7 +372,11 @@ void SaagharWidget::showCategory(GanjoorCat category)
 {
 	if ( category.isNull() )
 	{
-		showHome();
+		//showHome();
+		GanjoorCat homeCat;
+		homeCat.init(0, 0, "", 0, "");
+		clearSaagharWidget();
+		showCategory(homeCat);
 		return;
 	}
 
@@ -350,6 +388,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 	//new Caption
 	currentCaption = (currentCat == 0) ? tr("Home") : ganjoorDataBase->getPoetForCat(currentCat)._Name;//for Tab Title
+	qDebug() << "emit captionChanged()--392";
 	emit captionChanged();
 	QList<GanjoorCat *> subcats = ganjoorDataBase->getSubCategories(category._ID);
 
@@ -566,7 +605,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 			parentCatButton->setText("");
 		else
 			parentCatButton->setText(ancestors.at(i)._Text);
-		parentCatButton->setObjectName("CATEGORY_ID="+QString::number(ancestors.at(i)._ID));//used as button data
+		parentCatButton->setObjectName("CatID="+QString::number(ancestors.at(i)._ID));//used as button data
 		connect(parentCatButton, SIGNAL(clicked(bool)), this, SLOT(parentCatClicked()));
 		//style
 		parentCatButton->setStyleSheet(styleSheetStr);
@@ -583,7 +622,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 	{
 		parentCatButton = new QPushButton(parentCatsToolBar);
 		parentCatButton->setText(category._Text);
-		parentCatButton->setObjectName("CATEGORY_ID="+QString::number(category._ID));//used as button data
+		parentCatButton->setObjectName("CatID="+QString::number(category._ID));//used as button data
 		connect(parentCatButton, SIGNAL(clicked(bool)), this, SLOT(parentCatClicked()));
 		int minWidth = parentCatButton->fontMetrics().width(category._Text)+6;
 		QString styleSheetStr = QString("QPushButton {\
@@ -646,6 +685,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	//new Caption
 	currentCaption = (currentCat == 0) ? tr("Home") : ganjoorDataBase->getPoetForCat(currentCat)._Name;//for Tab Title
 	currentCaption += ":"+poem._Title;//.left(7);
+	qDebug() << "emit captionChanged()--389";
 	emit captionChanged();
 
 	//disabling item (0,0)

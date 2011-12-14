@@ -96,6 +96,9 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	else
 		isPortable = false;
 
+	//Undo FrameWork
+	undoGroup = new QUndoGroup(this);
+
 	saagharWidget = 0;
 	pressedMouseButton = Qt::LeftButton;
 	
@@ -590,6 +593,7 @@ void MainWindow::currentTabChanged(int tabIndex)
 			}
 		}
 
+		undoGroup->setActiveStack(saagharWidget->undoStack);
 		updateCaption();
 		updateTabsSubMenus();
 
@@ -731,7 +735,8 @@ void MainWindow::tabCloser(int tabIndex)
 	disconnect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
 
 	QAction *tabAct = new QAction(mainTabWidget->tabText(tabIndex), menuClosedTabs);
-	tabAct->setData( getSaagharWidget(tabIndex)->identifier());
+	SaagharWidget *tmp = getSaagharWidget(tabIndex);
+	tabAct->setData( tmp->identifier());
 	connect(tabAct, SIGNAL(triggered()), this, SLOT(actionClosedTabsClicked()) );
 	menuClosedTabs->addAction(tabAct);
 
@@ -790,11 +795,17 @@ void MainWindow::insertNewTab()
 	saagharWidget = new SaagharWidget( tabContent, parentCatsToolBar, tabTableWidget);
 	saagharWidget->setObjectName(QString::fromUtf8("saagharWidget"));
 
+	undoGroup->addStack(saagharWidget->undoStack);
+	//currentTabChanged() does this
+	//undoGroup->setActiveStack(saagharWidget->undoStack);
+
 	connect(saagharWidget, SIGNAL(loadingStatusText(QString)), this, SIGNAL(loadingStatusText(QString)));
 
 	//connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), saagharWidget, SLOT(scrollToFirstItemContains(const QString &)) );
 
 	connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateCaption()));
+	//temp
+	connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateTabsSubMenus()));
 
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
@@ -827,7 +838,9 @@ void MainWindow::newTabForItem(QString type, int id, bool noError)
 	insertNewTab();
 	saagharWidget->processClickedItem(type, id, noError);
 	emit loadingStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":")+1), "", 0, 6, false, Qt::ElideRight)));
-	updateTabsSubMenus();
+	//qDebug() << "emit updateTabsSubMenus()--848";
+	//resolved by signal SaagharWidget::captionChanged()
+	//updateTabsSubMenus();
 }
 
 void MainWindow::updateCaption()
@@ -1346,23 +1359,23 @@ void MainWindow::setupUi()
 	ui->searchToolBar->hide();
 
 	//remove menuToolBar if it's not needed!
-		bool flagUnityGlobalMenu = false;
-		foreach(QObject *o, ui->menuBar->children())
+	bool flagUnityGlobalMenu = false;
+	foreach(QObject *o, ui->menuBar->children())
+	{
+		if (o->inherits("QDBusServiceWatcher"))
 		{
-			if (o->inherits("QDBusServiceWatcher"))
-			{
-				flagUnityGlobalMenu = true;
-				break;
-			}
+			flagUnityGlobalMenu = true;
+			break;
 		}
-	
-		if (flagUnityGlobalMenu)
-		{
-			qDebug() << "It seems that you are running Unity Desktop with global menubar!";
-			delete ui->menuToolBar;
-			ui->menuToolBar = 0;
-		}
-	
+	}
+
+	if (flagUnityGlobalMenu)
+	{
+		qDebug() << "It seems that you are running Unity Desktop with global menubar!";
+		delete ui->menuToolBar;
+		ui->menuToolBar = 0;
+	}
+
 	#ifdef Q_WS_MAC
 		delete ui->menuToolBar;
 		ui->menuToolBar = 0;
@@ -1480,6 +1493,26 @@ void MainWindow::setupUi()
 
 	actionInstance("Ganjoor Verification", iconThemePath+"/ocr-verification.png", tr("&OCR Verification") );
 
+	//undo/redo actions
+	allActionMap.insert("globalRedoAction", undoGroup->createRedoAction(this, tr("&Redo")));
+	allActionMap.insert("globalUndoAction", undoGroup->createUndoAction(this, tr("&Undo")));
+	if (ui->mainToolBar->layoutDirection() == Qt::LeftToRight)
+	{
+		actionInstance("globalRedoAction")->setIcon(QIcon(currentIconThemePath()+"/redo.png"));
+		actionInstance("globalUndoAction")->setIcon(QIcon(currentIconThemePath()+"/undo.png"));
+	}
+	else
+	{
+		actionInstance("globalRedoAction")->setIcon(QIcon(currentIconThemePath()+"/undo.png"));
+		actionInstance("globalUndoAction")->setIcon(QIcon(currentIconThemePath()+"/redo.png"));
+	}
+	actionInstance("globalRedoAction")->setShortcuts(QKeySequence::Redo);
+	actionInstance("globalUndoAction")->setShortcuts(QKeySequence::Undo);
+
+	actionInstance("actionCopy", iconThemePath+"/copy.png", tr("&Copy") )->setShortcuts(QKeySequence::Copy);
+
+
+
 	//Inserting main menu items
 	ui->menuBar->addMenu(menuFile);
 	ui->menuBar->addMenu(menuNavigation);
@@ -1524,6 +1557,9 @@ void MainWindow::setupUi()
 	menuFile->addSeparator();
 	menuFile->addAction(actionInstance("actionExit"));
 
+	menuNavigation->addAction(actionInstance("globalUndoAction"));
+	menuNavigation->addAction(actionInstance("globalRedoAction"));
+	menuNavigation->addSeparator();
 	menuNavigation->addAction(actionInstance("actionHome"));
 	menuNavigation->addSeparator();
 	menuNavigation->addAction(actionInstance("actionPreviousPoem"));
@@ -2263,7 +2299,9 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 	saagharWidget->tableViewWidget->setItemDelegate(searchDelegate);
 	connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), searchDelegate, SLOT(keywordChanged(const QString &)) );
 
-	updateTabsSubMenus();
+	//qDebug() << "emit updateTabsSubMenus()--2306";
+	//resolved by signal SaagharWidget::captionChanged()
+	//updateTabsSubMenus();
 	connect(senderTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
 }
 

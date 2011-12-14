@@ -34,6 +34,7 @@ public:
 	void redo();
 
 private:
+	QString previousText, newText;
 	QString previousType, newType;
 	int previousId, newId;
 	SaagharWidget *m_saagharWidget;

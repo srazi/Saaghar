@@ -145,7 +145,7 @@ bool Bookmarks::write(QIODevice *device)
 }
 
 void Bookmarks::updateDomElement(QTreeWidgetItem *item, int column)
-{qDebug() << "itemChangedddddddd";
+{//qDebug() << "itemChangedddddddd";
 	QDomElement element = domElementForItem.value(item);
 	if (!element.isNull())
 	{
@@ -293,7 +293,7 @@ QStringList Bookmarks::bookmarkList(const QString &type)
 	if (type == "Verses" || type == tr("Verses"))
 	{
 		QDomElement verseNode = findChildNode("folder", "Verses");
-		qDebug() << "bookmarkList VERSE-NODE" << "localName=" << verseNode.localName() << "nodName=" << verseNode.nodeName() << "title="<< verseNode.firstChildElement("title").text();
+		//qDebug() << "bookmarkList VERSE-NODE" << "localName=" << verseNode.localName() << "nodName=" << verseNode.nodeName() << "title="<< verseNode.firstChildElement("title").text();
 		if (!verseNode.isNull())
 		{
 			QTreeWidgetItem *versesParentItem = domElementForItem.key(verseNode);
@@ -305,7 +305,7 @@ QStringList Bookmarks::bookmarkList(const QString &type)
 					QTreeWidgetItem *child = versesParentItem->child(i);
 					if (child)
 					{
-						qDebug()<<"bookmarkList"<< countOfChildren << versesParentItem->child(i)->text(0);
+						//qDebug()<<"bookmarkList"<< countOfChildren << versesParentItem->child(i)->text(0);
 						bookmarkedItemList << versesParentItem->child(i)->data(0, Qt::UserRole).toString();
 					}
 				//QList<QTreeWidgetItem *> verseBookmarks = versesParentItem->takeChildren();
@@ -365,7 +365,7 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 			{
 				QTreeWidgetItem *childItem = parentItem->child(i);
 				if (!childItem) continue;
-				qDebug() << "REMOVE OPERATION" << "size=" << countOfChildren << "tex="<<childItem->text(0)<<"\nfor="<<data.toStringList().at(2)<<"\n"<<childItem->data(0, Qt::UserRole).toString()<<data.toStringList().at(0)+"|"+data.toStringList().at(1);
+				//qDebug() << "REMOVE OPERATION" << "size=" << countOfChildren << "tex="<<childItem->text(0)<<"\nfor="<<data.toStringList().at(2)<<"\n"<<childItem->data(0, Qt::UserRole).toString()<<data.toStringList().at(0)+"|"+data.toStringList().at(1);
 				if (childItem->data(0, Qt::UserRole).toString() == data.toStringList().at(0)+"|"+data.toStringList().at(1))
 				{++numOfDel;
 					//QDomElement elementForRemoving = domElementForItem.value(childItem);
