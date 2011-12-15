@@ -1494,20 +1494,28 @@ void MainWindow::setupUi()
 	actionInstance("Ganjoor Verification", iconThemePath+"/ocr-verification.png", tr("&OCR Verification") );
 
 	//undo/redo actions
-	allActionMap.insert("globalRedoAction", undoGroup->createRedoAction(this, tr("&Redo")));
-	allActionMap.insert("globalUndoAction", undoGroup->createUndoAction(this, tr("&Undo")));
+	globalRedoAction = undoGroup->createRedoAction(this, tr("&Redo"));
+	globalRedoAction->setObjectName("globalRedoAction");
+	globalUndoAction = undoGroup->createUndoAction(this, tr("&Undo"));
+	globalUndoAction->setObjectName("globalUndoAction");
 	if (ui->mainToolBar->layoutDirection() == Qt::LeftToRight)
 	{
-		actionInstance("globalRedoAction")->setIcon(QIcon(currentIconThemePath()+"/redo.png"));
-		actionInstance("globalUndoAction")->setIcon(QIcon(currentIconThemePath()+"/undo.png"));
+		globalRedoAction->setIcon(QIcon(currentIconThemePath()+"/redo.png"));
+		globalUndoAction->setIcon(QIcon(currentIconThemePath()+"/undo.png"));
 	}
 	else
 	{
-		actionInstance("globalRedoAction")->setIcon(QIcon(currentIconThemePath()+"/undo.png"));
-		actionInstance("globalUndoAction")->setIcon(QIcon(currentIconThemePath()+"/redo.png"));
+		globalRedoAction->setIcon(QIcon(currentIconThemePath()+"/undo.png"));
+		globalUndoAction->setIcon(QIcon(currentIconThemePath()+"/redo.png"));
 	}
-	actionInstance("globalRedoAction")->setShortcuts(QKeySequence::Redo);
-	actionInstance("globalUndoAction")->setShortcuts(QKeySequence::Undo);
+
+	globalRedoAction->setShortcuts(QKeySequence::Redo);
+	globalUndoAction->setShortcuts(QKeySequence::Undo);
+
+	actionInstance("fixedNameRedoAction", "", tr("&Redo"))->setIcon(globalRedoAction->icon());
+	actionInstance("fixedNameUndoAction", "", tr("&Undo"))->setIcon(globalUndoAction->icon());
+	actionInstance("fixedNameRedoAction")->setEnabled(globalRedoAction->isEnabled());
+	actionInstance("fixedNameUndoAction")->setEnabled(globalUndoAction->isEnabled());
 
 	actionInstance("actionCopy", iconThemePath+"/copy.png", tr("&Copy") )->setShortcuts(QKeySequence::Copy);
 
@@ -1557,8 +1565,8 @@ void MainWindow::setupUi()
 	menuFile->addSeparator();
 	menuFile->addAction(actionInstance("actionExit"));
 
-	menuNavigation->addAction(actionInstance("globalUndoAction"));
-	menuNavigation->addAction(actionInstance("globalRedoAction"));
+	menuNavigation->addAction(globalUndoAction);
+	menuNavigation->addAction(globalRedoAction);
 	menuNavigation->addSeparator();
 	menuNavigation->addAction(actionInstance("actionHome"));
 	menuNavigation->addSeparator();
@@ -1687,6 +1695,8 @@ void MainWindow::createConnections()
 	connect(actionInstance("actionExit")				,	SIGNAL(triggered())		,	this, SLOT(close())						);
 
 		//Navigation
+	connect(globalRedoAction							,	SIGNAL(changed())		,	this, SLOT(namedActionTriggered())		);
+	connect(globalUndoAction							,	SIGNAL(changed())		,	this, SLOT(namedActionTriggered())		);
 	connect(actionInstance("actionHome")				,	SIGNAL(triggered())		,	this, SLOT(actionHomeClicked())			);
 	connect(actionInstance("actionPreviousPoem")		,	SIGNAL(triggered())		,	this, SLOT(actionPreviousPoemClicked())	);
 	connect(actionInstance("actionNextPoem")			,	SIGNAL(triggered())		,	this, SLOT(actionNextPoemClicked())		);
@@ -2741,6 +2751,19 @@ void MainWindow::namedActionTriggered(bool checked)
 	else if ( actionName == "Ganjoor Verification" )
 	{
 		QDesktopServices::openUrl(QString("http://saaghar.sourceforge.net/redirect.php?sender=Saaghar&section=ganjoor-vocr&url=%1").arg("http://v.ganjoor.net"));
+	}
+	else if (actionName == "fixedNameRedoAction" ||
+			 actionName == "fixedNameUndoAction" ||
+			 actionName == "globalRedoAction" ||
+			 actionName == "globalUndoAction" )
+	{
+		if (actionName == "fixedNameRedoAction")
+			emit globalRedoAction->activate(QAction::Trigger);
+		if (actionName == "fixedNameUndoAction")
+			emit globalUndoAction->activate(QAction::Trigger);
+
+		actionInstance("fixedNameRedoAction")->setEnabled(globalRedoAction->isEnabled());
+		actionInstance("fixedNameUndoAction")->setEnabled(globalUndoAction->isEnabled());
 	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));

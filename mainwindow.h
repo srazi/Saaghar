@@ -123,6 +123,8 @@ class MainWindow : public QMainWindow
 		
 		//Undo FrameWork
 		QUndoGroup *undoGroup;
+		QAction *globalRedoAction;
+		QAction *globalUndoAction;
 
 	public slots:
 		void updateTabsSubMenus();
@@ -131,7 +133,7 @@ class MainWindow : public QMainWindow
 		void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true);
 		void setHomeAsDirty();
 		void actionClosedTabsClicked();
-		void namedActionTriggered(bool checked);
+		void namedActionTriggered(bool checked = false);
 		void toolbarViewChanges(QAction *action);
 		void customizeRandomDialog();
 		void toolBarContextMenu(const QPoint &pos);
