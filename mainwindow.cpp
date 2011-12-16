@@ -2101,10 +2101,17 @@ QString MainWindow::tableToString(QTableWidget *table, QString mesraSeparator, Q
 			QString text = "";
 			if (currentItem)
 			{
-				QVariant data = currentItem->data(Qt::DisplayRole);
-				if ( data.isValid() )
-					text = data.toString();
+				text = currentItem->text();
+				if (text.isEmpty())
+				{//maybe cell has QTextEdit as its widget!
+					QTextEdit *textEdit = qobject_cast<QTextEdit *>(table->cellWidget(row, col));
+					if (textEdit)
+					{
+						text = textEdit->toPlainText();
+					}
+				}
 			}
+
 			tableAsString.append(text);
 			if (secondColumn)
 			{

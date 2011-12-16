@@ -898,7 +898,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 						//tmp->setFlags(versesItemFlag);
 						//tableViewWidget->setItem(row, 3, tmp);
 						//mesraItem->setTextAlignment(Qt::AlignVCenter|Qt::AlignLeft);
-						//tableViewWidget->setItem(row, 1, mesraItem);
+						mesraItem->setText("");
+						tableViewWidget->setItem(row, 1, mesraItem);//inserted just for its data and its behavior like other cells that use QTableWidgetItem'.
 						createItemForLongText(row, 1, currentVerseText, "");
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
@@ -1301,6 +1302,14 @@ void SaagharWidget::clickedOnItem(int row,int column)
 				bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
 
 			QString verseText = verseItem->text();
+			if (verseText.isEmpty())
+			{//maybe cell has QTextEdit as its widget!
+				QTextEdit *textEdit = qobject_cast<QTextEdit *>(tableViewWidget->cellWidget(row, 1));
+				if (textEdit)
+				{
+					verseText = textEdit->toPlainText();
+				}
+			}
 			verseText = verseText.simplified();
 			QString currentLocation = currentLocationList.join(">");
 			if (!currentPoemTitle.isEmpty())
@@ -1309,6 +1318,16 @@ void SaagharWidget::clickedOnItem(int row,int column)
 			verseText.prepend(currentLocation+"\n");
 			if (tableViewWidget->columnCount() == 4 && tableViewWidget->item(row, 3))
 				verseText+= "\n"+tableViewWidget->item(row, 3)->text();
+			else if (data.at(3).toInt() == CenteredVerse1 && tableViewWidget->item(row+1, 1))
+			{
+				QStringList tmp = tableViewWidget->item(row+1, 1)->data(Qt::UserRole).toString().split("|");
+				//url = url.mid(url.indexOf("|"));
+				if (tmp.size() == 4 && tmp.at(3).toInt() == CenteredVerse2)
+				{
+					verseText+= "\n"+tableViewWidget->item(row+1, 1)->text();
+				}
+			}
+
 			QChar tatweel = QChar(0x0640);
 			verseText.remove(tatweel);
 
