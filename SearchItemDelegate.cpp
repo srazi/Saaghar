@@ -205,3 +205,57 @@ void SaagharItemDelegate::keywordChanged(const QString &text)
 		table->viewport()->update();
 	}
 }
+
+/***********************************************/
+/////////ParagraphHighlighter Class//////////////
+/***********************************************/
+ParagraphHighlighter::ParagraphHighlighter(QTextDocument *parent, const QString &phrase)
+	: QSyntaxHighlighter(parent)
+{
+	keywordList.clear();
+	keywordList = SearchPatternManager::phraseToList(phrase, false);
+	keywordList.removeDuplicates();
+}
+
+void ParagraphHighlighter::keywordChanged(const QString &text)
+{
+	keywordList.clear();
+	QString tmp = text;
+	tmp.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
+	keywordList = SearchPatternManager::phraseToList(tmp, false);
+	keywordList.removeDuplicates();
+	rehighlight();
+}
+
+void ParagraphHighlighter::highlightBlock(const QString &text)
+{
+	int keywordsCount = keywordList.size();
+
+	QTextCharFormat paragraphHighightFormat;
+	paragraphHighightFormat.setBackground(SaagharWidget::matchedTextColor);
+
+	for (int i=0; i<keywordsCount; ++i)
+	{
+		QString keyword = keywordList.at(i);
+
+		keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
+		//qDebug() << "keyword1="<<keyword;
+		const QString others = QString::fromLocal8Bit("َُِّـًٌٍْ");//tashdid+keshide+o+a+e+an+en+on+saaken
+		keyword = keyword.split("", QString::SkipEmptyParts).join("["+others+"]*")+"["+others+"]*";//(tatweel+"*");
+		//qDebug() << "keyword2="<<keyword;
+		keyword.replace("@["+others+"]*", "\\S*", Qt::CaseInsensitive);//replace wildcard by word chars
+		//keyword.replace("@"+tatweel+"*", "\\S*", Qt::CaseInsensitive);//replace wildcard by word chars
+		//qDebug() << "keyword3="<<keyword;
+		QRegExp maybeOthers(keyword, Qt::CaseInsensitive);
+		int index = maybeOthers.indexIn(text);
+		while(index>=0)
+		{
+			//keyword = maybeOthers.cap(0);
+			int length = maybeOthers.matchedLength();//keyword.size();
+			setFormat(index, length, paragraphHighightFormat /*QColor(Qt::red)*/);
+			index = maybeOthers.indexIn(text, index+length);
+			//qDebug() << text<<"count=" << maybeOthers.captureCount()<<maybeOthers.capturedTexts();
+			//qDebug() << "Match: "<<maybeOthers.cap(0);
+		}
+	}
+}

@@ -23,6 +23,8 @@
 #define SEARCHITEMDELEGATE_H
 
 #include <QItemDelegate>
+#include <QSyntaxHighlighter>
+
 
 class SaagharItemDelegate : public QItemDelegate
 { 
@@ -40,4 +42,20 @@ private slots:
 	void keywordChanged(const QString &text);
 };
 
+class ParagraphHighlighter : public QSyntaxHighlighter
+{ 
+	Q_OBJECT
+
+public:
+	ParagraphHighlighter(QTextDocument *parent = 0, const QString &phrase = "");
+
+protected:
+	void highlightBlock(const QString &text);
+
+private:
+	QStringList keywordList;
+
+private slots:
+	void keywordChanged(const QString &text);
+};
 #endif // SEARCHITEMDELEGATE_H

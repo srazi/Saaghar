@@ -103,6 +103,7 @@ public:
 	QUndoStack *undoStack;
 
 private:
+	void createItemForLongText(int row, int column, const QString &text = "", const QString &highlightText = "");
 	bool initializeCustomizedHome();
 	QMap<int,int> singleColumnHeightMap;
 	void showCategory(GanjoorCat category);
@@ -123,5 +124,6 @@ signals:
 	void navNextActionState(bool);
 	void navPreviousActionState(bool);
 	void loadingStatusText(const QString &);
+	void searchPhraseChanged(const QString &);
 };
 #endif // SAAGHARWIDGET_H

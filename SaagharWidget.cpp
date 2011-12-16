@@ -32,6 +32,7 @@
 #include <QMessageBox>
 #include <QAction>
 #include <QFile>
+#include <QTextEdit>
 
 //STATIC Variables
 QString SaagharWidget::poetsImagesDir = QString();
@@ -892,21 +893,13 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 					totalWidth = tableViewWidget->viewport()->width();
 					//numOfRow = textWidth/totalWidth;
 					{
-						QTableWidgetItem *tmp = new QTableWidgetItem("");
-						tmp->setFlags(versesItemFlag);
-						tableViewWidget->setItem(row, 3, tmp);
-						mesraItem->setTextAlignment(Qt::AlignVCenter|Qt::AlignLeft);
-						tableViewWidget->setItem(row, 1, mesraItem);
-//tableViewWidget->insertRow(row);
-//QTextEdit *para = new QTextEdit();
-//para->setStyleSheet("QTextEdit{background: transparent; border: transparent;}");
-////para->setAlignment(Qt::AlignJustify);
-//para->setFont(SaagharWidget::tableFont);
-//para->setTextColor(SaagharWidget::textColor);
-//para->setReadOnly(true);
-//para->setText(currentVerseText);
-//para->setLayoutDirection(currentVerseText.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight);
-//tableViewWidget->setCellWidget(row, 1, para);
+						//QTableWidgetItem *tmp = new QTableWidgetItem("");
+						////tmp->setFlags(Qt::NoItemFlags);
+						//tmp->setFlags(versesItemFlag);
+						//tableViewWidget->setItem(row, 3, tmp);
+						//mesraItem->setTextAlignment(Qt::AlignVCenter|Qt::AlignLeft);
+						//tableViewWidget->setItem(row, 1, mesraItem);
+						createItemForLongText(row, 1, currentVerseText, "");
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
 
@@ -1383,4 +1376,28 @@ void SaagharWidget::refresh()
 		processClickedItem("PoemID", currentPoem, true);
 	else
 		processClickedItem("CatID", currentCat, true);
+}
+
+void SaagharWidget::createItemForLongText(int row, int column, const QString &text, const QString &highlightText)
+{
+	if (!tableViewWidget) return;
+	QTextEdit *para = new QTextEdit(tableViewWidget);
+	para->setStyleSheet("QTextEdit{background: transparent; border: none;}");
+	//para->setAlignment(Qt::AlignJustify);
+	para->setFont(SaagharWidget::tableFont);
+	para->setTextColor(SaagharWidget::textColor);
+	para->setReadOnly(true);
+	para->setLineWrapMode(QTextEdit::WidgetWidth);
+	para->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	para->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	para->setTextInteractionFlags(Qt::NoTextInteraction);
+	para->setText(text);
+	para->setLayoutDirection(text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight);
+	//para->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+	//para->setAttribute(Qt::WA_NoMousePropagation, true);
+	//para->setMouseTracking(false);
+	para->setFocusPolicy(Qt::NoFocus);
+	ParagraphHighlighter *paraHighlighter = new ParagraphHighlighter(para->document(), highlightText);
+	connect(this, SIGNAL(searchPhraseChanged(const QString &)), paraHighlighter, SLOT(keywordChanged(const QString &)));
+	tableViewWidget->setCellWidget(row, column, para);
 }

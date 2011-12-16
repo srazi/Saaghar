@@ -801,6 +801,7 @@ void MainWindow::insertNewTab()
 
 	connect(saagharWidget, SIGNAL(loadingStatusText(QString)), this, SIGNAL(loadingStatusText(QString)));
 
+	connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), saagharWidget, SIGNAL(searchPhraseChanged(const QString &)) );
 	//connect(lineEditSearchText, SIGNAL(textChanged(const QString &)), saagharWidget, SLOT(scrollToFirstItemContains(const QString &)) );
 
 	connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateCaption()));
