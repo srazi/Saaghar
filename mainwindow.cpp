@@ -562,6 +562,14 @@ void MainWindow::currentTabChanged(int tabIndex)
 				if (item && !item->icon().isNull() && saagharWidget->tableViewWidget->columnCount() == 1)
 				{
 					QString text = item->text();
+					if (text.isEmpty())
+					{
+						QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharWidget->tableViewWidget->cellWidget(0, 0));
+						if (textEdit)
+						{
+							text = textEdit->toPlainText();
+						}
+					}
 					int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
 					int verticalScrollBarWidth=0;
 					if ( saagharWidget->tableViewWidget->verticalScrollBar()->isVisible() )

@@ -453,7 +453,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 		{
 			startRow = 1;
 			tableViewWidget->setRowCount(1+subcatsSize+poems.size());
-			QTableWidgetItem *catItem = new QTableWidgetItem(itemText);
+			QTableWidgetItem *catItem = new QTableWidgetItem(""/*itemText*/);
 			catItem->setFlags(catsItemFlag);
 			qDebug() << "showCategory";
 			catItem->setTextAlignment(Qt::AlignJustify);
@@ -462,7 +462,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 			if (!QFile::exists(poetPhotoFileName))
 				poetPhotoFileName = ":/resources/images/no-photo.png";
 			catItem->setIcon(QIcon(poetPhotoFileName));
-
+			createItemForLongText(0, 0, itemText, "");
 			/*if (category._ID == 0 && !Settings::READ("Show Photo at Home").toBool())
 			{
 				qDebug() << "Remove Icon11111111";
@@ -1128,15 +1128,25 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 			if (currentParentID == 0)
 			{
 				QString itemText;
-				if (table->item(0,0))
+				QTextEdit *textEdit = qobject_cast<QTextEdit *>(tableViewWidget->cellWidget(0, 0));
+				if (textEdit)
 				{
-					itemText = table->item(0,0)->text();
+					itemText = textEdit->toPlainText();
 				}
 				else
 				{
+//					if (table->item(0,0))
+//					{
+	
+//						itemText = table->item(0,0)->text();
+//					}
+//					else
+//					{
 					GanjoorPoet gPoet = SaagharWidget::ganjoorDataBase->getPoetForCat(currentCat);
 					itemText = gPoet._Description;
+//					}
 				}
+
 				if (!itemText.isEmpty())
 				{
 					int textWidth = table->fontMetrics().boundingRect(itemText).width();
