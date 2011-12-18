@@ -1232,7 +1232,16 @@ QTableWidgetItem *SaagharWidget::scrollToFirstItemContains(const QString &phrase
 			QTableWidgetItem *tmp = tableViewWidget->item(row, col);
 			if (tmp)
 			{
-				QString text = QGanjoorDbBrowser::cleanString(tmp->text());
+				QString text = tmp->text();
+				if (text.isEmpty())
+				{
+					QTextEdit *textEdit = qobject_cast<QTextEdit *>(tableViewWidget->cellWidget(row, col));
+					if (textEdit)
+					{
+						text = textEdit->toPlainText();
+					}
+				}
+				text =  QGanjoorDbBrowser::cleanString(text);
 				text.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
 				if (text.isEmpty()) continue;
 
