@@ -64,8 +64,6 @@ int main(int argc, char *argv[])
 	QPixmap pixmap(":/resources/images/saaghar-splash.png");
 	QExtendedSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
 	splash.setMessageOptions(QRect(pixmap.rect().topLeft()+QPoint(30,400), pixmap.rect().bottomRight()+QPoint(-300,0)), Qt::AlignLeft|Qt::AlignBottom, Qt::blue);
-	splash.show();
-	splash.showMessage(QObject::tr("<i><b>Loading...</b></i>"));
 
 	MainWindow w(0, &splash, fresh);
 	w.show();

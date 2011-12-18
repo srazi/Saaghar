@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>578</width>
-    <height>447</height>
+    <height>448</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -368,6 +368,16 @@
             <widget class="QCheckBox" name="checkBoxAutoUpdates">
              <property name="text">
               <string>Automatically Check for Updates</string>
+             </property>
+             <property name="checked">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBoxSplashScreen">
+             <property name="text">
+              <string>Display Splash Screen</string>
              </property>
              <property name="checked">
               <bool>true</bool>

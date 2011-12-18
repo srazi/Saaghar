@@ -65,8 +65,30 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
 {
+
+#ifdef Q_WS_MAC
+	QFileInfo portableSettings(QCoreApplication::applicationDirPath()+"/../Resources/settings.ini");
+#else
+	QFileInfo portableSettings(QCoreApplication::applicationDirPath()+"/settings.ini");
+#endif
+
+	if ( portableSettings.exists() && portableSettings.isWritable() ) 
+		isPortable = true;
+	else
+		isPortable = false;
+
+	loadGlobalSettings();
+
 	if (splashScreen)
-		connect(this, SIGNAL(loadingStatusText(const QString &)), splashScreen, SLOT(showMessage(const QString &)));
+	{
+		if (Settings::READ("Display Splash Screen", true).toBool())
+		{
+			connect(this, SIGNAL(loadingStatusText(const QString &)), splashScreen, SLOT(showMessage(const QString &)));
+			emit loadingStatusText("!QTransparentSplashInternalCommands:SHOW");
+			emit loadingStatusText(QObject::tr("<i><b>Loading...</b></i>"));
+		}
+	}
+
 	QCoreApplication::setOrganizationName("Pojh");
 	QCoreApplication::setApplicationName("Saaghar");
 	QCoreApplication::setOrganizationDomain("Pojh.iBlogger.org");
@@ -84,17 +106,6 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	SaagharWidget::persianIranLocal.setNumberOptions(QLocale::OmitGroupSeparator);
 
 	defaultPrinter = 0;
-
-#ifdef Q_WS_MAC
-	QFileInfo portableSettings(QCoreApplication::applicationDirPath()+"/../Resources/settings.ini");
-#else
-	QFileInfo portableSettings(QCoreApplication::applicationDirPath()+"/settings.ini");
-#endif
-
-	if ( portableSettings.exists() && portableSettings.isWritable() ) 
-		isPortable = true;
-	else
-		isPortable = false;
 
 	//Undo FrameWork
 	undoGroup = new QUndoGroup(this);
@@ -159,8 +170,8 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	mainTabWidget->setUsesScrollButtons(true);
 	mainTabWidget->setMovable(true);
 
-	emit loadingStatusText(tr("<i><b>Loading settings...</b></i>"));
-	loadGlobalSettings();
+	//emit loadingStatusText(tr("<i><b>Loading settings...</b></i>"));
+	//loadGlobalSettings();
 
 	if (autoCheckForUpdatesState && !fresh)
 	{
@@ -271,6 +282,9 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	//install search pattern manager
 	SearchPatternManager *searchPatternManager = new SearchPatternManager();
 	searchPatternManager->setWildcardCharacter("%");
+
+	restoreState( Settings::READ("MainWindowState").toByteArray(), 1);
+	restoreGeometry(Settings::READ("Mainwindow Geometry").toByteArray());
 
 	emit loadingStatusText(tr("<i><b>Saaghar is starting...</b></i>"));
 }
@@ -650,7 +664,8 @@ void MainWindow::checkForUpdates()
 
 	updateProgress.setWindowModality(Qt::WindowModal);
 	updateProgress.setFixedSize(updateProgress.size());
-	if (action) updateProgress.show();
+	if (action || !Settings::READ("Display Splash Screen", true).toBool())
+		updateProgress.show();
 
 	connect( &updateProgress, SIGNAL( canceled() ), &loop, SLOT( quit() ) );
 	connect( reply, SIGNAL( finished() ), &updateProgress, SLOT( hide() ) );
@@ -1794,6 +1809,9 @@ void MainWindow::globalSettings()
 	settingsDlg->ui->pushButtonTextColor->setPalette(QPalette(SaagharWidget::textColor));
 	settingsDlg->ui->pushButtonTextColor->setAutoFillBackground(true);
 
+	//splash screen
+	settingsDlg->ui->checkBoxSplashScreen->setChecked(Settings::READ("Display Splash Screen", true).toBool());
+
 	//initialize Action's Tables
 	settingsDlg->initializeActionTables(allActionMap, mainToolBarItems);
 
@@ -1831,7 +1849,10 @@ void MainWindow::globalSettings()
 		SaagharWidget::textColor = settingsDlg->ui->pushButtonTextColor->palette().background().color();
 		if (settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color() != SaagharWidget::textColor)//they must be different.
 			SaagharWidget::matchedTextColor = settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color();
-	
+
+		//splash screen
+		Settings::WRITE("Display Splash Screen", settingsDlg->ui->checkBoxSplashScreen->isChecked());
+
 		//toolbar items
 		mainToolBarItems.clear();
 		for (int i=0; i<settingsDlg->ui->tableWidgetToolBarActions->rowCount(); ++i)
@@ -1915,9 +1936,6 @@ void MainWindow::loadGlobalSettings()
 
 	Settings::LOAD_VARIABLES(config->value("VariableHash").toHash());
 
-	restoreState( Settings::READ("MainWindowState").toByteArray(), 1);
-	restoreGeometry(Settings::READ("Mainwindow Geometry").toByteArray());
-
 	//openedTabs = config->value("openedTabs", "").toStringList();
 
 	SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
@@ -1975,12 +1993,12 @@ void MainWindow::loadGlobalSettings()
 
 ///////////////
 	//variable hash
-	QHash<QString, QVariant>::const_iterator it = /*Settings::VariablesHash*/vHash.constBegin();
-	while (it != vHash.constEnd())
-	{
-		qDebug() << "vHash--key=" << it.key() << "vHash--Value=" << it.value();
-		++it;
-	}
+//	QHash<QString, QVariant>::const_iterator it = /*Settings::VariablesHash*/vHash.constBegin();
+//	while (it != vHash.constEnd())
+//	{
+//		qDebug() << "vHash--key=" << it.key() << "vHash--Value=" << it.value();
+//		++it;
+//	}
 //////////////////////
 }
 
