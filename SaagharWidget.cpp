@@ -654,7 +654,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 	currentCat = !category.isNull() ? category._ID : 0;
 	currentParentID = !category.isNull() ? category._ParentID : 0;
 }
-//#include<QTextEdit>
+
 void SaagharWidget::showPoem(GanjoorPoem poem)
 {
 	if ( poem.isNull() )
@@ -706,7 +706,6 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	int textWidth = fontMetric.boundingRect(poem._Title).width();
 	int totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
 	//int numOfRow = textWidth/totalWidth ;
-	totalWidth = tableViewWidget->viewport()->width();
 
 	tableViewWidget->setItem(0, 1, poemTitle);
 	tableViewWidget->setSpan(0, 1, 1, 3 );
@@ -790,7 +789,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 				for (int k=0; k < tableViewWidget->columnCount(); ++k)
 				{
 					QTableWidgetItem *temp = tableViewWidget->item(row, k);
-					if (temp && temp->data(Qt::DisplayRole).isValid() && !temp->data(Qt::DisplayRole).toString().isEmpty() )
+					if (temp && temp->text().isEmpty() )
 						empty = false;
 				}
 
@@ -871,8 +870,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 					break;
 
 				case Single :
-					textWidth = fontMetric.boundingRect(mesraItem->data(Qt::DisplayRole).toString()).width();
-					totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+					textWidth = fontMetric.boundingRect(mesraItem->text()).width();
+					//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
 					//numOfRow = textWidth/totalWidth ;
 					if (!currentVerseText.isEmpty())
 					{
@@ -880,17 +879,17 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
 					
-					//tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->data(Qt::DisplayRole).toString()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
+					//tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->text()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
 						//					tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
 					singleColumnHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
 					MissedMesras--;
 					break;
 
 				case Paragraph :
-					textWidth = fontMetric.boundingRect(mesraItem->data(Qt::DisplayRole).toString()).width();
+					textWidth = fontMetric.boundingRect(mesraItem->text()).width();
 					//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
 
-					totalWidth = tableViewWidget->viewport()->width();
+					//totalWidth = tableViewWidget->viewport()->width();
 					//numOfRow = textWidth/totalWidth;
 					{
 						//QTableWidgetItem *tmp = new QTableWidgetItem("");
@@ -1041,22 +1040,25 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	}// end of big for
 
 
-	//a trick for removing last empty row
-	QString rowStr = "";
-	for (int col = 0; col < tableViewWidget->columnCount(); ++col)
+	//a trick for removing last empty row withoout QTextEdit widget
+	if (!tableViewWidget->cellWidget(tableViewWidget->rowCount()-1, 1))
 	{
-		QTableWidgetItem *tmpItem = tableViewWidget->item(tableViewWidget->rowCount()-1, col);
-		if (tmpItem)
+		QString rowStr = "";
+		for (int col = 0; col < tableViewWidget->columnCount(); ++col)
 		{
-			rowStr+=tmpItem->text();
+			QTableWidgetItem *tmpItem = tableViewWidget->item(tableViewWidget->rowCount()-1, col);
+			if (tmpItem)
+			{
+				rowStr+=tmpItem->text();
+			}
 		}
-	}
-	rowStr.remove(" ");
-	rowStr.remove("\t");
-	rowStr.remove("\n");
-	if (rowStr.isEmpty())
-	{
-		tableViewWidget->setRowCount(tableViewWidget->rowCount()-1);
+		rowStr.remove(" ");
+		rowStr.remove("\t");
+		rowStr.remove("\n");
+		if (rowStr.isEmpty())
+		{
+			tableViewWidget->setRowCount(tableViewWidget->rowCount()-1);
+		}
 	}
 
 	resizeTable(tableViewWidget);
@@ -1155,8 +1157,8 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 					{
 						verticalScrollBarWidth=table->verticalScrollBar()->width();
 					}
-					//int totalWidth = table->columnWidth(0)-verticalScrollBarWidth-82;
-					int totalWidth = tableViewWidget->viewport()->width();
+					int totalWidth = table->columnWidth(0)-verticalScrollBarWidth-82;
+					//int totalWidth = tableViewWidget->viewport()->width();
 					totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
 					table->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(table->fontMetrics(), textWidth, totalWidth)) );
 				}
@@ -1167,8 +1169,8 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 		int totalWidth = 0;
 		if (table->columnCount() == 4)
 		{
-			//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-			totalWidth = tableViewWidget->viewport()->width();
+			totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+			//totalWidth = tableViewWidget->viewport()->width();
 			QMap<int, int>::const_iterator i = singleColumnHeightMap.constBegin();
 			while (i != singleColumnHeightMap.constEnd())
 			{
