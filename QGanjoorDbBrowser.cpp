@@ -1090,6 +1090,25 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 				for (int t=0;t<andedPhraseCount;++t)
 				{
 					QString tphrase = phraseList.at(t);
+					if (tphrase.contains("=="))
+					{
+						tphrase.remove("==");
+						if (lastPoemID != poemID/* && findRhyme*/)
+						{
+							lastPoemID = poemID;
+							//verses.clear();
+							int versesSize = verses.size();
+							for (int j=0; j<versesSize; ++j)
+							{
+								delete verses[j];
+								verses[j]=0;
+							}
+							verses = getVerses(poemID);
+							//qDebug()<<"poemID="<<poemID<<"poemSize="<<verses.size();
+						}
+						excludeCurrentVerse = !isRadif(verses, tphrase, verseOrder);
+						break;
+					}
 					if (tphrase.contains("="))
 					{
 						tphrase.remove("=");
@@ -1324,7 +1343,7 @@ QString QGanjoorDbBrowser::snippedText(const QString &text, const QString &str, 
 		return snippedList.join("")+elideString;
 }
 
-bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QString &phrase, int verseOrder)
+bool QGanjoorDbBrowser::isRadif(const QList<GanjoorVerse *> &verses, const QString &phrase, int verseOrder)
 {
 //qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<verseOrder<<versePos;
 	//verseOrder starts from 1 to verses.size()
@@ -1416,11 +1435,145 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QStri
 	//	if (secondEnding.isEmpty())
 	//		qDebug()<<"------------------------------------------------------------------";
 	
-		if (firstEnding != secondEnding)//they're not empty or RADIF
+		if (firstEnding != "" || secondEnding != "")//they're not empty or RADIF
 			continue;//return false;
 
 		int tmp1 = cleanedVerse.lastIndexOf(cleanedPhrase)-1;
 		int tmp2 = secondMesra.lastIndexOf(cleanedPhrase)-1;
+		if (tmp1<0 || tmp2<0)
+			continue;//return false;
+		qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;
+		qDebug()<<"1ch="<<cleanedVerse.at(tmp1);
+		qDebug()<<"secondMesra="<<secondMesra<<"secondEnding="<<secondEnding;
+		qDebug()<<"2ch="<<secondMesra.at(tmp2);
+
+//		if ( cleanedVerse.at(tmp1) == secondMesra.at(tmp2) &&
+//			 firstEnding.isEmpty() )  // and so secondEnding
+//		{
+//			//if last character before phrase are similar this is not a Rhyme maybe its RADIF
+//			//or a part!!! of Rhyme.
+//			//the following algorithm works good for Rhyme with similar spell and diffrent meanings.
+//			continue;//return false;
+//		}
+//		else
+		return true;
+	}
+	return false;
+//qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<"verseOrder="<<verseOrder<<getPoem(PoemID)._Title;
+//	return true;
+}
+
+bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QString &phrase, int verseOrder)
+{
+//qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<verseOrder<<versePos;
+	//verseOrder starts from 1 to verses.size()
+	if (verseOrder<=0 || verseOrder > verses.size())
+		return false;
+
+	//QList<GanjoorVerse *> verses = getVerses(PoemID);
+
+	QString cleanedVerse = QGanjoorDbBrowser::cleanString(verses.at(verseOrder-1)->_Text, QStringList(""));
+	//cleanedVerse = " "+cleanedVerse+" ";//just needed for whole word
+	QString cleanedPhrase = QGanjoorDbBrowser::cleanString(phrase, QStringList(""));
+
+	if (!cleanedVerse.contains(cleanedPhrase))
+	{
+		//verses.clear();
+		return false;
+	}
+
+	QString secondMesra = "";
+	QList<int> mesraOrdersForCompare;
+	mesraOrdersForCompare  << -1 << -1 << -1;
+	int secondMesraOrder = -1;
+
+	switch (verses.at(verseOrder-1)->_Position)
+	{
+	case Right:
+	case CenteredVerse1:
+		if (verseOrder == verses.size()) //last single beyt! there is no 'CenteredVerse2' or a database error
+		{
+			//verses.clear();
+			return false;
+		}
+		if (verses.at(verseOrder)->_Position == Left || verses.at(verseOrder)->_Position == CenteredVerse2)
+		{
+			mesraOrdersForCompare[0] = verseOrder;
+		}
+		else
+		{
+			//verses.clear();
+			return false;
+		}//again database error
+		break;
+	case Left:
+	case CenteredVerse2:
+		if (verseOrder == 1) //there is just one beyt!! more probably a database error
+		{
+			//verses.clear();
+			return false;
+		}
+		if (verses.at(verseOrder-2)->_Position == Right || verses.at(verseOrder-2)->_Position == CenteredVerse1)
+		{
+			mesraOrdersForCompare[0] = verseOrder-2;
+		}
+		if (verseOrder-3>=0 && (verses.at(verseOrder-3)->_Position == Left || verses.at(verseOrder-3)->_Position == CenteredVerse2) )
+			mesraOrdersForCompare[1] = verseOrder-3;//mesra above current mesra
+		if (verseOrder+1<=verses.size()-1 && (verses.at(verseOrder+1)->_Position == Left || verses.at(verseOrder+1)->_Position == CenteredVerse2) )
+			mesraOrdersForCompare[2] = verseOrder+1;//mesra above current mesra
+		if (mesraOrdersForCompare.at(0) == -1 && mesraOrdersForCompare.at(1) == -1 && mesraOrdersForCompare.at(2) == -1 )
+		{
+			//verses.clear();
+			return false;
+		}//again database error
+		break;
+
+	default:
+		break;
+	}
+
+	for (int i=0; i<3;++i)
+	{
+		secondMesraOrder = mesraOrdersForCompare.at(i);
+		if (secondMesraOrder == -1)
+			continue;
+		secondMesra = QGanjoorDbBrowser::cleanString(verses.at(secondMesraOrder)->_Text, QStringList(""));
+
+//		if (!secondMesra.contains(cleanedPhrase))
+//		{
+//			//verses.clear();
+//			//return false;
+//			continue;
+//		}
+		int indexInSecondMesra = secondMesra.lastIndexOf(cleanedPhrase);
+		int offset = cleanedPhrase.size();
+		while (indexInSecondMesra < 0)
+		{
+			--offset;
+			if (offset < 1)
+				break;
+			indexInSecondMesra = secondMesra.lastIndexOf(cleanedPhrase.right(offset));
+		}
+		if (indexInSecondMesra < 0)
+			continue;
+
+	//	qDebug() << "offset="<<offset<<"index="<<indexInSecondMesra<< "str="<<cleanedPhrase.right(offset)<<"wholeStr="<<secondMesra<<"ending="
+	//			 <<secondMesra.mid(indexInSecondMesra+cleanedPhrase.right(offset).size());
+
+		QString firstEnding = cleanedVerse.mid(cleanedVerse.lastIndexOf(cleanedPhrase)+cleanedPhrase.size());
+		QString secondEnding = secondMesra.mid(indexInSecondMesra+cleanedPhrase.right(offset).size());//secondMesra.mid(secondMesra.lastIndexOf(cleanedPhrase)+cleanedPhrase.size());
+	//	qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;
+	//	if (firstEnding.isEmpty())
+	//		qDebug()<<"------------------------------------------------------------------";
+	//	qDebug()<<"secondMesra="<<secondMesra<<"secondEnding="<<secondEnding;
+	//	if (secondEnding.isEmpty())
+	//		qDebug()<<"------------------------------------------------------------------";
+	
+		if (firstEnding != secondEnding)//they're not empty or RADIF
+			continue;//return false;
+
+		int tmp1 = cleanedVerse.lastIndexOf(cleanedPhrase)-1;
+		int tmp2 = indexInSecondMesra-1;//secondMesra.lastIndexOf(cleanedPhrase)-1;
 		if (tmp1<0 || tmp2<0)
 			continue;//return false;
 		qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;

@@ -2769,6 +2769,8 @@ void MainWindow::namedActionTriggered(bool checked)
 					"<TR><TD%3><b>\"%1\"</b></TD>%8<TD%4>Mesras containing the whole word <b>%1</b>.</TD></TR>"
 					"<TR><TD%3><b>\"%1 %2\"</b></TD>%8<TD%4>Mesras containing the whole mixed word <b>%1 %2</b>.</TD></TR>"
 					"<TR><TD%3><b>Sp*ng</b></TD>%8<TD%4>Mesras containing any phrase started with <b>Sp</b> and ended with <b>ng</b>; i.e: Mesras containing <b>Spring</b> or <b>Spying</b> or <b>Spoking</b> or...</TD></TR>"
+					"<TR><TD%3><b>=%1</b></TD>%8<TD%4>Mesras containing the word <b>%1</b> <i>as Rhyme</i>.</TD></TR>"
+					"<TR><TD%3><b>==%1</b></TD>%8<TD%4>Mesras containing the word <b>%1</b> <i>as Radif</i>.</TD></TR>"
 					"</TBODY></TABLE><br />"
 					"<br /><b>Tip2:</b> All search queries are case insensitive.<br />"
 					"<br /><b>Tip3:</b> User can use an operator more than once;"

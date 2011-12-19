@@ -72,7 +72,10 @@ bool SearchResultWidget::init(QMainWindow *qmw, const QString &iconThemePath)
 void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 {
 	QDockWidget *searchResultWidget = 0;
-	searchResultWidget = new QDockWidget(sectionName+":"+phrase, qmw);
+	QString dockTitle = sectionName+":"+phrase;
+	dockTitle.replace("==", tr("Radifs that contain: "));
+	dockTitle.replace("=", tr("Rhymed by: "));
+	searchResultWidget = new QDockWidget(dockTitle, qmw);
 	searchResultWidget->setObjectName(QString::fromUtf8("searchResultWidget_new"));//object name for created instance, it renames to 'searchResultWidget_old'
 	//searchResultWidget->setLayoutDirection(Qt::RightToLeft);
 	searchResultWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
