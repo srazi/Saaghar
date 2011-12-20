@@ -39,6 +39,8 @@
 
 #include "bookmarks.h"
 
+class QSearchLineEdit;
+
 class SaagharWidget : public QWidget
 {
 Q_OBJECT
@@ -80,6 +82,9 @@ public:
 
 	//bookmark widget
 	static Bookmarks *bookmarks;
+
+	//search field object
+	static QSearchLineEdit *lineEditSearchText;
 
 	//DataBase
 	static QGanjoorDbBrowser *ganjoorDataBase;
@@ -124,6 +129,5 @@ signals:
 	void navNextActionState(bool);
 	void navPreviousActionState(bool);
 	void loadingStatusText(const QString &);
-	void searchPhraseChanged(const QString &);
 };
 #endif // SAAGHARWIDGET_H

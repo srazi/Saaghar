@@ -24,6 +24,8 @@
 #include "SaagharWidget.h"
 #include "commands.h"
 
+#include <QSearchLineEdit>
+
 #include <QApplication>
 #include <QWidget>
 #include <QLabel>
@@ -49,8 +51,10 @@ QColor SaagharWidget::matchedTextColor = QColor();
 QColor SaagharWidget::backgroundColor = QColor();
 QTableWidgetItem *SaagharWidget::lastOveredItem = 0;
 int SaagharWidget::maxPoetsPerGroup = 12;
-//bokmark widget
+//bookmark widget
 Bookmarks *SaagharWidget::bookmarks = 0;
+//search field object
+QSearchLineEdit *SaagharWidget::lineEditSearchText = 0;
 //ganjoor data base browser
 QGanjoorDbBrowser *SaagharWidget::ganjoorDataBase = NULL;
 
@@ -462,7 +466,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 			if (!QFile::exists(poetPhotoFileName))
 				poetPhotoFileName = ":/resources/images/no-photo.png";
 			catItem->setIcon(QIcon(poetPhotoFileName));
-			createItemForLongText(0, 0, itemText, "");
+			createItemForLongText(0, 0, itemText, SaagharWidget::lineEditSearchText->text());
 			/*if (category._ID == 0 && !Settings::READ("Show Photo at Home").toBool())
 			{
 				qDebug() << "Remove Icon11111111";
@@ -899,7 +903,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 						//mesraItem->setTextAlignment(Qt::AlignVCenter|Qt::AlignLeft);
 						mesraItem->setText("");
 						tableViewWidget->setItem(row, 1, mesraItem);//inserted just for its data and its behavior like other cells that use QTableWidgetItem'.
-						createItemForLongText(row, 1, currentVerseText, "");
+						createItemForLongText(row, 1, currentVerseText, SaagharWidget::lineEditSearchText->text());
 						tableViewWidget->setSpan(row, 1, 1, 3 );
 					}
 
@@ -1438,6 +1442,6 @@ void SaagharWidget::createItemForLongText(int row, int column, const QString &te
 	//para->setMouseTracking(false);
 	para->setFocusPolicy(Qt::NoFocus);
 	ParagraphHighlighter *paraHighlighter = new ParagraphHighlighter(para->document(), highlightText);
-	connect(this, SIGNAL(searchPhraseChanged(const QString &)), paraHighlighter, SLOT(keywordChanged(const QString &)));
+	connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(const QString &)), paraHighlighter, SLOT(keywordChanged(const QString &)));
 	tableViewWidget->setCellWidget(row, column, para);
 }

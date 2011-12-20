@@ -26,13 +26,10 @@
 
 #include <QMainWindow>
 #include <QSettings>
-//#include <QLineEdit>
-//#include <QComboBox>
 #include <QSpinBox>
 #include <QToolButton>
 #include <QUndoGroup>
 
-class QSearchLineEdit;
 class QMultiSelectWidget;
 
 namespace Ui {
@@ -95,9 +92,6 @@ class MainWindow : public QMainWindow
 		Ui::MainWindow *ui;
 		void createConnections();
 		void setupUi();
-		QSearchLineEdit *lineEditSearchText;
-		//QLineEdit *lineEditSearchText;
-		//QxtCheckComboBox *comboBoxSearchRegion;
 		QMultiSelectWidget *selectSearchRange;
 		QComboBox *comboBoxSearchRegion;
 		QSpinBox *spinBoxMaxSearchResult;

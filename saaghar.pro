@@ -134,10 +134,6 @@ utilities.files = $${SOURCE_DIR}/saaghar.ico
 }
 
 mac {
-LOG = $$system(mkdir ~/Library/)
-LOG += $$system(mkdir ~/Library/Saaghar)
-LOG += $$system(cp -n $${SOURCE_DIR}/utilities/* ~/Library/Saaghar/)
-
 CONFIG += link_prl x86
 QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
 QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.5
@@ -150,14 +146,11 @@ RESOURCES_PATH = Contents/Resources
 ICON = $${SOURCE_DIR}/saaghar.icns
 QMAKE_INFO_PLIST = $${SOURCE_DIR}/Info.plist
 
-!build_pass:message("'make uninstall' doesn't remove "$$(HOME)/Library/Saaghar" directory and its contents especially 'database file', do that manually!")
+#!build_pass:message("'make uninstall' doesn't remove "$$(HOME)/Library/Saaghar" directory and its contents especially 'database file', do that manually!")
 }
 
 unix:!macx {
 TARGET = saaghar
-LOG = $$system(mkdir ~/.Pojh)
-LOG += $$system(mkdir ~/.Pojh/Saaghar)
-LOG  += $$system(cp -n $${SOURCE_DIR}/utilities/* ~/.Pojh/Saaghar/)
 
 isEmpty( PREFIX ) {
 PREFIX = /usr
@@ -180,7 +173,7 @@ icon.files = $${SOURCE_DIR}/images/saaghar.png
 INSTALLS += desktop \
 			icon
 
-!build_pass:message("'make uninstall' doesn't remove "$$(HOME)/.Pojh/Saaghar" directory and its contents especially 'database file', do that manually!")
+#!build_pass:message("'make uninstall' doesn't remove "$$(HOME)/.Pojh/Saaghar" directory and its contents especially 'database file', do that manually!")
 }
 
 ##installation files
