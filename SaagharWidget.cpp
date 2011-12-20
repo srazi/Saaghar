@@ -1195,7 +1195,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 				table->setColumnWidth(2, (baseWidthSize*47)/100);
 				break;
 			case 4:
-				table->setColumnWidth(0, table->fontMetrics().width(QString::number(table->rowCount()*10))+22 );//numbers
+				table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+22 : 25 );//numbers
 				table->setColumnWidth(2, table->fontMetrics().height()*2 /*5/2*/ );//spacing between mesras
 				baseWidthSize = baseWidthSize - ( table->columnWidth(0)+table->columnWidth(2) );
 				table->setColumnWidth(1, qMax(minMesraWidth, baseWidthSize/2/* -table->columnWidth(0) */) );//mesra width

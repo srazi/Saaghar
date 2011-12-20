@@ -65,6 +65,7 @@ class MainWindow : public QMainWindow
 		QStringList selectedSearchRange;
 		bool randomOpenInNewTab;
 		QString resourcesPath;//not-writable
+		QString userHomePath;//writable
 		int previousTabIndex;
 		void importDataBase(const QString fileName);
 		QStringList mainToolBarItems;

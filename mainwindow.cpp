@@ -125,22 +125,31 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 		dataBaseCompleteName = QCoreApplication::applicationDirPath()+dataBaseCompleteName;
 		resourcesPath = QCoreApplication::applicationDirPath();
 #endif
+		userHomePath = resourcesPath;
 	}
 	else
 	{
 #ifdef Q_WS_WIN
-		dataBaseCompleteName = QDir::homePath()+"/Pojh/Saaghar/"+dataBaseCompleteName;
+		//dataBaseCompleteName = QDir::homePath()+"/Pojh/Saaghar/"+dataBaseCompleteName;
 		resourcesPath = QCoreApplication::applicationDirPath();
+		userHomePath = QDir::homePath()+"/Pojh/Saaghar/";
 #endif
 #ifdef Q_WS_X11
-		dataBaseCompleteName = "/usr/share/saaghar/"+dataBaseCompleteName;
+		//dataBaseCompleteName = "/usr/share/saaghar/"+dataBaseCompleteName;
 		resourcesPath = "/usr/share/saaghar/";
+		userHomePath = QDir::homePath()+"/.Pojh/Saaghar/";
 #endif
 #ifdef Q_WS_MAC
-		dataBaseCompleteName = QDir::homePath()+"/Library/Saaghar/"+dataBaseCompleteName;
+		//dataBaseCompleteName = QDir::homePath()+"/Library/Saaghar/"+dataBaseCompleteName;
 		resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
+		userHomePath = QDir::homePath()+"/Library/Saaghar/";
 #endif
+		dataBaseCompleteName = resourcesPath+dataBaseCompleteName;
 	}
+
+	QDir saagharUserPath(userHomePath);
+	if (!saagharUserPath.exists())
+		saagharUserPath.mkpath(userHomePath);
 
 	SaagharWidget::poetsImagesDir = resourcesPath + "/poets_images/";
 	
@@ -219,12 +228,17 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/fullscreen.png"));
 	}
 
-	//searchin database-path for database-file
-	for (int i=0; i<QGanjoorDbBrowser::dataBasePath.size(); ++i)
+	//searching database-path for database-file
+	//following lines are for support old default data-base pathes.
+	QStringList dataBaseCompatibilityPath(QGanjoorDbBrowser::dataBasePath);
+	dataBaseCompatibilityPath	<< resourcesPath
+								<< QDir::homePath()+"/Pojh/Saaghar/"
+								<< QDir::homePath()+"/Library/Saaghar/";
+	for (int i=0; i<dataBaseCompatibilityPath.size(); ++i)
 	{
-		if ( QFile::exists(QGanjoorDbBrowser::dataBasePath.at(i)+tempDataBaseName) )
+		if ( QFile::exists(dataBaseCompatibilityPath.at(i)+tempDataBaseName) )
 		{
-			dataBaseCompleteName = QGanjoorDbBrowser::dataBasePath.at(i)+tempDataBaseName;
+			dataBaseCompleteName = dataBaseCompatibilityPath.at(i)+tempDataBaseName;
 			break;
 		}
 	}
@@ -2019,7 +2033,7 @@ void MainWindow::loadTabWidgetSettings()
 
 void MainWindow::saveSettings()
 {
-	QFile bookmarkFile(resourcesPath+"/bookmarks.xbel");
+	QFile bookmarkFile(userHomePath+"/bookmarks.xbel");
 	if (!bookmarkFile.open(QFile::WriteOnly | QFile::Text))
 	{
 		QMessageBox::warning(this, tr("Bookmarks"), tr("Can not write the bookmark file %1:\n%2.")
@@ -2935,7 +2949,7 @@ void MainWindow::setupBookmarkManagerUi()
 	bookmarkMainLayout->addWidget(SaagharWidget::bookmarks);
 	bookmarkContainer->setLayout(bookmarkMainLayout);
 
-	QFile bookmarkFile(resourcesPath+"/bookmarks.xbel");
+	QFile bookmarkFile(userHomePath+"/bookmarks.xbel");
 
 	bool readBookmarkFile = true;
 
@@ -2981,6 +2995,7 @@ void MainWindow::setupBookmarkManagerUi()
 	else
 	{
 		//bookmark not loaded!
+		delete actionInstance("bookmarkManagerDockAction");
 		delete SaagharWidget::bookmarks;
 		delete bookmarkContainer;
 		bookmarkContainer = 0;
