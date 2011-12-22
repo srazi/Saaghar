@@ -22,7 +22,6 @@
 #include "QGanjoorDbBrowser.h"
 #include <QApplication>
 #include <QMessageBox>
-#include <QVariant>
 #include <QSqlQuery>
 #include <QFileInfo>
 #include <QFileDialog>
@@ -1595,4 +1594,89 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse *> &verses, const QStri
 	return false;
 //qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<"verseOrder="<<verseOrder<<getPoem(PoemID)._Title;
 //	return true;
+}
+
+QVariantList QGanjoorDbBrowser::importGanjoorBookmarks()
+{
+	QVariantList lst;
+	if (isConnected())
+	{
+		QString selectQuery = QString("SELECT poem_id, verse_id FROM fav");
+		QSqlQuery q(dBConnection);
+		q.exec(selectQuery);
+		QSqlRecord qrec;
+		while( q.next() )
+		{
+			qrec = q.record();
+			int poemID = qrec.value(0).toInt();
+			int verseID = qrec.value(1).toInt();
+			QString comment = QObject::tr("From Desktop Ganjoor");
+			GanjoorPoem poem = getPoem(poemID);
+			if (verseID == -1)
+				verseID = 1;
+			QString verseText = getBeyt(poemID, verseID, "[newline]").simplified();
+			verseText.replace("[newline]", "\n");
+			verseText.prepend(poem._Title+"\n");
+			QStringList data;
+			data << QString::number(poemID) << QString::number(verseID) << verseText << poem._Url+"/#"+QString::number(verseID) << comment;
+			lst << data;
+		}
+	}
+	return lst;
+}
+
+QString QGanjoorDbBrowser::getBeyt(int poemID, int firstMesraID, const QString &separator)
+{
+	QStringList mesras;
+	if (isConnected())
+	{
+		QSqlQuery q(dBConnection);
+		QString selectQuery = QString( "SELECT vorder, position, text FROM verse WHERE poem_id = %1 and vorder >= %2 ORDER BY vorder LIMIT 2").arg(poemID).arg(firstMesraID);
+		q.exec(selectQuery);
+		QSqlRecord qrec;
+		bool centeredVerse1 = false;
+		while( q.next() )
+		{
+			qrec = q.record();
+			VersePosition mesraPosition = VersePosition(qrec.value(1).toInt());
+			if (!centeredVerse1)
+				mesras << qrec.value(2).toString();
+			bool breakLoop = false;
+			
+			switch (mesraPosition)
+			{
+			case Single:
+			case Paragraph:
+				breakLoop = true;
+//				if (qrec.value(0).toInt() != firstMesraID || centeredVerse1)
+//					break;
+//				mesras << qrec.value(2).toString();
+				break;
+			case Right:
+				break;
+			case Left:
+				breakLoop = true;
+				break;
+//				if (centeredVerse1)
+//					break;
+//				mesras << qrec.value(2).toString();
+			case CenteredVerse1:
+				//mesras << qrec.value(2).toString();
+				centeredVerse1 = true;
+				break;
+			case CenteredVerse2:
+				if (centeredVerse1)
+					mesras << qrec.value(2).toString();
+				breakLoop = true;
+				break;
+			default:
+				break;
+			}
+			if (breakLoop)
+				break;
+		}
+	}
+	if (!mesras.isEmpty())
+		return mesras.join(separator);
+	return "";
 }

@@ -30,6 +30,7 @@
 #include <QSqlError>
 #include <QSqlRecord>
 #include <QProgressDialog>
+#include <QVariant>
 
 #include "QGanjoorDbStuff.h"
 
@@ -56,6 +57,9 @@ class QGanjoorDbBrowser : public QObject
 
 		bool isRhyme(const QList<GanjoorVerse *> &verses, const QString &phrase, int verseOrder = -1);
 		bool isRadif(const QList<GanjoorVerse *> &verses, const QString &phrase, int verseOrder = -1);
+
+		QVariantList importGanjoorBookmarks();
+		QString getBeyt(int poemID, int firstMesraID,  const QString &separator = "       "/*7 spaces*/);
 
 		QList<GanjoorPoet *> getDataBasePoets(const QString fileName);
 		QList<GanjoorPoet *> getConflictingPoets(const QString fileName);

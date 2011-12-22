@@ -125,7 +125,7 @@ class MainWindow : public QMainWindow
 		void updateTabsSubMenus();
 
 	private slots:
-		void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true);
+		void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true, bool unbookmark = true);
 		void setHomeAsDirty();
 		void actionClosedTabsClicked();
 		void namedActionTriggered(bool checked = false);

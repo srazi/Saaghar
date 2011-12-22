@@ -425,6 +425,10 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 		//item->setText(1, data.toStringList().at(3));//"="+data.toStringList().at(0)+"|"+data.toStringList().at(1)
 		item->setData(0, Qt::UserRole, data.toStringList().at(0)+"|"+data.toStringList().at(1));
 		item->setData(1, Qt::UserRole, data.toStringList().at(3));
+		if (data.toStringList().size() == 5)
+		{
+			item->setText(1, data.toStringList().at(4));
+		}
 		//bookmarkHash.insert("Verses", data.toStringList().at(0)+"|"+data.toStringList().at(1));
 		return true;
 	}
@@ -455,7 +459,7 @@ void Bookmarks::doubleClicked(QTreeWidgetItem *item, int column)
 			int length = secondNewLineIndex > 0 ? secondNewLineIndex-newLineIndex : text.size()-newLineIndex;
 			text = text.mid(newLineIndex, length);//text.left(text.indexOf("\n"));
 			qDebug() << "text-after="<<text<<"newLineIndex="<<newLineIndex<<"secondNewLineIndex="<<secondNewLineIndex<<"length="<<length;
-			emit showBookmarkedItem(item->parent()->text(0), text, item->data(0, Qt::UserRole).toString(), true);
+			emit showBookmarkedItem(item->parent()->text(0), text, item->data(0, Qt::UserRole).toString(), true, true);
 		}
 	}
 }
@@ -511,11 +515,30 @@ bool Bookmarks::unBookmarkItem(QTreeWidgetItem *item)
 		int length = secondNewLineIndex > 0 ? secondNewLineIndex-newLineIndex : text.size()-newLineIndex;
 		text = text.mid(newLineIndex, length);
 		qDebug() << "text-after="<<text<<"newLineIndex="<<newLineIndex<<"secondNewLineIndex="<<secondNewLineIndex<<"length="<<length;
-		emit showBookmarkedItem(item->parent()->text(0), text, item->data(0, Qt::UserRole).toString(), false);
+		emit showBookmarkedItem(item->parent()->text(0), text, item->data(0, Qt::UserRole).toString(), false, true);
 		delete item;
 		item = 0;
 		//--i;//because one of children was deleted
 		//--countOfChildren;
 	}
 	return deleteItem;
+}
+
+void Bookmarks::insertBookmarkList(const QVariantList &list)
+{
+	QStringList bookmarkedData = bookmarkList("Verses");
+	for (int i=0; i<list.size(); ++i)
+	{
+		QStringList data = list.at(i).toStringList();
+
+		if (!bookmarkedData.contains(data.at(0)+"|"+data.at(1)))
+			updateBookmarkState("Verses", list.at(i), true);
+
+		QString text = data.at(2);
+		int newLineIndex = text.indexOf("\n")+1;
+		int secondNewLineIndex = text.indexOf("\n", newLineIndex);
+		int length = secondNewLineIndex > 0 ? secondNewLineIndex-newLineIndex : text.size()-newLineIndex;
+		text = text.mid(newLineIndex, length);
+		emit showBookmarkedItem("Verses", text, data.at(0)+"|"+data.at(1), false, false);
+	}
 }

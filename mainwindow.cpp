@@ -1553,7 +1553,7 @@ void MainWindow::setupUi()
 	actionInstance("fixedNameRedoAction")->setEnabled(globalRedoAction->isEnabled());
 	actionInstance("fixedNameUndoAction")->setEnabled(globalUndoAction->isEnabled());
 
-	actionInstance("actionCopy", iconThemePath+"/copy.png", tr("&Copy") )->setShortcuts(QKeySequence::Copy);
+	actionInstance("ImportGanjoorBookmarks", iconThemePath+"/bookmarks-import.png", tr("&Import Ganjoor's Bookmarks") );
 
 
 
@@ -1635,6 +1635,7 @@ void MainWindow::setupUi()
 
 	menuBookmarks->addAction(actionInstance("bookmarkManagerDockAction"));
 	menuBookmarks->addSeparator();
+	menuBookmarks->addAction(actionInstance("ImportGanjoorBookmarks"));
 
 	menuTools->addAction(actionInstance("searchToolbarAction"));
 	menuTools->addSeparator();
@@ -2816,6 +2817,15 @@ void MainWindow::namedActionTriggered(bool checked)
 		actionInstance("fixedNameRedoAction")->setEnabled(globalRedoAction->isEnabled());
 		actionInstance("fixedNameUndoAction")->setEnabled(globalUndoAction->isEnabled());
 	}
+	else if ( actionName == "ImportGanjoorBookmarks" )
+	{
+		if (SaagharWidget::bookmarks)
+		{
+			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+			SaagharWidget::bookmarks->insertBookmarkList(SaagharWidget::ganjoorDataBase->importGanjoorBookmarks());
+			QApplication::restoreOverrideCursor();
+		}
+	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
 }
@@ -2915,7 +2925,7 @@ void MainWindow::setupBookmarkManagerUi()
 
 	SaagharWidget::bookmarks = new Bookmarks(this);
 
-	connect(SaagharWidget::bookmarks, SIGNAL(showBookmarkedItem(QString,QString,QString,bool)), this, SLOT(ensureVisibleBookmarkedItem(QString,QString,QString,bool)));
+	connect(SaagharWidget::bookmarks, SIGNAL(showBookmarkedItem(QString,QString,QString,bool,bool)), this, SLOT(ensureVisibleBookmarkedItem(QString,QString,QString,bool,bool)));
 
 	QString clearIconPath = currentIconThemePath()+"/clear-left.png";
 	if (layoutDirection() == Qt::RightToLeft)
@@ -3006,7 +3016,7 @@ void MainWindow::setupBookmarkManagerUi()
 	}
 }
 
-void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible)
+void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible, bool unbookmark)
 {
 	if (type == "Verses" || type == tr("Verses"))
 	{
@@ -3035,25 +3045,22 @@ void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString 
 							QTableWidgetItem *numItem = tmp->tableViewWidget->item(item->row(), 0);
 							if (numItem)
 							{
+								QPixmap star(":/resources/images/bookmark-on.png");
 								QPixmap starOff(":/resources/images/bookmark-off.png");
-								starOff = starOff.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(numItem->row())-1, 22), Qt::SmoothTransformation);
-								//QIcon bookmarkIcon;
-								//bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
-								//= numItem->icon().pixmap(starOff.size(), QIcon::Disabled, QIcon::Off);
-
-								numItem->setIcon(QIcon(starOff));
-								const int ITEM_BOOKMARKED_STATE = Qt::UserRole+20;
-								numItem->setData(ITEM_BOOKMARKED_STATE, false);
-
-//								QIcon bookmarkIcon;
-//								bookmarkIcon.addPixmap(star, QIcon::Active, QIcon::On);
-//								bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
-//								bool bookmarkState = !item->data(ITEM_BOOKMARKED_STATE).toBool();
+								star = star.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row())-1, 22), Qt::SmoothTransformation);
+								starOff = starOff.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row())-1, 22), Qt::SmoothTransformation);
+								QIcon bookmarkIcon;
+								bookmarkIcon.addPixmap(star, QIcon::Active, QIcon::On);
+								bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
 					
-//								if (bookmarkState)
-//									bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Active, QIcon::On);
-//								else
-//									bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
+								if (!unbookmark)
+									bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Active, QIcon::On);
+								else
+									bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
+
+								numItem->setIcon(bookmarkIcon);
+								const int ITEM_BOOKMARKED_STATE = Qt::UserRole+20;
+								numItem->setData(ITEM_BOOKMARKED_STATE, !unbookmark);
 							}
 						}
 					}

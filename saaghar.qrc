@@ -52,5 +52,6 @@
 		<file>images/bookmark-folder.png</file>
 		<file>images/undo.png</file>
 		<file>images/redo.png</file>
+		<file>images/bookmarks-import.png</file>
 	</qresource>
 </RCC>

@@ -62,6 +62,7 @@ public:
 	bool write(QIODevice *device);
 	bool updateBookmarkState(const QString &type, const QVariant &data, bool state);
 	QStringList bookmarkList(const QString &type);
+	void insertBookmarkList(const QVariantList &list);
 
 private slots:
 	bool unBookmarkItem(QTreeWidgetItem *item = 0);
@@ -83,7 +84,7 @@ private:
 	QIcon bookmarkIcon;
 
 signals:
-	void showBookmarkedItem(const QString &, const QString &, const QString &, bool);
+	void showBookmarkedItem(const QString &, const QString &, const QString &, bool, bool);
 };
 
 #endif
