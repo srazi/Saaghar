@@ -112,6 +112,7 @@ utilities.files = $${SOURCE_DIR}/saaghar.ico
 					$$[QT_INSTALL_LIBS]/QtGui4.dll \
 					$$[QT_INSTALL_LIBS]/QtSql4.dll \
 					$$[QT_INSTALL_LIBS]/QtNetwork4.dll \
+					$$[QT_INSTALL_LIBS]/QtXml4.dll \
 					$$[QT_INSTALL_BINS]/mingwm10.dll \
 					$$[QT_INSTALL_BINS]/libgcc_s_dw2-1.dll
 

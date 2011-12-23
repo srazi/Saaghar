@@ -1,3 +1,45 @@
+== 0.9.69-->1.0.94 ==
+New Features:
+--------------------------
+The advanced search has ability to searching Rhymes and Radifs. (Rhyme-meter and Radif-meter).
+Ability to bookmark/unbookmark verses.
+Ability to filter bookmarks by its title and comment.
+Ability to import bookmarks from database.(Desktop Ganjoor's Bookmarks)
+Now, Saaghar has Undo/Redo support.
+For better performance and perfect highlighting support, the paragraph containers and the poet's description container changed from 'QTableWidgetItem' to 'QTextEdit'.
+Added 'ParagraphHighlighter' class for highlighting paragraphs and poet's description.
+Ability to disabling 'Splash-Screen'.
+
+Improved Features:
+--------------------------
+Removing border of search-page's navigator button.
+The '.pro' file was improved for supporting custom PREFIX on linux OSes.
+Added 'placeholderText' for 'SearchResultWidget::filterLineEdit'.
+The 'scrollToFirstItemContains()' was improved, for jumping to the right beyt.
+Added two convenient global variable: SaagharWidget::currentLocationList, SaagharWidget::currentPoemTitle.
+Now, scrollToFirstItemContains() returns matched item.
+Now, 'SaagharWidget::identifier()' returns 'QStringList' as replace of 'QString'.
+Now, 'parentCatClicked()' and 'showHome()' and 'nextPoem()' and 'previousPoem()' use 'processClickedItem()'.
+The 'updateTabsSubMenus()' changed as a SLOT. and connected to 'captionChanged()' SIGNAL.
+The 'namedActionTriggered(bool checked)' changed to 'namedActionTriggered(bool checked = false)'
+On Windows and Mac default database path changed, but old path are supported.
+Now, a new tab and a refreshed tab know about highlight phrase, and are highlighted.
+Declaring of 'lineEditSearchText' moved to 'SaagharWidget' as a static variable.
+Initializing of 'isPortable' and calling 'loadGlobalSettings()' moved to the first of constructor and 'restoreGeometry()' and 'restoreState()' moved to the end of constructor.
+
+Fixed Bugs:
+--------------------------
+The FSF address for GPL license was updated.
+Removed user specific steps from '.pro' file.
+The height computation bug was fixed, using column's width in replace of viewport's width.
+The 'cleanString()' deletes spaces if it's needed.
+The 'scrollToFirstItemContains()' was fixed when using non-list mode, just apply cleanString() to 'keyword'!
+Now search filter skips charachters with 'QChar::DirNSM' unicode direction, by using 'cleanString()' function.
+For new paragraph widget copy and select problems were fixed.
+A bug fixed in 'scrollToFirstItemContains()', 'cleanString()' moved to its correct position.
+The computation of width of 'numItem' was corrected.
+When deleting last empty row, if row has a widget it should not be deleted.
+
 == 0.8.21-->0.9.69 ==
 New Features:
 --------------------------

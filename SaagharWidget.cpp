@@ -1335,7 +1335,7 @@ void SaagharWidget::clickedOnItem(int row,int column)
 					verseText = textEdit->toPlainText();
 				}
 			}
-			verseText = verseText.simplified();
+			verseText = verseText.trimmed();
 			QString currentLocation = currentLocationList.join(">");
 			if (!currentPoemTitle.isEmpty())
 				currentLocation+=">"+currentPoemTitle;
