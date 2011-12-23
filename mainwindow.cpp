@@ -1997,7 +1997,7 @@ void MainWindow::loadGlobalSettings()
 	//config->setValue("VariableHash", QVariant(Settings::VariablesHash));
 	QHash<QString, QVariant> vHash = config->value("VariableHash").toHash();
 
-	mainToolBarItems = Settings::READ("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionCopy|bookmarkManagerDockAction|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|Ganjoor Verification").toString().split("|", QString::SkipEmptyParts);
+	mainToolBarItems = Settings::READ("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|fixedNameUndoAction|Separator|actionFaal|actionRandom|Separator|actionCopy|bookmarkManagerDockAction|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|Ganjoor Verification").toString().split("|", QString::SkipEmptyParts);
 //	QString tmp = mainToolBarItems.join("");
 //	tmp.remove("action", Qt::CaseInsensitive);
 //	tmp.remove("Separator", Qt::CaseInsensitive);
