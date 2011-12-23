@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>    *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -77,6 +77,44 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	else
 		isPortable = false;
 
+	const QString tempDataBaseName = "/ganjoor.s3db";//temp
+	QString dataBaseCompleteName = "/ganjoor.s3db";
+
+	if (isPortable)
+	{
+#ifdef Q_WS_MAC
+		dataBaseCompleteName = QCoreApplication::applicationDirPath()+"/../Resources/"+dataBaseCompleteName;
+		resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
+#else
+		dataBaseCompleteName = QCoreApplication::applicationDirPath()+dataBaseCompleteName;
+		resourcesPath = QCoreApplication::applicationDirPath();
+#endif
+		userHomePath = resourcesPath;
+	}
+	else
+	{
+#ifdef Q_WS_WIN
+		//dataBaseCompleteName = QDir::homePath()+"/Pojh/Saaghar/"+dataBaseCompleteName;
+		resourcesPath = QCoreApplication::applicationDirPath();
+		userHomePath = QDir::homePath()+"/Pozh/Saaghar/";
+#endif
+#ifdef Q_WS_X11
+		//dataBaseCompleteName = "/usr/share/saaghar/"+dataBaseCompleteName;
+		resourcesPath = "/usr/share/saaghar/";
+		userHomePath = QDir::homePath()+"/.Pozh/Saaghar/";
+#endif
+#ifdef Q_WS_MAC
+		//dataBaseCompleteName = QDir::homePath()+"/Library/Saaghar/"+dataBaseCompleteName;
+		resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
+		userHomePath = QDir::homePath()+"/Library/Saaghar/";
+#endif
+		dataBaseCompleteName = resourcesPath+dataBaseCompleteName;
+	}
+
+	QDir saagharUserPath(userHomePath);
+	if (!saagharUserPath.exists())
+		saagharUserPath.mkpath(userHomePath);
+
 	loadGlobalSettings();
 
 	if (splashScreen)
@@ -89,9 +127,9 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 		}
 	}
 
-	QCoreApplication::setOrganizationName("Pojh");
+	QCoreApplication::setOrganizationName("Pozh");
 	QCoreApplication::setApplicationName("Saaghar");
-	QCoreApplication::setOrganizationDomain("Pojh.iBlogger.org");
+	QCoreApplication::setOrganizationDomain("Pozh.org");
 
 	setWindowIcon(QIcon(":/resources/images/saaghar.png"));
 
@@ -112,44 +150,6 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 
 	saagharWidget = 0;
 	pressedMouseButton = Qt::LeftButton;
-	
-	const QString tempDataBaseName = "/ganjoor.s3db";//temp
-	QString dataBaseCompleteName = "/ganjoor.s3db";
-
-	if (isPortable)
-	{
-#ifdef Q_WS_MAC
-		dataBaseCompleteName = QCoreApplication::applicationDirPath()+"/../Resources/"+dataBaseCompleteName;
-		resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
-#else
-		dataBaseCompleteName = QCoreApplication::applicationDirPath()+dataBaseCompleteName;
-		resourcesPath = QCoreApplication::applicationDirPath();
-#endif
-		userHomePath = resourcesPath;
-	}
-	else
-	{
-#ifdef Q_WS_WIN
-		//dataBaseCompleteName = QDir::homePath()+"/Pojh/Saaghar/"+dataBaseCompleteName;
-		resourcesPath = QCoreApplication::applicationDirPath();
-		userHomePath = QDir::homePath()+"/Pojh/Saaghar/";
-#endif
-#ifdef Q_WS_X11
-		//dataBaseCompleteName = "/usr/share/saaghar/"+dataBaseCompleteName;
-		resourcesPath = "/usr/share/saaghar/";
-		userHomePath = QDir::homePath()+"/.Pojh/Saaghar/";
-#endif
-#ifdef Q_WS_MAC
-		//dataBaseCompleteName = QDir::homePath()+"/Library/Saaghar/"+dataBaseCompleteName;
-		resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
-		userHomePath = QDir::homePath()+"/Library/Saaghar/";
-#endif
-		dataBaseCompleteName = resourcesPath+dataBaseCompleteName;
-	}
-
-	QDir saagharUserPath(userHomePath);
-	if (!saagharUserPath.exists())
-		saagharUserPath.mkpath(userHomePath);
 
 	SaagharWidget::poetsImagesDir = resourcesPath + "/poets_images/";
 	
@@ -754,7 +754,7 @@ void MainWindow::checkForUpdates()
 #endif
 		int ret = updateIsAvailable.exec();
 		if ( ret == QMessageBox::Ok)
-			QDesktopServices::openUrl(QUrl( releaseInfo.value(downloadLinkKey, "http://pojh.iblogger.org/saaghar/downloads/") ));
+			QDesktopServices::openUrl(QUrl( releaseInfo.value(downloadLinkKey, "http://saaghar.pozh.org/downloads/") ));
 		else return; 
 	}
 	else
@@ -1144,7 +1144,7 @@ QString MainWindow::convertToHtml(SaagharWidget *saagharObject)
 		return "";
 	}
 
-	QString tableAsHTML = QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"CONTENT-TYPE\" CONTENT=\"text/html; charset=utf-8\">\n<TITLE>%1</TITLE>\n<META NAME=\"GENERATOR\" CONTENT=\"Saaghar, a Persian poetry software, http://pojh.iBlogger.org/saaghar\">\n</HEAD>\n\n<BODY TEXT=%2>\n<FONT FACE=\"%3\">\n<TABLE ALIGN=%4 DIR=RTL FRAME=VOID CELLSPACING=0 COLS=%5 RULES=NONE BORDER=0>\n<COLGROUP>%6</COLGROUP>\n<TBODY>\n%7\n</TBODY>\n</TABLE>\n</BODY>\n</HTML>\n")
+	QString tableAsHTML = QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"CONTENT-TYPE\" CONTENT=\"text/html; charset=utf-8\">\n<TITLE>%1</TITLE>\n<META NAME=\"GENERATOR\" CONTENT=\"Saaghar, a Persian poetry software, http://saaghar.pozh.org\">\n</HEAD>\n\n<BODY TEXT=%2>\n<FONT FACE=\"%3\">\n<TABLE ALIGN=%4 DIR=RTL FRAME=VOID CELLSPACING=0 COLS=%5 RULES=NONE BORDER=0>\n<COLGROUP>%6</COLGROUP>\n<TBODY>\n%7\n</TBODY>\n</TABLE>\n</BODY>\n</HTML>\n")
 		.arg(curPoem._Title).arg(SaagharWidget::textColor.name()).arg(SaagharWidget::tableFont.family()).arg("CENTER").arg(numberOfCols).arg(columnGroupFormat).arg(tableBody);
 	return tableAsHTML;
 	/*******************************************************
@@ -1244,7 +1244,7 @@ QString MainWindow::convertToTeX(SaagharWidget *saagharObject)
 	if (!poemEnvironmentEnded)
 		endOfEnvironment = QString("\\end{%1}\n").arg(poemType);
 
-	QString	tableAsTeX = QString("%%%%%\n%This file is generated automatically by Saaghar %1, 2010 http://pojh.iBlogger.org\n%%%%%\n%XePersian and bidipoem packages must have been installed on your TeX distribution for compiling this document\n%You can compile this document by running XeLaTeX on it, twice.\n%%%%%\n\\documentclass{article}\n\\usepackage{hyperref}%\n\\usepackage[Kashida]{xepersian}\n\\usepackage{bidipoem}\n\\settextfont{%2}\n\\hypersetup{\npdftitle={%3},%\npdfsubject={Poem},%\npdfkeywords={Poem, Persian},%\npdfcreator={Saaghar, a Persian poetry software, http://pojh.iBlogger.org/saaghar},%\npdfview=FitV,\n}\n\\renewcommand{\\poemcolsepskip}{1.5cm}\n\\begin{document}\n\\begin{center}\n%3\\\\\n\\end{center}\n\\begin{%4}\n%5\n%6\\end{document}\n%End of document\n")
+	QString	tableAsTeX = QString("%%%%%\n%This file is generated automatically by Saaghar %1, 2010 http://pozh.org\n%%%%%\n%XePersian and bidipoem packages must have been installed on your TeX distribution for compiling this document\n%You can compile this document by running XeLaTeX on it, twice.\n%%%%%\n\\documentclass{article}\n\\usepackage{hyperref}%\n\\usepackage[Kashida]{xepersian}\n\\usepackage{bidipoem}\n\\settextfont{%2}\n\\hypersetup{\npdftitle={%3},%\npdfsubject={Poem},%\npdfkeywords={Poem, Persian},%\npdfcreator={Saaghar, a Persian poetry software, http://saaghar.pozh.org},%\npdfview=FitV,\n}\n\\renewcommand{\\poemcolsepskip}{1.5cm}\n\\begin{document}\n\\begin{center}\n%3\\\\\n\\end{center}\n\\begin{%4}\n%5\n%6\\end{document}\n%End of document\n")
 								 .arg(VER_FILEVERSION_STR).arg(SaagharWidget::tableFont.family()).arg(curPoem._Title).arg(poemType).arg(tableBody).arg(endOfEnvironment);
 	return tableAsTeX;
 	/*******************************************************
@@ -1339,7 +1339,7 @@ void MainWindow::aboutSaaghar()
 	about.setWindowTitle(tr("About Saaghar"));
 	about.setTextFormat(Qt::RichText);
 	about.setText(tr("<br />%1 is a persian poem viewer software, it uses \"ganjoor.net\" database, and some of its codes are ported to C++ and Qt from \"desktop ganjoor\" that is a C# .NET application written by %2.<br /><br />Logo Designer: %3<br /><br />Author: %4,<br /><br />Home Page: %5<br />Mailing List: %6<br />Saaghar in FaceBook:%7<br /><br />Version: %8<br />Build Time: %9")
-		.arg("<a href=\"http://pojh.iBlogger.org/saaghar\">"+tr("Saaghar")+"</a>").arg("<a href=\"http://www.gozir.com/\">"+tr("Hamid Reza Mohammadi")+"</a>").arg("<a href=\"http://www.phototak.com/\">"+tr("S. Nasser Alavizadeh")+"</a>").arg("<a href=\"http://pojh.iBlogger.org/\">"+tr("S. Razi Alavizadeh")+"</a>").arg("<a href=\"http://pojh.iBlogger.org/saaghar\">http://pojh.iBlogger.org/saaghar</a>").arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>").arg("<a href=\"http://www.facebook.com/saaghar.p\">http://www.facebook.com/saaghar.p</a>").arg(VER_FILEVERSION_STR).arg(VER_FILEBUILDTIME_STR));
+		.arg("<a href=\"http://saaghar.pozh.org\">"+tr("Saaghar")+"</a>").arg("<a href=\"http://www.gozir.com/\">"+tr("Hamid Reza Mohammadi")+"</a>").arg("<a href=\"http://www.phototak.com/\">"+tr("S. Nasser Alavizadeh")+"</a>").arg("<a href=\"http://pozh.org/\">"+tr("S. Razi Alavizadeh")+"</a>").arg("<a href=\"http://saaghar.pozh.org\">http://saaghar.pozh.org</a>").arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>").arg("<a href=\"http://www.facebook.com/saaghar.p\">http://www.facebook.com/saaghar.p</a>").arg(VER_FILEVERSION_STR).arg(VER_FILEBUILDTIME_STR));
 	about.setStandardButtons(QMessageBox::Ok);
 	about.setEscapeButton(QMessageBox::Ok);
 
@@ -1929,7 +1929,7 @@ void MainWindow::globalSettings()
 
 QSettings *MainWindow::getSettingsObject()
 {
-	QString organization = "Pojh";
+	QString organization = "Pozh";
 	QString settingsName = "Saaghar";
 	QSettings::Format settingsFormat = QSettings::NativeFormat;
 

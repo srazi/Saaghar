@@ -2,7 +2,7 @@
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
  *  Copyright (C) 2010-2011 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pojh.iBlogger.org>    *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *                                                                         *
  * Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).       *
@@ -227,15 +227,15 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
 			while (!metaData.isNull())
 			{
 				QString owner = metaData.attribute("owner");
-				if (owner == "http://pojh.iblogger.org/saaghar") break;
+				if (owner == "http://saaghar.pozh.org") break;
 				metaData = metaData.nextSiblingElement("metadata");
 			}
-			if (!metaData.isNull() && metaData.attribute("owner") == "http://pojh.iblogger.org/saaghar")
+			if (!metaData.isNull() && metaData.attribute("owner") == "http://saaghar.pozh.org")
 				childItem->setData(0, Qt::UserRole, metaData.text());
 			else
 				qDebug() << "This DOM-NODE SHOULD deleted--->"<<title;
 			//href data URL data
-			childItem->setData(1, Qt::UserRole, child.attribute("href", "http://pojh.iblogger.org/saaghar"));
+			childItem->setData(1, Qt::UserRole, child.attribute("href", "http://saaghar.pozh.org"));
 ////////////////////////////////////////////////////////////////////////////////
 			//childItem->setFlags(item->flags() | Qt::ItemIsEditable);
 			childItem->setIcon(0, bookmarkIcon);
@@ -404,7 +404,7 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 		QDomElement bookmarkInfo = domDocument.createElement("info");
 		QDomElement infoMetaData = domDocument.createElement("metadata");
 
-		infoMetaData.setAttribute("owner", "http://pojh.iblogger.org/saaghar");
+		infoMetaData.setAttribute("owner", "http://saaghar.pozh.org");
 		QDomText bookmarkSaagharMetadata = domDocument.createTextNode(data.toStringList().at(0)+"|"+data.toStringList().at(1));
 		infoMetaData.appendChild(bookmarkSaagharMetadata);
 		bookmarkInfo.appendChild(infoMetaData);
