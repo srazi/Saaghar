@@ -323,7 +323,7 @@ Error: %1</source>
     <message>
         <location filename="mainwindow.cpp" line="1444"/>
         <source>&amp;Bookmarks</source>
-        <translation>&amp;گنجینه</translation>
+        <translation>&amp;گنجواره</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1530"/>
@@ -351,13 +351,13 @@ Error: %1</source>
         <location filename="mainwindow.cpp" line="2038"/>
         <location filename="mainwindow.cpp" line="2918"/>
         <source>Bookmarks</source>
-        <translation>گنجینه</translation>
+        <translation>گنجواره</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2038"/>
         <source>Can not write the bookmark file %1:
 %2.</source>
-        <translation>فایل گنجینه نشان‌ها را نمی‌تواند بنویسد %1:
+        <translation>فایل گنجواره نشان‌ها را نمی‌تواند بنویسد %1:
 %2.</translation>
     </message>
     <message>
