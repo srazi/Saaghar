@@ -1184,6 +1184,12 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 			}
 		}
 
+#ifdef Q_WS_MAC
+		int iconWidth = 35;
+#else
+		int iconWidth = 22;
+#endif
+
 		switch (table->columnCount())
 		{
 			case 1:
@@ -1199,7 +1205,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 				table->setColumnWidth(2, (baseWidthSize*47)/100);
 				break;
 			case 4:
-				table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+22 : 25 );//numbers
+				table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+iconWidth : iconWidth+3 );//numbers
 				table->setColumnWidth(2, table->fontMetrics().height()*2 /*5/2*/ );//spacing between mesras
 				baseWidthSize = baseWidthSize - ( table->columnWidth(0)+table->columnWidth(2) );
 				table->setColumnWidth(1, qMax(minMesraWidth, baseWidthSize/2/* -table->columnWidth(0) */) );//mesra width
@@ -1249,6 +1255,7 @@ QTableWidgetItem *SaagharWidget::scrollToFirstItemContains(const QString &phrase
 				}
 				text =  QGanjoorDbBrowser::cleanString(text);
 				text.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
+				text = text.simplified();
 				if (text.isEmpty()) continue;
 
 				for (int i=0; i<listSize;++i)
@@ -1263,6 +1270,7 @@ QTableWidgetItem *SaagharWidget::scrollToFirstItemContains(const QString &phrase
 						keyword = regExp.cap(0);
 						if (keyword.isEmpty()) continue;
 					}
+					keyword = keyword.simplified();
 
 					if (text.contains(keyword))
 					{
@@ -1326,30 +1334,30 @@ void SaagharWidget::clickedOnItem(int row,int column)
 			else
 				bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
 
-			QString verseText = verseItem->text();
+			QString verseText = verseItem->text().simplified();
 			if (verseText.isEmpty())
 			{//maybe cell has QTextEdit as its widget!
 				QTextEdit *textEdit = qobject_cast<QTextEdit *>(tableViewWidget->cellWidget(row, 1));
 				if (textEdit)
 				{
-					verseText = textEdit->toPlainText();
+					verseText = textEdit->toPlainText().simplified();
 				}
 			}
-			verseText = verseText.trimmed();
+			//verseText = verseText.trimmed();
 			QString currentLocation = currentLocationList.join(">");
 			if (!currentPoemTitle.isEmpty())
 				currentLocation+=">"+currentPoemTitle;
 
 			verseText.prepend(currentLocation+"\n");
 			if (tableViewWidget->columnCount() == 4 && tableViewWidget->item(row, 3))
-				verseText+= "\n"+tableViewWidget->item(row, 3)->text();
+				verseText+= "\n"+tableViewWidget->item(row, 3)->text().simplified();
 			else if (data.at(3).toInt() == CenteredVerse1 && tableViewWidget->item(row+1, 1))
 			{
 				QStringList tmp = tableViewWidget->item(row+1, 1)->data(Qt::UserRole).toString().split("|");
 				//url = url.mid(url.indexOf("|"));
 				if (tmp.size() == 4 && tmp.at(3).toInt() == CenteredVerse2)
 				{
-					verseText+= "\n"+tableViewWidget->item(row+1, 1)->text();
+					verseText+= "\n"+tableViewWidget->item(row+1, 1)->text().simplified();
 				}
 			}
 
