@@ -2285,6 +2285,8 @@ void MainWindow::tableCurrentItemChanged(QTableWidgetItem *current, QTableWidget
 	{
 		QImage image(":/resources/images/select-mask.png");
 		current->setBackground(QBrush(image));
+		if (saagharWidget && (saagharWidget->currentPoem > 0 || saagharWidget->currentCat > 0) ) //everywhere but home
+			saagharWidget->tableViewWidget->scrollToItem(current);
 	}
 }
 
