@@ -40,6 +40,7 @@
 #include "bookmarks.h"
 
 class QSearchLineEdit;
+class QTextEdit;
 
 class SaagharWidget : public QWidget
 {
@@ -108,7 +109,7 @@ public:
 	QUndoStack *undoStack;
 
 private:
-	void createItemForLongText(int row, int column, const QString &text = "", const QString &highlightText = "");
+	QTextEdit *createItemForLongText(int row, int column, const QString &text = "", const QString &highlightText = "");
 	bool initializeCustomizedHome();
 	QMap<int,int> singleColumnHeightMap;
 	void showCategory(GanjoorCat category);

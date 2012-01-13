@@ -466,7 +466,43 @@ void SaagharWidget::showCategory(GanjoorCat category)
 			if (!QFile::exists(poetPhotoFileName))
 				poetPhotoFileName = ":/resources/images/no-photo.png";
 			catItem->setIcon(QIcon(poetPhotoFileName));
-			createItemForLongText(0, 0, itemText, SaagharWidget::lineEditSearchText->text());
+			QTextEdit *descContainer = createItemForLongText(0, 0, itemText, SaagharWidget::lineEditSearchText->text());
+			descContainer->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+			descContainer->setStyleSheet("\
+				QTextEdit{border: transparent;\
+					background: transparent;\
+				}\
+					QScrollBar:vertical {\
+					border: none;\
+					background: transparent;\
+					width: 13px;\
+				}\
+				QScrollBar::handle:vertical {\
+					border: none;\
+					background: #bebebe;\
+					min-height: 20px;\
+				}\
+				QScrollBar::add-line:vertical {\
+					height: 0px;\
+				}\
+				\
+				QScrollBar::sub-line:vertical {\
+					height: 0px;\
+				}\
+				\
+				QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {\
+					background: none;\
+				}\
+				\
+				QScrollBar:vertical:hover {\
+				border: 1px solid #bbb;\
+				background: transparent;\
+				}\
+				QScrollBar::handle:vertical:hover {\
+					background: #aaa;\
+				}\
+				");
+			descContainer->setMaximumHeight(200);
 			/*if (category._ID == 0 && !Settings::READ("Show Photo at Home").toBool())
 			{
 				qDebug() << "Remove Icon11111111";
@@ -1164,7 +1200,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 					int totalWidth = table->columnWidth(0)-verticalScrollBarWidth-82;
 					//int totalWidth = tableViewWidget->viewport()->width();
 					totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
-					table->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(table->fontMetrics(), textWidth, totalWidth)) );
+					table->setRowHeight(0, qMin(200, qMax(100, SaagharWidget::computeRowHeight(table->fontMetrics(), textWidth, totalWidth)) ) );
 				}
 			}
 		}
@@ -1430,9 +1466,9 @@ void SaagharWidget::refresh()
 		processClickedItem("CatID", currentCat, true);
 }
 
-void SaagharWidget::createItemForLongText(int row, int column, const QString &text, const QString &highlightText)
+QTextEdit *SaagharWidget::createItemForLongText(int row, int column, const QString &text, const QString &highlightText)
 {
-	if (!tableViewWidget) return;
+	if (!tableViewWidget) return 0;
 	QTextEdit *para = new QTextEdit(tableViewWidget);
 	para->setStyleSheet("QTextEdit{background: transparent; border: none;}");
 	//para->setAlignment(Qt::AlignJustify);
@@ -1452,4 +1488,5 @@ void SaagharWidget::createItemForLongText(int row, int column, const QString &te
 	ParagraphHighlighter *paraHighlighter = new ParagraphHighlighter(para->document(), highlightText);
 	connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(const QString &)), paraHighlighter, SLOT(keywordChanged(const QString &)));
 	tableViewWidget->setCellWidget(row, column, para);
+	return para;
 }

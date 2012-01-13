@@ -607,8 +607,9 @@ void MainWindow::currentTabChanged(int tabIndex)
 					int totalWidth = saagharWidget->tableViewWidget->columnWidth(0)-verticalScrollBarWidth-82;
 					//int totalWidth = saagharWidget->tableViewWidget->viewport()->width()-verticalScrollBarWidth-82;
 					totalWidth = qMax(82+verticalScrollBarWidth, totalWidth);
-					saagharWidget->tableViewWidget->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth)) );
-					//saagharWidget->tableViewWidget->setRowHeight(0, 2*saagharWidget->tableViewWidget->rowHeight(0)+(saagharWidget->tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
+					saagharWidget->resizeTable(saagharWidget->tableViewWidget);
+					//saagharWidget->tableViewWidget->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth)) );
+					////saagharWidget->tableViewWidget->setRowHeight(0, 2*saagharWidget->tableViewWidget->rowHeight(0)+(saagharWidget->tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
 				}
 			}
 			else if(saagharWidget->tableViewWidget->columnCount()>1)
@@ -2278,13 +2279,14 @@ void MainWindow::tableCurrentItemChanged(QTableWidgetItem *current, QTableWidget
 {
 	if (previous)
 	{
-		QImage image(":/resources/images/select-mask.png");
+		//QImage image(":/resources/images/select-mask.png");
 		previous->setBackground(QBrush(QImage()));
 	}
 	if (current)//maybe create a bug! check older codes!!
 	{
 		QImage image(":/resources/images/select-mask.png");
 		current->setBackground(QBrush(image));
+		//TODO: pageup and page down miss one row!! Qt-4.7.3
 		if (saagharWidget && (saagharWidget->currentPoem > 0 || saagharWidget->currentCat > 0) ) //everywhere but home
 			saagharWidget->tableViewWidget->scrollToItem(current);
 	}
