@@ -1577,11 +1577,13 @@ void MainWindow::setupUi()
 	{
 		if (act)
 		{
-			menuBarWidth+=ui->menuBar->fontMetrics().boundingRect(act->text()).width()+7;
+			QString actText = act->text();
+			actText.remove("&");
+			menuBarWidth+=ui->menuBar->fontMetrics().boundingRect(actText).width()+14;//14=2*(3(spacing)+4(radius))
 		}
 	}
 
-	menuBarWidth =menuBarWidth-7-3;//last spacing!
+	menuBarWidth =menuBarWidth+3;//3 is offset of first item!
 	ui->menuBar->setMaximumWidth(menuBarWidth);
 
 
