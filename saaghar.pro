@@ -20,8 +20,8 @@ CONFIG	+= qt
 #warn_off
 
 ##un-comment the following two lines for skipping all warning and debug messages.
-DEFINES += QT_NO_WARNING_OUTPUT
-DEFINES += QT_NO_DEBUG_OUTPUT
+#DEFINES += QT_NO_WARNING_OUTPUT
+#DEFINES += QT_NO_DEBUG_OUTPUT
 
 ##for static building un-comment the following two lines
 #CONFIG	+= static
