@@ -729,6 +729,7 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
 	}
 
 	QList<GanjoorPoet *> poets = getPoets(connectionID, false);
+
 	QString strQuery;
 	QSqlQuery queryObject(dataBaseObject);
 	QMap<int, int> mapPoets;
@@ -737,6 +738,10 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
 	foreach (GanjoorPoet *newPoet, poets)
 	{
 		bool insertNewPoet = true;
+
+		//skip every null poet(poet without subcat)
+		if (!poetHasSubCats(newPoet->_ID, connectionID))
+			continue;
 
 		GanjoorPoet poet = getPoet(newPoet->_Name);
 		if (!poet.isNull())//conflict on Names
@@ -1679,4 +1684,23 @@ QString QGanjoorDbBrowser::getBeyt(int poemID, int firstMesraID, const QString &
 	if (!mesras.isEmpty())
 		return mesras.join(separator);
 	return "";
+}
+
+bool QGanjoorDbBrowser::poetHasSubCats(int poetID, const QString& connectionID)
+{
+	if ( isConnected(connectionID) )
+	{
+		QSqlDatabase dataBaseObject = dBConnection;
+		if (!connectionID.isEmpty())
+			dataBaseObject = QSqlDatabase::database(connectionID);
+		QSqlQuery q(dataBaseObject);
+		q.exec("SELECT id, text FROM cat WHERE poet_id = "+QString::number(poetID));
+
+		q.first();
+		if ( q.isValid() && q.isActive() )
+			return true;
+		else
+			return false;
+	}
+	return false;
 }

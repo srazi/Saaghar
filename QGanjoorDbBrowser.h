@@ -100,6 +100,7 @@ class QGanjoorDbBrowser : public QObject
 		static QStringList dataBasePath;
 
 	private:
+		bool poetHasSubCats(int poetID, const QString& connectionID="");
 		int cachedMaxCatID, cachedMaxPoemID;
 		int getNewPoemID();
 		int getNewPoetID();
