@@ -41,8 +41,8 @@ QString SaagharWidget::poetsImagesDir = QString();
 QLocale  SaagharWidget::persianIranLocal = QLocale();
 QFont SaagharWidget::tableFont = qApp->font();
 bool SaagharWidget::showBeytNumbers = true;
-bool SaagharWidget::centeredView = true;
 bool SaagharWidget::backgroundImageState = false;
+SaagharWidget::PoemViewStyle SaagharWidget::CurrentViewStyle = SaagharWidget::MesraPerLineNormal;
 //bool SaagharWidget::newSearchFlag = false;
 //bool SaagharWidget::newSearchSkipNonAlphabet = false;
 QString SaagharWidget::backgroundImagePath = QString();
@@ -714,9 +714,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	int WholeBeytNum = 0;
 	int BeytNum = 0;
 	int BandNum = 0;
-	int BandBeytNums = 0;
-	bool MustHave2ndBandBeyt = false;
-	int MissedMesras = 0;
+	Qt::Alignment groupedBeytAlignment = Qt::AlignLeft;
 
 	tableViewWidget->setRowCount(2);
 	tableViewWidget->setColumnCount(4);
@@ -738,10 +736,11 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	QTableWidgetItem *poemTitle = new QTableWidgetItem(poem._Title);
 	poemTitle->setFlags(poemsTitleItemFlag);
 	poemTitle->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
-	if (centeredView)
-		poemTitle->setTextAlignment(Qt::AlignCenter);
-	else
-		poemTitle->setTextAlignment(Qt::AlignLeft|Qt::AlignCenter);
+	//if (centeredView)
+	//title is centered by using each PoemViewStyle
+	poemTitle->setTextAlignment(Qt::AlignCenter);
+	//else
+	//	poemTitle->setTextAlignment(Qt::AlignLeft|Qt::AlignCenter);
 
 	int textWidth = fontMetric.boundingRect(poem._Title).width();
 	int totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
@@ -755,9 +754,6 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	int row = 1;
 
 	tableViewWidget->setLayoutDirection(Qt::RightToLeft);
-
-	int firstEmptyThirdColumn = 1;
-	bool flagEmptyThirdColumn = false;
 
 	if (this->isHidden())
 		emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)));
@@ -842,122 +838,25 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 			}
 		}
 
-		QString extendString = QString::fromLocal8Bit("پپ");//mesra width computation
-
 		QTableWidgetItem *mesraItem = new QTableWidgetItem(currentVerseText);
 		mesraItem->setFlags(versesItemFlag);
 		//set data for mesraItem
 		QString verseData = QString::number(verses.at(i)->_PoemID)+"|"+QString::number(verses.at(i)->_Order)+"|"+QString::number((int)verses.at(i)->_Position);
 		mesraItem->setData(Qt::UserRole, "VerseData=|"+verseData);
-
-		bool spacerColumnIsPresent = false;
+	
 		VersePosition versePosition = verses.at(i)->_Position;
 		//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
 		if (!rightVerseFlag && versePosition==Left)
 		{
 			versePosition = Paragraph;
 		}
+		//qDebug()<<"bedoL-vPos="<<versePosition;
+		doPoemLayout(&row, mesraItem, currentVerseText, versePosition, groupedBeytAlignment);
+		//qDebug()<<"afterdoLay-vPos="<<versePosition;
 
-		if (centeredView)
-		{
-			switch (versePosition)
-			{
-				case Right :
-					rightVerseFlag = true;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
-					spacerColumnIsPresent = true;
-					if (!flagEmptyThirdColumn)
-					{
-						firstEmptyThirdColumn = row;
-						flagEmptyThirdColumn = true;
-					}
-					if (fontMetric.width(currentVerseText+extendString) > minMesraWidth)
-						minMesraWidth = fontMetric.width(currentVerseText+extendString);
-					mesraItem->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
-					tableViewWidget->setItem(row, 1, mesraItem);
-					if (MustHave2ndBandBeyt)
-					{
-						MissedMesras++;
-						MustHave2ndBandBeyt = false;
-					}
-					break;
-
-				case Left :
-					spacerColumnIsPresent = true;
-					if (!flagEmptyThirdColumn)
-					{
-						firstEmptyThirdColumn = row;
-						flagEmptyThirdColumn = true;
-					}
-					if (fontMetric.width(currentVerseText+extendString) > minMesraWidth)
-						minMesraWidth = fontMetric.width(currentVerseText+extendString);
-					mesraItem->setTextAlignment(Qt::AlignLeft|Qt::AlignVCenter);
-					tableViewWidget->setItem(row, 3, mesraItem);
-					break;
-
-				case CenteredVerse1 :
-					mesraItem->setTextAlignment(Qt::AlignCenter);
-					tableViewWidget->setItem(row, 1, mesraItem);
-					tableViewWidget->setSpan(row, 1, 1, 3 );
-					BandBeytNums++;
-					MustHave2ndBandBeyt = true;
-					break;
-
-				case CenteredVerse2 :
-					mesraItem->setTextAlignment(Qt::AlignCenter);
-					tableViewWidget->setItem(row, 1, mesraItem);
-					tableViewWidget->setSpan(row, 1, 1, 3 );
-					MustHave2ndBandBeyt = false;
-					break;
-
-				case Single :
-					textWidth = fontMetric.boundingRect(mesraItem->text()).width();
-					//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-					//numOfRow = textWidth/totalWidth ;
-					if (!currentVerseText.isEmpty())
-					{
-						tableViewWidget->setItem(row, 1, mesraItem);
-						tableViewWidget->setSpan(row, 1, 1, 3 );
-					}
-					
-					//tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->text()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
-						//					tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
-					singleColumnHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
-					MissedMesras--;
-					break;
-
-				case Paragraph :
-					textWidth = fontMetric.boundingRect(mesraItem->text()).width();
-					//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-
-					//totalWidth = tableViewWidget->viewport()->width();
-					//numOfRow = textWidth/totalWidth;
-					{
-						//QTableWidgetItem *tmp = new QTableWidgetItem("");
-						////tmp->setFlags(Qt::NoItemFlags);
-						//tmp->setFlags(versesItemFlag);
-						//tableViewWidget->setItem(row, 3, tmp);
-						//mesraItem->setTextAlignment(Qt::AlignVCenter|Qt::AlignLeft);
-						mesraItem->setText("");
-						tableViewWidget->setItem(row, 1, mesraItem);//inserted just for its data and its behavior like other cells that use QTableWidgetItem'.
-						createItemForLongText(row, 1, currentVerseText, SaagharWidget::lineEditSearchText->text());
-						tableViewWidget->setSpan(row, 1, 1, 3 );
-					}
-
-					singleColumnHeightMap.insert(row, textWidth);
-					MissedMesras++;
-					break;
-
-				default:
-					break;
-			}
-
-			if (spacerColumnIsPresent)
-			{
-				QTableWidgetItem *tmp = new QTableWidgetItem("");
-				tmp->setFlags(Qt::NoItemFlags);
-				tableViewWidget->setItem(row, 2, tmp);			
-			}
-		}// end of centeredView
+		//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
+		if (/*CurrentViewStyle == BeytPerLine &&*/ versePosition == Right)
+			rightVerseFlag = true;
 
 		QString simplifiedText = currentVerseText;
 		simplifiedText.remove(" ");
@@ -998,9 +897,12 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 			{
 				BeytNum = 0;
 				BandNum++;
+				groupedBeytAlignment = Qt::AlignLeft;
 			}
 			else
+			{
 				BeytNum++;
+			}
 
 			if ( !currentVerseText.isEmpty() )
 			{//empty verse strings have been seen sometimes, it seems that we have some errors in our database
@@ -1070,6 +972,12 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 			}
 			rightVerseFlag=false;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
 			++row;
+
+			if (verses.at(i)->_Position == Left && !currentVerseText.isEmpty())
+				groupedBeytAlignment = (groupedBeytAlignment == Qt::AlignRight ? Qt::AlignLeft : Qt::AlignRight);
+			else
+				groupedBeytAlignment = Qt::AlignLeft;
+
 			if (i != verses.size()-1)
 				tableViewWidget->insertRow(row);
 		}
@@ -1157,6 +1065,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 			verticalScrollBarWidth=table->verticalScrollBar()->width();
 		}
 		int baseWidthSize=parentWidget()->width()-(2*table->x()+verticalScrollBarWidth);
+		//qDebug()<<"baseWidthSize="<<baseWidthSize<<"viewPW="<<table->viewport()->width();
 		//int tW=0;
 		//for (int i=0; i<table->columnCount(); ++i)
 		//{
@@ -1225,7 +1134,7 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 #else
 		int iconWidth = 22;
 #endif
-
+int test=0;
 		switch (table->columnCount())
 		{
 			case 1:
@@ -1241,11 +1150,41 @@ void SaagharWidget::resizeTable(QTableWidget *table)
 				table->setColumnWidth(2, (baseWidthSize*47)/100);
 				break;
 			case 4:
-				table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+iconWidth : iconWidth+3 );//numbers
-				table->setColumnWidth(2, table->fontMetrics().height()*2 /*5/2*/ );//spacing between mesras
-				baseWidthSize = baseWidthSize - ( table->columnWidth(0)+table->columnWidth(2) );
-				table->setColumnWidth(1, qMax(minMesraWidth, baseWidthSize/2/* -table->columnWidth(0) */) );//mesra width
-				table->setColumnWidth(3, qMax(minMesraWidth, baseWidthSize/2) );//mesra width
+				if (CurrentViewStyle==MesraPerLineNormal || CurrentViewStyle==MesraPerLineGroupedBeyt)
+				{
+					table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+iconWidth : iconWidth+3 );//numbers
+					int we=(7*minMesraWidth)/4;
+					baseWidthSize = baseWidthSize-table->columnWidth(0);
+					qDebug()<<"(7*minMesraWidth)/4="<<we<<"baseWidthSize/2="<<(7*baseWidthSize)/8<<"minMesraWidth="<<minMesraWidth;
+					qDebug()<<"maxMin="<<qMax(qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8), minMesraWidth );
+					table->setColumnWidth(2, qMax(qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8), minMesraWidth ) );// cells contain mesras
+					test = qMax(0, baseWidthSize - ( table->columnWidth(2) ));
+					qDebug() << "baseWidthSize="<<baseWidthSize<<"test="<<test;
+					table->setColumnWidth(1, test/2 );//right margin
+					table->setColumnWidth(3, test/2 );//left margin
+				}
+				else if (CurrentViewStyle==AllMesrasCentered)
+				{
+					//qDebug() << "ResTable--CurrentViewStyle==AllMesrasCentered";
+					table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+iconWidth : iconWidth+3 );//numbers
+					//int we=(7*minMesraWidth)/4;
+					baseWidthSize = baseWidthSize-table->columnWidth(0);
+					//qDebug()<<"(7*minMesraWidth)/4="<<we<<"baseWidthSize/2="<<(7*baseWidthSize)/8<<"minMesraWidth="<<minMesraWidth;
+					//qDebug()<<"maxMin="<<qMax(qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8), minMesraWidth );
+					table->setColumnWidth(2, qMax(0/*qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8)*/, minMesraWidth ) );// cells contain mesras
+					test = qMax(0, baseWidthSize - ( table->columnWidth(2) ));
+					//qDebug() << "baseWidthSize="<<baseWidthSize<<"test="<<test;
+					table->setColumnWidth(1, test/2 );//right margin
+					table->setColumnWidth(3, test/2 );//left margin
+				}
+				else
+				{
+					table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+iconWidth : iconWidth+3 );//numbers
+					table->setColumnWidth(2, table->fontMetrics().height()*2 /*5/2*/ );//spacing between mesras
+					baseWidthSize = baseWidthSize - ( table->columnWidth(0)+table->columnWidth(2) );
+					table->setColumnWidth(1, qMax(minMesraWidth, baseWidthSize/2/* -table->columnWidth(0) */) );//mesra width
+					table->setColumnWidth(3, qMax(minMesraWidth, baseWidthSize/2) );//mesra width
+				}
 				break;
 			default:
 				break;
@@ -1349,7 +1288,25 @@ void SaagharWidget::clickedOnItem(int row,int column)
 		QTableWidgetItem *item = tableViewWidget->item(row, 0);
 		QTableWidgetItem *verseItem = 0;
 		if (tableViewWidget->columnCount()>1)
-			verseItem = tableViewWidget->item(row, 1);
+		{
+			if (SaagharWidget::CurrentViewStyle == BeytPerLine ||
+				SaagharWidget::CurrentViewStyle == LastBeytCentered ||
+				SaagharWidget::CurrentViewStyle == AllMesrasCentered)
+			{
+				verseItem = tableViewWidget->item(row, 1);
+			}
+			else if (SaagharWidget::CurrentViewStyle == MesraPerLineNormal ||
+				SaagharWidget::CurrentViewStyle == MesraPerLineGroupedBeyt)
+			{
+				verseItem = tableViewWidget->item(row, 2);
+				if (!verseItem)
+				{
+					//it's Paragraph, Single, CenteredVerse1/2 or empty!
+					verseItem = tableViewWidget->item(row, 1);
+				}
+			}
+		}
+
 		if (verseItem && item && !item->icon().isNull())
 		{
 			QStringList data = verseItem->data(Qt::UserRole).toString().split("|");
@@ -1385,7 +1342,15 @@ void SaagharWidget::clickedOnItem(int row,int column)
 				currentLocation+=">"+currentPoemTitle;
 
 			verseText.prepend(currentLocation+"\n");
-			if (tableViewWidget->columnCount() == 4 && tableViewWidget->item(row, 3))
+
+			if (data.at(3).toInt() == Right && tableViewWidget->item(row+1, 2) &&
+				(SaagharWidget::CurrentViewStyle == MesraPerLineNormal ||
+				SaagharWidget::CurrentViewStyle == MesraPerLineGroupedBeyt))
+			{
+				qDebug() << "iiiiiiii"<<tableViewWidget->item(row+1, 2)->text()<<data.at(3).toInt();
+				verseText+= "\n"+tableViewWidget->item(row+1, 2)->text().simplified();
+			}
+			else if (tableViewWidget->columnCount() == 4 && tableViewWidget->item(row, 3))
 				verseText+= "\n"+tableViewWidget->item(row, 3)->text().simplified();
 			else if (data.at(3).toInt() == CenteredVerse1 && tableViewWidget->item(row+1, 1))
 			{
@@ -1489,4 +1454,254 @@ QTextEdit *SaagharWidget::createItemForLongText(int row, int column, const QStri
 	connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(const QString &)), paraHighlighter, SLOT(keywordChanged(const QString &)));
 	tableViewWidget->setCellWidget(row, column, para);
 	return para;
+}
+
+void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const QString &currentVerseText, VersePosition versePosition, Qt::Alignment beytAlignment)
+{
+	if (!mesraItem || !prow) return;
+	int row = *prow;
+
+	int BandBeytNums = 0;
+	bool MustHave2ndBandBeyt = false;
+	//int MissedMesras = 0;
+
+	bool spacerColumnIsPresent = false;
+	int firstEmptyThirdColumn = 1;
+	bool flagEmptyThirdColumn = false;
+	QString extendString = QString::fromLocal8Bit("پپ");//mesra width computation
+	QFontMetrics fontMetric(tableViewWidget->fontMetrics());
+	int textWidth;
+
+	//Single and Paragraph are layouted just at one form!
+	if (versePosition == Single)
+	{
+		textWidth = fontMetric.boundingRect(mesraItem->text()).width();
+		//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+		//numOfRow = textWidth/totalWidth ;
+		if (!currentVerseText.isEmpty())
+		{
+			tableViewWidget->setItem(row, 1, mesraItem);
+			tableViewWidget->setSpan(row, 1, 1, 3 );
+		}
+		
+		//tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->text()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
+			//					tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
+		singleColumnHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
+		//MissedMesras--;
+		return;
+	}
+	else if (versePosition == Paragraph)
+	{
+		textWidth = fontMetric.boundingRect(mesraItem->text()).width();
+		//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
+
+		//totalWidth = tableViewWidget->viewport()->width();
+		//numOfRow = textWidth/totalWidth;
+		{
+			//QTableWidgetItem *tmp = new QTableWidgetItem("");
+			////tmp->setFlags(Qt::NoItemFlags);
+			//tmp->setFlags(versesItemFlag);
+			//tableViewWidget->setItem(row, 3, tmp);
+			//mesraItem->setTextAlignment(Qt::AlignVCenter|Qt::AlignLeft);
+			mesraItem->setText("");
+			tableViewWidget->setItem(row, 1, mesraItem);//inserted just for its data and its behavior like other cells that use QTableWidgetItem'.
+			createItemForLongText(row, 1, currentVerseText, SaagharWidget::lineEditSearchText->text());
+			tableViewWidget->setSpan(row, 1, 1, 3 );
+		}
+
+		singleColumnHeightMap.insert(row, textWidth);
+		//MissedMesras++;
+		return;
+	}
+//QString text;
+	/////////////////////////////////////////////
+	//CurrentViewStyle = MesraPerLineGroupedBeyt;
+	/////////////////////////////////////////////
+	switch (CurrentViewStyle)
+	{
+	case LastBeytCentered:
+	case BeytPerLine:
+		switch (versePosition)
+		{
+			case Right :
+				//rightVerseFlag = true;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
+				spacerColumnIsPresent = true;
+				if (!flagEmptyThirdColumn)
+				{
+					firstEmptyThirdColumn = row;
+					flagEmptyThirdColumn = true;
+				}
+				if (fontMetric.width(currentVerseText+extendString) > minMesraWidth)
+					minMesraWidth = fontMetric.width(currentVerseText+extendString);
+				mesraItem->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
+				tableViewWidget->setItem(row, 1, mesraItem);
+				if (MustHave2ndBandBeyt)
+				{
+					//MissedMesras++;
+					MustHave2ndBandBeyt = false;
+				}
+				break;
+
+			case Left :
+				spacerColumnIsPresent = true;
+				if (!flagEmptyThirdColumn)
+				{
+					firstEmptyThirdColumn = row;
+					flagEmptyThirdColumn = true;
+				}
+				if (fontMetric.width(currentVerseText+extendString) > minMesraWidth)
+					minMesraWidth = fontMetric.width(currentVerseText+extendString);
+				mesraItem->setTextAlignment(Qt::AlignLeft|Qt::AlignVCenter);
+				tableViewWidget->setItem(row, 3, mesraItem);
+				break;
+
+			case CenteredVerse1 :
+				mesraItem->setTextAlignment(Qt::AlignCenter);
+				tableViewWidget->setItem(row, 1, mesraItem);
+				tableViewWidget->setSpan(row, 1, 1, 3 );
+				BandBeytNums++;
+				MustHave2ndBandBeyt = true;
+				break;
+
+			case CenteredVerse2 :
+				mesraItem->setTextAlignment(Qt::AlignCenter);
+				tableViewWidget->setItem(row, 1, mesraItem);
+				tableViewWidget->setSpan(row, 1, 1, 3 );
+				MustHave2ndBandBeyt = false;
+				break;
+
+			default:
+				break;
+		}
+
+		if (spacerColumnIsPresent)
+		{
+			QTableWidgetItem *tmp = new QTableWidgetItem("");
+			tmp->setFlags(Qt::NoItemFlags);
+			tableViewWidget->setItem(row, 2, tmp);
+		}
+	break;//end of BeytPerLine
+
+	case MesraPerLineNormal:
+	case MesraPerLineGroupedBeyt:
+	case AllMesrasCentered:
+		switch (versePosition)
+		{
+
+		case Right :
+			qDebug()<<"RightRightRightRightRightRight";
+			//rightVerseFlag = true;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
+			spacerColumnIsPresent = true;
+			if (!flagEmptyThirdColumn)
+			{
+				firstEmptyThirdColumn = row;
+				flagEmptyThirdColumn = true;
+			}
+			if (fontMetric.width(currentVerseText+extendString) > minMesraWidth)
+				minMesraWidth = fontMetric.width(currentVerseText+extendString);
+			
+			if (CurrentViewStyle==MesraPerLineNormal)
+			{
+				mesraItem->setTextAlignment(Qt::AlignLeft|Qt::AlignVCenter);
+				tableViewWidget->setItem(row, 2, mesraItem);
+			}
+			else if (CurrentViewStyle==MesraPerLineGroupedBeyt)
+			{
+				mesraItem->setTextAlignment(beytAlignment|Qt::AlignVCenter);
+							//beytNum%2 == 0 ? Qt::AlignLeft|Qt::AlignVCenter : Qt::AlignRight|Qt::AlignVCenter);
+				tableViewWidget->setItem(row, 2, mesraItem);
+			}
+			else if (CurrentViewStyle==AllMesrasCentered)
+			{
+				spacerColumnIsPresent = false;
+				mesraItem->setTextAlignment(Qt::AlignCenter);
+				tableViewWidget->setItem(row, 1, mesraItem);
+				tableViewWidget->setSpan(row, 1, 1, 3 );
+			}
+
+			if (MustHave2ndBandBeyt)
+			{
+				//MissedMesras++;
+				MustHave2ndBandBeyt = false;
+			}
+			break;
+
+		case Left :
+			qDebug()<<"LeftLeft=**"<<currentVerseText<<"**"<<currentVerseText.size();
+			spacerColumnIsPresent = true;
+			if (!currentVerseText.isEmpty())
+			{
+				++row;
+				*prow = row;
+				//if (i != verses.size()-1)
+				tableViewWidget->insertRow(row);
+			}
+			if (!flagEmptyThirdColumn)
+			{
+				firstEmptyThirdColumn = row;
+				flagEmptyThirdColumn = true;
+			}
+			if (fontMetric.width(currentVerseText+extendString) > minMesraWidth)
+				minMesraWidth = fontMetric.width(currentVerseText+extendString);
+
+			if (CurrentViewStyle==MesraPerLineNormal)
+			{
+				mesraItem->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
+				tableViewWidget->setItem(row, 2, mesraItem);
+			}
+			else if (CurrentViewStyle==MesraPerLineGroupedBeyt)
+			{
+				mesraItem->setTextAlignment(beytAlignment|Qt::AlignVCenter);
+				tableViewWidget->setItem(row, 2, mesraItem);
+			}
+			else if (CurrentViewStyle==AllMesrasCentered)
+			{
+				spacerColumnIsPresent = false;
+				mesraItem->setTextAlignment(Qt::AlignCenter);
+				tableViewWidget->setItem(row, 1, mesraItem);
+				tableViewWidget->setSpan(row, 1, 1, 3 );
+			}
+
+//			text=tableViewWidget->item(row,1) ? tableViewWidget->item(row,1)->text() : "";
+//			qDebug() << text;
+//			if (!text.isEmpty())
+//				text.append("\n");
+//			mesraItem->setText(text+currentVerseText);
+//			qDebug() <<"mesraItem->text()="<< mesraItem->text();
+			break;
+
+		case CenteredVerse1 :
+			mesraItem->setTextAlignment(Qt::AlignCenter);
+			tableViewWidget->setItem(row, 1, mesraItem);
+			tableViewWidget->setSpan(row, 1, 1, 3 );
+			BandBeytNums++;
+			MustHave2ndBandBeyt = true;
+			break;
+
+		case CenteredVerse2 :
+			mesraItem->setTextAlignment(Qt::AlignCenter);
+			tableViewWidget->setItem(row, 1, mesraItem);
+			tableViewWidget->setSpan(row, 1, 1, 3 );
+			MustHave2ndBandBeyt = false;
+			break;
+
+		default:
+			break;
+		}
+
+		if (spacerColumnIsPresent)
+		{
+			QTableWidgetItem *tmp = new QTableWidgetItem("");
+			tmp->setFlags(Qt::NoItemFlags);
+			tableViewWidget->setItem(row, 1, tmp);
+
+			tmp = new QTableWidgetItem("");
+			tmp->setFlags(Qt::NoItemFlags);
+			tableViewWidget->setItem(row, 3, tmp);
+		}
+	break;//end of AllMesrasCentered
+
+	default:
+		break;
+	}// end of CurrentViewStyle switch
 }

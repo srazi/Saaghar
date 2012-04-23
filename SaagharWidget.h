@@ -47,6 +47,14 @@ class SaagharWidget : public QWidget
 Q_OBJECT
 
 public:
+	enum PoemViewStyle{
+		BeytPerLine,
+		LastBeytCentered,
+		AllMesrasCentered,
+		MesraPerLineNormal,
+		MesraPerLineGroupedBeyt
+	};
+
 	SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidget *tableWidget);
 	~SaagharWidget();
 	QString currentCaption;
@@ -71,7 +79,7 @@ public:
 	static QFont tableFont;
 	static bool showBeytNumbers;
 	static bool backgroundImageState;
-	static bool centeredView;
+	static PoemViewStyle CurrentViewStyle;
 	//static bool newSearchFlag;
 	//static bool newSearchSkipNonAlphabet;
 	static QString backgroundImagePath;
@@ -109,6 +117,7 @@ public:
 	QUndoStack *undoStack;
 
 private:
+	void doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const QString &currentVerseText, VersePosition versePosition, Qt::Alignment beytAlignment);
 	QTextEdit *createItemForLongText(int row, int column, const QString &text = "", const QString &highlightText = "");
 	bool initializeCustomizedHome();
 	QMap<int,int> singleColumnHeightMap;

@@ -56,6 +56,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include<QActionGroup>
 
 //const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 
@@ -1106,9 +1107,10 @@ QString MainWindow::convertToHtml(SaagharWidget *saagharObject)
 				QTableWidgetItem *item = saagharObject->tableViewWidget->item(row, 1);
 				QString mesraText = "";
 
-				QString align = "RIGHT";
-				if (SaagharWidget::centeredView)
-					align = "CENTER";
+				//QString align = "RIGHT";
+				//if (SaagharWidget::centeredView)
+				//title is centered by using each PoemViewStyle
+				QString align = "CENTER";
 
 				QStringList itemDataList;
 				if (item)
@@ -1190,7 +1192,7 @@ QString MainWindow::convertToTeX(SaagharWidget *saagharObject)
 			else
 			{
 				QString align = "r";
-				if (row == 0 && SaagharWidget::centeredView)
+				if (row == 0 /*&& SaagharWidget::centeredView*/)//title is centered by using each PoemViewStyle
 					align = "c";
 				QTableWidgetItem *item = saagharObject->tableViewWidget->item(row, 1);
 				QString mesraText = "";
@@ -1556,7 +1558,61 @@ void MainWindow::setupUi()
 
 	actionInstance("ImportGanjoorBookmarks", iconThemePath+"/bookmarks-import.png", tr("&Import Ganjoor's Bookmarks") );
 
+	//Poem View Styles
+	QMenu *poemViewStylesMenu = new QMenu(tr("Poem View Styles")); 
+	QActionGroup *poemViewStylesGroup = new QActionGroup(this);
 
+	poemViewStylesMenu->addAction(actionInstance("BeytPerLinePoemViewStyle", iconThemePath+"/poem-view-beyt-per-line.png",QObject::tr("&Beyt Per Line")) );
+	actionInstance("BeytPerLinePoemViewStyle")->setParent(poemViewStylesMenu);
+	actionInstance("BeytPerLinePoemViewStyle")->setActionGroup(poemViewStylesGroup);
+	actionInstance("BeytPerLinePoemViewStyle")->setCheckable(true);
+	actionInstance("BeytPerLinePoemViewStyle")->setData(SaagharWidget::BeytPerLine);
+
+	poemViewStylesMenu->addAction(actionInstance("LastBeytCenteredPoemViewStyle", iconThemePath+"/poem-view-last-beyt-centered.png",QObject::tr("&Last Beyt Centered")) );
+	actionInstance("LastBeytCenteredPoemViewStyle")->setParent(poemViewStylesMenu);
+	actionInstance("LastBeytCenteredPoemViewStyle")->setActionGroup(poemViewStylesGroup);
+	actionInstance("LastBeytCenteredPoemViewStyle")->setCheckable(true);
+	actionInstance("LastBeytCenteredPoemViewStyle")->setData(SaagharWidget::LastBeytCentered);
+
+	poemViewStylesMenu->addAction(actionInstance("AllMesrasCenteredPoemViewStyle", iconThemePath+"/poem-view-all-mesras-centered.png",QObject::tr("&All Mesras Centered")) );
+	actionInstance("AllMesrasCenteredPoemViewStyle")->setParent(poemViewStylesMenu);
+	actionInstance("AllMesrasCenteredPoemViewStyle")->setActionGroup(poemViewStylesGroup);
+	actionInstance("AllMesrasCenteredPoemViewStyle")->setCheckable(true);
+	actionInstance("AllMesrasCenteredPoemViewStyle")->setData(SaagharWidget::AllMesrasCentered);
+
+	poemViewStylesMenu->addAction(actionInstance("MesraPerLineNormalPoemViewStyle", iconThemePath+"/poem-view-mesra-per-line-normal.png",QObject::tr("&Mesra Per Line Normal")) );
+	actionInstance("MesraPerLineNormalPoemViewStyle")->setParent(poemViewStylesMenu);
+	actionInstance("MesraPerLineNormalPoemViewStyle")->setActionGroup(poemViewStylesGroup);
+	actionInstance("MesraPerLineNormalPoemViewStyle")->setCheckable(true);
+	actionInstance("MesraPerLineNormalPoemViewStyle")->setData(SaagharWidget::MesraPerLineNormal);
+
+	poemViewStylesMenu->addAction(actionInstance("MesraPerLineGroupedBeytPoemViewStyle", iconThemePath+"/poem-view-mesra-per-line-grouped-beyt.png",QObject::tr("Mesra Per Line &Grouped Beyt")) );
+	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setParent(poemViewStylesMenu);
+	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setActionGroup(poemViewStylesGroup);
+	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setCheckable(true);
+	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setData(SaagharWidget::MesraPerLineGroupedBeyt);
+
+	switch (SaagharWidget::CurrentViewStyle)
+	{
+	case SaagharWidget::BeytPerLine:
+		actionInstance("BeytPerLinePoemViewStyle")->setChecked(true);
+		break;
+	case SaagharWidget::LastBeytCentered:
+		actionInstance("LastBeytCenteredPoemViewStyle")->setChecked(true);
+		break;
+	case SaagharWidget::AllMesrasCentered:
+		actionInstance("AllMesrasCenteredPoemViewStyle")->setChecked(true);
+		break;
+	case SaagharWidget::MesraPerLineNormal:
+		actionInstance("MesraPerLineNormalPoemViewStyle")->setChecked(true);
+		break;
+	case SaagharWidget::MesraPerLineGroupedBeyt:
+		actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setChecked(true);
+		break;
+
+	default:
+		break;
+	}
 
 	//Inserting main menu items
 	ui->menuBar->addMenu(menuFile);
@@ -1616,6 +1672,9 @@ void MainWindow::setupUi()
 	menuNavigation->addAction(actionInstance("actionRandom"));
 
 	menuView->addAction(actionInstance("Show Photo at Home"));
+
+	menuView->addSeparator();
+	menuView->addMenu(poemViewStylesMenu);
 
 	menuView->addSeparator();
 	QMenu *toolbarsView = new QMenu(tr("ToolBars"), menuView);
@@ -1920,12 +1979,7 @@ void MainWindow::globalSettings()
 
 		//////////////////////////////////////////////////////
 		//set for refreshed all pages
-		for (int i = 0; i < mainTabWidget->count(); ++i)
-		{
-			SaagharWidget *tmp = getSaagharWidget(i);
-			tmp->setDirty();//needs to be refreshed
-		}
-		saagharWidget->refresh();
+		setAllAsDirty();
 		//////////////////////////////////////////////////////
 	}
 }
@@ -1953,6 +2007,8 @@ void MainWindow::loadGlobalSettings()
 	Settings::LOAD_VARIABLES(config->value("VariableHash").toHash());
 
 	//openedTabs = config->value("openedTabs", "").toStringList();
+
+	SaagharWidget::CurrentViewStyle = (SaagharWidget::PoemViewStyle)Settings::READ("Poem Current View Style", SaagharWidget::MesraPerLineNormal).toInt();
 
 	SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
 	
@@ -2051,6 +2107,8 @@ void MainWindow::saveSettings()
 	QSettings *config = getSettingsObject();
 
 	//config->setValue("Main ToolBar Items", mainToolBarItems.join("|"));
+
+	Settings::WRITE("Poem Current View Style", SaagharWidget::CurrentViewStyle);
 
 	config->setValue("Max Poets Per Group", SaagharWidget::maxPoetsPerGroup);
 
@@ -2509,7 +2567,7 @@ void MainWindow::customizeRandomDialog()
 	delete randomSetting;
 	randomSetting = 0;
 }
-#include<QActionGroup>
+
 void MainWindow::toolBarViewActions(QToolBar *toolBar, QMenu *menu, bool subMenu)
 {
 	QMenu *toolbarMenu = menu;
@@ -2832,6 +2890,23 @@ void MainWindow::namedActionTriggered(bool checked)
 			QApplication::restoreOverrideCursor();
 		}
 	}
+	else if (actionName.endsWith("PoemViewStyle"))
+	{
+		SaagharWidget::PoemViewStyle newPoemViewStyle = (SaagharWidget::PoemViewStyle)action->data().toInt();
+		if (SaagharWidget::CurrentViewStyle != newPoemViewStyle)
+		{
+			SaagharWidget::CurrentViewStyle = newPoemViewStyle;
+			//setAllAsDirty();
+			for (int i = 0; i < mainTabWidget->count(); ++i)
+			{
+				SaagharWidget *tmp = getSaagharWidget(i);
+				if (tmp && tmp->currentPoem!=0)
+					tmp->setDirty();//needs to be refreshed
+			}
+			if (saagharWidget && saagharWidget->currentPoem!=0)
+				saagharWidget->refresh();
+		}
+	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
 }
@@ -2906,17 +2981,57 @@ QString MainWindow::currentIconThemePath()
 
 void MainWindow::setHomeAsDirty()
 {
+	setAsDirty(0);
+//	for (int i = 0; i < mainTabWidget->count(); ++i)
+//	{
+//		SaagharWidget *tmp = getSaagharWidget(i);
+//		if (tmp && tmp->currentCat==0)
+//		{
+//			tmp->setDirty();//needs to be refreshed
+//		}
+//	}
+
+//	if (saagharWidget && saagharWidget->isDirty())
+//		saagharWidget->showHome();
+}
+
+void MainWindow::setAllAsDirty()
+{
+	setAsDirty();
+//	//set for refreshed all pages
+//	for (int i = 0; i < mainTabWidget->count(); ++i)
+//	{
+//		SaagharWidget *tmp = getSaagharWidget(i);
+//		if (tmp)
+//			tmp->setDirty();//needs to be refreshed
+//	}
+//	saagharWidget->refresh();
+}
+
+void MainWindow::setAsDirty(int catId, int poemId)//-1 for skip it
+{
+	bool checkPoemId = false, checkCatId = false;
+	if (catId != -1)
+		checkCatId = true;
+	if (poemId != -1)
+		checkPoemId = true;
+
 	for (int i = 0; i < mainTabWidget->count(); ++i)
 	{
 		SaagharWidget *tmp = getSaagharWidget(i);
-		if (tmp && tmp->currentCat==0)
+		if (tmp &&
+			(!checkPoemId || tmp->currentPoem==poemId)
+				&&
+			(!checkCatId || tmp->currentCat==catId))
 		{
 			tmp->setDirty();//needs to be refreshed
 		}
 	}
-
-	if (saagharWidget && saagharWidget->isDirty())
-		saagharWidget->showHome();
+	if (saagharWidget && 
+		(!checkPoemId || saagharWidget->currentPoem==poemId)
+			&&
+		(!checkCatId || saagharWidget->currentCat==catId))
+		saagharWidget->refresh();
 }
 
 void MainWindow::setupBookmarkManagerUi()
