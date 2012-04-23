@@ -1155,11 +1155,11 @@ int test=0;
 					table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+iconWidth : iconWidth+3 );//numbers
 					int we=(7*minMesraWidth)/4;
 					baseWidthSize = baseWidthSize-table->columnWidth(0);
-					qDebug()<<"(7*minMesraWidth)/4="<<we<<"baseWidthSize/2="<<(7*baseWidthSize)/8<<"minMesraWidth="<<minMesraWidth;
-					qDebug()<<"maxMin="<<qMax(qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8), minMesraWidth );
+					//qDebug()<<"(7*minMesraWidth)/4="<<we<<"baseWidthSize/2="<<(7*baseWidthSize)/8<<"minMesraWidth="<<minMesraWidth;
+					//qDebug()<<"maxMin="<<qMax(qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8), minMesraWidth );
 					table->setColumnWidth(2, qMax(qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8), minMesraWidth ) );// cells contain mesras
 					test = qMax(0, baseWidthSize - ( table->columnWidth(2) ));
-					qDebug() << "baseWidthSize="<<baseWidthSize<<"test="<<test;
+					//qDebug() << "baseWidthSize="<<baseWidthSize<<"test="<<test;
 					table->setColumnWidth(1, test/2 );//right margin
 					table->setColumnWidth(3, test/2 );//left margin
 				}
@@ -1180,10 +1180,13 @@ int test=0;
 				else
 				{
 					table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+iconWidth : iconWidth+3 );//numbers
-					table->setColumnWidth(2, table->fontMetrics().height()*2 /*5/2*/ );//spacing between mesras
-					baseWidthSize = baseWidthSize - ( table->columnWidth(0)+table->columnWidth(2) );
-					table->setColumnWidth(1, qMax(minMesraWidth, baseWidthSize/2/* -table->columnWidth(0) */) );//mesra width
-					table->setColumnWidth(3, qMax(minMesraWidth, baseWidthSize/2) );//mesra width
+//					table->setColumnWidth(2, table->fontMetrics().height()*2 /*5/2*/ );//spacing between mesras
+					int tw = baseWidthSize - ( table->columnWidth(0)+table->fontMetrics().height()*2/*table->columnWidth(2)*/ );
+					//qDebug()<<"w-0="<<table->columnWidth(0)<<"w-1="<<table->columnWidth(2)<<"minMesraWidth="<<minMesraWidth<<"baseWidthSize/2="<<baseWidthSize/2;
+					//qDebug()<<"max="<<qMax(minMesraWidth, baseWidthSize/2);
+					table->setColumnWidth(1, qMax(minMesraWidth, tw/2/* -table->columnWidth(0) */) );//mesra width
+					table->setColumnWidth(3, qMax(minMesraWidth, tw/2) );//mesra width
+					table->setColumnWidth(2, qMax( table->fontMetrics().height()+1, baseWidthSize-(table->columnWidth(0)+table->columnWidth(1)+table->columnWidth(3)) ) );//spacing between mesras
 				}
 				break;
 			default:
