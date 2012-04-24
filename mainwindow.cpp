@@ -1116,6 +1116,14 @@ QString MainWindow::convertToHtml(SaagharWidget *saagharObject)
 				if (item)
 				{
 					mesraText = item->text();
+					if (mesraText.isEmpty())
+					{
+						QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharWidget->tableViewWidget->cellWidget(row, 1));
+						if (textEdit)
+						{
+							mesraText = textEdit->toPlainText();
+						}
+					}
 					QVariant data = item->data(Qt::UserRole);
 					if (data.isValid() && !data.isNull())
 						itemDataList = data.toString().split("|", QString::SkipEmptyParts);
@@ -1131,7 +1139,8 @@ QString MainWindow::convertToHtml(SaagharWidget *saagharObject)
 				{
 					case Paragraph :
 					case Single :
-							mesraText.replace(" ", "&nbsp;");
+							mesraText.replace("  ", " &nbsp;");
+							//mesraText = "<pre>"+mesraText+"</pre>";
 							align = "RIGHT";
 						break;
 
@@ -1200,6 +1209,14 @@ QString MainWindow::convertToTeX(SaagharWidget *saagharObject)
 				if (item)
 				{
 					mesraText = item->text();
+					if (mesraText.isEmpty())
+					{
+						QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharWidget->tableViewWidget->cellWidget(row, 1));
+						if (textEdit)
+						{
+							mesraText = textEdit->toPlainText();
+						}
+					}
 					QVariant data = item->data(Qt::UserRole);
 					if (data.isValid() && !data.isNull())
 						itemDataList = data.toString().split("|", QString::SkipEmptyParts);
