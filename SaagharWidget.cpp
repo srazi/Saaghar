@@ -52,7 +52,7 @@ QColor SaagharWidget::matchedTextColor = QColor();
 QColor SaagharWidget::backgroundColor = QColor();
 QTableWidgetItem *SaagharWidget::lastOveredItem = 0;
 int SaagharWidget::maxPoetsPerGroup = 12;
-QHash<int,QString> SaagharWidget::mediaInfoCash = QHash<int,QString>();
+QHash<int, QPair<QString, qint64> > SaagharWidget::mediaInfoCash = QHash<int, QPair<QString, qint64> >();
 //bookmark widget
 Bookmarks *SaagharWidget::bookmarks = 0;
 //search field object
@@ -1034,16 +1034,20 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
 		if (SaagharWidget::mediaInfoCash.contains(currentPoem))
 		{
-			QString mediaSource = SaagharWidget::mediaInfoCash.value(currentPoem, "");
-			if (SaagharWidget::musicPlayer->source() != mediaSource)
-				SaagharWidget::musicPlayer->setSource(mediaSource);
-			qDebug()<<"ShowPmediaFile="<<mediaSource;
+			QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(currentPoem);
+			if (SaagharWidget::musicPlayer->source() != currentMediaInfo.first)
+			{
+				SaagharWidget::musicPlayer->setSource(currentMediaInfo.first);
+				//QApplication::processEvents();
+				//SaagharWidget::musicPlayer->setCurrentTime(currentMediaInfo.second);
+			}
+			qDebug()<<"ShowPmediaFile="<<currentMediaInfo.first;
 			qDebug()<<"ShowPinternalName="<<SaagharWidget::musicPlayer->source();
 		}
 		else
 		{
 			QString mediaSource = SaagharWidget::ganjoorDataBase->getPoemMediaSource(currentPoem);
-			SaagharWidget::mediaInfoCash.insert(currentPoem, mediaSource);
+			SaagharWidget::mediaInfoCash.insert(currentPoem, QPair<QString, qint64>(mediaSource, 0));
 			qDebug() << "showPoem1-currentPoem="<<currentPoem<<"mediaSource="<<mediaSource;
 			SaagharWidget::musicPlayer->setSource(mediaSource);
 			qDebug() << "showPoem2-currentPoem="<<currentPoem<<"mediaSource="<<mediaSource;

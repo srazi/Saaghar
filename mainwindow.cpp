@@ -117,6 +117,9 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	if (!saagharUserPath.exists())
 		saagharUserPath.mkpath(userHomePath);
 
+	
+	SaagharWidget::musicPlayer = new QMusicPlayer(this);
+
 	loadGlobalSettings();
 
 	if (splashScreen)
@@ -562,6 +565,7 @@ void MainWindow::currentTabChanged(int tabIndex)
 	SaagharWidget *tmpSaagharWidget = getSaagharWidget(tabIndex);
 	if ( tmpSaagharWidget )
 	{
+		SaagharWidget *old_saagharWidget = saagharWidget;
 		saagharWidget = tmpSaagharWidget;
 		saagharWidget->loadSettings();
 
@@ -641,11 +645,21 @@ void MainWindow::currentTabChanged(int tabIndex)
 
 		if (SaagharWidget::musicPlayer)
 		{
-			QString mediaSource = SaagharWidget::mediaInfoCash.value(saagharWidget->currentPoem, "");
-		qDebug()<<"CTABmediaFile="<<mediaSource;
+			QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(saagharWidget->currentPoem);
+		qDebug()<<"CTABmediaFile="<<currentMediaInfo;
 		qDebug()<<"CTABinternalName="<<SaagharWidget::musicPlayer->source();
-			if (SaagharWidget::musicPlayer->source() != mediaSource)
-				SaagharWidget::musicPlayer->setSource(mediaSource);
+		if (old_saagharWidget)
+		{
+			qDebug()<<"old="<< old_saagharWidget->currentPoem<<"new="<<saagharWidget->currentPoem;
+			SaagharWidget::mediaInfoCash.insert(old_saagharWidget->currentPoem, QPair<QString, qint64>(SaagharWidget::mediaInfoCash.value(old_saagharWidget->currentPoem).first, SaagharWidget::musicPlayer->currentTime()));
+		}
+			
+			if (SaagharWidget::musicPlayer->source() != currentMediaInfo.first)
+			{
+				SaagharWidget::musicPlayer->setSource(currentMediaInfo.first);
+				//QApplication::processEvents();
+				//SaagharWidget::musicPlayer->setCurrentTime(currentMediaInfo.second);
+			}
 //			if (!saagharWidget->pageMetaInfo.mediaFile.isEmpty())
 //			{
 //				//qDebug()<<"mediaFile="<<saagharWidget->pageMetaInfo.mediaFile;
@@ -1422,7 +1436,6 @@ void MainWindow::setupUi()
 {
 	QString iconThemePath = currentIconThemePath();
 
-	SaagharWidget::musicPlayer = new QMusicPlayer(this);
 	connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(const QString &)), this, SLOT(mediaInfoChanged(const QString &)));
 	addToolBar(Qt::BottomToolBarArea, SaagharWidget::musicPlayer);
 
@@ -2043,6 +2056,8 @@ void MainWindow::loadGlobalSettings()
 {
 	QSettings *config = getSettingsObject();
 
+	SaagharWidget::musicPlayer->readPlayerSettings(config);
+
 	Settings::LOAD_VARIABLES(config->value("VariableHash").toHash());
 
 	//openedTabs = config->value("openedTabs", "").toStringList();
@@ -2145,6 +2160,8 @@ void MainWindow::saveSettings()
 
 	QSettings *config = getSettingsObject();
 
+	SaagharWidget::musicPlayer->savePlayerSettings(config);
+
 	//config->setValue("Main ToolBar Items", mainToolBarItems.join("|"));
 
 	Settings::WRITE("Poem Current View Style", SaagharWidget::CurrentViewStyle);
@@ -2226,7 +2243,7 @@ void MainWindow::saveSettings()
 //		++it;
 //	}
 
-	QHash<int, QString>::const_iterator it = SaagharWidget::mediaInfoCash.constBegin();
+	QHash<int, QPair<QString, qint64> >::const_iterator it = SaagharWidget::mediaInfoCash.constBegin();
 
 	bool transectionStarted = false;
 
@@ -2238,7 +2255,7 @@ void MainWindow::saveSettings()
 
 	while (it != SaagharWidget::mediaInfoCash.constEnd())
 	{
-		SaagharWidget::ganjoorDataBase->setPoemMediaSource(it.key(), it.value());
+		SaagharWidget::ganjoorDataBase->setPoemMediaSource(it.key(), it.value().first);
 		++it;
 	}
 
@@ -3262,7 +3279,10 @@ void MainWindow::mediaInfoChanged(const QString &fileName)
 	if (saagharWidget)
 	{
 		qDebug() << "mediaInfoChanged-saagharWidget->currentPoem="<<saagharWidget->currentPoem<<"fileName="<<fileName;
-		SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem, fileName);
+		qint64 time = 0;
+		if (SaagharWidget::musicPlayer)
+			time = SaagharWidget::musicPlayer->currentTime();
+		SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
 		//saagharWidget->pageMetaInfo.mediaFile = fileName;
 	}
 }

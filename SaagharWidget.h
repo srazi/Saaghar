@@ -116,7 +116,7 @@ public:
 	//Music Player
 	static QMusicPlayer *musicPlayer;
 
-	static QHash<int,QString> mediaInfoCash;
+	static QHash<int, QPair<QString, qint64> > mediaInfoCash;
 
 	int currentPoem;
 	int currentCat;

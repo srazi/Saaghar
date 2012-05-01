@@ -56,11 +56,14 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QTime>
+#include <QSettings>
 
 //![0]
 QMusicPlayer::QMusicPlayer(QWidget *parent) : QToolBar(parent)
 {
 	setObjectName("QMusicPlayer");
+
+	_newTime = -1;
 
 	startDir = QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
 	audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
@@ -77,8 +80,10 @@ QMusicPlayer::QMusicPlayer(QWidget *parent) : QToolBar(parent)
 			this, SLOT(metaStateChanged(Phonon::State,Phonon::State)));
 	connect(mediaObject, SIGNAL(currentSourceChanged(Phonon::MediaSource)),
 			this, SLOT(sourceChanged(Phonon::MediaSource)));
-	connect(mediaObject, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
+	//connect(mediaObject, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
 	connect(mediaObject, SIGNAL(finished()), this, SLOT(aboutToFinish()));
+
+	qDebug()<<"connect="<< connect(mediaObject, SIGNAL(seekableChanged(bool)), this, SLOT(seekableChanged(bool)));
 //![2]
 
 //![1]
@@ -92,6 +97,33 @@ QMusicPlayer::QMusicPlayer(QWidget *parent) : QToolBar(parent)
 }
 
 //![6]
+void QMusicPlayer::seekableChanged(bool seekable)
+{
+	qDebug() << "seekableChanged"<<seekable<<"_newTime="<<_newTime;
+	if (_newTime > 0 && seekable)
+	{
+		mediaObject->seek(_newTime);
+		_newTime = -1;
+	}
+}
+
+qint64 QMusicPlayer::currentTime()
+{
+	return mediaObject->currentTime();
+}
+
+void QMusicPlayer::setCurrentTime(qint64 time)
+{
+	_newTime = time;
+	/*
+	Phonon::State currentState = mediaObject->state();
+	qDebug() <<"isSeakable="<<mediaObject->isSeekable()<< "setCTime-state="<<currentState<<"time="<<mediaObject->currentTime()<<"newTime="<<time;
+	//stateChanged(Phonon::PausedState, Phonon::PausedState);
+	mediaObject->play();
+	mediaObject->seek(time);
+	qDebug() <<"isSeakable="<<mediaObject->isSeekable() << "setCTime-state="<<currentState<<"time="<<mediaObject->currentTime()<<"newTime="<<time;*/
+}
+
 QString QMusicPlayer::source()
 {
 	return metaInformationResolver->currentSource().fileName();
@@ -99,6 +131,7 @@ QString QMusicPlayer::source()
 
 void QMusicPlayer::setSource(const QString &fileName)
 {
+	_newTime = -1;
 	Phonon::MediaSource source(fileName);
 	sources.clear();
 	infoLabel->setText("");
@@ -418,15 +451,15 @@ void QMusicPlayer::setupUi()
 	seekSlider = new Phonon::SeekSlider(this);
 	seekSlider->setMediaObject(mediaObject);
 
-	infoLabel = new QLabel("...");
+	infoLabel = new QLabel("");
 
 	volumeSlider = new Phonon::VolumeSlider(this);
 	volumeSlider->setAudioOutput(audioOutput);
 //![4]
 	volumeSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
-	QLabel *volumeLabel = new QLabel;
-	volumeLabel->setPixmap(QPixmap("images/volume.png"));
+	//QLabel *volumeLabel = new QLabel;
+	//volumeLabel->setPixmap(QPixmap("images/volume.png"));
 
 	QPalette palette;
 	palette.setBrush(QPalette::Light, Qt::darkGray);
@@ -480,5 +513,27 @@ void QMusicPlayer::setupUi()
 	//addWidget(widget);
 	//setCentralWidget(widget);
 	//setWindowTitle("Phonon Music Player");
+}
+
+void QMusicPlayer::readPlayerSettings(QSettings *settingsObject)
+{
+	settingsObject->beginGroup("QMusicPlayer");
+	if (audioOutput)
+	{
+		audioOutput->setMuted(settingsObject->value("muted",false).toBool());
+		audioOutput->setVolume(settingsObject->value("volume",0.4).toReal());
+	}
+	settingsObject->endGroup();
+}
+
+void QMusicPlayer::savePlayerSettings(QSettings *settingsObject)
+{
+	settingsObject->beginGroup("QMusicPlayer");
+	if (audioOutput)
+	{
+		settingsObject->setValue("muted", audioOutput->isMuted());
+		settingsObject->setValue("volume", audioOutput->volume());
+	}
+	settingsObject->endGroup();
 }
 

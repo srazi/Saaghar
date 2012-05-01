@@ -59,6 +59,7 @@ class QAction;
 class QTableWidget;
 class QLCDNumber;
 class QLabel;
+class QSettings;
 QT_END_NAMESPACE
 
 //![0]
@@ -70,11 +71,16 @@ class QMusicPlayer : public QToolBar
 
 public:
 	QMusicPlayer(QWidget *parent = 0);
-	void setSource(const QString &fileName);
 	QString source();
+	void setSource(const QString &fileName);
+	void readPlayerSettings(QSettings *settingsObject);
+	void savePlayerSettings(QSettings *settingsObject);
+	qint64 currentTime();
+	void setCurrentTime(qint64 time);
 
 private slots:
 	void setSource();
+	void seekableChanged(bool seekable);
 
 //![1]
 	void stateChanged(Phonon::State newState, Phonon::State oldState);
@@ -86,6 +92,7 @@ private slots:
 //![1]
 
 private:
+	qint64 _newTime;
 	void setupActions();
 	//void setupMenus();
 	void setupUi();
