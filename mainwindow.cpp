@@ -27,6 +27,7 @@
 #include "settings.h"
 #include "SearchResultWidget.h"
 #include "SearchPatternManager.h"
+#include "qmusicplayer.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -56,7 +57,7 @@
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
 #include <QNetworkReply>
-#include<QActionGroup>
+#include <QActionGroup>
 
 //const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 
@@ -637,6 +638,23 @@ void MainWindow::currentTabChanged(int tabIndex)
 
 		actionInstance("actionPreviousPoem")->setEnabled( !SaagharWidget::ganjoorDataBase->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull() );
 		actionInstance("actionNextPoem")->setEnabled( !SaagharWidget::ganjoorDataBase->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull() );
+
+		if (SaagharWidget::musicPlayer)
+		{
+			QString mediaSource = SaagharWidget::mediaInfoCash.value(saagharWidget->currentPoem, "");
+		qDebug()<<"CTABmediaFile="<<mediaSource;
+		qDebug()<<"CTABinternalName="<<SaagharWidget::musicPlayer->source();
+			if (SaagharWidget::musicPlayer->source() != mediaSource)
+				SaagharWidget::musicPlayer->setSource(mediaSource);
+//			if (!saagharWidget->pageMetaInfo.mediaFile.isEmpty())
+//			{
+//				//qDebug()<<"mediaFile="<<saagharWidget->pageMetaInfo.mediaFile;
+//				//qDebug()<<"internalName="<<SaagharWidget::musicPlayer->source();
+//				SaagharWidget::musicPlayer->setSource(saagharWidget->pageMetaInfo.mediaFile);
+//			}
+//			else
+//				SaagharWidget::musicPlayer->setSource("");
+		}
 	}
 }
 
@@ -1403,6 +1421,10 @@ void MainWindow::actionImportNewSet()
 void MainWindow::setupUi()
 {
 	QString iconThemePath = currentIconThemePath();
+
+	SaagharWidget::musicPlayer = new QMusicPlayer(this);
+	connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(const QString &)), this, SLOT(mediaInfoChanged(const QString &)));
+	addToolBar(Qt::BottomToolBarArea, SaagharWidget::musicPlayer);
 
 	if (Settings::READ("MainWindowState").isNull())
 	{
@@ -2203,6 +2225,27 @@ void MainWindow::saveSettings()
 //		config->setValue(it.key(), it.value());
 //		++it;
 //	}
+
+	QHash<int, QString>::const_iterator it = SaagharWidget::mediaInfoCash.constBegin();
+
+	bool transectionStarted = false;
+
+	if (it != SaagharWidget::mediaInfoCash.constEnd())
+	{
+		transectionStarted = true;
+		SaagharWidget::ganjoorDataBase->dBConnection.transaction();
+	}
+
+	while (it != SaagharWidget::mediaInfoCash.constEnd())
+	{
+		SaagharWidget::ganjoorDataBase->setPoemMediaSource(it.key(), it.value());
+		++it;
+	}
+
+	if ( transectionStarted )
+	{
+		SaagharWidget::ganjoorDataBase->dBConnection.commit();
+	}
 }
 
 QString MainWindow::tableToString(QTableWidget *table, QString mesraSeparator, QString beytSeparator, int startRow, int startColumn, int endRow, int endColumn)
@@ -3211,5 +3254,15 @@ void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString 
 			newTabForItem("PoemID", poemID, true);
 			saagharWidget->scrollToFirstItemContains(itemText, false, true);
 		}
+	}
+}
+
+void MainWindow::mediaInfoChanged(const QString &fileName)
+{
+	if (saagharWidget)
+	{
+		qDebug() << "mediaInfoChanged-saagharWidget->currentPoem="<<saagharWidget->currentPoem<<"fileName="<<fileName;
+		SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem, fileName);
+		//saagharWidget->pageMetaInfo.mediaFile = fileName;
 	}
 }

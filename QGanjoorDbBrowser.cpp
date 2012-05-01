@@ -443,6 +443,60 @@ QString QGanjoorDbBrowser::getPoetDescription(int PoetID)
 	return "";
 }
 
+QString QGanjoorDbBrowser::getPoemMediaSource(int PoemID)
+{
+	if (PoemID <= 0)
+	{
+		return "";
+	}
+	if (isConnected())
+	{
+		QSqlQuery q(dBConnection);
+		q.exec("SELECT mediasource FROM poem WHERE id = " + QString::number(PoemID) );
+		q.first();
+		if (q.isValid() && q.isActive())
+		{
+			QSqlRecord qrec = q.record();
+			return (qrec.value(0)).toString();
+		}
+	}
+	return "";
+}
+
+void QGanjoorDbBrowser::setPoemMediaSource(int PoemID, const QString &fileName)
+{
+	if (PoemID <= 0)
+	{
+		return;
+	}
+	if (isConnected())
+	{
+		QSqlQuery q(dBConnection);
+		QString strQuery ="";
+		if (!dBConnection.record("poem").contains("mediasource"))
+		{
+			strQuery = QString("ALTER TABLE %1 ADD COLUMN %2 %3").arg("poem").arg("mediasource").arg("NVARCHAR(255)");
+			q.exec(strQuery);
+			//q.finish();
+		}
+
+		strQuery = QString("UPDATE poem SET mediasource = \"%1\" WHERE id = %2 ;").arg(fileName).arg(PoemID);
+		//q.exec(strQuery);
+		//PRAGMA TABLE_INFO(poem);
+		
+		
+		//QString("REPLACE INTO poem (id, cat_id, title, url, mediasource) VALUES (%1, %2, \"%3\", \"%4\", \"%5\");").arg(newPoem->_ID).arg(newPoem->_CatID).arg(newPoem->_Title).arg(newPoem->_Url).arg(fileName);
+		qDebug() << "setPoemMediaSource="<< q.exec(strQuery);
+//		q.first();
+//		if (q.isValid() && q.isActive())
+//		{
+//			QSqlRecord qrec = q.record();
+//			return (qrec.value(0)).toString();
+//		}
+	}
+	return;
+}
+
 GanjoorPoet QGanjoorDbBrowser::getPoet(QString PoetName)
 {
 	GanjoorPoet gPoet;

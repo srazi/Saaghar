@@ -23,6 +23,7 @@
 #include "SearchItemDelegate.h"
 #include "SaagharWidget.h"
 #include "commands.h"
+#include "qmusicplayer.h"
 
 #include <QSearchLineEdit>
 
@@ -51,12 +52,15 @@ QColor SaagharWidget::matchedTextColor = QColor();
 QColor SaagharWidget::backgroundColor = QColor();
 QTableWidgetItem *SaagharWidget::lastOveredItem = 0;
 int SaagharWidget::maxPoetsPerGroup = 12;
+QHash<int,QString> SaagharWidget::mediaInfoCash = QHash<int,QString>();
 //bookmark widget
 Bookmarks *SaagharWidget::bookmarks = 0;
 //search field object
 QSearchLineEdit *SaagharWidget::lineEditSearchText = 0;
 //ganjoor data base browser
 QGanjoorDbBrowser *SaagharWidget::ganjoorDataBase = NULL;
+//QMusicPlayer
+QMusicPlayer *SaagharWidget::musicPlayer = NULL;
 
 //Constants
 const int ITEM_BOOKMARKED_STATE = Qt::UserRole+20;
@@ -69,6 +73,10 @@ const Qt::ItemFlags poemsTitleItemFlag = Qt::ItemIsEnabled | Qt::ItemIsSelectabl
 SaagharWidget::SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidget *tableWidget)
 	: QWidget(parent), tableViewWidget(tableWidget), parentCatsToolBar(catsToolBar)
 {
+	pageMetaInfo.id = 0;
+	pageMetaInfo.type = SaagharWidget::CategoryViewerPage;
+	//pageMetaInfo.mediaFile = "";
+
 	dirty = true;
 	minMesraWidth = 0;
 	singleColumnHeightMap.clear();
@@ -390,6 +398,10 @@ void SaagharWidget::showCategory(GanjoorCat category)
 	showParentCategory(category);
 	currentPoem = 0;//from showParentCategory
 	currentPoemTitle = "";
+
+	pageMetaInfo.id = currentCat;
+	pageMetaInfo.type = SaagharWidget::CategoryViewerPage;
+	//pageMetaInfo.mediaFile = "";
 
 	//new Caption
 	currentCaption = (currentCat == 0) ? tr("Home") : ganjoorDataBase->getPoetForCat(currentCat)._Name;//for Tab Title
@@ -1015,6 +1027,30 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
 	currentPoem = poem._ID;
 
+	//if (pageMetaInfo.id != currentPoem /*|| pageMetaInfo.mediaFile.isEmpty()*/)
+	{
+		pageMetaInfo.id = currentPoem;
+		pageMetaInfo.type = SaagharWidget::PoemViewerPage;
+
+		if (SaagharWidget::mediaInfoCash.contains(currentPoem))
+		{
+			QString mediaSource = SaagharWidget::mediaInfoCash.value(currentPoem, "");
+			if (SaagharWidget::musicPlayer->source() != mediaSource)
+				SaagharWidget::musicPlayer->setSource(mediaSource);
+			qDebug()<<"ShowPmediaFile="<<mediaSource;
+			qDebug()<<"ShowPinternalName="<<SaagharWidget::musicPlayer->source();
+		}
+		else
+		{
+			QString mediaSource = SaagharWidget::ganjoorDataBase->getPoemMediaSource(currentPoem);
+			SaagharWidget::mediaInfoCash.insert(currentPoem, mediaSource);
+			qDebug() << "showPoem1-currentPoem="<<currentPoem<<"mediaSource="<<mediaSource;
+			SaagharWidget::musicPlayer->setSource(mediaSource);
+			qDebug() << "showPoem2-currentPoem="<<currentPoem<<"mediaSource="<<mediaSource;
+			//SaagharWidget::musicPlayer->
+		}
+	}
+
 	emit navPreviousActionState( !ganjoorDataBase->getPreviousPoem(currentPoem, currentCat).isNull() );
 	emit navNextActionState( !ganjoorDataBase->getNextPoem(currentPoem, currentCat).isNull() );
 
@@ -1423,6 +1459,10 @@ QStringList SaagharWidget::identifier()
 		tabViewType << "PoemID" << QString::number(currentPoem);
 	else
 		tabViewType << "CatID" << QString::number(currentCat);
+
+	qDebug()<<"identifier="<<tabViewType;
+	qDebug()<<"STRUCT-identifier()=pageMetaInfo.id="<<pageMetaInfo.id<<"pageMetaInfo.type="<<pageMetaInfo.type;
+
 	return tabViewType;
 }
 

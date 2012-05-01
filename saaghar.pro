@@ -57,6 +57,7 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/commands.cpp
 
 include($${SOURCE_DIR}/pQjWidgets/pQjWidgets.pri)
+include($${SOURCE_DIR}/qmusicplayer/qmusicplayer.pri)
 
 
 

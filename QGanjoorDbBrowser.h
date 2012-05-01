@@ -81,6 +81,8 @@ class QGanjoorDbBrowser : public QObject
 		GanjoorPoet getPoet(int PoetID);
 		GanjoorPoet getPoet(QString PoetName);
 		QString getPoetDescription(int PoetID);
+		QString getPoemMediaSource(int PoemID);
+		void setPoemMediaSource(int PoemID, const QString &fileName);
 		//Search
 		//QList<int> getPoemIDsContainingPhrase(QString phrase, int PageStart, int Count, int PoetID);
 		//QString getFirstVerseContainingPhrase(int PoemID, QString phrase);

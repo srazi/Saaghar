@@ -42,11 +42,16 @@
 class QSearchLineEdit;
 class QTextEdit;
 
+class QMusicPlayer;
+
 class SaagharWidget : public QWidget
 {
 Q_OBJECT
 
 public:
+	SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidget *tableWidget);
+	~SaagharWidget();
+
 	enum PoemViewStyle{
 		BeytPerLine,
 		LastBeytCentered,
@@ -55,8 +60,17 @@ public:
 		MesraPerLineGroupedBeyt
 	};
 
-	SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidget *tableWidget);
-	~SaagharWidget();
+	enum PageType {
+		CategoryViewerPage,
+		PoemViewerPage
+	};
+
+	struct MetaInfo {
+		PageType type;
+		int id;
+		//QString mediaFile;
+	} pageMetaInfo;
+
 	QString currentCaption;
 	QPushButton *parentCatButton;
 	QTableWidget *tableViewWidget;
@@ -98,6 +112,11 @@ public:
 	//DataBase
 	static QGanjoorDbBrowser *ganjoorDataBase;
 	static int computeRowHeight(const QFontMetrics &fontMetric, int textWidth, int width, int height=0);
+
+	//Music Player
+	static QMusicPlayer *musicPlayer;
+
+	static QHash<int,QString> mediaInfoCash;
 
 	int currentPoem;
 	int currentCat;
