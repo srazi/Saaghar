@@ -79,6 +79,7 @@ public:
 	void setCurrentTime(qint64 time);
 
 private slots:
+	void removeSource();
 	void setSource();
 	void seekableChanged(bool seekable);
 
@@ -111,7 +112,10 @@ private:
 	QAction *nextAction;
 	QAction *previousAction;
 	QAction *setSourceAction;
-	
+	QAction *removeSourceAction;
+	QAction *repeatAction;
+	QAction *autoPlayAction;
+
 	QLCDNumber *timeLcd;
 	QLabel *infoLabel;
 	QString startDir;

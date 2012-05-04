@@ -57,6 +57,8 @@
 #include <QVBoxLayout>
 #include <QTime>
 #include <QSettings>
+#include <QToolButton>
+#include <QMenu>
 
 //![0]
 QMusicPlayer::QMusicPlayer(QWidget *parent) : QToolBar(parent)
@@ -196,6 +198,12 @@ void QMusicPlayer::setSource()
 //	}
 
 }
+
+void QMusicPlayer::removeSource()
+{
+	setSource("");
+}
+
 //![6]
 
 //void QMusicPlayer::about()
@@ -399,7 +407,9 @@ void QMusicPlayer::setupActions()
 	nextAction->setShortcut(tr("Ctrl+N"));
 	previousAction = new QAction(style()->standardIcon(QStyle::SP_MediaSkipBackward), tr("Previous"), this);
 	previousAction->setShortcut(tr("Ctrl+R"));
-	setSourceAction = new QAction(tr("Set &Source"), this);
+	setSourceAction = new QAction(tr("&Set Audio..."), this);
+	removeSourceAction = new QAction(tr("&Remove Audio"), this);
+
 	//setSourceAction->setShortcut(tr("Ctrl+F"));
 //	exitAction = new QAction(tr("E&xit"), this);
 //	exitAction->setShortcuts(QKeySequence::Quit);
@@ -414,6 +424,8 @@ void QMusicPlayer::setupActions()
 	connect(stopAction, SIGNAL(triggered()), mediaObject, SLOT(stop()));
 //![5]
 	connect(setSourceAction, SIGNAL(triggered()), this, SLOT(setSource()));
+	connect(removeSourceAction, SIGNAL(triggered()), this, SLOT(removeSource()));
+	
 //	connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
 //	connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
 //	connect(aboutQtAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
@@ -440,7 +452,17 @@ void QMusicPlayer::setupUi()
 //	bar->addAction(togglePlayPauseAction);
 //	bar->addAction(pauseAction);
 //	bar->addAction(stopAction);
-	addAction(setSourceAction);
+
+	QToolButton *options = new QToolButton;
+	options->setIcon(QIcon(":/images/options.png"));
+	options->setPopupMode(QToolButton::InstantPopup);
+	options->setStyleSheet("QToolButton::menu-indicator{image: none;}");
+	QMenu *menu = new QMenu;
+	menu->addAction(setSourceAction);
+	menu->addAction(removeSourceAction);
+	options->setMenu(menu);
+
+	addWidget(options);
 	addSeparator();
 	addAction(togglePlayPauseAction);
 	//addAction(pauseAction);

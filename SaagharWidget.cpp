@@ -1636,7 +1636,7 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 		{
 
 		case Right :
-			qDebug()<<"RightRightRightRightRightRight";
+			//qDebug()<<"RightRightRightRightRightRight";
 			//rightVerseFlag = true;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
 			spacerColumnIsPresent = true;
 			if (!flagEmptyThirdColumn)
@@ -1674,7 +1674,7 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 			break;
 
 		case Left :
-			qDebug()<<"LeftLeft=**"<<currentVerseText<<"**"<<currentVerseText.size();
+			//qDebug()<<"LeftLeft=**"<<currentVerseText<<"**"<<currentVerseText.size();
 			spacerColumnIsPresent = true;
 			if (!currentVerseText.isEmpty())
 			{

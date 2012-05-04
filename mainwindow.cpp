@@ -119,6 +119,8 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 
 	
 	SaagharWidget::musicPlayer = new QMusicPlayer(this);
+	SaagharWidget::musicPlayer->setWindowTitle(tr("Audio Player"));
+	SaagharWidget::musicPlayer->hide();
 
 	loadGlobalSettings();
 
@@ -1581,6 +1583,7 @@ void MainWindow::setupUi()
 		ui->menuToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
 	ui->searchToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
 	parentCatsToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
+	SaagharWidget::musicPlayer->setMovable(!Settings::READ("Lock ToolBars").toBool());
 
 	actionInstance("Ganjoor Verification", iconThemePath+"/ocr-verification.png", tr("&OCR Verification") );
 
@@ -1735,6 +1738,7 @@ void MainWindow::setupUi()
 	toolbarsView->addAction(ui->mainToolBar->toggleViewAction());
 	toolbarsView->addAction(ui->searchToolBar->toggleViewAction());
 	toolbarsView->addAction(parentCatsToolBar->toggleViewAction());
+	toolbarsView->addAction(SaagharWidget::musicPlayer->toggleViewAction());
 	toolbarsView->addSeparator();
 	toolbarsView->addAction(actionInstance("Lock ToolBars"));
 	menuView->addMenu(toolbarsView);
@@ -2913,6 +2917,7 @@ void MainWindow::namedActionTriggered(bool checked)
 			ui->menuToolBar->setMovable(!checked);
 		ui->searchToolBar->setMovable(!checked);
 		parentCatsToolBar->setMovable(!checked);
+		SaagharWidget::musicPlayer->setMovable(!checked);
 	}
 	else if ( actionName == "actionSearchTips" )
 	{

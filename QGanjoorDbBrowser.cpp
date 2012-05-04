@@ -486,7 +486,7 @@ void QGanjoorDbBrowser::setPoemMediaSource(int PoemID, const QString &fileName)
 		
 		
 		//QString("REPLACE INTO poem (id, cat_id, title, url, mediasource) VALUES (%1, %2, \"%3\", \"%4\", \"%5\");").arg(newPoem->_ID).arg(newPoem->_CatID).arg(newPoem->_Title).arg(newPoem->_Url).arg(fileName);
-		qDebug() << "setPoemMediaSource="<< q.exec(strQuery);
+		//qDebug() << "setPoemMediaSource="<< q.exec(strQuery);
 //		q.first();
 //		if (q.isValid() && q.isActive())
 //		{
