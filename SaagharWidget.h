@@ -53,11 +53,11 @@ public:
 	~SaagharWidget();
 
 	enum PoemViewStyle{
-		BeytPerLine,
-		LastBeytCentered,
-		AllMesrasCentered,
-		MesraPerLineNormal,
-		MesraPerLineGroupedBeyt
+		TwoHemistichLine,
+		//LastBeytCentered,
+		OneHemistichLine,
+		SteppedHemistichLine/*,
+		MesraPerLineGroupedBeyt*/
 	};
 
 	enum PageType {
@@ -136,7 +136,7 @@ public:
 	QUndoStack *undoStack;
 
 private:
-	void doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const QString &currentVerseText, VersePosition versePosition, Qt::Alignment beytAlignment);
+	void doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const QString &currentVerseText, VersePosition versePosition/*, Qt::Alignment beytAlignment*/);
 	QTextEdit *createItemForLongText(int row, int column, const QString &text = "", const QString &highlightText = "");
 	bool initializeCustomizedHome();
 	QMap<int,int> singleColumnHeightMap;

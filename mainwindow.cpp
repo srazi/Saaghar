@@ -1617,53 +1617,53 @@ void MainWindow::setupUi()
 	QMenu *poemViewStylesMenu = new QMenu(tr("Poem View Styles")); 
 	QActionGroup *poemViewStylesGroup = new QActionGroup(this);
 
-	poemViewStylesMenu->addAction(actionInstance("BeytPerLinePoemViewStyle", iconThemePath+"/poem-view-beyt-per-line.png",QObject::tr("&Beyt Per Line")) );
-	actionInstance("BeytPerLinePoemViewStyle")->setParent(poemViewStylesMenu);
-	actionInstance("BeytPerLinePoemViewStyle")->setActionGroup(poemViewStylesGroup);
-	actionInstance("BeytPerLinePoemViewStyle")->setCheckable(true);
-	actionInstance("BeytPerLinePoemViewStyle")->setData(SaagharWidget::BeytPerLine);
+	poemViewStylesMenu->addAction(actionInstance("TwoHemistichPoemViewStyle", iconThemePath+"/poem-view-two-hemistich-line.png",QObject::tr("&Two Hemistich Line")) );
+	actionInstance("TwoHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
+	actionInstance("TwoHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
+	actionInstance("TwoHemistichPoemViewStyle")->setCheckable(true);
+	actionInstance("TwoHemistichPoemViewStyle")->setData(SaagharWidget::TwoHemistichLine);
 
-	poemViewStylesMenu->addAction(actionInstance("LastBeytCenteredPoemViewStyle", iconThemePath+"/poem-view-last-beyt-centered.png",QObject::tr("&Last Beyt Centered")) );
-	actionInstance("LastBeytCenteredPoemViewStyle")->setParent(poemViewStylesMenu);
-	actionInstance("LastBeytCenteredPoemViewStyle")->setActionGroup(poemViewStylesGroup);
-	actionInstance("LastBeytCenteredPoemViewStyle")->setCheckable(true);
-	actionInstance("LastBeytCenteredPoemViewStyle")->setData(SaagharWidget::LastBeytCentered);
+//	poemViewStylesMenu->addAction(actionInstance("LastBeytCenteredPoemViewStyle", iconThemePath+"/poem-view-last-beyt-centered.png",QObject::tr("&Last Beyt Centered")) );
+//	actionInstance("LastBeytCenteredPoemViewStyle")->setParent(poemViewStylesMenu);
+//	actionInstance("LastBeytCenteredPoemViewStyle")->setActionGroup(poemViewStylesGroup);
+//	actionInstance("LastBeytCenteredPoemViewStyle")->setCheckable(true);
+//	actionInstance("LastBeytCenteredPoemViewStyle")->setData(SaagharWidget::LastBeytCentered);
 
-	poemViewStylesMenu->addAction(actionInstance("AllMesrasCenteredPoemViewStyle", iconThemePath+"/poem-view-all-mesras-centered.png",QObject::tr("&All Mesras Centered")) );
-	actionInstance("AllMesrasCenteredPoemViewStyle")->setParent(poemViewStylesMenu);
-	actionInstance("AllMesrasCenteredPoemViewStyle")->setActionGroup(poemViewStylesGroup);
-	actionInstance("AllMesrasCenteredPoemViewStyle")->setCheckable(true);
-	actionInstance("AllMesrasCenteredPoemViewStyle")->setData(SaagharWidget::AllMesrasCentered);
+	poemViewStylesMenu->addAction(actionInstance("OneHemistichPoemViewStyle", iconThemePath+"/poem-view-one-hemistich-line.png",QObject::tr("&One Hemistich Line")) );
+	actionInstance("OneHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
+	actionInstance("OneHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
+	actionInstance("OneHemistichPoemViewStyle")->setCheckable(true);
+	actionInstance("OneHemistichPoemViewStyle")->setData(SaagharWidget::OneHemistichLine);
 
-	poemViewStylesMenu->addAction(actionInstance("MesraPerLineNormalPoemViewStyle", iconThemePath+"/poem-view-mesra-per-line-normal.png",QObject::tr("&Mesra Per Line Normal")) );
-	actionInstance("MesraPerLineNormalPoemViewStyle")->setParent(poemViewStylesMenu);
-	actionInstance("MesraPerLineNormalPoemViewStyle")->setActionGroup(poemViewStylesGroup);
-	actionInstance("MesraPerLineNormalPoemViewStyle")->setCheckable(true);
-	actionInstance("MesraPerLineNormalPoemViewStyle")->setData(SaagharWidget::MesraPerLineNormal);
+	poemViewStylesMenu->addAction(actionInstance("SteppedHemistichPoemViewStyle", iconThemePath+"/poem-view-stepped-hemistich-line.png",QObject::tr("&Stepped Hemistich Line")) );
+	actionInstance("SteppedHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
+	actionInstance("SteppedHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
+	actionInstance("SteppedHemistichPoemViewStyle")->setCheckable(true);
+	actionInstance("SteppedHemistichPoemViewStyle")->setData(SaagharWidget::SteppedHemistichLine);
 
-	poemViewStylesMenu->addAction(actionInstance("MesraPerLineGroupedBeytPoemViewStyle", iconThemePath+"/poem-view-mesra-per-line-grouped-beyt.png",QObject::tr("Mesra Per Line &Grouped Beyt")) );
-	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setParent(poemViewStylesMenu);
-	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setActionGroup(poemViewStylesGroup);
-	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setCheckable(true);
-	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setData(SaagharWidget::MesraPerLineGroupedBeyt);
+//	poemViewStylesMenu->addAction(actionInstance("MesraPerLineGroupedBeytPoemViewStyle", iconThemePath+"/poem-view-mesra-per-line-grouped-beyt.png",QObject::tr("Mesra Per Line &Grouped Beyt")) );
+//	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setParent(poemViewStylesMenu);
+//	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setActionGroup(poemViewStylesGroup);
+//	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setCheckable(true);
+//	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setData(SaagharWidget::MesraPerLineGroupedBeyt);
 
 	switch (SaagharWidget::CurrentViewStyle)
 	{
-	case SaagharWidget::BeytPerLine:
-		actionInstance("BeytPerLinePoemViewStyle")->setChecked(true);
+	case SaagharWidget::TwoHemistichLine:
+		actionInstance("TwoHemistichPoemViewStyle")->setChecked(true);
 		break;
-	case SaagharWidget::LastBeytCentered:
-		actionInstance("LastBeytCenteredPoemViewStyle")->setChecked(true);
+//	case SaagharWidget::LastBeytCentered:
+//		actionInstance("LastBeytCenteredPoemViewStyle")->setChecked(true);
+//		break;
+	case SaagharWidget::OneHemistichLine:
+		actionInstance("OneHemistichPoemViewStyle")->setChecked(true);
 		break;
-	case SaagharWidget::AllMesrasCentered:
-		actionInstance("AllMesrasCenteredPoemViewStyle")->setChecked(true);
+	case SaagharWidget::SteppedHemistichLine:
+		actionInstance("SteppedHemistichPoemViewStyle")->setChecked(true);
 		break;
-	case SaagharWidget::MesraPerLineNormal:
-		actionInstance("MesraPerLineNormalPoemViewStyle")->setChecked(true);
-		break;
-	case SaagharWidget::MesraPerLineGroupedBeyt:
-		actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setChecked(true);
-		break;
+//	case SaagharWidget::MesraPerLineGroupedBeyt:
+//		actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setChecked(true);
+//		break;
 
 	default:
 		break;
@@ -2066,7 +2066,14 @@ void MainWindow::loadGlobalSettings()
 
 	//openedTabs = config->value("openedTabs", "").toStringList();
 
-	SaagharWidget::CurrentViewStyle = (SaagharWidget::PoemViewStyle)Settings::READ("Poem Current View Style", SaagharWidget::MesraPerLineNormal).toInt();
+	SaagharWidget::CurrentViewStyle = (SaagharWidget::PoemViewStyle)Settings::READ("Poem Current View Style", SaagharWidget::SteppedHemistichLine).toInt();
+
+	if (SaagharWidget::CurrentViewStyle != SaagharWidget::OneHemistichLine &&
+		SaagharWidget::CurrentViewStyle != SaagharWidget::TwoHemistichLine &&
+		SaagharWidget::CurrentViewStyle != SaagharWidget::SteppedHemistichLine)
+	{
+		SaagharWidget::CurrentViewStyle = SaagharWidget::SteppedHemistichLine;
+	}
 
 	SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
 	

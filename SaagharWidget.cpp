@@ -43,7 +43,7 @@ QLocale  SaagharWidget::persianIranLocal = QLocale();
 QFont SaagharWidget::tableFont = qApp->font();
 bool SaagharWidget::showBeytNumbers = true;
 bool SaagharWidget::backgroundImageState = false;
-SaagharWidget::PoemViewStyle SaagharWidget::CurrentViewStyle = SaagharWidget::MesraPerLineNormal;
+SaagharWidget::PoemViewStyle SaagharWidget::CurrentViewStyle = SaagharWidget::SteppedHemistichLine;
 //bool SaagharWidget::newSearchFlag = false;
 //bool SaagharWidget::newSearchSkipNonAlphabet = false;
 QString SaagharWidget::backgroundImagePath = QString();
@@ -726,7 +726,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	int WholeBeytNum = 0;
 	int BeytNum = 0;
 	int BandNum = 0;
-	Qt::Alignment groupedBeytAlignment = Qt::AlignLeft;
+	//Qt::Alignment groupedBeytAlignment = Qt::AlignLeft;
 
 	tableViewWidget->setRowCount(2);
 	tableViewWidget->setColumnCount(4);
@@ -863,7 +863,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 			versePosition = Paragraph;
 		}
 		//qDebug()<<"bedoL-vPos="<<versePosition;
-		doPoemLayout(&row, mesraItem, currentVerseText, versePosition, groupedBeytAlignment);
+		doPoemLayout(&row, mesraItem, currentVerseText, versePosition/*, groupedBeytAlignment*/);
 		//qDebug()<<"afterdoLay-vPos="<<versePosition;
 
 		//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
@@ -909,7 +909,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 			{
 				BeytNum = 0;
 				BandNum++;
-				groupedBeytAlignment = Qt::AlignLeft;
+				//groupedBeytAlignment = Qt::AlignLeft;
 			}
 			else
 			{
@@ -985,10 +985,10 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 			rightVerseFlag=false;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
 			++row;
 
-			if (verses.at(i)->_Position == Left && !currentVerseText.isEmpty())
-				groupedBeytAlignment = (groupedBeytAlignment == Qt::AlignRight ? Qt::AlignLeft : Qt::AlignRight);
-			else
-				groupedBeytAlignment = Qt::AlignLeft;
+//			if (verses.at(i)->_Position == Left && !currentVerseText.isEmpty())
+//				groupedBeytAlignment = (groupedBeytAlignment == Qt::AlignRight ? Qt::AlignLeft : Qt::AlignRight);
+//			else
+//				groupedBeytAlignment = Qt::AlignLeft;
 
 			if (i != verses.size()-1)
 				tableViewWidget->insertRow(row);
@@ -1190,7 +1190,7 @@ int test=0;
 				table->setColumnWidth(2, (baseWidthSize*47)/100);
 				break;
 			case 4:
-				if (CurrentViewStyle==MesraPerLineNormal || CurrentViewStyle==MesraPerLineGroupedBeyt)
+				if (CurrentViewStyle==SteppedHemistichLine /*|| CurrentViewStyle==MesraPerLineGroupedBeyt*/)
 				{
 					table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+iconWidth : iconWidth+3 );//numbers
 					int we=(7*minMesraWidth)/4;
@@ -1203,7 +1203,7 @@ int test=0;
 					table->setColumnWidth(1, test/2 );//right margin
 					table->setColumnWidth(3, test/2 );//left margin
 				}
-				else if (CurrentViewStyle==AllMesrasCentered)
+				else if (CurrentViewStyle==OneHemistichLine)
 				{
 					//qDebug() << "ResTable--CurrentViewStyle==AllMesrasCentered";
 					table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? table->fontMetrics().width(QString::number(table->rowCount()*10))+iconWidth : iconWidth+3 );//numbers
@@ -1332,14 +1332,14 @@ void SaagharWidget::clickedOnItem(int row,int column)
 		QTableWidgetItem *verseItem = 0;
 		if (tableViewWidget->columnCount()>1)
 		{
-			if (SaagharWidget::CurrentViewStyle == BeytPerLine ||
-				SaagharWidget::CurrentViewStyle == LastBeytCentered ||
-				SaagharWidget::CurrentViewStyle == AllMesrasCentered)
+			if (SaagharWidget::CurrentViewStyle == TwoHemistichLine ||
+//				SaagharWidget::CurrentViewStyle == LastBeytCentered ||
+				SaagharWidget::CurrentViewStyle == OneHemistichLine)
 			{
 				verseItem = tableViewWidget->item(row, 1);
 			}
-			else if (SaagharWidget::CurrentViewStyle == MesraPerLineNormal ||
-				SaagharWidget::CurrentViewStyle == MesraPerLineGroupedBeyt)
+			else if (SaagharWidget::CurrentViewStyle == SteppedHemistichLine/* ||
+				SaagharWidget::CurrentViewStyle == MesraPerLineGroupedBeyt*/)
 			{
 				verseItem = tableViewWidget->item(row, 2);
 				if (!verseItem)
@@ -1387,8 +1387,8 @@ void SaagharWidget::clickedOnItem(int row,int column)
 			verseText.prepend(currentLocation+"\n");
 
 			if (data.at(3).toInt() == Right && tableViewWidget->item(row+1, 2) &&
-				(SaagharWidget::CurrentViewStyle == MesraPerLineNormal ||
-				SaagharWidget::CurrentViewStyle == MesraPerLineGroupedBeyt))
+				(SaagharWidget::CurrentViewStyle == SteppedHemistichLine/* ||
+				SaagharWidget::CurrentViewStyle == MesraPerLineGroupedBeyt*/))
 			{
 				qDebug() << "iiiiiiii"<<tableViewWidget->item(row+1, 2)->text()<<data.at(3).toInt();
 				verseText+= "\n"+tableViewWidget->item(row+1, 2)->text().simplified();
@@ -1503,7 +1503,7 @@ QTextEdit *SaagharWidget::createItemForLongText(int row, int column, const QStri
 	return para;
 }
 
-void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const QString &currentVerseText, VersePosition versePosition, Qt::Alignment beytAlignment)
+void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const QString &currentVerseText, VersePosition versePosition/*, Qt::Alignment beytAlignment*/)
 {
 	if (!mesraItem || !prow) return;
 	int row = *prow;
@@ -1566,8 +1566,8 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 	/////////////////////////////////////////////
 	switch (CurrentViewStyle)
 	{
-	case LastBeytCentered:
-	case BeytPerLine:
+	//case LastBeytCentered:
+	case TwoHemistichLine:
 		switch (versePosition)
 		{
 			case Right :
@@ -1629,9 +1629,9 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 		}
 	break;//end of BeytPerLine
 
-	case MesraPerLineNormal:
-	case MesraPerLineGroupedBeyt:
-	case AllMesrasCentered:
+	case SteppedHemistichLine:
+//	case MesraPerLineGroupedBeyt:
+	case OneHemistichLine:
 		switch (versePosition)
 		{
 
@@ -1647,18 +1647,18 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 			if (fontMetric.width(currentVerseText+extendString) > minMesraWidth)
 				minMesraWidth = fontMetric.width(currentVerseText+extendString);
 			
-			if (CurrentViewStyle==MesraPerLineNormal)
+			if (CurrentViewStyle==SteppedHemistichLine)
 			{
 				mesraItem->setTextAlignment(Qt::AlignLeft|Qt::AlignVCenter);
 				tableViewWidget->setItem(row, 2, mesraItem);
 			}
-			else if (CurrentViewStyle==MesraPerLineGroupedBeyt)
-			{
-				mesraItem->setTextAlignment(beytAlignment|Qt::AlignVCenter);
-							//beytNum%2 == 0 ? Qt::AlignLeft|Qt::AlignVCenter : Qt::AlignRight|Qt::AlignVCenter);
-				tableViewWidget->setItem(row, 2, mesraItem);
-			}
-			else if (CurrentViewStyle==AllMesrasCentered)
+//			else if (CurrentViewStyle==MesraPerLineGroupedBeyt)
+//			{
+//				mesraItem->setTextAlignment(beytAlignment|Qt::AlignVCenter);
+//							//beytNum%2 == 0 ? Qt::AlignLeft|Qt::AlignVCenter : Qt::AlignRight|Qt::AlignVCenter);
+//				tableViewWidget->setItem(row, 2, mesraItem);
+//			}
+			else if (CurrentViewStyle==OneHemistichLine)
 			{
 				spacerColumnIsPresent = false;
 				mesraItem->setTextAlignment(Qt::AlignCenter);
@@ -1691,17 +1691,17 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 			if (fontMetric.width(currentVerseText+extendString) > minMesraWidth)
 				minMesraWidth = fontMetric.width(currentVerseText+extendString);
 
-			if (CurrentViewStyle==MesraPerLineNormal)
+			if (CurrentViewStyle==SteppedHemistichLine)
 			{
 				mesraItem->setTextAlignment(Qt::AlignRight|Qt::AlignVCenter);
 				tableViewWidget->setItem(row, 2, mesraItem);
 			}
-			else if (CurrentViewStyle==MesraPerLineGroupedBeyt)
-			{
-				mesraItem->setTextAlignment(beytAlignment|Qt::AlignVCenter);
-				tableViewWidget->setItem(row, 2, mesraItem);
-			}
-			else if (CurrentViewStyle==AllMesrasCentered)
+//			else if (CurrentViewStyle==MesraPerLineGroupedBeyt)
+//			{
+//				mesraItem->setTextAlignment(beytAlignment|Qt::AlignVCenter);
+//				tableViewWidget->setItem(row, 2, mesraItem);
+//			}
+			else if (CurrentViewStyle==OneHemistichLine)
 			{
 				spacerColumnIsPresent = false;
 				mesraItem->setTextAlignment(Qt::AlignCenter);
