@@ -33,8 +33,12 @@ SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString
 	keywordList.removeDuplicates();
 
 	tableStyle = style;
+	opacity = 0.65;
 	if (parent->objectName()=="searchTable")
+	{
+		opacity = 1;
 		qDebug() << "delegate-searchTable="<< keywordList;
+	}
 }
 
 void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
@@ -163,7 +167,7 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 
 				QRectF rectf(lastX , option.rect.y()+((option.rect.height()-qMin(option.rect.height(), fontMetric.height()))/2), sz.width(), fontMetric.height() );
 				qreal oldOpacity = painter->opacity();
-				painter->setOpacity(0.65);
+				painter->setOpacity(opacity);
 				rectf.adjust(-iconWidth, 0, -iconWidth, 0);
 				QPainterPath roundedRect;
 				roundedRect.addRoundRect(rectf, 50, 50);

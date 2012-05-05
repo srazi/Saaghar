@@ -440,7 +440,7 @@ void MainWindow::searchStart()
 //				qDebug() << "mapResult-size" << mapResult.size();
 				while (it != mapResult.constEnd())
 				{
-					finalResult.insert(it.key(), it.value());//insertMulti for more than one result from a poem
+					finalResult.insertMulti(it.key(), it.value());//insertMulti for more than one result from a poem
 					++it;
 				}
 				resultCount = finalResult.size();
@@ -2504,7 +2504,17 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 		return;
 	}
 
-	saagharWidget->processClickedItem(itemData.at(0), idData, noError);
+	SaagharWidget::PageType pageType = SaagharWidget::CategoryViewerPage;
+	if (itemData.at(0) == "PoemID")
+		pageType = SaagharWidget::PoemViewerPage;
+
+	if (senderTable->objectName() != "searchTable" || //when clicked on searchTable's item we don't expect a refresh!
+		saagharWidget->isDirty() ||
+		saagharWidget->pageMetaInfo.id != idData ||
+		saagharWidget->pageMetaInfo.type != pageType)
+	{
+		saagharWidget->processClickedItem(itemData.at(0), idData, noError);
+	}
 
 	saagharWidget->scrollToFirstItemContains(searchVerseData, false);
 	SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchPhraseData);

@@ -301,8 +301,17 @@ void SearchResultWidget::showSearchResult(int start)
 	//const int step = count/20;
 	
 	//bool firstTimeUpdate = false;
+	QMap<int, QString>::const_iterator it = resultList.constBegin();
+	const QMap<int, QString>::const_iterator endIt = it+end+1;//resultList.constEnd();
+	it = it+start;
+	int i = start;
+	const QColor fisrtColor(235,235,230,170);
+	const QColor secondColor(249,249,228,150);
 
-	for (int i = start; i < end+1; ++i)
+	QColor color = fisrtColor;
+
+	//for (int i = start; i < end+1; ++i)
+	while (it != endIt)
 	{
 		/*if (i>progressBarIndex)
 		{
@@ -320,7 +329,7 @@ void SearchResultWidget::showSearchResult(int start)
 		if (progress.wasCanceled())
 			break;
 
-		int poemId = tmpList.at(i);
+		int poemId = it.key();// tmpList.at(i);
 		//GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(poemId/*resultList.at(i)*/);
 
 		//poem._HighlightText = phrase;
@@ -337,7 +346,9 @@ void SearchResultWidget::showSearchResult(int start)
 		searchTable->setItem(i-start, 0, numItem);
 
 		QString firstVerse = "", poemTiltle = "", poetName = "";
-		QStringList verseData = resultList.value(poemId, "").split("|", QString::SkipEmptyParts);
+		//QStringList verseData = resultList.value(poemId, "").split("|", QString::SkipEmptyParts);
+		QStringList verseData = it.value().split("|", QString::SkipEmptyParts);
+		
 		if (verseData.size() == 3)
 		{
 			firstVerse = verseData.at(0);
@@ -379,6 +390,19 @@ void SearchResultWidget::showSearchResult(int start)
 		verseItem->setData(ITEM_SEARCH_DATA, QStringList() << phrase << firstVerse);
 		poemItem->setData(ITEM_SEARCH_DATA, QStringList() << phrase << firstVerse);
 
+		numItem->setBackgroundColor(color);
+		poemItem->setBackgroundColor(color);
+		verseItem->setBackgroundColor(color);
+		if (it+1 != endIt)
+		{
+			if ((it+1).key() != it.key())
+			{
+				if (color == fisrtColor)
+					color = secondColor;
+				else
+					color = fisrtColor;
+			}
+		}
 		//insert items to table
 		searchTable->setItem(i-start, 1, poemItem);
 		searchTable->setItem(i-start, 2, verseItem);
@@ -386,6 +410,9 @@ void SearchResultWidget::showSearchResult(int start)
 		tmpWidth = searchTable->fontMetrics().boundingRect(snippedFirstVerse).width();
 		if ( tmpWidth > maxVerseWidth )
 			maxVerseWidth = tmpWidth;
+
+		++it;
+		++i;
 	}
 
 	searchTable->setColumnWidth(1, maxPoemWidth+searchTable->fontMetrics().boundingRect("00").width() );

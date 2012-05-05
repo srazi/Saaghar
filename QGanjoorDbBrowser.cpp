@@ -1097,8 +1097,8 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 
 			QSqlRecord qrec = q.record();
 			int poemID = qrec.value(0).toInt();
-			if (idList.contains(poemID))
-				continue;//we need just first result
+//			if (idList.contains(poemID))
+//				continue;//we need just first result
 
 			QString verseText = qrec.value(1).toString();
 			int verseOrder = qrec.value(2).toInt();
@@ -1225,7 +1225,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 
 			++numOfFounded;
 			GanjoorPoem gPoem = getPoem(poemID);
-			idList.insert(poemID, "verseText="+verseText+"|poemTitle="+gPoem._Title+"|poetName="+getPoetForCat(gPoem._CatID)._Name);
+			idList.insertMulti(poemID, "verseText="+verseText+"|poemTitle="+gPoem._Title+"|poetName="+getPoetForCat(gPoem._CatID)._Name);
 			//QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
 			//emit searchStatusChanged(labelText);
 #ifdef Q_WS_X11
