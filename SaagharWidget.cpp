@@ -499,6 +499,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
 				poetPhotoFileName = ":/resources/images/no-photo.png";
 			catItem->setIcon(QIcon(poetPhotoFileName));
 			QTextEdit *descContainer = createItemForLongText(0, 0, itemText, SaagharWidget::lineEditSearchText->text());
+			descContainer->setTextInteractionFlags(Qt::NoTextInteraction);
 			descContainer->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 			descContainer->setStyleSheet("\
 				QTextEdit{border: transparent;\
@@ -1278,26 +1279,29 @@ int test=0;
 			//totalWidth = qMax(totalWidth, table->viewport()->width()-table->columnWidth(0));
 			//totalWidth = table->viewport()->width();
 
-			QMap<int, int>::const_iterator i = rowParagraphHeightMap.constBegin();
+			QMap<int, QPair<int,int> >::const_iterator i = rowParagraphHeightMap.constBegin();
 			while (i != rowParagraphHeightMap.constEnd())
 			{//Paragraphs
-				int height=SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)), i.value(), totalWidth /*, table->rowHeight(i.key())*/  );
-				qDebug() << "Paragraphs-r="<<i.key()<<"w="<<i.value()<<"totalWidth="<<totalWidth<<"oldH="<<table->rowHeight(i.key())<<"newheight="<<height<<"vWidth="<<table->viewport()->width()-table->columnWidth(0);
+				QFontMetrics paragraphFontMetric(Settings::getFromFonts(Settings::ProseTextFontColor));
+				int height=SaagharWidget::computeRowHeight(paragraphFontMetric, i.value().first, totalWidth , (5*paragraphFontMetric.height())/3 );
+				//qDebug() << "Paragraphs-r="<<i.key()<<"w="<<i.value()<<"totalWidth="<<totalWidth<<"oldH="<<table->rowHeight(i.key())<<"newheight="<<height<<"vWidth="<<table->viewport()->width()-table->columnWidth(0);
+				//qDebug()<<"emptyH="<<i.value().second*paragraphFontMetric.height()<<"ds"<<height<<height+i.value().second*paragraphFontMetric.height();
+				height = height+i.value().second*paragraphFontMetric.height();
 				table->setRowHeight(i.key(), height);
-				qDebug()<<"newNewHei="<<table->rowHeight(i.key());
+				//qDebug()<<"newNewHei="<<table->rowHeight(i.key());
 				//table->setRowHeight(i.key(), i.value());
 				++i;
 			}
 
-			i = rowSingleHeightMap.constBegin();
-			while (i != rowSingleHeightMap.constEnd())
+			QMap<int, int>::const_iterator it = rowSingleHeightMap.constBegin();
+			while (it != rowSingleHeightMap.constEnd())
 			{//Singles and Titles
-				if (currentPoem && i.key()==0)
-					table->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::TitlesFontColor)), i.value(), totalWidth /*, table->rowHeight(i.key())*/  ));
+				if (currentPoem && it.key()==0)
+					table->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::TitlesFontColor)), it.value(), totalWidth /*, table->rowHeight(i.key())*/  ));
 				else
-					table->setRowHeight(i.key(), SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor)), i.value(), totalWidth /*, table->rowHeight(i.key())*/  ));
+					table->setRowHeight(it.key(), SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor)), it.value(), totalWidth /*, table->rowHeight(i.key())*/  ));
 				//table->setRowHeight(i.key(), i.value());
-				++i;
+				++it;
 			}
 		}
 		//***************************//
@@ -1617,7 +1621,14 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 	else if (versePosition == Paragraph)
 	{
 		textWidth = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(mesraItem->text()).width();
-		qDebug() << "Paragraph1-textWidth="<<textWidth<<"text="<<mesraItem->text();
+		
+		QString tmp = currentVerseText;
+		tmp=tmp.remove("\n");
+		int tmpW=QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(tmp).width();
+		int aW=QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect("a").width();
+		int nW=QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect("\n").width();
+		qDebug()<<"aW="<<aW<<"nW="<<nW;
+		qDebug() << "Paragraph1-textWidth="<<textWidth<<"tmpW=="<<tmpW<<"newLineCount="<<currentVerseText.count("\n")<<"text="<<currentVerseText;
 		//textWidth = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(currentVerseText).width();
 		//qDebug() << "Paragraph2-textWidth="<<textWidth<<"text="<<currentVerseText;
 		//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
@@ -1636,7 +1647,7 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 			tableViewWidget->setSpan(row, 1, 1, 3 );
 		}
 
-		rowParagraphHeightMap.insert(row, textWidth);
+		rowParagraphHeightMap.insert(row, QPair<int, int>(textWidth,currentVerseText.count("\n")) );
 		//MissedMesras++;
 		return;
 	}

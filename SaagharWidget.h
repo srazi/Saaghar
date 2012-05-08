@@ -139,7 +139,7 @@ private:
 	void doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const QString &currentVerseText, const QFontMetrics &fontMetric, VersePosition versePosition/*, Qt::Alignment beytAlignment*/);
 	QTextEdit *createItemForLongText(int row, int column, const QString &text = "", const QString &highlightText = "");
 	bool initializeCustomizedHome();
-	QMap<int,int> rowParagraphHeightMap;
+	QMap<int, QPair<int,int> > rowParagraphHeightMap;
 	QMap<int,int> rowSingleHeightMap;
 	void showCategory(GanjoorCat category);
 	void showPoem(GanjoorPoem poem);
