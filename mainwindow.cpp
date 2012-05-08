@@ -606,7 +606,7 @@ void MainWindow::currentTabChanged(int tabIndex)
 							text = textEdit->toPlainText();
 						}
 					}
-					int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
+					//int textWidth = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(text).width();
 					int verticalScrollBarWidth=0;
 					if ( saagharWidget->tableViewWidget->verticalScrollBar()->isVisible() )
 					{
@@ -626,14 +626,16 @@ void MainWindow::currentTabChanged(int tabIndex)
 				if (item)
 				{
 					QString text = item->text();
-					int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
+					//int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
 					int verticalScrollBarWidth=0;
 					if ( saagharWidget->tableViewWidget->verticalScrollBar()->isVisible() )
 					{
 						verticalScrollBarWidth=saagharWidget->tableViewWidget->verticalScrollBar()->width();
 					}
 					int totalWidth = saagharWidget->tableViewWidget->viewport()->width();
-					saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth) );
+					//saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth) );
+					//new!!
+					saagharWidget->resizeTable(saagharWidget->tableViewWidget);
 				}
 			}
 		}
@@ -1014,7 +1016,7 @@ void MainWindow::print(QPrinter *printer)
 	int pageWidth = printer->pageRect().width();
 	int pageHeight = printer->pageRect().height();
 
-	const int extendedWidth = SaagharWidget::tableFont.pointSize()*4;
+	const int extendedWidth = Settings::getFromFonts(Settings::PoemTextFontColor).pointSize()*4;
 	const qreal scale = pageWidth/(totalWidth+extendedWidth );//printer->logicalDpiX() / 96;
 	painter.scale(scale, scale);
 
@@ -1026,9 +1028,12 @@ void MainWindow::print(QPrinter *printer)
 			QTableWidgetItem *item = saagharWidget->tableViewWidget->item(row, col);
 			int span = saagharWidget->tableViewWidget->columnSpan(row, col);
 			QString text = "";
+			QTextEdit *textEdit = 0;
 
 			if (item)
 			{
+				QFont fnt(Settings::getFromFonts(Settings::PoemTextFontColor));
+				QColor color(Settings::getFromColors(Settings::PoemTextFontColor));
 				int rectX1=0;
 				int rectX2=0;
 				if (columns == 4)
@@ -1047,12 +1052,28 @@ void MainWindow::print(QPrinter *printer)
 						}
 					}
 					else
-					{
+					{//Single or Paragraph
 						rectX1 = 0;
 						rectX2 = saagharWidget->tableViewWidget->columnWidth(3)+saagharWidget->tableViewWidget->columnWidth(2)+saagharWidget->tableViewWidget->columnWidth(1);
-						int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(item->text()).width();
+						int textWidth;
+						QFontMetrics fontMetric(fnt);
+						if (!item->text().isEmpty())
+						{
+							textWidth = fontMetric.boundingRect(item->text()).width();
+						}
+						else
+						{
+							textEdit = qobject_cast<QTextEdit *>(saagharWidget->tableViewWidget->cellWidget(row, col));
+							if (textEdit)
+							{
+								fnt = Settings::getFromFonts(Settings::ProseTextFontColor);
+								color = Settings::getFromColors(Settings::ProseTextFontColor);
+								fontMetric = QFontMetrics(fnt);
+								textWidth = fontMetric.boundingRect(textEdit->toPlainText()).width();
+							}
+						}
 						int numOfLine = textWidth/rectX2;
-						thisRowHeight = thisRowHeight+(saagharWidget->tableViewWidget->fontMetrics().height()*numOfLine);
+						thisRowHeight = thisRowHeight+(fontMetric.height()*numOfLine);
 					}
 				}
 				else if (columns == 1)
@@ -1065,11 +1086,13 @@ void MainWindow::print(QPrinter *printer)
 				mesraRect.setCoords(rectX1,currentHeight, rectX2, currentHeight+thisRowHeight);
 				col = col+span-1;
 				text = item->text();
+				if (text.isEmpty() && textEdit)
+					text = textEdit->toPlainText();
 
-				QFont fnt = SaagharWidget::tableFont;
+				//QFont fnt = SaagharWidget::tableFont;
 				fnt.setPointSizeF(fnt.pointSizeF()/scale);
 				painter.setFont(fnt);
-				painter.setPen(QColor(SaagharWidget::textColor));
+				painter.setPen(color);
 				painter.setLayoutDirection(Qt::RightToLeft);
 				int flags = item->textAlignment();
 				if (span > 1)
@@ -1191,7 +1214,7 @@ QString MainWindow::convertToHtml(SaagharWidget *saagharObject)
 	}
 
 	QString tableAsHTML = QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"CONTENT-TYPE\" CONTENT=\"text/html; charset=utf-8\">\n<TITLE>%1</TITLE>\n<META NAME=\"GENERATOR\" CONTENT=\"Saaghar, a Persian poetry software, http://saaghar.pozh.org\">\n</HEAD>\n\n<BODY TEXT=%2>\n<FONT FACE=\"%3\">\n<TABLE ALIGN=%4 DIR=RTL FRAME=VOID CELLSPACING=0 COLS=%5 RULES=NONE BORDER=0>\n<COLGROUP>%6</COLGROUP>\n<TBODY>\n%7\n</TBODY>\n</TABLE>\n</BODY>\n</HTML>\n")
-		.arg(curPoem._Title).arg(SaagharWidget::textColor.name()).arg(SaagharWidget::tableFont.family()).arg("CENTER").arg(numberOfCols).arg(columnGroupFormat).arg(tableBody);
+		.arg(curPoem._Title).arg(Settings::getFromColors(Settings::PoemTextFontColor).name()).arg(Settings::getFromFonts(Settings::PoemTextFontColor).family()).arg("CENTER").arg(numberOfCols).arg(columnGroupFormat).arg(tableBody);
 	return tableAsHTML;
 	/*******************************************************
 	%1: title
@@ -1299,7 +1322,7 @@ QString MainWindow::convertToTeX(SaagharWidget *saagharObject)
 		endOfEnvironment = QString("\\end{%1}\n").arg(poemType);
 
 	QString	tableAsTeX = QString("%%%%%\n%This file is generated automatically by Saaghar %1, 2010 http://pozh.org\n%%%%%\n%XePersian and bidipoem packages must have been installed on your TeX distribution for compiling this document\n%You can compile this document by running XeLaTeX on it, twice.\n%%%%%\n\\documentclass{article}\n\\usepackage{hyperref}%\n\\usepackage[Kashida]{xepersian}\n\\usepackage{bidipoem}\n\\settextfont{%2}\n\\hypersetup{\npdftitle={%3},%\npdfsubject={Poem},%\npdfkeywords={Poem, Persian},%\npdfcreator={Saaghar, a Persian poetry software, http://saaghar.pozh.org},%\npdfview=FitV,\n}\n\\renewcommand{\\poemcolsepskip}{1.5cm}\n\\begin{document}\n\\begin{center}\n%3\\\\\n\\end{center}\n\\begin{%4}\n%5\n%6\\end{document}\n%End of document\n")
-								 .arg(VER_FILEVERSION_STR).arg(SaagharWidget::tableFont.family()).arg(curPoem._Title).arg(poemType).arg(tableBody).arg(endOfEnvironment);
+								 .arg(VER_FILEVERSION_STR).arg(Settings::getFromFonts(Settings::PoemTextFontColor).family()).arg(curPoem._Title).arg(poemType).arg(tableBody).arg(endOfEnvironment);
 	return tableAsTeX;
 	/*******************************************************
 	%1: Saaghar Version: VER_FILEVERSION_STR
@@ -1908,13 +1931,6 @@ void MainWindow::globalSettings()
 	settingsDlg->ui->lineEditDataBasePath->setText(QGanjoorDbBrowser::dataBasePath.join(";"));
 	connect( settingsDlg->ui->pushButtonDataBasePath, SIGNAL(clicked()), settingsDlg, SLOT(browseForDataBasePath()));
 
-	//font
-	/*
-	settingsDlg->ui->comboBoxFontFamily->setWritingSystem(QFontDatabase::Arabic);
-	*/
-	settingsDlg->ui->comboBoxFontFamily->setCurrentFont(SaagharWidget::tableFont);
-	settingsDlg->ui->spinBoxFontSize->setValue(SaagharWidget::tableFont.pointSize());
-	
 	settingsDlg->ui->checkBoxBeytNumbers->setChecked(SaagharWidget::showBeytNumbers);
 
 	settingsDlg->ui->checkBoxBackground->setChecked(SaagharWidget::backgroundImageState);
@@ -1932,13 +1948,10 @@ void MainWindow::globalSettings()
 	//colors
 	connect( settingsDlg->ui->pushButtonBackgroundColor, SIGNAL(clicked()), settingsDlg, SLOT(getColorForPushButton()));
 	connect( settingsDlg->ui->pushButtonMatchedTextColor, SIGNAL(clicked()), settingsDlg, SLOT(getColorForPushButton()));
-	connect( settingsDlg->ui->pushButtonTextColor, SIGNAL(clicked()), settingsDlg, SLOT(getColorForPushButton()));
 	settingsDlg->ui->pushButtonBackgroundColor->setPalette(QPalette(SaagharWidget::backgroundColor));
 	settingsDlg->ui->pushButtonBackgroundColor->setAutoFillBackground(true);
 	settingsDlg->ui->pushButtonMatchedTextColor->setPalette(QPalette(SaagharWidget::matchedTextColor));
 	settingsDlg->ui->pushButtonMatchedTextColor->setAutoFillBackground(true);
-	settingsDlg->ui->pushButtonTextColor->setPalette(QPalette(SaagharWidget::textColor));
-	settingsDlg->ui->pushButtonTextColor->setAutoFillBackground(true);
 
 	//splash screen
 	settingsDlg->ui->checkBoxSplashScreen->setChecked(Settings::READ("Display Splash Screen", true).toBool());
@@ -1961,12 +1974,7 @@ void MainWindow::globalSettings()
 	
 		//database path
 		QGanjoorDbBrowser::dataBasePath = settingsDlg->ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
-	
-		//font
-		//QFont font(settingsDlg->ui->comboBoxFontFamily->currentText(), settingsDlg->ui->spinBoxFontSize->value());
-		SaagharWidget::tableFont = settingsDlg->ui->comboBoxFontFamily->currentFont(); //font;
-		SaagharWidget::tableFont.setPointSize(settingsDlg->ui->spinBoxFontSize->value());
-		
+
 		SaagharWidget::showBeytNumbers = settingsDlg->ui->checkBoxBeytNumbers->isChecked();
 	
 		SaagharWidget::backgroundImageState = settingsDlg->ui->checkBoxBackground->isChecked();
@@ -1977,9 +1985,8 @@ void MainWindow::globalSettings()
 		
 		//colors
 		SaagharWidget::backgroundColor = settingsDlg->ui->pushButtonBackgroundColor->palette().background().color();
-		SaagharWidget::textColor = settingsDlg->ui->pushButtonTextColor->palette().background().color();
-		if (settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color() != SaagharWidget::textColor)//they must be different.
-			SaagharWidget::matchedTextColor = settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color();
+		//if (settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color() != SaagharWidget::textColor)//they must be different.
+		SaagharWidget::matchedTextColor = settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color();
 
 		//splash screen
 		Settings::WRITE("Display Splash Screen", settingsDlg->ui->checkBoxSplashScreen->isChecked());
@@ -1996,6 +2003,26 @@ void MainWindow::globalSettings()
 		}
 
 		Settings::WRITE("Main ToolBar Items", mainToolBarItems.join("|"));
+
+		Settings::WRITE("Global Font", settingsDlg->ui->globalFontColorGroupBox->isChecked());
+		QFont fnt;
+		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->globalTextFontColor->sampleFont(), Settings::DefaultFontColor);
+		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->poemTextFontColor->sampleFont(), Settings::PoemTextFontColor);
+		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->proseTextFontColor->sampleFont(), Settings::ProseTextFontColor);
+		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->sectionNameFontColor->sampleFont(), Settings::SectionNameFontColor);
+		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->titlesFontColor->sampleFont(), Settings::TitlesFontColor);
+		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->numbersFontColor->sampleFont(), Settings::NumbersFontColor);
+
+		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->globalTextFontColor->color(), Settings::DefaultFontColor);
+		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->poemTextFontColor->color(), Settings::PoemTextFontColor);
+		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->proseTextFontColor->color(), Settings::ProseTextFontColor);
+		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->sectionNameFontColor->color(), Settings::SectionNameFontColor);
+		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->titlesFontColor->color(), Settings::TitlesFontColor);
+		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->numbersFontColor->color(), Settings::NumbersFontColor);
+
+//		//temp
+//		Settings::WRITE("Fonts Hash", Settings::hashFonts);
+//		Settings::WRITE("Colors Hash", Settings::hashColors);
 
 		/************end of setup new settings************/
 
@@ -2016,6 +2043,7 @@ void MainWindow::globalSettings()
 				if (item)
 				{
 					QString text = item->text();
+					qDebug()<<"WWWWWWHERE IS HERE="<<text<<saagharWidget->currentCat<<saagharWidget->currentCaption;
 					int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
 					int totalWidth = saagharWidget->tableViewWidget->columnWidth(0);
 					saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth));
@@ -2093,11 +2121,37 @@ void MainWindow::loadGlobalSettings()
 	QString fontFamily=config->value("Font Family", "XB Sols").toString();
 	int fontSize=config->value( "Font Size", 18).toInt();
 	QFont fnt(fontFamily,fontSize);
-	SaagharWidget::tableFont = fnt;
+	//SaagharWidget::tableFont = fnt;
 	SaagharWidget::showBeytNumbers = config->value("Show Beyt Numbers",true).toBool();
-	SaagharWidget::textColor = Settings::READ("Text Color",QColor(0x23,0x65, 0xFF)).value<QColor>();
+	//SaagharWidget::textColor = Settings::READ("Text Color",QColor(0x23,0x65, 0xFF)).value<QColor>();
 	SaagharWidget::matchedTextColor = Settings::READ("Matched Text Color",QColor(0x5E, 0xFF, 0x13)).value<QColor>();
 	SaagharWidget::backgroundColor = Settings::READ("Background Color",QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
+
+	//The "FreeFarsi" is an application font
+	QFont freeFarsiFont("FreeFarsi",fontSize);
+
+	QHash<QString, QVariant> defaultFonts;
+	Settings::insertToFontColorHash(&defaultFonts, fnt, Settings::DefaultFontColor);
+	Settings::insertToFontColorHash(&defaultFonts, fnt, Settings::PoemTextFontColor);
+	Settings::insertToFontColorHash(&defaultFonts, freeFarsiFont, Settings::ProseTextFontColor);
+	Settings::insertToFontColorHash(&defaultFonts, freeFarsiFont, Settings::SectionNameFontColor);
+	freeFarsiFont.setBold(true);
+	freeFarsiFont.setPointSize(fontSize+2);
+	Settings::insertToFontColorHash(&defaultFonts, freeFarsiFont, Settings::TitlesFontColor);
+	freeFarsiFont.setPointSize(qMax(8, fontSize-4));
+	freeFarsiFont.setBold(false);
+	Settings::insertToFontColorHash(&defaultFonts, freeFarsiFont, Settings::NumbersFontColor);
+
+	QHash<QString, QVariant> defaultColors;
+	Settings::insertToFontColorHash(&defaultColors, QColor(0x2F,0x90, 0x2D), Settings::DefaultFontColor);
+	Settings::insertToFontColorHash(&defaultColors, QColor(0x2F,0x90, 0x2D), Settings::PoemTextFontColor);
+	Settings::insertToFontColorHash(&defaultColors, QColor(0x2F,0x90, 0x2D), Settings::ProseTextFontColor);
+	Settings::insertToFontColorHash(&defaultColors, QColor(0x00,0x7D, 0x00), Settings::SectionNameFontColor);
+	Settings::insertToFontColorHash(&defaultColors, QColor(0x00,0x7D, 0x00), Settings::TitlesFontColor);
+	Settings::insertToFontColorHash(&defaultColors, QColor(0x00,0x7D, 0x00), Settings::NumbersFontColor);
+
+	Settings::hashFonts = Settings::READ("Fonts Hash", QVariant(defaultFonts)).toHash();
+	Settings::hashColors = Settings::READ("Colors Hash", QVariant(defaultColors)).toHash();
 
 	autoCheckForUpdatesState = config->value("Auto Check For Updates",true).toBool();
 
@@ -2150,7 +2204,7 @@ void MainWindow::loadTabWidgetSettings()
 	{
 		p.setColor(QPalette::Base, SaagharWidget::backgroundColor );
 	}
-	p.setColor(QPalette::Text, SaagharWidget::textColor );
+	p.setColor(QPalette::Text, Settings::getFromColors(Settings::PoemTextFontColor) );
 	mainTabWidget->setPalette(p);
 }
 
@@ -2184,14 +2238,14 @@ void MainWindow::saveSettings()
 	Settings::WRITE("Icon Theme State", settingsIconThemeState);
 	Settings::WRITE("Icon Theme Path", settingsIconThemePath);
 
-	//font
-	config->setValue("Font Family", SaagharWidget::tableFont.family());
-	config->setValue( "Font Size", SaagharWidget::tableFont.pointSize());
+//	//font
+//	config->setValue("Font Family", SaagharWidget::tableFont.family());
+//	config->setValue( "Font Size", SaagharWidget::tableFont.pointSize());
 
 	config->setValue("Show Beyt Numbers", SaagharWidget::showBeytNumbers);
 
 	//colors
-	Settings::WRITE("Text Color", SaagharWidget::textColor);
+	//Settings::WRITE("Text Color", SaagharWidget::textColor);
 	Settings::WRITE("Matched Text Color", SaagharWidget::matchedTextColor);
 	Settings::WRITE("Background Color", SaagharWidget::backgroundColor);
 
@@ -2241,18 +2295,8 @@ void MainWindow::saveSettings()
 
 	config->setValue("Random Open New Tab", randomOpenInNewTab);
 
-	/////////////////////save state////////////////////
-	///////////////////////////////////////////////////
-
-	//variable hash
-	config->setValue("VariableHash", Settings::GET_VARIABLES_VARIANT());
-//	QHash<QString, QVariant> vHash = Settings::GET_VARIABLES_VARIANT().toHash();
-//	QHash<QString, QVariant>::const_iterator it = vHash.constBegin();
-//	while (it != vHash.constEnd())
-//	{
-//		config->setValue(it.key(), it.value());
-//		++it;
-//	}
+	Settings::WRITE("Fonts Hash", Settings::hashFonts);
+	Settings::WRITE("Colors Hash", Settings::hashColors);
 
 	QHash<int, QPair<QString, qint64> >::const_iterator it = SaagharWidget::mediaInfoCash.constBegin();
 
@@ -2274,6 +2318,19 @@ void MainWindow::saveSettings()
 	{
 		SaagharWidget::ganjoorDataBase->dBConnection.commit();
 	}
+
+
+	/////////////////////save state////////////////////
+	///////////////////////////////////////////////////
+	//variable hash
+	config->setValue("VariableHash", Settings::GET_VARIABLES_VARIANT());
+//	QHash<QString, QVariant> vHash = Settings::GET_VARIABLES_VARIANT().toHash();
+//	QHash<QString, QVariant>::const_iterator it = vHash.constBegin();
+//	while (it != vHash.constEnd())
+//	{
+//		config->setValue(it.key(), it.value());
+//		++it;
+//	}
 }
 
 QString MainWindow::tableToString(QTableWidget *table, QString mesraSeparator, QString beytSeparator, int startRow, int startColumn, int endRow, int endColumn)

@@ -90,14 +90,14 @@ public:
 	//STATIC Variables
 	static QString poetsImagesDir;
 	static QLocale  persianIranLocal;
-	static QFont tableFont;
+	//static QFont tableFont;
 	static bool showBeytNumbers;
 	static bool backgroundImageState;
 	static PoemViewStyle CurrentViewStyle;
 	//static bool newSearchFlag;
 	//static bool newSearchSkipNonAlphabet;
 	static QString backgroundImagePath;
-	static QColor textColor;
+	//static QColor textColor;
 	static QColor matchedTextColor;
 	static QColor backgroundColor;
 	static QTableWidgetItem *lastOveredItem;
@@ -136,10 +136,11 @@ public:
 	QUndoStack *undoStack;
 
 private:
-	void doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const QString &currentVerseText, VersePosition versePosition/*, Qt::Alignment beytAlignment*/);
+	void doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const QString &currentVerseText, const QFontMetrics &fontMetric, VersePosition versePosition/*, Qt::Alignment beytAlignment*/);
 	QTextEdit *createItemForLongText(int row, int column, const QString &text = "", const QString &highlightText = "");
 	bool initializeCustomizedHome();
-	QMap<int,int> singleColumnHeightMap;
+	QMap<int,int> rowParagraphHeightMap;
+	QMap<int,int> rowSingleHeightMap;
 	void showCategory(GanjoorCat category);
 	void showPoem(GanjoorPoem poem);
 	QPoint pressedPosition;

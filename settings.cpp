@@ -26,10 +26,69 @@
 #include <QImageReader>
 
 QHash<QString, QVariant> Settings::VariablesHash = QHash<QString, QVariant>();
+QHash<QString, QVariant> Settings::hashFonts = QHash<QString, QVariant>();
+QHash<QString, QVariant> Settings::hashColors = QHash<QString, QVariant>();
 
 Settings::Settings(QWidget *parent) :	QDialog(parent), ui(new Ui::Settings)
 {
 	ui->setupUi(this);
+
+	ui->globalFontColorGroupBox->setChecked(Settings::READ("Global Font", false).toBool());
+	//QHash<QString, QVariant> defaultFonts;
+	//QFont fnt;
+//	defaultFonts.insert("default", fnt);
+//	defaultFonts.insert("PoemText", fnt);
+//	defaultFonts.insert("ProseText", fnt);
+//	defaultFonts.insert("SectionName", fnt);
+//	defaultFonts.insert("PoemTitle", QFont(fnt.family(),fnt.pointSize()+2));
+//	defaultFonts.insert("BeytNumber", fnt);
+	//QHash<QString, QVariant> defaultColors;
+//	defaultColors.insert("default", QColor(0x23,0x65, 0xFF));
+//	defaultColors.insert("PoemText", QColor(0x23,0x65, 0xFF));
+//	defaultColors.insert("ProseText", QColor(0x23,0x65, 0xFF));
+//	defaultColors.insert("SectionName", QColor(0x23,0x65, 0xFF));
+//	defaultColors.insert("PoemTitle", QColor(0x23,0x65, 0xFF));
+//	defaultColors.insert("BeytNumber", QColor(0x23,0x65, 0xFF));
+	
+//	QHash<QString, QVariant> tmphashFonts = Settings::READ("Fonts Hash", QVariant(defaultFonts)).toHash();
+//	QHash<QString, QVariant> tmphashColors = Settings::READ("Colors Hash", QVariant(defaultColors)).toHash();
+
+	globalTextFontColor = new FontColorSelector(getFromFonts(DefaultFontColor, false),
+												getFromColors(DefaultFontColor, false),
+													ui->globalFontColorGroupBox);
+	globalTextFontColor->setObjectName(QString::fromUtf8("globalTextFontColor"));
+	ui->gridLayout_16->addWidget(globalTextFontColor, 0, 1, 1, 1);
+
+
+	sectionNameFontColor = new FontColorSelector(getFromFonts(SectionNameFontColor, false),
+												 getFromColors(SectionNameFontColor, false),
+													 ui->advancedFontColorGroupBox);
+	 sectionNameFontColor->setObjectName(QString::fromUtf8("sectionNameFontColor"));
+	 ui->gridLayout_9->addWidget(sectionNameFontColor, 0, 1, 1, 1);
+
+	titlesFontColor = new FontColorSelector(getFromFonts(TitlesFontColor, false),
+											getFromColors(TitlesFontColor, false),
+												ui->advancedFontColorGroupBox);
+	titlesFontColor->setObjectName(QString::fromUtf8("titlesFontColor"));
+	ui->gridLayout_9->addWidget(titlesFontColor, 1, 1, 1, 1);
+
+	numbersFontColor = new FontColorSelector(getFromFonts(NumbersFontColor, false),
+											 getFromColors(NumbersFontColor, false),
+												 ui->advancedFontColorGroupBox);
+	numbersFontColor->setObjectName(QString::fromUtf8("numbersFontColor"));
+	ui->gridLayout_9->addWidget(numbersFontColor, 2, 1, 1, 1);
+
+	poemTextFontColor = new FontColorSelector(getFromFonts(PoemTextFontColor, false),
+												getFromColors(PoemTextFontColor, false),
+													ui->advancedFontColorGroupBox);
+	poemTextFontColor->setObjectName(QString::fromUtf8("poemTextFontColor"));
+	ui->gridLayout_9->addWidget(poemTextFontColor, 3, 1, 1, 1);
+
+	proseTextFontColor = new FontColorSelector(getFromFonts(ProseTextFontColor, false),
+												getFromColors(ProseTextFontColor, false),
+													ui->advancedFontColorGroupBox);
+	proseTextFontColor->setObjectName(QString::fromUtf8("proseTextFontColor"));
+	ui->gridLayout_9->addWidget(proseTextFontColor, 4, 1, 1, 1);
 }
 
 Settings::~Settings()
@@ -266,6 +325,46 @@ void Settings::browseForIconTheme()
 		}
 }
 
+/* static */
+#include <QDebug>
+QFont Settings::getFromFonts(FontColorItem type, bool canLoadDefault)
+{
+	QFont font;
+	if (Settings::READ("Global Font", false).toBool() && canLoadDefault)
+	{
+		font = Settings::hashFonts.value(QString::number(int(DefaultFontColor))).value<QFont>();
+	}
+	else
+	{
+		font = Settings::hashFonts.value(QString::number(int(type))).value<QFont>();
+	}
+	return font;
+}
+
+/* static */
+QColor Settings::getFromColors(FontColorItem type, bool canLoadDefault)
+{
+	QColor color;
+	if (Settings::READ("Global Font", false).toBool() && canLoadDefault)
+	{
+		color = Settings::hashColors.value(QString::number(int(DefaultFontColor))).value<QColor>();
+	}
+	else
+	{
+		color = Settings::hashColors.value(QString::number(int(type))).value<QColor>();
+	}
+	return color;
+}
+
+/* static */
+void Settings::insertToFontColorHash(QHash<QString, QVariant> *hash, const QVariant &variant, FontColorItem type)
+{
+	if (!hash) return;
+	//if (Settings::READ("Global Font", false).toBool() && type != DefaultFontColor) return;
+	hash->insert(QString::number(int(type)), variant);
+}
+
+
 /*******************************
 // class CustomizeRandomDialog
 ********************************/
@@ -345,4 +444,99 @@ void CustomizeRandomDialog::retranslateUi()
 void CustomizeRandomDialog::acceptSettings(bool *checked)
 {
 	*checked = checkBox->isChecked();
+}
+
+/*******************************
+// class FontColorSelector
+********************************/
+
+#include <QFontDialog>
+
+FontColorSelector::FontColorSelector(const QFont &defaultFont, const QColor &defaultColor, QWidget *parent, const QString &sampleText)
+	: QWidget(parent)
+{
+	sampleLabel = new QLabel(sampleText.isEmpty() ? QString::fromLocal8Bit("نمونه قلم!") /* tr("Font Sample!")*/ : sampleText, parent);
+
+	sampleLabel->setMaximumHeight(30);
+	sampleLabel->setMaximumWidth(400);
+	fontSelector = new QPushButton(tr("Set Font..."), parent); 
+	colorSelector = new QPushButton(parent);
+	colorSelector->setFlat(true);
+	colorSelector->setFixedSize(24,24);
+	QSpacerItem *horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+
+	connect(fontSelector, SIGNAL(clicked()), this, SLOT(selectFont()));
+	connect(colorSelector, SIGNAL(clicked()), this, SLOT(selectColor()));
+
+	//bold = new QCheckBox("Bold", this);
+	//italic = new QCheckBox("Italic", this);
+
+	setSampleFont(defaultFont);
+
+	if (defaultColor.isValid())
+		setColor(defaultColor);
+	else
+		setColor(color());
+
+	hLayout = new QHBoxLayout(0);
+
+	hLayout->addWidget(fontSelector);
+	//hLayout->addWidget(bold);
+	//hLayout->addWidget(italic);
+	hLayout->addItem(horizontalSpacer);
+	hLayout->addWidget(sampleLabel);
+	hLayout->addWidget(colorSelector);
+
+	this->setLayout(hLayout);
+}
+
+QColor FontColorSelector::color()
+{
+	return sampleLabel->palette().color(QPalette::WindowText);
+}
+
+void FontColorSelector::setColor(const QColor &color)
+{
+	if (!color.isValid()) return;
+
+	colorSelector->setPalette(QPalette(color));
+	colorSelector->setAutoFillBackground(true);
+
+	QPalette p(sampleLabel->palette());
+	p.setColor(QPalette::WindowText, color);
+	sampleLabel->setPalette(p);
+}
+
+void FontColorSelector::setSampleFont(const QFont &font)
+{
+	sampleLabel->setFont(font);
+
+	//italic->setChecked(font.italic());
+	//bold->setChecked(font.bold());
+}
+
+void FontColorSelector::selectFont()
+{
+	//bool ok;
+	QFont tmp = sampleFont();
+	//QFont font = QFontDialog::getFont(&ok, sampleFont(), this);
+	QFontDialog fontDialog(tmp, this);
+	connect(&fontDialog, SIGNAL(currentFontChanged(QFont)), this, SLOT(setSampleFont(QFont)));
+	//connect(&fontDialog, SIGNAL(currentFontChanged(QFont)), this, SLOT(setSampleFont(QFont)));
+
+	if (fontDialog.exec())
+	{
+		setSampleFont(fontDialog.selectedFont());
+	}
+	else
+	{
+		//maybe after emmitting signals font has been changed
+		setSampleFont(tmp);
+	}
+}
+
+void FontColorSelector::selectColor()
+{
+	QColor color = QColorDialog::getColor(colorSelector->palette().background().color(), this);
+	setColor(color);
 }

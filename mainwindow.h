@@ -29,6 +29,7 @@
 #include <QSpinBox>
 #include <QToolButton>
 #include <QUndoGroup>
+#include <QComboBox>
 
 class QMultiSelectWidget;
 

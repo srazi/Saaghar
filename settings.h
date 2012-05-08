@@ -31,6 +31,8 @@ namespace Ui {
 	class Settings;
 }
 
+class FontColorSelector;
+
 class Settings : public QDialog
 {
 	Q_OBJECT
@@ -38,8 +40,31 @@ class Settings : public QDialog
 public:
 	explicit Settings(QWidget *parent = 0);
 	~Settings();
+
+	FontColorSelector *globalTextFontColor;
+	FontColorSelector *poemTextFontColor;
+	FontColorSelector *proseTextFontColor;
+	FontColorSelector *sectionNameFontColor;
+	FontColorSelector *titlesFontColor;
+	FontColorSelector *numbersFontColor;
+
 	Ui::Settings *ui;
 	void initializeActionTables(const QMap<QString, QAction *> &actionsMap, const QStringList &toolBarItems);
+
+	enum FontColorItem {
+		DefaultFontColor = 0,
+		PoemTextFontColor = 1,
+		ProseTextFontColor = 2,
+		SectionNameFontColor = 3,
+		TitlesFontColor = 4,
+		NumbersFontColor = 5
+	};
+
+	static QHash<QString, QVariant> hashFonts;
+	static QHash<QString, QVariant> hashColors;
+	static QFont getFromFonts(FontColorItem type = DefaultFontColor, bool canLoadDefault = true);
+	static QColor getFromColors(FontColorItem type = DefaultFontColor, bool canLoadDefault = true);
+	static void insertToFontColorHash(QHash<QString, QVariant> *hash, const QVariant &variant, FontColorItem type = DefaultFontColor);
 
 	//settings variables
 	inline static QVariant READ(const QString &key, const QVariant &defaultValue = QVariant())
@@ -104,6 +129,33 @@ private:
 	QPushButton *pushButtonCancel;
 	void setupui();
 	void retranslateUi();
+};
+
+class FontColorSelector : public QWidget
+{
+	Q_OBJECT
+
+public:
+	FontColorSelector(const QFont &defaultFont = QFont(), const QColor &defaultColor = QColor(), QWidget *parent = 0, const QString &sampleText = "");
+	inline QFont sampleFont()
+		{return sampleLabel->font();}
+	QColor color();
+
+public slots:
+	void setSampleFont(const QFont &font);
+	void setColor(const QColor &color);
+
+private:
+	QLabel *sampleLabel;
+	QPushButton *fontSelector; 
+	QPushButton *colorSelector;
+	QCheckBox *bold;
+	QCheckBox *italic;
+	QHBoxLayout *hLayout;
+
+private slots:
+	void selectFont();
+	void selectColor();
 };
 
 #endif // SETTINGS_H
