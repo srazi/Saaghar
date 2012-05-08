@@ -2040,14 +2040,15 @@ void MainWindow::globalSettings()
 			if (saagharWidget->tableViewWidget->columnCount() == 1 && saagharWidget->tableViewWidget->rowCount() > 0 && saagharWidget->currentCat != 0)
 			{
 				QTableWidgetItem *item = saagharWidget->tableViewWidget->item(0,0);
-				if (item)
-				{
-					QString text = item->text();
-					qDebug()<<"WWWWWWHERE IS HERE="<<text<<saagharWidget->currentCat<<saagharWidget->currentCaption;
-					int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
-					int totalWidth = saagharWidget->tableViewWidget->columnWidth(0);
-					saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth));
-				}
+				//it seems after using QTextEdit this is not needed!
+//				if (item)
+//				{
+//					QString text = item->text();
+//					qDebug()<<"WWWWWWHERE IS HERE="<<text<<saagharWidget->currentCat<<saagharWidget->currentCaption;
+//					int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
+//					int totalWidth = saagharWidget->tableViewWidget->columnWidth(0);
+//					saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth));
+//				}
 			}
 			else if ( saagharWidget->currentCat == 0 && saagharWidget->currentPoem == 0 ) //it's Home.
 			{
@@ -2493,7 +2494,11 @@ void MainWindow::tableCurrentItemChanged(QTableWidgetItem *current, QTableWidget
 		current->setBackground(QBrush(image));
 		//TODO: pageup and page down miss one row!! Qt-4.7.3
 		if (saagharWidget && (saagharWidget->currentPoem > 0 || saagharWidget->currentCat > 0) ) //everywhere but home
-			saagharWidget->tableViewWidget->scrollToItem(current);
+		{
+			//saagharWidget->tableViewWidget->scrollToItem(current);
+			//Fixed BUG: sometimes saagharWidget->tableViewWidget != current->tableWidget()
+			current->tableWidget()->scrollToItem(current);
+		}
 	}
 }
 
