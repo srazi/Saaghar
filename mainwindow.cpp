@@ -928,7 +928,30 @@ void MainWindow::updateCaption()
 void MainWindow::tableSelectChanged()
 {//Bug in Qt: old selection is not repainted properly
 	if (saagharWidget)
+	{
 		saagharWidget->tableViewWidget->viewport()->update();
+		for(int row = 0; row < saagharWidget->tableViewWidget->rowCount() ; ++row )
+		{
+			QTableWidgetItem *item = saagharWidget->tableViewWidget->item(row , 1);
+			if (item && item->text().isEmpty())
+			{
+				QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharWidget->tableViewWidget->cellWidget(row, 1));
+				if (textEdit)
+				{
+					QTextCursor textCursor(textEdit->textCursor());
+					if (item->isSelected() && !textCursor.hasSelection())
+					{
+						textEdit->selectAll();
+					}
+					else if (!item->isSelected() && textCursor.selectedText()==textEdit->toPlainText())
+					{
+						textCursor.clearSelection();
+						textEdit->setTextCursor(textCursor);
+					}
+				}
+			}
+		}
+	}
 }
 
 void MainWindow::actionExportAsPDFClicked()
