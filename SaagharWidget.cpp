@@ -1348,6 +1348,7 @@ QTableWidgetItem *SaagharWidget::scrollToFirstItemContains(const QString &phrase
 					}
 				}
 				text =  QGanjoorDbBrowser::cleanString(text);
+				text.remove(".");//remove because of elided text
 				text.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
 				text = text.simplified();
 				if (text.isEmpty()) continue;
@@ -1355,6 +1356,7 @@ QTableWidgetItem *SaagharWidget::scrollToFirstItemContains(const QString &phrase
 				for (int i=0; i<listSize;++i)
 				{
 					keyword = list.at(listSize-1-i);//start from last, probably it's the new one!
+					keyword.remove(".");//remove because of elided text
 
 					if (keyword.contains("@"))
 					{
@@ -1454,6 +1456,7 @@ void SaagharWidget::clickedOnItem(int row,int column)
 				if (textEdit)
 				{
 					verseText = textEdit->toPlainText().simplified();
+					verseText = QGanjoorDbBrowser::snippedText(verseText, "", 0, 20);
 				}
 			}
 			//verseText = verseText.trimmed();
