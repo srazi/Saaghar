@@ -147,6 +147,7 @@ private:
 	bool dirty;
 
 private slots:
+	void createCustomContextMenu(const QPoint &pos);
 	void parentCatClicked();
 	void clickedOnItem(int row,int col);
 	void pressedOnItem(int row,int col);
@@ -159,5 +160,6 @@ signals:
 	void navNextActionState(bool);
 	void navPreviousActionState(bool);
 	void loadingStatusText(const QString &);
+	void createContextMenuRequested(const QPoint &);
 };
 #endif // SAAGHARWIDGET_H

@@ -76,7 +76,8 @@ SaagharWidget::SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidge
 {
 	pageMetaInfo.id = 0;
 	pageMetaInfo.type = SaagharWidget::CategoryViewerPage;
-	//pageMetaInfo.mediaFile = "";
+
+	tableViewWidget->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	dirty = true;
 	minMesraWidth = 0;
@@ -1396,6 +1397,7 @@ int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidt
 void SaagharWidget::pressedOnItem(int row,int /*col*/)
 {
 	pressedPosition = QCursor::pos();
+	//if (QApplication::mouseButtons()!=Qt::RightButton)
 	clickedOnItem(row, -1);
 }
 
@@ -1521,7 +1523,7 @@ void SaagharWidget::clickedOnItem(int row,int column)
 	for (int col = 0; col<tableViewWidget->columnCount(); ++col)
 	{
 		QTableWidgetItem *item = tableViewWidget->item(row, col);
-		if (item)
+		if (item && QApplication::mouseButtons()!=Qt::RightButton)
 		{
 			if (item->isSelected() /*->flags() & Qt::ItemIsSelectable*/ )
 			{
@@ -1559,6 +1561,9 @@ QTextEdit *SaagharWidget::createItemForLongText(int row, int column, const QStri
 	QTextEdit *para = new QTextEdit(tableViewWidget);
 	para->setStyleSheet(QString("QTextEdit{background: transparent; border: none; selection-color: %1; selection-background-color: %2;}").arg(tableViewWidget->palette().color(QPalette::HighlightedText).name()).arg(tableViewWidget->palette().color(QPalette::Highlight).name()));
 	//para->setAlignment(Qt::AlignJustify);
+	para->setContextMenuPolicy(Qt::CustomContextMenu);
+	//connect(para, SIGNAL(customContextMenuRequested(QPoint)), this, SIGNAL(createContextMenuRequested(QPoint)));
+	connect(para, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
 
 	para->setFont(Settings::getFromFonts(Settings::ProseTextFontColor));
 	para->setTextColor(Settings::getFromColors(Settings::ProseTextFontColor));
@@ -1627,8 +1632,8 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 		int tmpW=QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(tmp).width();
 		int aW=QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect("a").width();
 		int nW=QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect("\n").width();
-		qDebug()<<"aW="<<aW<<"nW="<<nW;
-		qDebug() << "Paragraph1-textWidth="<<textWidth<<"tmpW=="<<tmpW<<"newLineCount="<<currentVerseText.count("\n")<<"text="<<currentVerseText;
+		//qDebug()<<"aW="<<aW<<"nW="<<nW;
+		//qDebug() << "Paragraph1-textWidth="<<textWidth<<"tmpW=="<<tmpW<<"newLineCount="<<currentVerseText.count("\n")<<"text="<<currentVerseText;
 		//textWidth = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(currentVerseText).width();
 		//qDebug() << "Paragraph2-textWidth="<<textWidth<<"text="<<currentVerseText;
 		//totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
@@ -1842,4 +1847,12 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 	default:
 		break;
 	}// end of CurrentViewStyle switch
+}
+
+void SaagharWidget::createCustomContextMenu(const QPoint &pos)
+{
+	QTextEdit *textEdit = qobject_cast<QTextEdit *>(sender());
+	if (!textEdit || !tableViewWidget || currentPoem==0) return;
+
+	emit createContextMenuRequested(textEdit->mapToParent(pos));
 }

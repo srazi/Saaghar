@@ -52,6 +52,7 @@ class MainWindow : public QMainWindow
 //		void emitReSizeEvent();
 
 	private:
+		bool skipContextMenu;
 		void setupBookmarkManagerUi();
 		QString currentIconThemePath();
 		QBoxLayout *searchToolBarBoxLayout;
@@ -126,6 +127,7 @@ class MainWindow : public QMainWindow
 		void updateTabsSubMenus();
 
 	private slots:
+		void createCustomContextMenu(const QPoint &pos);
 		void mediaInfoChanged(const QString &fileName);
 		void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true, bool unbookmark = true);
 		void setHomeAsDirty();

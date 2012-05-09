@@ -158,6 +158,8 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	saagharWidget = 0;
 	pressedMouseButton = Qt::LeftButton;
 
+	skipContextMenu = false;
+
 	SaagharWidget::poetsImagesDir = resourcesPath + "/poets_images/";
 	
 	//loading application fonts
@@ -886,7 +888,10 @@ void MainWindow::insertNewTab()
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemEntered(QTableWidgetItem *)), this, SLOT(tableItemMouseOver(QTableWidgetItem *)));
 	connect(saagharWidget->tableViewWidget, SIGNAL(currentItemChanged(QTableWidgetItem *,QTableWidgetItem *)), this, SLOT(tableCurrentItemChanged(QTableWidgetItem *,QTableWidgetItem *)));
-	
+
+	connect(saagharWidget->tableViewWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
+	qDebug()<<"createContextMenuRequested="<< connect(saagharWidget, SIGNAL(createContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
+
 	//Enable/Disable navigation actions
 	connect(saagharWidget, SIGNAL(navPreviousActionState(bool)),	actionInstance("actionPreviousPoem"), SLOT(setEnabled(bool)) );
 	connect(saagharWidget, SIGNAL(navNextActionState(bool)),	actionInstance("actionNextPoem"), SLOT(setEnabled(bool)) );
@@ -929,7 +934,7 @@ void MainWindow::tableSelectChanged()
 {//Bug in Qt: old selection is not repainted properly
 	if (saagharWidget)
 	{
-		saagharWidget->tableViewWidget->viewport()->update();
+		disconnect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
 		for(int row = 0; row < saagharWidget->tableViewWidget->rowCount() ; ++row )
 		{
 			QTableWidgetItem *item = saagharWidget->tableViewWidget->item(row , 1);
@@ -939,9 +944,13 @@ void MainWindow::tableSelectChanged()
 				if (textEdit)
 				{
 					QTextCursor textCursor(textEdit->textCursor());
-					if (item->isSelected() && !textCursor.hasSelection())
+					if (item->isSelected())
 					{
-						textEdit->selectAll();
+						item->setSelected(false);
+						if (!textCursor.hasSelection())
+						{
+							textEdit->selectAll();
+						}
 					}
 					else if (!item->isSelected() && textCursor.selectedText()==textEdit->toPlainText())
 					{
@@ -951,6 +960,8 @@ void MainWindow::tableSelectChanged()
 				}
 			}
 		}
+		saagharWidget->tableViewWidget->viewport()->update();
+		connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
 	}
 }
 
@@ -1802,6 +1813,7 @@ void MainWindow::setupUi()
 	menuBookmarks->addAction(actionInstance("ImportGanjoorBookmarks"));
 
 	menuTools->addAction(actionInstance("searchToolbarAction"));
+	menuTools->addAction(actionInstance("actionCopy"));
 	menuTools->addSeparator();
 	menuTools->addAction(actionInstance("actionViewInGanjoorSite"));
 	menuTools->addAction(actionInstance("Ganjoor Verification"));
@@ -2398,15 +2410,51 @@ void MainWindow::copySelectedItems()
 	if (!saagharWidget || !saagharWidget->tableViewWidget) return;
 	QString selectedText="";
 	QList<QTableWidgetSelectionRange> selectedRanges = saagharWidget->tableViewWidget->selectedRanges();
-	if (selectedRanges.isEmpty())
-		return;
+//	if (selectedRanges.isEmpty())
+//		return;
+
+	int row = 0;
+
 	foreach(QTableWidgetSelectionRange selectedRange, selectedRanges)
 	{
 		if ( selectedRange.rowCount() == 0 || selectedRange.columnCount() == 0 )
-			return;
+			continue;//return;
+
+		for (int i=row; i<selectedRange.topRow();++i)
+		{
+			QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharWidget->tableViewWidget->cellWidget(i, 1));
+			if (textEdit)
+			{
+				QString sel = textEdit->textCursor().selectedText();
+				if (!sel.isEmpty())
+					selectedText += sel+"\n";
+			}
+		}
+		row = selectedRange.topRow()+1;
 		selectedText += tableToString(saagharWidget->tableViewWidget, "          "/*ten blank spaces-Mesra separator*/, "\n"/*Beyt separator*/, selectedRange.topRow(), selectedRange.leftColumn(), selectedRange.bottomRow()+1, selectedRange.rightColumn()+1);
 	}
-	QApplication::clipboard()->setText(selectedText);
+
+	QString test = selectedText;
+	test.remove(" ");
+	test.remove("\n");
+	test.remove("\t");
+	if (test.isEmpty())
+	{
+		selectedText = "";
+		for (int i=0; i<saagharWidget->tableViewWidget->rowCount();++i)
+		{
+			QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharWidget->tableViewWidget->cellWidget(i, 1));
+			if (textEdit)
+			{
+				QString sel = textEdit->textCursor().selectedText();
+				if (!sel.isEmpty())
+					selectedText += sel+"\n";
+			}
+		}
+	}
+
+	if (!selectedText.isEmpty())
+		QApplication::clipboard()->setText(selectedText);
 }
 
 //Navigation
@@ -2525,16 +2573,31 @@ void MainWindow::tableCurrentItemChanged(QTableWidgetItem *current, QTableWidget
 	}
 }
 
-void MainWindow::tableItemPress(QTableWidgetItem *)
+void MainWindow::tableItemPress(QTableWidgetItem *item)
 {
 	pressedMouseButton = QApplication::mouseButtons();
+	if (item)
+	{
+		if (pressedMouseButton == Qt::RightButton)
+			qDebug()<<"Press->RightClick";
+
+		if (item->isSelected())
+			qDebug()<<"Press->selected";
+	}
 }
 
 void MainWindow::tableItemClick(QTableWidgetItem *item)
 {
 	QTableWidget *senderTable = item->tableWidget();
 	if (!saagharWidget || !senderTable)	return;
+	if (item)
+	{
+		if (pressedMouseButton == Qt::RightButton)
+			qDebug()<<"Click->RightClick";
 
+		if (item->isSelected())
+			qDebug()<<"Click->selected";
+	}
 	disconnect(senderTable, SIGNAL(itemClicked(QTableWidgetItem *)), 0, 0);
 	QStringList itemData = item->data(Qt::UserRole).toString().split("=", QString::SkipEmptyParts);
 	
@@ -2577,7 +2640,7 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 	if (pressedMouseButton == Qt::RightButton)
 	{
 		//qDebug() << "tableItemClick-Qt::RightButton";
-
+		skipContextMenu = true;
 		newTabForItem(itemData.at(0), idData, noError);
 
 		saagharWidget->scrollToFirstItemContains(searchVerseData, false);
@@ -3391,5 +3454,75 @@ void MainWindow::mediaInfoChanged(const QString &fileName)
 			time = SaagharWidget::musicPlayer->currentTime();
 		SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
 		//saagharWidget->pageMetaInfo.mediaFile = fileName;
+	}
+}
+
+void MainWindow::createCustomContextMenu(const QPoint &pos)
+{
+	if (!saagharWidget || !saagharWidget->tableViewWidget/*|| saagharWidget->currentPoem==0*/) return;
+	if (skipContextMenu)
+	{
+		skipContextMenu = false;
+		return;
+	}
+qDebug() << "MainWindow--createCustomContextMenu-Pos="<<pos;
+	QTableWidgetItem *item = saagharWidget->tableViewWidget->itemAt(pos);
+
+	QString cellText = "";
+	if (item)
+	{
+		cellText = item->text();
+		if (cellText.isEmpty())
+		{
+			QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharWidget->tableViewWidget->cellWidget(item->row(), item->column()));
+			if (textEdit)
+				cellText = textEdit->toPlainText();
+		}
+	}
+
+	QMenu *contextMenu = new QMenu;
+//	QAction *contextAction;
+	contextMenu->addAction(tr("Copy Selected Text"));
+	contextMenu->addAction(tr("Copy Cell\'s Text"));
+	contextMenu->addAction(tr("Copy All"));
+	contextMenu->addSeparator();
+	contextMenu->addAction(tr("New Tab"));
+	contextMenu->addAction(tr("Duplicate Tab"));
+	contextMenu->addAction(tr("Refresh"));
+
+	QAction *action = contextMenu->exec(QCursor::pos());
+	if (!action)
+		return;
+
+	QString text = action->text();
+	text.remove("&");
+
+	if (text == tr("Copy Selected Text"))
+	{
+		copySelectedItems();
+	}
+	else if (text == tr("Copy Cell\'s Text"))
+	{
+		if (!cellText.isEmpty())
+		{
+			QApplication::clipboard()->setText(cellText);
+		}
+	}
+	else if (text == tr("Copy All"))
+	{
+		QString tableText = tableToString(saagharWidget->tableViewWidget, "          "/*ten blank spaces-Mesra separator*/, "\n"/*Beyt separator*/, 0, 1, saagharWidget->tableViewWidget->rowCount(), saagharWidget->tableViewWidget->columnCount());
+		QApplication::clipboard()->setText(tableText);
+	}
+	else if (text == tr("New Tab"))
+	{
+		insertNewTab();
+	}
+	else if (text == tr("Duplicate Tab"))
+	{
+		newTabForItem(saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage ? "PoemID" : "CatID", saagharWidget->pageMetaInfo.id, true);
+	}
+	else if (text == tr("Refresh"))
+	{
+		saagharWidget->refresh();
 	}
 }
