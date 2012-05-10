@@ -25,8 +25,8 @@
 #include "SaagharWidget.h"
 #include <QtGui>
 #include <QIcon>
-#define QStyledItemDelegate QItemDelegate
-SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString phrase) : QStyledItemDelegate(parent)
+
+SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString phrase) : QItemDelegate(parent)
 {
 	keywordList.clear();
 	keywordList = SearchPatternManager::phraseToList(phrase, false);
@@ -63,7 +63,8 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 	QString text="";
 	QString cleanedText = "";
 	int lastX,x;
-	const QFontMetrics fontMetric(option.fontMetrics);
+	QFontMetrics fontMetric(index.data(Qt::FontRole).value<QFont>());
+
 	const QString tatweel = QString(0x0640);
 
 	int iconWidth = 0;
@@ -179,7 +180,7 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 				painter->setPen(defaultPen);
 				//painter->fillRect( rectf, itemBrush );
 			}
-			x += option.fontMetrics.width(thisPart);
+			x += fontMetric.width(thisPart);
 			lastX = x;
 		}
 	}
@@ -192,7 +193,7 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 		//painter->fillRect( rectf, itemBrush );
 	}
 	}
-	QStyledItemDelegate::paint(painter, option, index);
+	QItemDelegate::paint(painter, option, index);
 }
 
 void SaagharItemDelegate::keywordChanged(const QString &text)

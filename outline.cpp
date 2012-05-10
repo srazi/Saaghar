@@ -51,6 +51,7 @@
 #include <QHeaderView>
 #include <QApplication>
 #include <QSearchLineEdit>
+
 #include "outline.h"
 #include "QGanjoorDbBrowser.h"
 
