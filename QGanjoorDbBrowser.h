@@ -41,6 +41,8 @@
 #include "sqlite3.h"
 #endif
 
+class QTreeWidgetItem;
+
 class QGanjoorDbBrowser : public QObject
 {
 	Q_OBJECT
@@ -97,6 +99,8 @@ class QGanjoorDbBrowser : public QObject
 		void removePoetFromDataBase(int PoetID);
 		bool importDataBase(const QString filename);
 		QSqlDatabase dBConnection;
+
+		QList<QTreeWidgetItem *> loadOutlineFromDataBase(int parentID = 0);
 
 		//STATIC Variables
 		static QStringList dataBasePath;

@@ -32,6 +32,7 @@
 #include <QComboBox>
 
 class QMultiSelectWidget;
+class OutLineTree;
 
 namespace Ui {
 	class MainWindow;
@@ -52,6 +53,8 @@ class MainWindow : public QMainWindow
 //		void emitReSizeEvent();
 
 	private:
+		QSplitter *splitter;
+		OutLineTree *outlineTree;
 		bool skipContextMenu;
 		void setupBookmarkManagerUi();
 		QString currentIconThemePath();
@@ -127,6 +130,7 @@ class MainWindow : public QMainWindow
 		void updateTabsSubMenus();
 
 	private slots:
+		void openParentPage(int parentID);
 		void createCustomContextMenu(const QPoint &pos);
 		void mediaInfoChanged(const QString &fileName);
 		void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true, bool unbookmark = true);
@@ -164,7 +168,7 @@ class MainWindow : public QMainWindow
 		void currentTabChanged(int tabIndex);
 		void tabCloser(int tabIndex);
 		void globalSettings();
-		void newTabForItem(QString type, int id, bool noError);
+		void newTabForItem(int id, const QString &type = "CatID", bool noError = true);
 		void updateCaption();
 		void searchStart();
 			//Navigation

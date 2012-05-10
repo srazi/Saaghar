@@ -41,7 +41,7 @@
 
 class QSearchLineEdit;
 class QTextEdit;
-
+class QSplitter;
 class QMusicPlayer;
 
 class SaagharWidget : public QWidget
@@ -74,6 +74,7 @@ public:
 	QString currentCaption;
 	QPushButton *parentCatButton;
 	QTableWidget *tableViewWidget;
+	//QSplitter *splitter;
 	void resizeTable(QTableWidget *table);
 	bool nextPoem();
 	bool previousPoem();

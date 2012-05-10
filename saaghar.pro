@@ -40,7 +40,8 @@ HEADERS += $${SOURCE_DIR}/mainwindow.h \
 	$${SOURCE_DIR}/SearchPatternManager.h \
 	$${SOURCE_DIR}/version.h \
 	$${SOURCE_DIR}/bookmarks.h \
-	$${SOURCE_DIR}/commands.h
+	$${SOURCE_DIR}/commands.h \
+	$${SOURCE_DIR}/outline.h
 
 FORMS += $${SOURCE_DIR}/mainwindow.ui \
 	$${SOURCE_DIR}/settings.ui
@@ -54,7 +55,8 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/SearchResultWidget.cpp \
 	$${SOURCE_DIR}/SearchPatternManager.cpp \
 	$${SOURCE_DIR}/bookmarks.cpp \
-	$${SOURCE_DIR}/commands.cpp
+	$${SOURCE_DIR}/commands.cpp \
+	$${SOURCE_DIR}/outline.cpp
 
 include($${SOURCE_DIR}/pQjWidgets/pQjWidgets.pri)
 include($${SOURCE_DIR}/qmusicplayer/qmusicplayer.pri)

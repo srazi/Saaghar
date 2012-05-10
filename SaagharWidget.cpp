@@ -36,6 +36,7 @@
 #include <QAction>
 #include <QFile>
 #include <QTextEdit>
+#include <QSplitter>
 
 //STATIC Variables
 QString SaagharWidget::poetsImagesDir = QString();

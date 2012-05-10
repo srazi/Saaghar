@@ -28,6 +28,7 @@
 #include "SearchResultWidget.h"
 #include "SearchPatternManager.h"
 #include "qmusicplayer.h"
+#include "outline.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -58,6 +59,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QActionGroup>
+#include <QSplitter>
 
 //const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 
@@ -183,7 +185,7 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	parentCatsToolBar->setWindowTitle(QApplication::translate("MainWindow", "Parent Categories", 0, QApplication::UnicodeUTF8));
 
 	//create Tab Widget
-	mainTabWidget = new QTabWidget(ui->centralWidget);
+	mainTabWidget = new QTabWidget;//(ui->centralWidget);
 	mainTabWidget->setDocumentMode(true);
 	mainTabWidget->setUsesScrollButtons(true);
 	mainTabWidget->setMovable(true);
@@ -259,7 +261,18 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 
 	ui->gridLayout->setContentsMargins(0,0,0,0);
 	
-	ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
+	//ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
+
+	outlineTree = new OutLineTree;
+	outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
+	connect(outlineTree, SIGNAL(openParentRequested(int)), this, SLOT(openParentPage(int)));
+	connect(outlineTree, SIGNAL(newParentRequested(int)), this, SLOT(newTabForItem(int)));
+	splitter = new QSplitter(ui->centralWidget);
+	splitter->setObjectName("splitter");
+	splitter->addWidget(outlineTree);
+	splitter->addWidget(mainTabWidget);
+
+	ui->gridLayout->addWidget(splitter, 0, 0, 1, 1);
 
 	if (!fresh)
 	{
@@ -272,7 +285,7 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 				bool Ok = false;
 				int id = tabViewData.at(1).toInt(&Ok);
 				if (Ok)
-					newTabForItem(tabViewData.at(0), id, true);
+					newTabForItem(id, tabViewData.at(0), true);
 			}
 		}
 	}
@@ -308,6 +321,12 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 
 	restoreState( Settings::READ("MainWindowState").toByteArray(), 1);
 	restoreGeometry(Settings::READ("Mainwindow Geometry").toByteArray());
+
+	if (!splitter->restoreState(Settings::READ("SplitterState").toByteArray()))
+	{
+		int bigOne = (width()*3)/4;
+		splitter->setSizes( QList<int>() <<  width()-bigOne << bigOne);
+	}
 
 	emit loadingStatusText(tr("<i><b>Saaghar is starting...</b></i>"));
 }
@@ -571,6 +590,15 @@ void MainWindow::currentTabChanged(int tabIndex)
 	{
 		SaagharWidget *old_saagharWidget = saagharWidget;
 		saagharWidget = tmpSaagharWidget;
+
+//		if (old_saagharWidget && old_saagharWidget->splitter && saagharWidget->splitter)
+//		{
+//		qDebug()<<"currentTabChanged222="<<old_saagharWidget<<"saagharWidget="<<saagharWidget;
+//			QList<int> sizes = old_saagharWidget->splitter->sizes();
+//			saagharWidget->splitter->insertWidget(old_saagharWidget->splitter->indexOf(outlineTree), outlineTree);
+//			saagharWidget->splitter->setSizes(sizes);
+//		}
+
 		saagharWidget->loadSettings();
 
 		if ( saagharWidget->isDirty() )
@@ -817,6 +845,14 @@ void MainWindow::tabCloser(int tabIndex)
 	connect(tabAct, SIGNAL(triggered()), this, SLOT(actionClosedTabsClicked()) );
 	menuClosedTabs->addAction(tabAct);
 
+//	if (tmp && tmp->splitter && saagharWidget->splitter)
+//	{
+//		qDebug()<<"tabCloser()111="<<tmp<<"saagharWidget="<<saagharWidget;
+//		QList<int> sizes = tmp->splitter->sizes();
+//		saagharWidget->splitter->insertWidget(tmp->splitter->indexOf(outlineTree), outlineTree);
+//		saagharWidget->splitter->setSizes(sizes);
+//	}
+
 //	QAction *tabAction = new QAction(mainTabWidget->tabText(i), menuOpenedTabs);
 //	tabAction->setData(mainTabWidget->widget(i) /*QString::number(i)*/);
 //	menuOpenedTabs->addAction(tabAction);
@@ -839,7 +875,7 @@ void MainWindow::insertNewTab()
 	QWidget *tabContent = new QWidget();
 	QGridLayout *tabGridLayout = new QGridLayout(tabContent);
 	tabGridLayout->setObjectName(QString::fromUtf8("tabGridLayout"));
-	QTableWidget *tabTableWidget = new QTableWidget(tabContent);
+	QTableWidget *tabTableWidget = new QTableWidget;//(tabContent);
 
 	//table defaults
 	tabTableWidget->setObjectName(QString::fromUtf8("mainTableWidget"));
@@ -868,13 +904,34 @@ void MainWindow::insertNewTab()
 	//tmp->scrollToFirstItemContains(SaagharWidget::lineEditSearchText->text());
 	//tabTableWidget->setItemDelegate(new SaagharItemDelegate(tabTableWidget, tabTableWidget->style()));
 	///////
-
+	SaagharWidget *old_saagharWidget = saagharWidget;
 	saagharWidget = new SaagharWidget( tabContent, parentCatsToolBar, tabTableWidget);
 	saagharWidget->setObjectName(QString::fromUtf8("saagharWidget"));
 
 	undoGroup->addStack(saagharWidget->undoStack);
 	//currentTabChanged() does this
 	//undoGroup->setActiveStack(saagharWidget->undoStack);
+
+////	saagharWidget->splitter = new QSplitter(tabContent);
+////	//QTextEdit *test = new QTextEdit("TESSSSSSSSSSSSSSSSSST TESSSSSSSSSSSST");
+////	saagharWidget->splitter->addWidget(outlineTree);
+////	saagharWidget->splitter->addWidget(tabTableWidget);
+//	if (old_saagharWidget && old_saagharWidget->splitter)
+//	{//calculate place and size based previous one.
+//		QList<int> sizes = old_saagharWidget->splitter->sizes();
+//		saagharWidget->splitter->insertWidget(old_saagharWidget->splitter->indexOf(outlineTree), outlineTree);
+//		saagharWidget->splitter->setSizes(sizes);
+//	}
+
+//	saagharWidget->splitter->handle(1)->setStyleSheet("QSplitter::handle {\
+//											background: red;\
+//											image: url(images/splitter.png);}\
+//										QSplitter::handle:horizontal {\
+//											width: 2px;}\
+//										QSplitter::handle:vertical {\
+//											height: 2px;\
+//										QSplitter::handle:pressed {\
+//											url(images/splitter_pressed.png);}");
 
 	connect(saagharWidget, SIGNAL(loadingStatusText(QString)), this, SIGNAL(loadingStatusText(QString)));
 
@@ -902,7 +959,7 @@ void MainWindow::insertNewTab()
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
 
 	tabGridLayout->setContentsMargins(3,4,3,3);
-	tabGridLayout->addWidget(tabTableWidget, 0, 0, 1, 1);
+	tabGridLayout->addWidget(/*saagharWidget->splitter*/tabTableWidget, 0, 0, 1, 1);
 
 	mainTabWidget->setUpdatesEnabled(false);
 
@@ -913,7 +970,7 @@ void MainWindow::insertNewTab()
 	mainTabWidget->setUpdatesEnabled(true);
 }
 
-void MainWindow::newTabForItem(QString type, int id, bool noError)
+void MainWindow::newTabForItem(int id, const QString &type, bool noError)
 {
 	insertNewTab();
 	saagharWidget->processClickedItem(type, id, noError);
@@ -1435,7 +1492,7 @@ void MainWindow::actionFaalRandomClicked()
 	GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(PoemID);
 	if (!poem.isNull() && poem._CatID == actionData)
 		if (randomOpenInNewTab)
-			newTabForItem("PoemID", poem._ID, true);
+			newTabForItem(poem._ID, "PoemID", true);
 		else
 			saagharWidget->processClickedItem("PoemID", poem._ID, true);
 	else
@@ -2292,6 +2349,8 @@ void MainWindow::saveSettings()
 	Settings::WRITE("MainWindowState", saveState(1));
 	Settings::WRITE("Mainwindow Geometry", saveGeometry());
 
+	Settings::WRITE("SplitterState", splitter->saveState());
+
 	QStringList openedTabs;
 	//openedTabs.clear();
 	for (int i = 0; i < mainTabWidget->count(); ++i)
@@ -2641,7 +2700,7 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 	{
 		//qDebug() << "tableItemClick-Qt::RightButton";
 		skipContextMenu = true;
-		newTabForItem(itemData.at(0), idData, noError);
+		newTabForItem(idData, itemData.at(0), noError);
 
 		saagharWidget->scrollToFirstItemContains(searchVerseData, false);
 		SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchPhraseData);
@@ -3188,9 +3247,9 @@ void MainWindow::actionClosedTabsClicked()
 	int id = action->data().toStringList().at(1).toInt();
 
 	if ( (type != "PoemID" && type != "CatID") || id <0 )
-		newTabForItem(type, id, false);
+		newTabForItem(id, type, false);
 	else
-		newTabForItem(type, id, true);
+		newTabForItem(id, type, true);
 	//QStringList tabViewData = action->data().toString().split("=", QString::SkipEmptyParts);
 //	if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
 //	{
@@ -3438,7 +3497,7 @@ void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString 
 
 		if (ensureVisible)
 		{
-			newTabForItem("PoemID", poemID, true);
+			newTabForItem(poemID, "PoemID", true);
 			saagharWidget->scrollToFirstItemContains(itemText, false, true);
 		}
 	}
@@ -3519,10 +3578,31 @@ qDebug() << "MainWindow--createCustomContextMenu-Pos="<<pos;
 	}
 	else if (text == tr("Duplicate Tab"))
 	{
-		newTabForItem(saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage ? "PoemID" : "CatID", saagharWidget->pageMetaInfo.id, true);
+		newTabForItem(saagharWidget->pageMetaInfo.id, saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage ? "PoemID" : "CatID", true);
 	}
 	else if (text == tr("Refresh"))
 	{
 		saagharWidget->refresh();
 	}
+}
+
+void MainWindow::openParentPage(int parentID)
+{
+	if (!saagharWidget)
+		insertNewTab();
+
+	for (int j = 0; j < mainTabWidget->count(); ++j)
+	{
+		SaagharWidget *tmp = getSaagharWidget(j);
+
+		if (tmp && tmp->pageMetaInfo.type == SaagharWidget::CategoryViewerPage && tmp->pageMetaInfo.id == parentID)
+		{
+			qDebug() << "mainTabWidget->setCurrentWidget--Bef";
+			mainTabWidget->setCurrentWidget(tmp->parentWidget());
+			qDebug() << "mainTabWidget->setCurrentWidget--Aft";
+			return;
+		}
+	}
+
+	saagharWidget->processClickedItem("CatID", parentID, true);
 }
