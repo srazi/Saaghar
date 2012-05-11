@@ -39,13 +39,14 @@ NavigateToPage::NavigateToPage(SaagharWidget *saagharWidget, const QString &type
 		if (previousText.isEmpty())
 			previousText = QObject::tr("Home");
 
-		if ( (type != "PoemID" && type != "CatID") || pageId <0)
-			m_saagharWidget->navigateToPage(type, pageId, false);
-		else
-			m_saagharWidget->navigateToPage(type, pageId, true);
+//BUG: Fixed, It seems these functions call are unnecessary!
+//		if ( (type != "PoemID" && type != "CatID") || pageId <0)
+//			m_saagharWidget->navigateToPage(type, pageId, false);
+//		else
+//			m_saagharWidget->navigateToPage(type, pageId, true);
 	
-		newType = m_saagharWidget->identifier().at(0);
-		newId = m_saagharWidget->identifier().at(1).toInt();
+		newType = type;//m_saagharWidget->identifier().at(0);
+		newId = pageId;//m_saagharWidget->identifier().at(1).toInt();
 
 		newText = "";
 		if (!m_saagharWidget->currentLocationList.isEmpty())

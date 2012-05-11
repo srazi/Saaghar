@@ -54,6 +54,7 @@ QColor SaagharWidget::backgroundColor = QColor();
 QTableWidgetItem *SaagharWidget::lastOveredItem = 0;
 int SaagharWidget::maxPoetsPerGroup = 12;
 QHash<int, QPair<QString, qint64> > SaagharWidget::mediaInfoCash = QHash<int, QPair<QString, qint64> >();
+QHash<int, QString> SaagharWidget::longestHemistiches = QHash<int, QString>();
 
 //bookmark widget
 Bookmarks *SaagharWidget::bookmarks = 0;
@@ -737,7 +738,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 	currentCat = !category.isNull() ? category._ID : 0;
 	currentParentID = !category.isNull() ? category._ParentID : 0;
 }
-
+#include<QTime>
 void SaagharWidget::showPoem(GanjoorPoem poem)
 {
 	if ( poem.isNull() )
@@ -811,18 +812,33 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 //#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
 	const bool justified = true;//temp
 	int maxWidth = -1;
+	if (longestHemistiches.contains(poem._ID))
+		maxWidth = poemFontMetric.width(longestHemistiches.value(poem._ID));
 	int numberOfVerses = verses.size();
+	QTime start= QTime::currentTime();
 	if (justified)
 	{
-		for (int i = 0; i < numberOfVerses; i++)
+		if (maxWidth<=0)
 		{
-			QString verseText = verses.at(i)->_Text;
-			
-			if (verses.at(i)->_Position == Single || verses.at(i)->_Position == Paragraph) continue;
-			int temp = poemFontMetric.width(verseText);
-			if (temp>maxWidth)
-				maxWidth = temp;
+			QString longest = "";
+			for (int i = 0; i < numberOfVerses; i++)
+			{
+				QString verseText = verses.at(i)->_Text;
+	
+				if (verses.at(i)->_Position == Single || verses.at(i)->_Position == Paragraph) continue;
+	
+				verseText = verseText.simplified();
+				int temp = poemFontMetric.width(verseText);
+				if (temp>maxWidth)
+				{
+					longest = verseText;
+					maxWidth = temp;
+				}
+			}
+			longestHemistiches.insert(poem._ID, longest);
 		}
+		qDebug()<<"JustificationTime=" << QTime::currentTime().msecsTo(start);
+		start= QTime::currentTime();
 	}
 //#endif
 
@@ -841,6 +857,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	for (int i = 0; i < numberOfVerses; i++)
 	{
 		QString currentVerseText = verses.at(i)->_Text;
+		if (verses.at(i)->_Position != Single && verses.at(i)->_Position != Paragraph)
+			currentVerseText = currentVerseText.simplified();
 
 		if (this->isHidden())
 		{
@@ -1041,7 +1059,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 		delete verses[i];
 		verses[i]=0;
 	}// end of big for
-
+qDebug()<<"end of big for=" << QTime::currentTime().msecsTo(start);
 
 	//a trick for removing last empty row withoout QTextEdit widget
 	if (!tableViewWidget->cellWidget(tableViewWidget->rowCount()-1, 1))
@@ -1660,10 +1678,7 @@ void SaagharWidget::doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const Q
 		//MissedMesras++;
 		return;
 	}
-//QString text;
-	/////////////////////////////////////////////
-	//CurrentViewStyle = MesraPerLineGroupedBeyt;
-	/////////////////////////////////////////////
+
 	switch (CurrentViewStyle)
 	{
 	//case LastBeytCentered:

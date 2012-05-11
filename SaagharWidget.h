@@ -74,7 +74,6 @@ public:
 	QString currentCaption;
 	QPushButton *parentCatButton;
 	QTableWidget *tableViewWidget;
-	//QSplitter *splitter;
 	void resizeTable(QTableWidget *table);
 	bool nextPoem();
 	bool previousPoem();
@@ -118,6 +117,7 @@ public:
 	static QMusicPlayer *musicPlayer;
 
 	static QHash<int, QPair<QString, qint64> > mediaInfoCash;
+	static QHash<int, QString> longestHemistiches;
 
 	int currentPoem;
 	int currentCat;
