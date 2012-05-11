@@ -59,7 +59,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QActionGroup>
-#include <QSplitter>
+//#include <QSplitter>
 
 //const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 
@@ -260,19 +260,18 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	loadTabWidgetSettings();
 
 	ui->gridLayout->setContentsMargins(0,0,0,0);
-	
-	//ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
 
-	outlineTree = new OutLineTree;
+	
 	outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
 	connect(outlineTree, SIGNAL(openParentRequested(int)), this, SLOT(openParentPage(int)));
 	connect(outlineTree, SIGNAL(newParentRequested(int)), this, SLOT(newTabForItem(int)));
-	splitter = new QSplitter(ui->centralWidget);
-	splitter->setObjectName("splitter");
-	splitter->addWidget(outlineTree);
-	splitter->addWidget(mainTabWidget);
 
-	ui->gridLayout->addWidget(splitter, 0, 0, 1, 1);
+//	splitter = new QSplitter(ui->centralWidget);
+//	splitter->setObjectName("splitter");
+//	//splitter->addWidget(dock);
+//	splitter->addWidget(mainTabWidget);
+
+	ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
 
 	if (!fresh)
 	{
@@ -322,11 +321,11 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	restoreState( Settings::READ("MainWindowState").toByteArray(), 1);
 	restoreGeometry(Settings::READ("Mainwindow Geometry").toByteArray());
 
-	if (!splitter->restoreState(Settings::READ("SplitterState").toByteArray()))
-	{
-		int bigOne = (width()*3)/4;
-		splitter->setSizes( QList<int>() <<  width()-bigOne << bigOne);
-	}
+//	if (!splitter->restoreState(Settings::READ("SplitterState").toByteArray()))
+//	{
+//		int bigOne = (width()*3)/4;
+//		splitter->setSizes( QList<int>() <<  width()-bigOne << bigOne);
+//	}
 
 	emit loadingStatusText(tr("<i><b>Saaghar is starting...</b></i>"));
 }
@@ -959,7 +958,7 @@ void MainWindow::insertNewTab()
 	connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
 
 	tabGridLayout->setContentsMargins(3,4,3,3);
-	tabGridLayout->addWidget(/*saagharWidget->splitter*/tabTableWidget, 0, 0, 1, 1);
+	tabGridLayout->addWidget(tabTableWidget, 0, 0, 1, 1);
 
 	mainTabWidget->setUpdatesEnabled(false);
 
@@ -1761,6 +1760,15 @@ void MainWindow::setupUi()
 //	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setCheckable(true);
 //	actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setData(SaagharWidget::MesraPerLineGroupedBeyt);
 
+	outlineTree = new OutLineTree;
+	QDockWidget *outlineDock = new QDockWidget(tr("Outline"), this);
+	outlineDock->setObjectName("outlineDock");
+	outlineDock->setWidget(outlineTree);
+	addDockWidget(Qt::RightDockWidgetArea, outlineDock);
+	allActionMap.insert("outlineDockAction", outlineDock->toggleViewAction());
+	actionInstance("outlineDockAction")->setIcon(QIcon(currentIconThemePath()+"/outline.png"));
+	actionInstance("outlineDockAction")->setObjectName(QString::fromUtf8("outlineDockAction"));
+
 	switch (SaagharWidget::CurrentViewStyle)
 	{
 	case SaagharWidget::TwoHemistichLine:
@@ -1840,6 +1848,7 @@ void MainWindow::setupUi()
 	menuNavigation->addAction(actionInstance("actionFaal"));
 	menuNavigation->addAction(actionInstance("actionRandom"));
 
+	menuView->addAction(actionInstance("outlineDockAction"));
 	menuView->addAction(actionInstance("Show Photo at Home"));
 
 	menuView->addSeparator();
@@ -2349,7 +2358,7 @@ void MainWindow::saveSettings()
 	Settings::WRITE("MainWindowState", saveState(1));
 	Settings::WRITE("Mainwindow Geometry", saveGeometry());
 
-	Settings::WRITE("SplitterState", splitter->saveState());
+	//Settings::WRITE("SplitterState", splitter->saveState());
 
 	QStringList openedTabs;
 	//openedTabs.clear();
