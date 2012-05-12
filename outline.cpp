@@ -148,11 +148,12 @@ bool OutLineTree::filterItems(const QString &str, QTreeWidgetItem *parentItem)
 
 		QString text = ithChild->text(0);
 		text = QGanjoorDbBrowser::cleanString(text);
-		if (!str.isEmpty() && !text.contains(str))
+		QString cleanStr = QGanjoorDbBrowser::cleanString(str);
+		if (!cleanStr.isEmpty() && !text.contains(cleanStr))
 		{
 			if (ithChild->childCount()>0)//if all its children are hidden it should be hidden, too.
 			{
-				bool tmp = filterItems(str, ithChild);
+				bool tmp = filterItems(cleanStr, ithChild);
 				if (!tmp)
 				{
 					ithChild->setExpanded(true);

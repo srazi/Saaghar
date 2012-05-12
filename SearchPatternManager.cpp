@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "SearchPatternManager.h"
+#include "QGanjoorDbBrowser.h"
 
 #include <QDebug>
 
@@ -63,6 +64,7 @@ void SearchPatternManager::init()
 			if ( str.startsWith(OP(WithOut)) )
 			{
 				str = str.remove(0,1);
+				str = QGanjoorDbBrowser::cleanString(str);
 				relatedExcludeList.insertMulti(i, str);
 				subAndList[j]="";
 				continue;
@@ -82,7 +84,8 @@ void SearchPatternManager::init()
 			//str = str.replace(OP(WholeWord), " ");//moved to the first
 			qDebug()<<"str="<<str;
 			//str = wildcardCharacter+str+wildcardCharacter;
-			computedPhraseList.insertMulti(i, subAndList.at(j));
+			str = QGanjoorDbBrowser::cleanString(subAndList.at(j));
+			computedPhraseList.insertMulti(i, str);
 			qDebug()<<"str2="<<computedPhraseList.value(i);
 		}
 	}
@@ -249,6 +252,8 @@ QStringList SearchPatternManager::phraseToList(const QString &str,  bool removeW
 	{
 		if (list.at(i).startsWith(OP(WithOut), Qt::CaseInsensitive))
 			list[i]="";
+		else
+			list[i] = QGanjoorDbBrowser::cleanString(list.at(i));
 	}
 	list.removeAll("");
 	return list;

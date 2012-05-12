@@ -429,7 +429,8 @@ void MainWindow::searchStart()
 			searchResultContents->setAttribute(Qt::WA_DeleteOnClose, true);
 			//searchResultContents->setLayoutDirection(Qt::RightToLeft);
 
-			SearchResultWidget *searchResultWidget = new SearchResultWidget(searchResultContents, SaagharWidget::lineEditSearchText->text(), SearchResultWidget::maxItemPerPage, poetName);
+			phrase = QGanjoorDbBrowser::cleanString(phrase);
+			SearchResultWidget *searchResultWidget = new SearchResultWidget(searchResultContents, phrase, SearchResultWidget::maxItemPerPage, poetName);
 
 			/////////////////////////////////////
 			QMap<int, QString> finalResult;

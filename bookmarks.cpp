@@ -475,7 +475,8 @@ void Bookmarks::filterItems(const QString &str)
 			QTreeWidgetItem *child = ithRootChild->child(j);
 			QString text = child->text(0)+child->text(1);
 			text = QGanjoorDbBrowser::cleanString(text);
-			if (!str.isEmpty() && !text.contains(str))
+			QString cleanedStr = QGanjoorDbBrowser::cleanString(str);
+			if (!cleanedStr.isEmpty() && !text.contains(cleanedStr))
 				child->setHidden(true);
 			else
 				child->setHidden(false);

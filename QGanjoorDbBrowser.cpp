@@ -41,6 +41,43 @@ QSQLiteDriver *QGanjoorDbBrowser::sqlDriver = 0;
 const QString sqlDriver = "QSQLITE";
 #endif
 
+//#include <QStringList>
+/***************************/
+//from unicode table:
+//	"»" cell= 187 row= 0 
+//	"!" cell= 33 row= 0 
+//	"«" cell= 171 row= 0 
+//	"." cell= 46 row= 0 
+//	"؟" cell= 31 row= 6 
+//	"،" cell= 12 row= 6 
+//	"؛" cell= 27 row= 6 
+QStringList QGanjoorDbBrowser::someSymbols = QStringList()
+		<< QChar(31,6) << QChar(12,6) << QChar(27,6)
+		<< QChar(187,0) << QChar(33,0) << QChar(171,0) << QChar(46,0)
+		<< ")"<<"("<<"["<<"]"<<":"<<"!"<<"-"<<".";
+//the zero index of following stringlists is equipped by expected variant!
+//	"ؤ" cell= 36 row= 6 
+//	"و" cell= 72 row= 6 
+QStringList QGanjoorDbBrowser::Ve_Variant = QStringList()
+		<< QChar(72,6) << QChar(36,6);
+//	"ي" cell= 74 row= 6 //Arabic Ye
+//	"ئ" cell= 38 row= 6 
+//	"ی" cell= 204 row= 6 //Persian Ye
+QStringList QGanjoorDbBrowser::Ye_Variant = QStringList()
+	   << QChar(204,6) << QChar(38,6) << QChar(74,6);
+//	"آ" cell= 34 row= 6 
+//	"أ" cell= 35 row= 6 
+//	"إ" cell= 37 row= 6 
+//	"ا" cell= 39 row= 6 
+QStringList QGanjoorDbBrowser::AE_Variant = QStringList()
+		<< QChar(39,6) << QChar(37,6) << QChar(35,6) << QChar(34,6);
+//	"ة" cell= 41 row= 6 
+//	"ۀ" cell=192 row= 6
+//	"ه" cell= 71 row= 6 
+QStringList QGanjoorDbBrowser::He_Variant = QStringList()
+		<< QChar(71,6) << QChar(41,6) << QChar(192,6);
+/***************************/
+
 QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 {
 	bool flagSelectNewPath = false;
@@ -990,11 +1027,36 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
 	QString cleanedText = text;
 
 	cleanedText.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
+	//qDebug()<<"========================";
+//		qDebug()<<"BeforeRemove-cleanedText="<<cleanedText;
+	////remove some characters! maybe creates bug!!! 2012-05-11
+	
+	//cleanedText.remove(QRegExp("["+someSymbols.join("")+"\\)\\(\\[\\]:!-]+"));
+//		qDebug()<<"AfterRemove-cleanedText="<<cleanedText;
+	cleanedText.replace(QRegExp("["+Ve_Variant.join("").remove(Ve_Variant.at(0))+"]"), Ve_Variant.at(0));
+	cleanedText.replace(QRegExp("["+Ye_Variant.join("").remove(Ye_Variant.at(0))+"]"), Ye_Variant.at(0));
+	cleanedText.replace(QRegExp("["+AE_Variant.join("").remove(AE_Variant.at(0))+"]"), AE_Variant.at(0));
+	cleanedText.replace(QRegExp("["+He_Variant.join("").remove(He_Variant.at(0))+"]"), He_Variant.at(0));
+////	qDebug()<<"AfterReplace-cleanedText="<<cleanedText;
+////	QRegExp regExp("[\)\(:-»؟!«\[\]\.،؛]+");
+////	QString temp=QString::fromLocal8Bit("»؟!«.،؛هيؤویئآاأإة");
+////	qDebug()<<"========================";
+////	for (int i=0; i<temp.size();++i)
+////	{
+		
+////		qDebug()<<QString(temp.at(i))<<"cell="<<temp.at(i).cell()<<"row="<<temp.at(i).row();
 
-//	QChar tatweel = QChar(0x0640);
-//	cleanedText.remove(tatweel);
+////	}
+//	qDebug()<<"========================";
+//	//return "";
+//	//QChar(12,6))//cell=12,row=6 is for persian and arabic comma
+////	qDebug()<<"regExp.pattern()="<< regExp.pattern();
+////	cleanedText.remove(regExp);
 
-	//cleanedText = cleanedText.simplified();//new
+////	QChar tatweel = QChar(0x0640);
+////	cleanedText.remove(tatweel);
+
+//	//cleanedText = cleanedText.simplified();//new
 
 	for (int i=0; i<cleanedText.size(); ++i)
 	{
@@ -1005,7 +1067,7 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
 
 		QChar::Direction chDir = tmpChar.direction();
 
-		if (chDir == QChar::DirNSM || tmpChar.isSpace())
+		if (chDir == QChar::DirNSM || tmpChar.isSpace() || someSymbols.contains(tmpChar))
 		{
 			cleanedText.remove(tmpChar);
 			--i;
@@ -1044,6 +1106,11 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		else
 			firstPhrase.remove("=");
 
+		//replace characters that have some variants with anyWord replaceholder!
+		//we have not to worry about this replacement, because phraseList.at(0) is tested again!
+		qDebug() << "firstPhrase11="<<firstPhrase;
+		firstPhrase.replace(QRegExp("["+Ve_Variant.join("")+AE_Variant.join("")+He_Variant.join("")+Ye_Variant.join("")+"]"), "%");
+		qDebug() << "firstPhrase222="<<firstPhrase;
 		QStringList anyWordedList = firstPhrase.split("%%", QString::SkipEmptyParts);
 		for (int i=0; i<anyWordedList.size();++i)
 		{

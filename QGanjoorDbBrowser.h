@@ -104,6 +104,11 @@ class QGanjoorDbBrowser : public QObject
 
 		//STATIC Variables
 		static QStringList dataBasePath;
+		static QStringList someSymbols;
+		static QStringList Ve_Variant;
+		static QStringList Ye_Variant;
+		static QStringList AE_Variant;
+		static QStringList He_Variant;
 
 	private:
 		bool poetHasSubCats(int poetID, const QString& connectionID="");

@@ -478,7 +478,8 @@ void SearchResultWidget::maxItemPerPageChange(int value)
 
 void SearchResultWidget::filterResults(const QString &text)
 {
-	if (text.isEmpty())
+	QString str = QGanjoorDbBrowser::cleanString(text);
+	if (str.isEmpty())
 	{
 		resultList = copyResultList;
 		emit searchFiltered(phrase);
@@ -488,7 +489,7 @@ void SearchResultWidget::filterResults(const QString &text)
 
 	//SaagharItemDelegate *itemDelegate = searchTable->itemDelegateForColumn(2);
 	//itemDelegate->
-	emit searchFiltered(phrase+" "+text);
+	emit searchFiltered(phrase+" "+str);
 	//QMap<int, QString> tmpList;
 
 	resultList.clear();
@@ -498,7 +499,7 @@ void SearchResultWidget::filterResults(const QString &text)
 	{
 		QString value = it.value();
 		value = QGanjoorDbBrowser::cleanString(value);
-		if (value.contains(text, Qt::CaseInsensitive))
+		if (value.contains(str, Qt::CaseInsensitive))
 			resultList.insert(it.key(), it.value());
 		++it;
 	}

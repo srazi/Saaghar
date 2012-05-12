@@ -88,9 +88,9 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 //			qDebug() << "textt="<<text;
 //			qDebug() << "clean="<<cleanedText;
 //		}
-		text = QGanjoorDbBrowser::cleanString(text/*, false*/);
+		text = QGanjoorDbBrowser::cleanString(text, QStringList() <<" "<< QGanjoorDbBrowser::someSymbols);
 	}
-	//qDebug() << "text="<<text<<"cleanedText="<<cleanedText;
+	qDebug() << "text="<<index.data().toString()<<"W="<<fontMetric.width(index.data().toString())<<"cleanedText="<<cleanedText<<"W="<<fontMetric.width(cleanedText);
 	Qt::Alignment itemAlignment = 0;
 	QVariant alignValue = index.data(Qt::TextAlignmentRole);
 	
@@ -251,6 +251,10 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
 		keyword.replace("@["+others+"]*", "\\S*", Qt::CaseInsensitive);//replace wildcard by word chars
 		//keyword.replace("@"+tatweel+"*", "\\S*", Qt::CaseInsensitive);//replace wildcard by word chars
 		//qDebug() << "keyword3="<<keyword;
+		keyword.replace(QGanjoorDbBrowser::AE_Variant.at(0), "("+QGanjoorDbBrowser::AE_Variant.join("|")+")" );
+		keyword.replace(QGanjoorDbBrowser::Ye_Variant.at(0), "("+QGanjoorDbBrowser::Ye_Variant.join("|")+")" );
+		keyword.replace(QGanjoorDbBrowser::He_Variant.at(0), "("+QGanjoorDbBrowser::He_Variant.join("|")+")" );
+		keyword.replace(QGanjoorDbBrowser::Ve_Variant.at(0), "("+QGanjoorDbBrowser::Ve_Variant.join("|")+")" );
 		QRegExp maybeOthers(keyword, Qt::CaseInsensitive);
 		int index = maybeOthers.indexIn(text);
 		while(index>=0)
