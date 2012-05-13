@@ -62,6 +62,7 @@ bool SearchResultWidget::init(QMainWindow *qmw, const QString &iconThemePath)
 
 	moreThanOnePage = SearchResultWidget::maxItemPerPage>0 && resultList.size() >= SearchResultWidget::maxItemPerPage+1;
 	navButtonsNeeded = false;
+	searchResultWidget = 0;
 
 	setupUi(qmw, iconThemePath);
 	showSearchResult(0);
@@ -71,11 +72,7 @@ bool SearchResultWidget::init(QMainWindow *qmw, const QString &iconThemePath)
 
 void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 {
-	QDockWidget *searchResultWidget = 0;
-	QString dockTitle = sectionName+":"+phrase;
-	dockTitle.replace("==", tr("Radifs that contain: "));
-	dockTitle.replace("=", tr("Rhymed by: "));
-	searchResultWidget = new QDockWidget(dockTitle, qmw);
+	searchResultWidget = new QDockWidget(qmw);
 	searchResultWidget->setObjectName(QString::fromUtf8("searchResultWidget_new"));//object name for created instance, it renames to 'searchResultWidget_old'
 	//searchResultWidget->setLayoutDirection(Qt::RightToLeft);
 	searchResultWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
@@ -90,7 +87,7 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 	horizontalLayout->setObjectName(QString::fromUtf8("horizontalLayout"));
 	QGridLayout *searchTableGridLayout = new QGridLayout();
 	searchTableGridLayout->setSpacing(6);
-	searchTableGridLayout->setObjectName(QString::fromUtf8("gridLayout_3"));
+	searchTableGridLayout->setObjectName(QString::fromUtf8("searchTableGridLayout"));
 
 	//create filter lable and lineEdit and layout
 	QHBoxLayout *filterHorizontalLayout = new QHBoxLayout();
@@ -127,7 +124,7 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 	searchTable->setColumnCount(3);
 	searchTable->setLayoutDirection(Qt::RightToLeft);
 	searchTable->setAlternatingRowColors(true);
-	searchTable->setSelectionMode(QAbstractItemView::NoSelection);
+	searchTable->setSelectionMode(QAbstractItemView::NoSelection /*SingleSelection*/);
 	searchTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 	searchTable->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 	searchTable->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -135,6 +132,7 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 	//searchTable->horizontalHeader()->setVisible(false);
 	searchTable->horizontalHeader()->setHighlightSections(false);
 	searchTable->horizontalHeader()->setStretchLastSection(true);
+	connect(searchTable, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(currentRowColumnChanged(int,int,int,int)));
 
 	//install delagate on third column
 	SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(searchTable, searchTable->style(), phrase);
@@ -220,7 +218,7 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 /****************************************/
 	searchResultWidget->setWidget(searchResultContents);
 	
-	qmw->addDockWidget(Qt::LeftDockWidgetArea, searchResultWidget);
+	qmw->addDockWidget(Qt::BottomDockWidgetArea, searchResultWidget);
 	
 	if (tmpDockWidget && tmpDockWidget->objectName() == "searchResultWidget_old") //there is another search results dock-widget present
 		qmw->tabifyDockWidget(tmpDockWidget, searchResultWidget);
@@ -271,7 +269,13 @@ void SearchResultWidget::showSearchResult(int start)
 		}
 	}
 	//updatePageLabel(pageCount, pageNumber;
-	pageLabel->setText(tr("page %1 of %2 page(s)").arg(pageNumber).arg(pageCount));
+//	pageLabel->setText(tr("page %1 of %2 page(s)").arg(pageNumber).arg(pageCount));
+	pageLabel->setText(tr("All: %1 - Filered: %2").arg(copyResultList.size()).arg(resultList.size()));
+	QString dockTitle = sectionName+":"+phrase;
+	dockTitle.replace("==", tr("Radifs that contain: "));
+	dockTitle.replace("=", tr("Rhymed by: "));
+	dockTitle.append(" ("+tr("p: %1 of %2").arg(pageNumber).arg(pageCount)+")");
+	searchResultWidget->setWindowTitle(dockTitle);
 
 	int count = end-start+1;
 	searchTable->clear();
@@ -305,7 +309,7 @@ void SearchResultWidget::showSearchResult(int start)
 	const QMap<int, QString>::const_iterator endIt = it+end+1;//resultList.constEnd();
 	it = it+start;
 	int i = start;
-	const QColor fisrtColor(235,235,230,170);
+	const QColor fisrtColor(235,235,230,190);
 	const QColor secondColor(249,249,228,150);
 
 	QColor color = fisrtColor;
@@ -384,13 +388,21 @@ void SearchResultWidget::showSearchResult(int start)
 			snippedFirstVerse = QGanjoorDbBrowser::snippedText(firstVerse, "", 0, 8, true);
 
 		QTableWidgetItem *verseItem = new QTableWidgetItem(snippedFirstVerse);
-		verseItem->setFlags(Qt::ItemIsEnabled/*Qt::NoItemFlags*/);
+		verseItem->setFlags(Qt::ItemIsEnabled);
 		verseItem->setData(Qt::UserRole, "PoemID="+QString::number(poemId));
 		//set search data
 		verseItem->setData(ITEM_SEARCH_DATA, QStringList() << phrase << firstVerse);
 		poemItem->setData(ITEM_SEARCH_DATA, QStringList() << phrase << firstVerse);
 
-		numItem->setBackgroundColor(color);
+		if (viewedItems.contains(snippedFirstVerse))
+		{
+			numItem->setBackgroundColor(QColor(Qt::green).lighter(170));
+		}
+		else
+		{
+			numItem->setBackgroundColor(color);
+		}
+
 		poemItem->setBackgroundColor(color);
 		verseItem->setBackgroundColor(color);
 		if (it+1 != endIt)
@@ -500,7 +512,7 @@ void SearchResultWidget::filterResults(const QString &text)
 		QString value = it.value();
 		value = QGanjoorDbBrowser::cleanString(value);
 		if (value.contains(str, Qt::CaseInsensitive))
-			resultList.insert(it.key(), it.value());
+			resultList.insertMulti(it.key(), it.value());
 		++it;
 	}
 	if (resultList.isEmpty())
@@ -513,6 +525,33 @@ void SearchResultWidget::filterResults(const QString &text)
 	}
 	else
 		showSearchResult(0);
+}
+
+void SearchResultWidget::currentRowColumnChanged(int currentRow, int /*currentColumn*/, int previousRow, int /*previousColumn*/)
+{
+	if (currentRow == previousRow) return;
+	for (int col=0; col<3;++col)
+	{
+		QTableWidgetItem *previousRowItem = searchTable->item(previousRow, col);
+		QTableWidgetItem *currentRowItem = searchTable->item(currentRow, col);
+		if (previousRowItem && col!=0)
+		{
+			QColor color = previousRowItem->data(Qt::UserRole+15).value<QColor>();
+			if (color.isValid())
+			{
+				previousRowItem->setBackgroundColor(color);
+			}
+		}
+
+		if (currentRowItem)
+		{
+			QString text = currentRowItem->text();
+			if (col==2 && !viewedItems.contains(text))
+				viewedItems << text;
+			currentRowItem->setData(Qt::UserRole+15, currentRowItem->backgroundColor());
+			currentRowItem->setBackgroundColor(QColor(Qt::green).lighter(170));
+		}
+	}
 }
 
 //void SearchResultWidget::setMaxItemPerPage(int max)

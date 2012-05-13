@@ -49,6 +49,7 @@ public:
 	static int maxItemPerPage;
 
 private:
+	QDockWidget *searchResultWidget;
 	QWidget *searchResultContents;
 	void setupUi(QMainWindow *qmw, const QString &iconThemePath);
 	void showSearchResult(int start);
@@ -63,8 +64,10 @@ private:
 	QSearchLineEdit *filterLineEdit;
 	QMap<int, QString> resultList;
 	QMap<int, QString> copyResultList;
+	QStringList viewedItems;
 
 private slots:
+	void currentRowColumnChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 	void searchPageNavigationClicked(QAction *action);
 	void maxItemPerPageChange(int value);
 	void filterResults(const QString &text);
