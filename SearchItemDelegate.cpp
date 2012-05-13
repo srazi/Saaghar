@@ -90,7 +90,7 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 //		}
 		text = QGanjoorDbBrowser::cleanString(text, QStringList() <<" "<< QGanjoorDbBrowser::someSymbols);
 	}
-	qDebug() << "text="<<index.data().toString()<<"W="<<fontMetric.width(index.data().toString())<<"cleanedText="<<cleanedText<<"W="<<fontMetric.width(cleanedText);
+	//qDebug() << "text="<<index.data().toString()<<"W="<<fontMetric.width(index.data().toString())<<"cleanedText="<<cleanedText<<"W="<<fontMetric.width(cleanedText);
 	Qt::Alignment itemAlignment = 0;
 	QVariant alignValue = index.data(Qt::TextAlignmentRole);
 	

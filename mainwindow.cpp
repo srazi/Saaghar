@@ -306,8 +306,10 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	currentTabChanged(mainTabWidget->currentIndex());
 
 	QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
-	multiSelectObjectInitialize(selectSearchRange, selectedSearchRange);
+	QListWidgetItem *titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
+	multiSelectObjectInitialize(selectSearchRange, selectedSearchRange, 2);
 	item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
+	titleSearchItem->setCheckState(selectedSearchRange.contains("ALL_TITLES") ? Qt::Checked : Qt::Unchecked);
 
 	//seeding random function
 	uint numOfSecs = QDateTime::currentDateTime().toTime_t();
@@ -408,11 +410,24 @@ void MainWindow::searchStart()
 //			qDebug() << "SearchPatternManager::finished!";
 //			qDebug() << "phraseVectorList=" <<phraseVectorList;
 //			qDebug() << "excludedVectorList="<<excludedVectorList;
+			qDebug() << "======================="<<currentItemData;
 
-			bool ok = false;
-			int poetID = currentItemData.toInt(&ok);
-			if (!ok)
-				continue;//itemData is not int skip to next item
+			int poetID;
+			if (currentItemData.toString() == "ALL_TITLES")
+				poetID = -1000;//reserved for titles!!
+			else
+			{
+				bool ok = false;
+				poetID = currentItemData.toInt(&ok);
+				if (!ok)
+				{
+					if (i == selectList.size()-1)
+					{
+						SaagharWidget::lineEditSearchText->searchStop();
+					}
+					continue;//itemData is not int skip to next item
+				}
+			}
 
 			QString poetName = "";
 			if (poetID == 0)
@@ -515,16 +530,16 @@ void MainWindow::searchStart()
 	}
 }
 
-void MainWindow::multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidget, const QStringList &selectedData)
+void MainWindow::multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidget, const QStringList &selectedData, int insertIndex)
 {
-	QListWidgetItem *rootItem = multiSelectWidget->insertRow(1, tr("All"), true, "0", Qt::UserRole);
+	QListWidgetItem *rootItem = multiSelectWidget->insertRow(insertIndex, tr("All"), true, "0", Qt::UserRole);
 
 	QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
 	
 	//int insertIndex = count();
 	for(int i=0; i<poets.size(); ++i)
 	{
-		multiSelectWidget->insertRow(i+2, poets.at(i)->_Name, true,
+		multiSelectWidget->insertRow(i+1+insertIndex, poets.at(i)->_Name, true,
 			QString::number(poets.at(i)->_ID), Qt::UserRole, false, rootItem)->setCheckState(selectedData.contains(QString::number(poets.at(i)->_ID)) ? Qt::Checked : Qt::Unchecked);
 	}
 
@@ -569,8 +584,10 @@ void MainWindow::actionRemovePoet()
 			SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poetID);
 			comboBoxSearchRegion->clear();
 			QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
-			multiSelectObjectInitialize(selectSearchRange, selectedSearchRange);
+			QListWidgetItem *titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
+			multiSelectObjectInitialize(selectSearchRange, selectedSearchRange, 2);
 			item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
+			titleSearchItem->setCheckState(selectedSearchRange.contains("ALL_TITLES") ? Qt::Checked : Qt::Unchecked);
 			//update visible region of searchToolBar
 //			bool tmpFlag = labelMaxResultAction->isVisible();
 //			labelMaxResultAction->setVisible(!tmpFlag);
@@ -2715,6 +2732,7 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 		saagharWidget->scrollToFirstItemContains(searchVerseData, false);
 		SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchPhraseData);
 		saagharWidget->tableViewWidget->setItemDelegate(searchDelegate);
+		saagharWidget->scrollToFirstItemContains(searchVerseData, false);
 		connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(const QString &)), searchDelegate, SLOT(keywordChanged(const QString &)) );
 
 		connect(senderTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
@@ -2786,8 +2804,10 @@ void MainWindow::importDataBase(const QString fileName)
 		SaagharWidget::ganjoorDataBase->dBConnection.commit();
 		comboBoxSearchRegion->clear();
 		QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
-		multiSelectObjectInitialize(selectSearchRange, selectedSearchRange);
+		QListWidgetItem *titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
+		multiSelectObjectInitialize(selectSearchRange, selectedSearchRange, 2);
 		item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
+		titleSearchItem->setCheckState(selectedSearchRange.contains("ALL_TITLES") ? Qt::Checked : Qt::Unchecked);
 		setHomeAsDirty();
 		//update visible region of searchToolBar
 //		bool tmpFlag = labelMaxResultAction->isVisible();
@@ -2859,7 +2879,7 @@ void MainWindow::customizeRandomDialog()
 	CustomizeRandomDialog *randomSetting = new CustomizeRandomDialog(this, randomOpenInNewTab);
 
 	QListWidgetItem *firstItem = randomSetting->selectRandomRange->insertRow(0, tr("Current tab's subsections"), true, "CURRENT_TAB_SUBSECTIONS", Qt::UserRole, true);
-	multiSelectObjectInitialize(randomSetting->selectRandomRange, selectedRandomRange);
+	multiSelectObjectInitialize(randomSetting->selectRandomRange, selectedRandomRange, 1);
 	firstItem->setCheckState(selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS") ? Qt::Checked : Qt::Unchecked);
 
 	if (randomSetting->exec())

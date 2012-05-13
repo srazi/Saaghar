@@ -72,7 +72,7 @@ class MainWindow : public QMainWindow
 		void importDataBase(const QString fileName);
 		QStringList mainToolBarItems;
 		QAction *actionInstance(const QString actionObjectName = "", QString iconPath = "", QString displayName = "");
-		void multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidget, const QStringList &selectedData = QStringList());
+		void multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidget, const QStringList &selectedData = QStringList(), int insertIndex = 0);
 		bool isPortable;
 		QString convertToTeX(SaagharWidget *saagharObject);
 		QPrinter *defaultPrinter;

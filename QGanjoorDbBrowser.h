@@ -51,6 +51,7 @@ class QGanjoorDbBrowser : public QObject
 		~QGanjoorDbBrowser();
 //		static QString qStringMacHelper(const QString &str);
 		static QString cleanString(const QString &text, const QStringList &excludeList = QStringList() << " ");
+		static QString cleanStringFast(const QString &text, const QStringList &excludeList = QStringList() << " ");
 		static QString justifiedText(const QString &text, const QFontMetrics &fontmetric, int width);
 		static QString snippedText(const QString &text, const QString &str, int from = 0, int maxNumOfWords = 10, bool elided = true, Qt::TextElideMode elideMode = Qt::ElideRight);
 		static int getRandomNumber(int minBound, int maxBound);

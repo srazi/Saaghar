@@ -367,7 +367,7 @@ void SearchResultWidget::showSearchResult(int start)
 
 		//add Items
 		QString snippedPoemTitle = QGanjoorDbBrowser::snippedText(poemTiltle, "", 0, 5, true);
-		if (sectionName == tr("All"))
+		if (sectionName == tr("All") || sectionName == tr("Titles"))
 			snippedPoemTitle.prepend(poetName+": ");
 		QTableWidgetItem *poemItem = new QTableWidgetItem( snippedPoemTitle );
 		poemItem->setFlags(Qt::ItemIsEnabled);
