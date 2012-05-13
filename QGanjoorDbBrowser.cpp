@@ -1167,7 +1167,13 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		//replace characters that have some variants with anyWord replaceholder!
 		//we have not to worry about this replacement, because phraseList.at(0) is tested again!
 		qDebug() << "firstPhrase11="<<firstPhrase;
-		firstPhrase.replace(QRegExp("["+Ve_Variant.join("")+AE_Variant.join("")+He_Variant.join("")+Ye_Variant.join("")+"]"), "%");
+		bool variantPresent = false;
+		QRegExp variantEXP("["+Ve_Variant.join("")+AE_Variant.join("")+He_Variant.join("")+Ye_Variant.join("")+"]+");
+		if (firstPhrase.contains(variantEXP))
+		{
+			firstPhrase.replace(variantEXP, "%");
+			variantPresent = true;
+		}
 		qDebug() << "firstPhrase222="<<firstPhrase;
 		QStringList anyWordedList = firstPhrase.split("%%", QString::SkipEmptyParts);
 		for (int i=0; i<anyWordedList.size();++i)
@@ -1177,8 +1183,9 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 			//TODO: remove skipNonAlphabet and replace it with NEAR operator
 			//search for firstPhrase then go for other ones
 			subPhrase = subPhrase.simplified();
-			if (!subPhrase.contains(" "))
+			if (!subPhrase.contains(" ") || variantPresent)
 				subPhrase = QGanjoorDbBrowser::cleanString(subPhrase, excludeWhenCleaning).split("",QString::SkipEmptyParts).join("%");
+			subPhrase.replace("% %", "%");
 			anyWordedList[i] = subPhrase;
 		}
 
@@ -1196,7 +1203,9 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		else
 			strQuery=QString("SELECT verse.poem_id,verse.text, verse.vorder FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + searchQueryPhrase + "%\' AND poet_id=" + QString::number(PoetID)+ " ORDER BY poem_id" );
 //SELECT poem_id, text, vorder, position FROM verse WHERE text LIKE \'%" + searchQueryPhrase + "%\' AND (position=1 OR position=3) ORDER BY poem_id
-		//qDebug() <<"strQuery="<< strQuery <<"PoetID"<<PoetID ;
+		qDebug() <<"strQuery="<< strQuery <<"PoetID"<<PoetID ;
+		qDebug() <<"phraseList.at(0)="<< phraseList.at(0);
+//return idList;
 		QSqlQuery q(dBConnection);
 		int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
 		q.exec(strQuery);
@@ -1315,12 +1324,34 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 					}
 					if (!tphrase.contains("%"))
 					{
-						if (!foundedVerse.contains( tphrase) )
-							//the verse doesn't contain an ANDed phrase
-							//maybe for ++ and +++ this should be removed
+						//QChar(71,6): Simple He
+						//QChar(204,6): Persian Ye
+						QString YeAsKasre = QChar(71,6)+" ";
+						if (tphrase.contains(YeAsKasre))
 						{
-							excludeCurrentVerse = true;
-							break;
+							qDebug()<<"before-tphrase="<<tphrase;
+							tphrase.replace(YeAsKasre, QChar(71,6)+"\\s*"+QChar(204,6)+
+											"{0,2}\\s+");
+							qDebug()<<"after-tphrase="<<tphrase;
+
+							QRegExp anySearch(".*"+tphrase+".*", Qt::CaseInsensitive);
+							qDebug()<<"anySearch.indexIn="<<anySearch.indexIn(foundedVerse);
+							qDebug()<<"anySearch.cap(0)="<< anySearch.cap(0);
+							if (!anySearch.exactMatch(foundedVerse))
+							{
+								excludeCurrentVerse = true;
+								break;
+							}
+						}
+						else
+						{
+							if (!foundedVerse.contains( tphrase) )
+								//the verse doesn't contain an ANDed phrase
+								//maybe for ++ and +++ this should be removed
+							{
+								excludeCurrentVerse = true;
+								break;
+							}
 						}
 					}
 					else
