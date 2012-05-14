@@ -1326,11 +1326,11 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 					{
 						//QChar(71,6): Simple He
 						//QChar(204,6): Persian Ye
-						QString YeAsKasre = QChar(71,6)+" ";
+						QString YeAsKasre = QString(QChar(71,6))+" ";
 						if (tphrase.contains(YeAsKasre))
 						{
 							qDebug()<<"before-tphrase="<<tphrase;
-							tphrase.replace(YeAsKasre, QChar(71,6)+"\\s*"+QChar(204,6)+
+							tphrase.replace(YeAsKasre, QString(QChar(71,6))+"\\s*"+QString(QChar(204,6))+
 											"{0,2}\\s+");
 							qDebug()<<"after-tphrase="<<tphrase;
 

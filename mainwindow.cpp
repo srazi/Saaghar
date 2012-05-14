@@ -284,7 +284,7 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 				bool Ok = false;
 				int id = tabViewData.at(1).toInt(&Ok);
 				if (Ok)
-					newTabForItem(id, tabViewData.at(0), true);
+					newTabForItem(id, tabViewData.at(0), true, false);
 			}
 		}
 	}
@@ -582,6 +582,9 @@ void MainWindow::actionRemovePoet()
 
 			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 			SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poetID);
+
+			outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
+
 			comboBoxSearchRegion->clear();
 			QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
 			QListWidgetItem *titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
@@ -921,7 +924,7 @@ void MainWindow::insertNewTab()
 	//tmp->scrollToFirstItemContains(SaagharWidget::lineEditSearchText->text());
 	//tabTableWidget->setItemDelegate(new SaagharItemDelegate(tabTableWidget, tabTableWidget->style()));
 	///////
-	SaagharWidget *old_saagharWidget = saagharWidget;
+	//SaagharWidget *old_saagharWidget = saagharWidget;
 	saagharWidget = new SaagharWidget( tabContent, parentCatsToolBar, tabTableWidget);
 	saagharWidget->setObjectName(QString::fromUtf8("saagharWidget"));
 
@@ -987,10 +990,10 @@ void MainWindow::insertNewTab()
 	mainTabWidget->setUpdatesEnabled(true);
 }
 
-void MainWindow::newTabForItem(int id, const QString &type, bool noError)
+void MainWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack)
 {
 	insertNewTab();
-	saagharWidget->processClickedItem(type, id, noError);
+	saagharWidget->processClickedItem(type, id, noError, pushToStack);
 	emit loadingStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":")+1), "", 0, 6, false, Qt::ElideRight)));
 	//qDebug() << "emit updateTabsSubMenus()--848";
 	//resolved by signal SaagharWidget::captionChanged()
@@ -2125,6 +2128,7 @@ void MainWindow::globalSettings()
 
 		Settings::WRITE("Global Font", settingsDlg->ui->globalFontColorGroupBox->isChecked());
 		QFont fnt;
+		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->outlineFontColor->sampleFont(), Settings::OutLineFontColor);
 		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->globalTextFontColor->sampleFont(), Settings::DefaultFontColor);
 		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->poemTextFontColor->sampleFont(), Settings::PoemTextFontColor);
 		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->proseTextFontColor->sampleFont(), Settings::ProseTextFontColor);
@@ -2132,6 +2136,7 @@ void MainWindow::globalSettings()
 		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->titlesFontColor->sampleFont(), Settings::TitlesFontColor);
 		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->numbersFontColor->sampleFont(), Settings::NumbersFontColor);
 
+		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->outlineFontColor->color(), Settings::OutLineFontColor);
 		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->globalTextFontColor->color(), Settings::DefaultFontColor);
 		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->poemTextFontColor->color(), Settings::PoemTextFontColor);
 		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->proseTextFontColor->color(), Settings::ProseTextFontColor);
@@ -2248,9 +2253,10 @@ void MainWindow::loadGlobalSettings()
 	SaagharWidget::backgroundColor = Settings::READ("Background Color",QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
 
 	//The "FreeFarsi" is an application font
-	QFont freeFarsiFont("FreeFarsi",fontSize);
+	QFont freeFarsiFont("FreeFarsi", fontSize);
 
 	QHash<QString, QVariant> defaultFonts;
+	Settings::insertToFontColorHash(&defaultFonts, font(), Settings::OutLineFontColor);
 	Settings::insertToFontColorHash(&defaultFonts, fnt, Settings::DefaultFontColor);
 	Settings::insertToFontColorHash(&defaultFonts, fnt, Settings::PoemTextFontColor);
 	Settings::insertToFontColorHash(&defaultFonts, freeFarsiFont, Settings::ProseTextFontColor);
@@ -2263,6 +2269,7 @@ void MainWindow::loadGlobalSettings()
 	Settings::insertToFontColorHash(&defaultFonts, freeFarsiFont, Settings::NumbersFontColor);
 
 	QHash<QString, QVariant> defaultColors;
+	Settings::insertToFontColorHash(&defaultColors, QColor(0x00,0x45, 0x00), Settings::OutLineFontColor);
 	Settings::insertToFontColorHash(&defaultColors, QColor(0x2F,0x90, 0x2D), Settings::DefaultFontColor);
 	Settings::insertToFontColorHash(&defaultColors, QColor(0x2F,0x90, 0x2D), Settings::PoemTextFontColor);
 	Settings::insertToFontColorHash(&defaultColors, QColor(0x2F,0x90, 0x2D), Settings::ProseTextFontColor);
@@ -2326,6 +2333,12 @@ void MainWindow::loadTabWidgetSettings()
 	}
 	p.setColor(QPalette::Text, Settings::getFromColors(Settings::PoemTextFontColor) );
 	mainTabWidget->setPalette(p);
+
+	outlineTree->setTreeFont(Settings::getFromFonts(Settings::OutLineFontColor));
+	outlineTree->setTreeColor(Settings::getFromColors(Settings::OutLineFontColor));
+//	QPalette outlinePalette(outlineTree->palette());
+//	outlinePalette.setColor(QPalette::Text, Settings::getFromColors(Settings::OutLineFontColor));
+//	outlineTree->setPalette(outlinePalette);
 }
 
 void MainWindow::saveSettings()
@@ -2802,6 +2815,9 @@ void MainWindow::importDataBase(const QString fileName)
 	if (SaagharWidget::ganjoorDataBase->importDataBase(fileName))
 	{
 		SaagharWidget::ganjoorDataBase->dBConnection.commit();
+
+		outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
+
 		comboBoxSearchRegion->clear();
 		QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
 		QListWidgetItem *titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);

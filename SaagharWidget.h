@@ -83,7 +83,7 @@ public:
 	QString currentPageGanjoorUrl ();
 	void loadSettings();
 	void showParentCategory(GanjoorCat category);
-	void processClickedItem(QString type, int id, bool error);
+	void processClickedItem(QString type, int id, bool error, bool pushToStack = true);
 	void navigateToPage(QString type, int id, bool error);
 	int minMesraWidth;
 

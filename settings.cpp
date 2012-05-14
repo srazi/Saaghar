@@ -53,6 +53,12 @@ Settings::Settings(QWidget *parent) :	QDialog(parent), ui(new Ui::Settings)
 //	QHash<QString, QVariant> tmphashFonts = Settings::READ("Fonts Hash", QVariant(defaultFonts)).toHash();
 //	QHash<QString, QVariant> tmphashColors = Settings::READ("Colors Hash", QVariant(defaultColors)).toHash();
 
+	outlineFontColor = new FontColorSelector(getFromFonts(OutLineFontColor, false),
+												getFromColors(OutLineFontColor, false),
+													ui->groupBox_2);
+	outlineFontColor->setObjectName(QString::fromUtf8("outlineFontColor"));
+	ui->outlineLayout->addWidget(outlineFontColor);
+
 	globalTextFontColor = new FontColorSelector(getFromFonts(DefaultFontColor, false),
 												getFromColors(DefaultFontColor, false),
 													ui->globalFontColorGroupBox);
@@ -479,13 +485,14 @@ FontColorSelector::FontColorSelector(const QFont &defaultFont, const QColor &def
 		setColor(color());
 
 	hLayout = new QHBoxLayout(0);
-
+	hLayout->setSpacing(1);
+	hLayout->setContentsMargins(1,1,1,1);
+	hLayout->addWidget(sampleLabel);
+	hLayout->addItem(horizontalSpacer);
+	hLayout->addWidget(colorSelector);
 	hLayout->addWidget(fontSelector);
 	//hLayout->addWidget(bold);
 	//hLayout->addWidget(italic);
-	hLayout->addItem(horizontalSpacer);
-	hLayout->addWidget(sampleLabel);
-	hLayout->addWidget(colorSelector);
 
 	this->setLayout(hLayout);
 }

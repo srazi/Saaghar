@@ -41,6 +41,7 @@ public:
 	explicit Settings(QWidget *parent = 0);
 	~Settings();
 
+	FontColorSelector *outlineFontColor;
 	FontColorSelector *globalTextFontColor;
 	FontColorSelector *poemTextFontColor;
 	FontColorSelector *proseTextFontColor;
@@ -57,7 +58,8 @@ public:
 		ProseTextFontColor = 2,
 		SectionNameFontColor = 3,
 		TitlesFontColor = 4,
-		NumbersFontColor = 5
+		NumbersFontColor = 5,
+		OutLineFontColor = 6
 	};
 
 	static QHash<QString, QVariant> hashFonts;

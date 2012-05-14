@@ -299,3 +299,19 @@ void OutLineTree::itemPressed(QTreeWidgetItem */*item*/, int /*column*/)
 {
 	pressedMouseButton = QApplication::mouseButtons();
 }
+
+void OutLineTree::setTreeFont(const QFont &font)
+{
+	if (outlineWidget)
+		outlineWidget->setFont(font);
+}
+
+void OutLineTree::setTreeColor(const QColor &color)
+{
+	if (outlineWidget && color.isValid())
+	{
+		QPalette p(outlineWidget->palette());
+		p.setColor(QPalette::Text, color);
+		outlineWidget->setPalette(p);
+	}
+}

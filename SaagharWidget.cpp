@@ -152,7 +152,7 @@ void SaagharWidget::loadSettings()
 	tableViewWidget->setVerticalHeader(header);
 }
 
-void SaagharWidget::processClickedItem(QString type, int id, bool noError)
+void SaagharWidget::processClickedItem(QString type, int id, bool noError, bool pushToStack)
 {
 	if (!noError)
 	{
@@ -163,8 +163,15 @@ void SaagharWidget::processClickedItem(QString type, int id, bool noError)
 		navigateToPage(type, id, true);//refresh and don't push to stack
 	else
 	{
-		NavigateToPage *navigateCommand = new NavigateToPage(this, type, id);
-		undoStack->push(navigateCommand);
+		if (pushToStack)
+		{
+			NavigateToPage *navigateCommand = new NavigateToPage(this, type, id);
+			undoStack->push(navigateCommand);
+		}
+		else
+		{
+			navigateToPage(type, id, true);//don't push to stack
+		}
 	}
 }
 

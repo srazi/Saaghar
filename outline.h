@@ -55,6 +55,8 @@ class OutLineTree : public QWidget
 public:
 	OutLineTree(QWidget *parent = 0);
 	void setItems(const QList<QTreeWidgetItem *> &items);
+	void setTreeFont(const QFont &font);
+	void setTreeColor(const QColor &color);
 
 private slots:
 	bool filterItems(const QString &str = "", QTreeWidgetItem *parentItem = 0);

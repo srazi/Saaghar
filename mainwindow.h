@@ -168,7 +168,7 @@ class MainWindow : public QMainWindow
 		void currentTabChanged(int tabIndex);
 		void tabCloser(int tabIndex);
 		void globalSettings();
-		void newTabForItem(int id, const QString &type = "CatID", bool noError = true);
+		void newTabForItem(int id, const QString &type = "CatID", bool noError = true, bool pushToStack = true);
 		void updateCaption();
 		void searchStart();
 			//Navigation
