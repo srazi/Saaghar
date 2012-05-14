@@ -48,6 +48,7 @@ class MainWindow : public QMainWindow
 		SaagharWidget *saagharWidget;
 //		void emitReSizeEvent();
 		static bool autoCheckForUpdatesState;
+		static QSettings *getSettingsObject();
 
 //	public slots:
 //		void emitReSizeEvent();
@@ -73,14 +74,12 @@ class MainWindow : public QMainWindow
 		QStringList mainToolBarItems;
 		QAction *actionInstance(const QString actionObjectName = "", QString iconPath = "", QString displayName = "");
 		void multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidget, const QStringList &selectedData = QStringList(), int insertIndex = 0);
-		bool isPortable;
 		QString convertToTeX(SaagharWidget *saagharObject);
 		QPrinter *defaultPrinter;
 		void printPreview(QPrinter *printer);
 		QString tableToString(QTableWidget *table, QString columnSeparator, QString rowSeparator, int startRow, int startColumn, int endRow, int endColumn);
 		void writeToFile(QString fileName, QString textToWrite);
 		QString convertToHtml(SaagharWidget *saagharObject);
-		QSettings *getSettingsObject();
 		//QStringList openedTabs;
 		void scrollToFirstFoundedItem(QString phrase, int PoemID, int vorder);
 		QTabWidget *mainTabWidget;
@@ -125,6 +124,8 @@ class MainWindow : public QMainWindow
 		QUndoGroup *undoGroup;
 		QAction *globalRedoAction;
 		QAction *globalUndoAction;
+
+		static bool isPortable;
 
 	public slots:
 		void updateTabsSubMenus();

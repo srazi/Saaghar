@@ -41,6 +41,9 @@ int main(int argc, char *argv[])
 	if (QCoreApplication::arguments().contains("-fresh", Qt::CaseInsensitive))
 		fresh = true;
 
+	QSettings *config = MainWindow::getSettingsObject();
+	QString uiLanguage = config->value("UI Language", "fa").toString();
+
 	QTranslator* appTranslator=new QTranslator();
 	QTranslator* basicTranslator=new QTranslator();
 
@@ -49,10 +52,10 @@ int main(int argc, char *argv[])
 	for (int i=0; i<translationDirs.size(); ++i)
 	{
 		QString translationDir = translationDirs.at(i);
-		if (appTranslator->load(QString("saaghar_fa"), translationDir))
+		if (appTranslator->load(QString("saaghar_")+uiLanguage, translationDir))
 		{
 			QCoreApplication::installTranslator(appTranslator);
-			if (basicTranslator->load(QString("qt_fa"), translationDir))
+			if (basicTranslator->load(QString("qt_")+uiLanguage, translationDir))
 				QCoreApplication::installTranslator(basicTranslator);
 			break;
 		}

@@ -64,6 +64,7 @@
 //const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 
 bool MainWindow::autoCheckForUpdatesState = true;
+bool MainWindow::isPortable = false;
 
 MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	QMainWindow(parent),
@@ -2031,6 +2032,10 @@ void MainWindow::globalSettings()
 	connect(settingsDlg->ui->pushButtonRandomOptions, SIGNAL(clicked()), this, SLOT(customizeRandomDialog()));
 
 	/************initializing saved state of Settings dialog object!************/
+	settingsDlg->ui->uiLanguageComboBox->addItems(QStringList() << "fa" << "en");
+	int langIndex = settingsDlg->ui->uiLanguageComboBox->findText(Settings::READ("UI Language", "fa").toString(), Qt::MatchExactly);
+	settingsDlg->ui->uiLanguageComboBox->setCurrentIndex(langIndex);
+
 	settingsDlg->ui->pushButtonActionBottom->setIcon(QIcon(currentIconThemePath()+"/down.png"));
 	settingsDlg->ui->pushButtonActionTop->setIcon(QIcon(currentIconThemePath()+"/up.png"));
 
@@ -2090,6 +2095,12 @@ void MainWindow::globalSettings()
 	if (settingsDlg->exec())
 	{
 		/************setup new settings************/
+		if (Settings::READ("UI Language", "fa").toString() != settingsDlg->ui->uiLanguageComboBox->currentText())
+		{
+			Settings::WRITE("UI Language", settingsDlg->ui->uiLanguageComboBox->currentText());
+			QMessageBox::information(this, tr("Interface Language Changed!"), tr("The interface language changes after relunching application!"));
+		}
+
 		SaagharWidget::maxPoetsPerGroup = settingsDlg->ui->spinBoxPoetsPerGroup->value();
 	
 		MainWindow::autoCheckForUpdatesState = settingsDlg->ui->checkBoxAutoUpdates->isChecked();
@@ -2193,6 +2204,7 @@ void MainWindow::globalSettings()
 	}
 }
 
+/*static*/
 QSettings *MainWindow::getSettingsObject()
 {
 	QString organization = "Pozh";
@@ -2361,6 +2373,8 @@ void MainWindow::saveSettings()
 	}
 
 	QSettings *config = getSettingsObject();
+
+	config->setValue("UI Language", Settings::READ("UI Language", "fa"));
 
 	SaagharWidget::musicPlayer->savePlayerSettings(config);
 
