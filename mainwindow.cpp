@@ -2243,30 +2243,34 @@ void MainWindow::loadGlobalSettings()
 	QGanjoorDbBrowser::dataBasePath = config->value("DataBase Path", "").toString().split(";", QString::SkipEmptyParts);
 
 	//The "XB Sols" is embeded in executable.
-	QString fontFamily=config->value("Font Family", "XB Sols").toString();
-	int fontSize=config->value( "Font Size", 18).toInt();
-	QFont fnt(fontFamily,fontSize);
+//	QString fontFamily=config->value("Font Family", "XB Sols").toString();
+//	int fontSize=config->value( "Font Size", 18).toInt();
+//	QFont fnt(fontFamily,fontSize);
 	//SaagharWidget::tableFont = fnt;
 	SaagharWidget::showBeytNumbers = config->value("Show Beyt Numbers",true).toBool();
 	//SaagharWidget::textColor = Settings::READ("Text Color",QColor(0x23,0x65, 0xFF)).value<QColor>();
 	SaagharWidget::matchedTextColor = Settings::READ("Matched Text Color",QColor(0x5E, 0xFF, 0x13)).value<QColor>();
 	SaagharWidget::backgroundColor = Settings::READ("Background Color",QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
 
+	//The "XB Sols" is an application font
+	QFont appFont1("XB Sols", 16);
 	//The "FreeFarsi" is an application font
-	QFont freeFarsiFont("FreeFarsi", fontSize);
+	QFont appFont2("Scheherazade", 20);
 
 	QHash<QString, QVariant> defaultFonts;
+
 	Settings::insertToFontColorHash(&defaultFonts, font(), Settings::OutLineFontColor);
-	Settings::insertToFontColorHash(&defaultFonts, fnt, Settings::DefaultFontColor);
-	Settings::insertToFontColorHash(&defaultFonts, fnt, Settings::PoemTextFontColor);
-	Settings::insertToFontColorHash(&defaultFonts, freeFarsiFont, Settings::ProseTextFontColor);
-	Settings::insertToFontColorHash(&defaultFonts, freeFarsiFont, Settings::SectionNameFontColor);
-	freeFarsiFont.setBold(true);
-	freeFarsiFont.setPointSize(fontSize+2);
-	Settings::insertToFontColorHash(&defaultFonts, freeFarsiFont, Settings::TitlesFontColor);
-	freeFarsiFont.setPointSize(qMax(8, fontSize-4));
-	freeFarsiFont.setBold(false);
-	Settings::insertToFontColorHash(&defaultFonts, freeFarsiFont, Settings::NumbersFontColor);
+	Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::PoemTextFontColor);
+	appFont1.setPointSize(12);
+	Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::NumbersFontColor);
+
+	Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::DefaultFontColor);
+	Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::ProseTextFontColor);
+	appFont2.setBold(true);
+	appFont2.setPointSize(18);
+	Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::SectionNameFontColor);
+	appFont2.setPointSize(22);
+	Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::TitlesFontColor);
 
 	QHash<QString, QVariant> defaultColors;
 	Settings::insertToFontColorHash(&defaultColors, QColor(0x00,0x45, 0x00), Settings::OutLineFontColor);
@@ -2274,7 +2278,7 @@ void MainWindow::loadGlobalSettings()
 	Settings::insertToFontColorHash(&defaultColors, QColor(0x2F,0x90, 0x2D), Settings::PoemTextFontColor);
 	Settings::insertToFontColorHash(&defaultColors, QColor(0x2F,0x90, 0x2D), Settings::ProseTextFontColor);
 	Settings::insertToFontColorHash(&defaultColors, QColor(0x00,0x7D, 0x00), Settings::SectionNameFontColor);
-	Settings::insertToFontColorHash(&defaultColors, QColor(0x00,0x7D, 0x00), Settings::TitlesFontColor);
+	Settings::insertToFontColorHash(&defaultColors, QColor(0x70,0x53, 0x25), Settings::TitlesFontColor);
 	Settings::insertToFontColorHash(&defaultColors, QColor(0x00,0x7D, 0x00), Settings::NumbersFontColor);
 
 	Settings::hashFonts = Settings::READ("Fonts Hash", QVariant(defaultFonts)).toHash();

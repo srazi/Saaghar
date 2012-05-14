@@ -148,6 +148,7 @@ public slots:
 	void setColor(const QColor &color);
 
 private:
+	QLabel *fontInfo;
 	QLabel *sampleLabel;
 	QPushButton *fontSelector; 
 	QPushButton *colorSelector;

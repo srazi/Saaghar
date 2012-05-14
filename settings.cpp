@@ -336,6 +336,8 @@ void Settings::browseForIconTheme()
 QFont Settings::getFromFonts(FontColorItem type, bool canLoadDefault)
 {
 	QFont font;
+	if (type == OutLineFontColor)
+		canLoadDefault = false;
 	if (Settings::READ("Global Font", false).toBool() && canLoadDefault)
 	{
 		font = Settings::hashFonts.value(QString::number(int(DefaultFontColor))).value<QFont>();
@@ -344,6 +346,7 @@ QFont Settings::getFromFonts(FontColorItem type, bool canLoadDefault)
 	{
 		font = Settings::hashFonts.value(QString::number(int(type))).value<QFont>();
 	}
+	font.setStyleStrategy(QFont::PreferAntialias);
 	return font;
 }
 
@@ -351,6 +354,8 @@ QFont Settings::getFromFonts(FontColorItem type, bool canLoadDefault)
 QColor Settings::getFromColors(FontColorItem type, bool canLoadDefault)
 {
 	QColor color;
+	if (type == OutLineFontColor)
+		canLoadDefault = false;
 	if (Settings::READ("Global Font", false).toBool() && canLoadDefault)
 	{
 		color = Settings::hashColors.value(QString::number(int(DefaultFontColor))).value<QColor>();
@@ -461,10 +466,13 @@ void CustomizeRandomDialog::acceptSettings(bool *checked)
 FontColorSelector::FontColorSelector(const QFont &defaultFont, const QColor &defaultColor, QWidget *parent, const QString &sampleText)
 	: QWidget(parent)
 {
-	sampleLabel = new QLabel(sampleText.isEmpty() ? QString::fromLocal8Bit("نمونه قلم!") /* tr("Font Sample!")*/ : sampleText, parent);
+	sampleLabel = new QLabel(sampleText.isEmpty() ? tr("Font Sample!") : sampleText, parent);
 
 	sampleLabel->setMaximumHeight(30);
 	sampleLabel->setMaximumWidth(400);
+
+	fontInfo = new QLabel(parent);
+
 	fontSelector = new QPushButton(tr("Set Font..."), parent); 
 	colorSelector = new QPushButton(parent);
 	colorSelector->setFlat(true);
@@ -489,6 +497,7 @@ FontColorSelector::FontColorSelector(const QFont &defaultFont, const QColor &def
 	hLayout->setContentsMargins(1,1,1,1);
 	hLayout->addWidget(sampleLabel);
 	hLayout->addItem(horizontalSpacer);
+	hLayout->addWidget(fontInfo);
 	hLayout->addWidget(colorSelector);
 	hLayout->addWidget(fontSelector);
 	//hLayout->addWidget(bold);
@@ -517,9 +526,12 @@ void FontColorSelector::setColor(const QColor &color)
 void FontColorSelector::setSampleFont(const QFont &font)
 {
 	sampleLabel->setFont(font);
-
-	//italic->setChecked(font.italic());
-	//bold->setChecked(font.bold());
+	
+	fontInfo->setText(" "+font.family()+", "+QString::number(font.pointSize())+" ");
+	QFont fontInfoLabelFont(fontInfo->font());
+	fontInfoLabelFont.setBold(font.bold());
+	fontInfoLabelFont.setItalic(font.italic());
+	fontInfo->setFont(fontInfoLabelFont);
 }
 
 void FontColorSelector::selectFont()

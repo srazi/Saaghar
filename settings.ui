@@ -426,7 +426,7 @@
        <item>
         <widget class="QGroupBox" name="globalFontColorGroupBox">
          <property name="title">
-          <string>Global</string>
+          <string>Simple</string>
          </property>
          <property name="checkable">
           <bool>true</bool>
