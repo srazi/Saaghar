@@ -56,13 +56,15 @@
 
 QT_BEGIN_NAMESPACE
 class QAction;
-class QTableWidget;
+//class QTableWidget;
 class QLCDNumber;
 class QLabel;
 class QSettings;
+class QDockWidget;
 QT_END_NAMESPACE
 
 //![0]
+class PlayListManager;
 
 class QMusicPlayer : public QToolBar
 {
@@ -70,15 +72,45 @@ class QMusicPlayer : public QToolBar
 	Q_OBJECT
 
 public:
+	struct SaagharMediaTag {
+		int time;
+		QString TITLE;
+		QString PATH;
+		QString RELATIVE_PATH;
+		QString MD5SUM;
+	};
+
+	struct SaagharPlayList {
+		QString PATH;
+		QHash<int, SaagharMediaTag *> mediaItems;
+//		~SaagharPlayList()
+//		{
+//			PATH.clear();
+//			mediaItems.clear();
+//		}
+	};
+
 	QMusicPlayer(QWidget *parent = 0);
 	QString source();
-	void setSource(const QString &fileName);
+	void setSource(const QString &fileName, const QString &title = "", int mediaID = -1);
 	void readPlayerSettings(QSettings *settingsObject);
 	void savePlayerSettings(QSettings *settingsObject);
 	qint64 currentTime();
 	void setCurrentTime(qint64 time);
+	void loadPlayList(const QString &fileName, const QString &playListName = "default", const QString &format="M3U8");
+	void savePlayList(const QString &fileName, const QString &playListName = "default", const QString &format="M3U8");
+
+	static void insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle = "", const QString &mediaRelativePath = "", int mediaCurrentTime = 0, const QString &playListName = "default");
+	static bool playListContains(int mediaID, const QString &playListName = "default");
+	static void getFromPlayList(int mediaID, QString *mediaPath, QString *mediaTitle = 0, QString *mediaRelativePath = 0, int *mediaCurrentTime = 0, const QString &playListName = "default");
+
+	static QHash<QString, QVariant> listOfPlayList;
+	//static QHash<int, SaagharMediaTag> d efaultPlayList;
+
+	QDockWidget *playListManagerDock();
 
 private slots:
+	void playMedia(int mediaID/*, const QString &fileName, const QString &title = ""*/);
 	void removeSource();
 	void setSource();
 	void seekableChanged(bool seekable);
@@ -93,6 +125,18 @@ private slots:
 //![1]
 
 private:
+	int currentID;
+	QString currentTitle;
+	QDockWidget	*dockList;
+	PlayListManager *playListManager;
+	inline static SaagharPlayList *playListByName(const QString &playListName = "default")
+		{return hashPlayLists.value(playListName);}
+	inline static void pushPlayList(SaagharPlayList *playList,const QString &playListName = "default")
+		{hashPlayLists.insert(playListName, playList);}
+
+	static QHash<QString, QHash<int, SaagharMediaTag> > playLists;
+	static QHash<QString, SaagharPlayList *> hashPlayLists;
+	static SaagharPlayList hashDefaultPlayList;
 	qint64 _newTime;
 	void setupActions();
 	//void setupMenus();
@@ -122,7 +166,38 @@ private:
 	//QTableWidget *musicTable;
 
 signals:
-	void mediaChanged(const QString &);
+	void mediaChanged(const QString &,const QString &,int);//fileName, title, id
+	void requestPageContainedMedia(/*const QString &,const QString &,*/int,bool);//fileName, title, id
+};
+
+class QTreeWidget;
+class QVBoxLayout;
+class QTreeWidgetItem;
+
+class PlayListManager : public QWidget
+{
+	Q_OBJECT
+
+public:
+	PlayListManager(QWidget *parent = 0);
+	void setPlayLists(const QHash<QString, QMusicPlayer::SaagharPlayList *> &playLists, bool justMediaList = false);
+	void setMediaObject(Phonon::MediaObject *MediaObject);
+
+private:
+	QTreeWidgetItem *previousItem;
+	QVBoxLayout *hLayout;
+	QTreeWidget *mediaList;
+	bool itemsAsTopItem;
+	Phonon::MediaObject *playListMediaObject;
+
+private slots:
+	void mediaObjectStateChanged(Phonon::State newState, Phonon::State oldState);
+	void itemPlayRequested(QTreeWidgetItem*,int);
+	void currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
+	void currentMediaChanged(const QString &fileName, const QString &title, int mediaID);
+
+signals:
+	void mediaPlayRequested(int/*, const QString &, const QString &*/);//mediaID, fileName, title!
 };
 
 #endif // QMUSICPLAYER_H

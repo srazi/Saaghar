@@ -1100,27 +1100,35 @@ qDebug()<<"end of big for=" << QTime::currentTime().msecsTo(start);
 		pageMetaInfo.id = currentPoem;
 		pageMetaInfo.type = SaagharWidget::PoemViewerPage;
 
-		if (SaagharWidget::mediaInfoCash.contains(currentPoem))
+		if (QMusicPlayer::playListContains(currentPoem))
 		{
-			QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(currentPoem);
-			if (SaagharWidget::musicPlayer->source() != currentMediaInfo.first)
+			QString path;
+			QString title;
+			QString relativePath;
+			QMusicPlayer::getFromPlayList(currentPoem, &path, &title, &relativePath);
+			//QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(currentPoem);
+			if (SaagharWidget::musicPlayer->source() != path)
 			{
-				SaagharWidget::musicPlayer->setSource(currentMediaInfo.first);
+				SaagharWidget::musicPlayer->setSource(path, currentLocationList.join(">")+currentPoemTitle, currentPoem);
 				//QApplication::processEvents();
 				//SaagharWidget::musicPlayer->setCurrentTime(currentMediaInfo.second);
 			}
-			qDebug()<<"ShowPmediaFile="<<currentMediaInfo.first;
+			qDebug()<<"ShowPmediaFile="<<path;
 			qDebug()<<"ShowPinternalName="<<SaagharWidget::musicPlayer->source();
 		}
 		else
-		{
-			QString mediaSource = SaagharWidget::ganjoorDataBase->getPoemMediaSource(currentPoem);
-			SaagharWidget::mediaInfoCash.insert(currentPoem, QPair<QString, qint64>(mediaSource, 0));
-			qDebug() << "showPoem1-currentPoem="<<currentPoem<<"mediaSource="<<mediaSource;
-			SaagharWidget::musicPlayer->setSource(mediaSource);
-			qDebug() << "showPoem2-currentPoem="<<currentPoem<<"mediaSource="<<mediaSource;
-			//SaagharWidget::musicPlayer->
+		{ //at startup we load everythings!
+			SaagharWidget::musicPlayer->setSource("", currentLocationList.join(">")+currentPoemTitle, currentPoem);
 		}
+//		else //at startup we load everythings!
+//		{
+//			QString mediaSource = SaagharWidget::ganjoorDataBase->getPoemMediaSource(currentPoem);
+//			SaagharWidget::mediaInfoCash.insert(currentPoem, QPair<QString, qint64>(mediaSource, 0));
+//			qDebug() << "showPoem1-currentPoem="<<currentPoem<<"mediaSource="<<mediaSource;
+//			SaagharWidget::musicPlayer->setSource(mediaSource);
+//			qDebug() << "showPoem2-currentPoem="<<currentPoem<<"mediaSource="<<mediaSource;
+//			//SaagharWidget::musicPlayer->
+//		}
 	}
 
 	emit navPreviousActionState( !ganjoorDataBase->getPreviousPoem(currentPoem, currentCat).isNull() );

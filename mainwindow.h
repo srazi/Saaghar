@@ -131,9 +131,11 @@ class MainWindow : public QMainWindow
 		void updateTabsSubMenus();
 
 	private slots:
-		void openParentPage(int parentID);
+		void openParentPage(int parentID, bool newPage = false);
+		void openChildPage(int childID, bool newPage = false);
+		void openPage(int id, SaagharWidget::PageType type, bool newPage = false);
 		void createCustomContextMenu(const QPoint &pos);
-		void mediaInfoChanged(const QString &fileName);
+		void mediaInfoChanged(const QString &fileName, const QString &title = "", int id = -1);
 		void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true, bool unbookmark = true);
 		void setHomeAsDirty();
 		void setAllAsDirty();

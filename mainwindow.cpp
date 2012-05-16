@@ -123,9 +123,14 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	
 	SaagharWidget::musicPlayer = new QMusicPlayer(this);
 	SaagharWidget::musicPlayer->setWindowTitle(tr("Audio Player"));
+	addDockWidget(Qt::LeftDockWidgetArea, SaagharWidget::musicPlayer->playListManagerDock());
+	SaagharWidget::musicPlayer->playListManagerDock()->hide();
 	SaagharWidget::musicPlayer->hide();
-
 	loadGlobalSettings();
+
+	//TODO: remove hardcoded load/save location!
+	QMusicPlayer::listOfPlayList.insert("default", userHomePath+"/media/default.m3u8");
+	SaagharWidget::musicPlayer->loadPlayList(QMusicPlayer::listOfPlayList.value("default").toString());
 
 	if (splashScreen)
 	{
@@ -700,18 +705,26 @@ void MainWindow::currentTabChanged(int tabIndex)
 
 		if (SaagharWidget::musicPlayer)
 		{
-			QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(saagharWidget->currentPoem);
-		qDebug()<<"CTABmediaFile="<<currentMediaInfo;
-		qDebug()<<"CTABinternalName="<<SaagharWidget::musicPlayer->source();
-		if (old_saagharWidget)
-		{
-			qDebug()<<"old="<< old_saagharWidget->currentPoem<<"new="<<saagharWidget->currentPoem;
-			SaagharWidget::mediaInfoCash.insert(old_saagharWidget->currentPoem, QPair<QString, qint64>(SaagharWidget::mediaInfoCash.value(old_saagharWidget->currentPoem).first, SaagharWidget::musicPlayer->currentTime()));
-		}
-			
-			if (SaagharWidget::musicPlayer->source() != currentMediaInfo.first)
+			//QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(saagharWidget->currentPoem);
+			//qDebug()<<"CTABmediaFile="<<currentMediaInfo;
+			qDebug()<<"CTABinternalName="<<SaagharWidget::musicPlayer->source();
+			QString path;
+			QString title;
+			QString relativePath;
+			if (old_saagharWidget)
 			{
-				SaagharWidget::musicPlayer->setSource(currentMediaInfo.first);
+				qDebug()<<"old="<< old_saagharWidget->currentPoem<<"new="<<saagharWidget->currentPoem;
+				//SaagharWidget::mediaInfoCash.insert(old_saagharWidget->currentPoem, QPair<QString, qint64>(SaagharWidget::mediaInfoCash.value(old_saagharWidget->currentPoem).first, SaagharWidget::musicPlayer->currentTime()));
+				QMusicPlayer::getFromPlayList(old_saagharWidget->currentPoem, &path, &title, &relativePath);
+				QMusicPlayer::insertToPlayList(old_saagharWidget->currentPoem, path, title, relativePath, SaagharWidget::musicPlayer->currentTime());
+			}
+			path = "";
+			title = "";
+			relativePath = "";
+			QMusicPlayer::getFromPlayList(saagharWidget->currentPoem, &path, &title, &relativePath);
+			if (SaagharWidget::musicPlayer->source() != path)
+			{
+				SaagharWidget::musicPlayer->setSource(path, saagharWidget->currentLocationList.join(">")+saagharWidget->currentPoemTitle, saagharWidget->currentPoem);
 				//QApplication::processEvents();
 				//SaagharWidget::musicPlayer->setCurrentTime(currentMediaInfo.second);
 			}
@@ -1573,7 +1586,8 @@ void MainWindow::setupUi()
 {
 	QString iconThemePath = currentIconThemePath();
 
-	connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(const QString &)), this, SLOT(mediaInfoChanged(const QString &)));
+	connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(const QString &,const QString &,int)), this, SLOT(mediaInfoChanged(const QString &,const QString &,int)));
+	connect(SaagharWidget::musicPlayer, SIGNAL(requestPageContainedMedia(/*QString,QString,*/int,bool)), this, SLOT(openChildPage(int,bool)));
 	addToolBar(Qt::BottomToolBarArea, SaagharWidget::musicPlayer);
 
 	if (Settings::READ("MainWindowState").isNull())
@@ -2359,6 +2373,9 @@ void MainWindow::loadTabWidgetSettings()
 
 void MainWindow::saveSettings()
 {
+	if (SaagharWidget::musicPlayer)
+		SaagharWidget::musicPlayer->savePlayList(QMusicPlayer::listOfPlayList.value("default").toString());
+
 	QFile bookmarkFile(userHomePath+"/bookmarks.xbel");
 	if (!bookmarkFile.open(QFile::WriteOnly | QFile::Text))
 	{
@@ -2451,26 +2468,26 @@ void MainWindow::saveSettings()
 	Settings::WRITE("Fonts Hash", Settings::hashFonts);
 	Settings::WRITE("Colors Hash", Settings::hashColors);
 
-	QHash<int, QPair<QString, qint64> >::const_iterator it = SaagharWidget::mediaInfoCash.constBegin();
+//	QHash<int, QPair<QString, qint64> >::const_iterator it = SaagharWidget::mediaInfoCash.constBegin();
 
-	bool transectionStarted = false;
+//	bool transectionStarted = false;
 
-	if (it != SaagharWidget::mediaInfoCash.constEnd())
-	{
-		transectionStarted = true;
-		SaagharWidget::ganjoorDataBase->dBConnection.transaction();
-	}
+//	if (it != SaagharWidget::mediaInfoCash.constEnd())
+//	{
+//		transectionStarted = true;
+//		SaagharWidget::ganjoorDataBase->dBConnection.transaction();
+//	}
 
-	while (it != SaagharWidget::mediaInfoCash.constEnd())
-	{
-		SaagharWidget::ganjoorDataBase->setPoemMediaSource(it.key(), it.value().first);
-		++it;
-	}
+//	while (it != SaagharWidget::mediaInfoCash.constEnd())
+//	{
+//		SaagharWidget::ganjoorDataBase->setPoemMediaSource(it.key(), it.value().first);
+//		++it;
+//	}
 
-	if ( transectionStarted )
-	{
-		SaagharWidget::ganjoorDataBase->dBConnection.commit();
-	}
+//	if ( transectionStarted )
+//	{
+//		SaagharWidget::ganjoorDataBase->dBConnection.commit();
+//	}
 
 
 	/////////////////////save state////////////////////
@@ -3567,17 +3584,34 @@ void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString 
 	}
 }
 
-void MainWindow::mediaInfoChanged(const QString &fileName)
+void MainWindow::mediaInfoChanged(const QString &fileName, const QString &title, int id)
 {
-	if (saagharWidget)
+	if (!saagharWidget) return;
+
+	QString mediaTitle = title;
+	if (saagharWidget->currentPoem == id)
 	{
-		qDebug() << "mediaInfoChanged-saagharWidget->currentPoem="<<saagharWidget->currentPoem<<"fileName="<<fileName;
-		qint64 time = 0;
-		if (SaagharWidget::musicPlayer)
-			time = SaagharWidget::musicPlayer->currentTime();
-		SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
-		//saagharWidget->pageMetaInfo.mediaFile = fileName;
+		qDebug() << "SetSource-mediaInfoChanged! saagharWidget->currentPoem == id";
 	}
+	else
+	{
+		qDebug() << "!!!!---SetSource-mediaInfoChanged!!!!!!!!!! saagharWidget->currentPoem != id"<<title<<id;
+	}
+
+	//if (saagharWidget->currentPoem == id && SaagharWidget::musicPlayer->source() == fileName)
+	qDebug() << "mediaInfoChanged-saagharWidget->currentPoem="<<saagharWidget->currentPoem<<"fileName="<<fileName;
+	qint64 time = 0;
+	if (SaagharWidget::musicPlayer)
+		time = SaagharWidget::musicPlayer->currentTime();
+	if (mediaTitle.isEmpty())
+	{
+		mediaTitle = saagharWidget->currentLocationList.join(">");
+		if (!saagharWidget->currentPoemTitle.isEmpty())
+			mediaTitle+=">"+saagharWidget->currentPoemTitle;
+	}
+	QMusicPlayer::insertToPlayList(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, "", time);
+	//SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
+	//saagharWidget->pageMetaInfo.mediaFile = fileName;
 }
 
 void MainWindow::createCustomContextMenu(const QPoint &pos)
@@ -3650,7 +3684,17 @@ qDebug() << "MainWindow--createCustomContextMenu-Pos="<<pos;
 	}
 }
 
-void MainWindow::openParentPage(int parentID)
+void MainWindow::openParentPage(int parentID, bool newPage)
+{
+	openPage(parentID, SaagharWidget::CategoryViewerPage, newPage);
+}
+
+void MainWindow::openChildPage(int childID, bool newPage)
+{
+	openPage(childID, SaagharWidget::PoemViewerPage, newPage);
+}
+
+void MainWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
 {
 	if (!saagharWidget)
 		insertNewTab();
@@ -3659,7 +3703,7 @@ void MainWindow::openParentPage(int parentID)
 	{
 		SaagharWidget *tmp = getSaagharWidget(j);
 
-		if (tmp && tmp->pageMetaInfo.type == SaagharWidget::CategoryViewerPage && tmp->pageMetaInfo.id == parentID)
+		if (tmp && tmp->pageMetaInfo.type == type && tmp->pageMetaInfo.id == id)
 		{
 			qDebug() << "mainTabWidget->setCurrentWidget--Bef";
 			mainTabWidget->setCurrentWidget(tmp->parentWidget());
@@ -3668,5 +3712,8 @@ void MainWindow::openParentPage(int parentID)
 		}
 	}
 
-	saagharWidget->processClickedItem("CatID", parentID, true);
+	if (newPage)
+		insertNewTab();
+	QString typeSTR = (type == SaagharWidget::CategoryViewerPage ? "CatID" : "PoemID");
+	saagharWidget->processClickedItem(typeSTR, id, true);
 }
