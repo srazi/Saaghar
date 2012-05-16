@@ -3464,8 +3464,9 @@ void MainWindow::setupBookmarkManagerUi()
 	bookmarkToolsLayout->addItem(filterHorizSpacer);
 	bookmarkToolsLayout->addWidget(unBookmarkButton);
 	//bookmarkMainLayout->addWidget(bookmarkFilter);
-	bookmarkMainLayout->addLayout(bookmarkToolsLayout);
+
 	bookmarkMainLayout->addWidget(SaagharWidget::bookmarks);
+	bookmarkMainLayout->addLayout(bookmarkToolsLayout);//move to bottom of layout! just we want looks similar other dock widgets!
 	bookmarkContainer->setLayout(bookmarkMainLayout);
 
 	QFile bookmarkFile(userHomePath+"/bookmarks.xbel");

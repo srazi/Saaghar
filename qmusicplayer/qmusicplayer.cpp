@@ -853,6 +853,7 @@ PlayListManager::PlayListManager(QWidget *parent) : QWidget(parent)
 	setObjectName("PlayListManager");
 
 	mediaList = new QTreeWidget;
+	mediaList->setLayoutDirection(Qt::RightToLeft);
 	previousItem = 0;
 	mediaList->setColumnCount(2);
 	hLayout = new QVBoxLayout;
