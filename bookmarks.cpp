@@ -48,6 +48,8 @@
 #include "bookmarks.h"
 #include "QGanjoorDbBrowser.h"
 
+const int ID_DATA = Qt::UserRole+1;
+
 Bookmarks::Bookmarks(QWidget *parent)
 	: QTreeWidget(parent)
 {
@@ -178,9 +180,23 @@ void Bookmarks::updateDomElement(QTreeWidgetItem *item, int column)
 }
 
 void Bookmarks::parseFolderElement(const QDomElement &element,
-								QTreeWidgetItem *parentItem)
+								QTreeWidgetItem *parentItem, const QString &/*elementID*/)
 {
-	QTreeWidgetItem *item = createItem(element, parentItem);
+	QDomElement parentElement(element);
+	QString id = "";
+	if (parentElement.tagName() == "folder")
+	{
+		id = parentElement.attribute("id", "Verses");//old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
+		QDomElement oldTitleElement = parentElement.firstChildElement("title");
+		QDomElement newTitleElement = domDocument.createElement("title");
+		QDomText newTitleText = domDocument.createTextNode(tr(id.toLocal8Bit().data()));
+		newTitleElement.appendChild(newTitleText);
+
+		parentElement.replaceChild(newTitleElement, oldTitleElement);
+		parentElement.setAttribute("id", id);
+	}
+
+	QTreeWidgetItem *item = createItem(parentElement, parentItem, id);
 
 	QString title = element.firstChildElement("title").text();
 	if (title.isEmpty())
@@ -190,30 +206,35 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
 	item->setIcon(0, folderIcon);
 	item->setText(0, title);
 
-	bool folded = (element.attribute("folded") != "no");
+	bool folded = (parentElement.attribute("folded") != "no");
 	setItemExpanded(item, !folded);
 
-	QDomElement child = element.firstChildElement();
+	QDomElement child = parentElement.firstChildElement();
 	while (!child.isNull())
 	{
 		if (child.tagName() == "folder")
 		{
 //TODO: we can save labguage within a 'metadata' tag of this 'folder'
 //			//update node title by new loaded translation
-//			QString title = child.firstChildElement("title").text();
-//			if (title != tr(title.toLocal8Bit().data()))
-//			{
-//				qDebug() << "DIFREEEEEENT TRANSLATIOOOOON" << title << tr(title.toLocal8Bit().data());
+			QString id = child.attribute("id");
+			qDebug() << "child.tagName()=folder--id="<<id;
+			QString title = child.firstChildElement("title").text();
+			//if (title != tr(title.toLocal8Bit().data()))
+			if (id.isEmpty())
+			{//old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
+				id = "Verses";
+				qDebug() << "DIFREEEEEENT TRANSLATIOOOOON" << title << tr(title.toLocal8Bit().data());
 
-//				title = tr(title.toLocal8Bit().data());
-//				QDomElement oldTitleElement = child.firstChildElement("title");
-//				QDomElement newTitleElement = domDocument.createElement("title");
-//				QDomText newTitleText = domDocument.createTextNode(title);
-//				newTitleElement.appendChild(newTitleText);
+				title = tr(title.toLocal8Bit().data());
+				QDomElement oldTitleElement = child.firstChildElement("title");
+				QDomElement newTitleElement = domDocument.createElement("title");
+				QDomText newTitleText = domDocument.createTextNode(tr("Verses"));
+				newTitleElement.appendChild(newTitleText);
 
-//				child.replaceChild(newTitleElement, oldTitleElement);
-//			}
-			parseFolderElement(child, item);
+				child.replaceChild(newTitleElement, oldTitleElement);
+				child.setAttribute("id", "Verses");
+			}
+			parseFolderElement(child, item, id);
 		}
 		else if (child.tagName() == "bookmark")
 		{
@@ -254,7 +275,7 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
 }
 
 QTreeWidgetItem *Bookmarks::createItem(const QDomElement &element,
-									  QTreeWidgetItem *parentItem)
+									QTreeWidgetItem *parentItem, const QString &elementID)
 {
 	QTreeWidgetItem *item;
 	if (parentItem)
@@ -265,6 +286,9 @@ QTreeWidgetItem *Bookmarks::createItem(const QDomElement &element,
 	{
 		item = new QTreeWidgetItem(this);
 	}
+
+	if (!elementID.isEmpty())
+		item->setData(0, ID_DATA, elementID);
 	domElementForItem.insert(item, element);
 	return item;
 }
@@ -275,11 +299,16 @@ QDomElement Bookmarks::findChildNode(const QString &tagName, const QString &type
 	QDomElement n = domDocument.documentElement().firstChildElement(tagName);
 	while (!n.isNull())
 	{
-		if (n.firstChildElement("title").text() == type || n.firstChildElement("title").text() == tr(type.toUtf8().data()))
+		QString id = n.attribute("id", "Verses");//old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
+		if (id == type)
 		{
-			//qDebug() << type.toUtf8().data()<<"IIIIFFF BREAK" << "localName=" << n.localName() << "nodName=" << n.nodeName() << "title="<< n.firstChildElement("title").text();
 			break;
 		}
+//		if (n.firstChildElement("title").text() == type || n.firstChildElement("title").text() == tr(type.toUtf8().data()))
+//		{
+//			//qDebug() << type.toUtf8().data()<<"IIIIFFF BREAK" << "localName=" << n.localName() << "nodName=" << n.nodeName() << "title="<< n.firstChildElement("title").text();
+//			break;
+//		}
 		QDomElement e = n.toElement();
 		//qDebug() << "Element name: " << e.tagName();
 		//qDebug() << "localName=" << n.localName() << "nodName=" << n.nodeName() << "title="<< n.firstChildElement("title").text();
@@ -460,7 +489,10 @@ void Bookmarks::doubleClicked(QTreeWidgetItem *item, int column)
 			int length = secondNewLineIndex > 0 ? secondNewLineIndex-newLineIndex : text.size()-newLineIndex;
 			text = text.mid(newLineIndex, length);//text.left(text.indexOf("\n"));
 			qDebug() << "text-after="<<text<<"newLineIndex="<<newLineIndex<<"secondNewLineIndex="<<secondNewLineIndex<<"length="<<length;
-			emit showBookmarkedItem(item->parent()->text(0), text, item->data(0, Qt::UserRole).toString(), true, true);
+			QString type = item->data(0, ID_DATA).toString();
+			if (type.isEmpty())//old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
+				type = "Verses";
+			emit showBookmarkedItem(type/*item->parent()->text(0)*/, text, item->data(0, Qt::UserRole).toString(), true, true);
 		}
 	}
 }
@@ -517,7 +549,10 @@ bool Bookmarks::unBookmarkItem(QTreeWidgetItem *item)
 		int length = secondNewLineIndex > 0 ? secondNewLineIndex-newLineIndex : text.size()-newLineIndex;
 		text = text.mid(newLineIndex, length);
 		qDebug() << "text-after="<<text<<"newLineIndex="<<newLineIndex<<"secondNewLineIndex="<<secondNewLineIndex<<"length="<<length;
-		emit showBookmarkedItem(item->parent()->text(0), text, item->data(0, Qt::UserRole).toString(), false, true);
+		QString type = item->data(0, ID_DATA).toString();
+		if (type.isEmpty())//old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
+			type = "Verses";
+		emit showBookmarkedItem(type/*item->parent()->text(0)*/, text, item->data(0, Qt::UserRole).toString(), false, true);
 		delete item;
 		item = 0;
 		//--i;//because one of children was deleted

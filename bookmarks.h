@@ -74,9 +74,9 @@ private:
 	//QMultiHash<QString, QString> bookmarkHash;
 	QDomElement findChildNode(const QString &tagName, const QString &type);
 	void parseFolderElement(const QDomElement &element,
-							QTreeWidgetItem *parentItem = 0);
+							QTreeWidgetItem *parentItem = 0, const QString &elementID = QString());
 	QTreeWidgetItem *createItem(const QDomElement &element,
-								QTreeWidgetItem *parentItem = 0);
+								QTreeWidgetItem *parentItem = 0, const QString &elementID = QString());
 
 	QDomDocument domDocument;
 	QHash<QTreeWidgetItem *, QDomElement> domElementForItem;
