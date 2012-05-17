@@ -1848,12 +1848,18 @@ void MainWindow::setupUi()
 		{
 			QString actText = act->text();
 			actText.remove("&");
-			menuBarWidth+=ui->menuBar->fontMetrics().boundingRect(actText).width()+14;//14=2*(3(spacing)+4(radius))
+			menuBarWidth+=ui->menuBar->fontMetrics().boundingRect(actText).width()+14+ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarItemSpacing);//14=2*(3(spacing)+4(radius))
 		}
 	}
 
 	menuBarWidth =menuBarWidth+3;//3 is offset of first item!
-	ui->menuBar->setMaximumWidth(menuBarWidth);
+	int styleWidth = ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarHMargin)*2+ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth)*2;
+//	QString debug = QString("PM_MenuBarHMargin = %1\nPM_MenuBarPanelWidth= %2\nPM_MenuBarItemSpacing= %3\nStyle= %4\nstyleWidth= %5")
+//			.arg(ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarHMargin)).arg(ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth)).arg(ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarItemSpacing)).arg(QApplication::style()->objectName()).arg(styleWidth);
+//	QMessageBox::information(0,"pixel",debug);
+	styleWidth = qMax(styleWidth, 5);
+	ui->menuBar->setMinimumWidth(menuBarWidth+styleWidth);
+	ui->menuBar->setMaximumWidth(menuBarWidth+2*styleWidth);
 
 
 	//Inserting items of menus
