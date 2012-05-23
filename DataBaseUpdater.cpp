@@ -1,0 +1,388 @@
+/***************************************************************************
+ *  This file is part of Saaghar, a Persian poetry software                *
+ *                                                                         *
+ *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
+ *                                                                         *
+ *  This program is free software; you can redistribute it and/or modify   *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation; either version 3 of the License,         *
+ *  (at your option) any later version                                     *
+ *                                                                         *
+ *  This program is distributed in the hope that it will be useful,        *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details                            *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with this program; if not, see http://www.gnu.org/licenses/      *
+ *                                                                         *
+ ***************************************************************************/
+
+#include <QProgressBar>
+#include <QDate>
+#include <QFileInfo>
+#include <QDir>
+#include <QFileDialog>
+#include <QMessageBox>
+
+#include "downloader.h"
+#include "DataBaseUpdater.h"
+#include "SaagharWidget.h"
+
+QString DataBaseUpdater::downloadLocation = QString();
+
+int PoetID_DATA = Qt::UserRole+1;
+int CatID_DATA = Qt::UserRole+2;
+int FileExt_DATA = Qt::UserRole+3;
+int ImageUrl_DATA = Qt::UserRole+4;
+int LowestPoemID_DATA = Qt::UserRole+5;
+int DownloadUrl_DATA = Qt::UserRole+6;
+int BlogUrl_DATA = Qt::UserRole+7;
+
+DataBaseUpdater::DataBaseUpdater(const QList<int> &IDs, QWidget *parent)
+	: QDialog(parent), ui(new Ui::DataBaseUpdater)
+{
+	downloadStarted = downloadAboutToStart = false;
+	repositoriesUrls.clear();
+	availableIDs = IDs;
+	ui->setupUi(this);
+	downloaderObject = new Downloader(this, ui->downloadProgressBar, ui->labelDownloadStatus);
+	setupUi();
+	readRepositories();
+
+	//connect(ui->repoSelectTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(doubleClicked(QTreeWidgetItem*,int)));
+	connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
+	connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
+	connect(ui->pushButtonBrowse, SIGNAL(clicked()), this, SLOT(getDownloadLocation()));
+	connect(downloaderObject,SIGNAL(downloadStopped()), this, SLOT(forceStopDownload()));
+}
+
+bool DataBaseUpdater::read(QIODevice *device)
+{
+	QString errorStr;
+	int errorLine;
+	int errorColumn;
+
+	if (!domDocument.setContent(device, true, &errorStr, &errorLine, &errorColumn))
+	{
+		return false;
+	}
+
+	QDomElement root = domDocument.documentElement();
+	if (root.tagName() != "DesktopGanjoorGDBList")
+	{
+		return false;
+	}
+
+	QDomElement child = root.firstChildElement("gdb");
+	while (!child.isNull())
+	{
+		parseElement(child);
+		child = child.nextSiblingElement("gdb");
+	}
+
+	ui->repoSelectTree->resizeColumnToContents(0);
+	//ui->repoSelectTree->setColumnWidth(1,0);
+//	resizeColumnToContents(1);
+	ui->repoSelectTree->resizeColumnToContents(1);
+	ui->repoSelectTree->resizeColumnToContents(2);
+	ui->repoSelectTree->resizeColumnToContents(3);
+	//ui->repoSelectTree->resizeColumnToContents(5);
+
+	return true;
+}
+
+void DataBaseUpdater::parseElement(const QDomElement &element)
+{
+//visible info
+	QString CatName = element.firstChildElement("CatName").text();
+	QString BlogUrl = element.firstChildElement("BlogUrl").text();
+	QString DownloadUrl = element.firstChildElement("DownloadUrl").text();
+	int fileSize = element.firstChildElement("FileSizeInByte").text().toInt();
+	fileSize = fileSize/1024;
+	QString fileSizeKB = QString::number(fileSize) == "0" ? "" : QString::number(fileSize)+" "+tr("KB");
+	//QStringList pubDateYMD = element.firstChildElement("PubDate").text().split("-",QString::SkipEmptyParts);
+	QLocale persainLocale(QLocale::Persian, QLocale::Iran);
+	QDate pubDate = persainLocale.toDate(element.firstChildElement("PubDate").text(), "yyyy-MM-dd");
+//	if (PubDate.size() == 3)
+//	{
+//		QDate pubDate(pubDateYMD.at(0).toInt(), pubDateYMD.at(1).toInt(), pubDateYMD.at(2).toInt());
+//		QLocale
+//	}
+
+	QStringList visibleInfo = QStringList() << CatName 
+											<< fileSizeKB
+											<< pubDate.toString("yyyy-MM-dd");
+											//<< tr("Go to Release Information");//BlogUrl;//<< DownloadUrl 
+//meta data
+	QString PoetID = element.firstChildElement("PoetID").text();
+	int CatID = element.firstChildElement("CatID").text().toInt();
+	QString FileExt = element.firstChildElement("FileExt").text();
+	QString ImageUrl = element.firstChildElement("ImageUrl").text();
+	QString LowestPoemID = element.firstChildElement("LowestPoemID").text();
+
+	bool isNew = SaagharWidget::ganjoorDataBase->getCategory(CatID).isNull();
+
+	if (insertedToList.contains(CatID) && insertedToList.value(CatID) == DownloadUrl)
+		return;
+	else
+		insertedToList.insert(CatID, DownloadUrl);
+
+	QTreeWidgetItem *item = new QTreeWidgetItem(isNew ? newRootItem : oldRootItem , visibleInfo);
+	item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsUserCheckable|Qt::ItemIsEnabled);
+	item->setCheckState(0, Qt::Unchecked);
+	item->setData(0, PoetID_DATA, PoetID);
+	item->setData(0, CatID_DATA, CatID);
+	item->setData(0, FileExt_DATA, FileExt);
+	item->setData(0, ImageUrl_DATA, ImageUrl);
+	item->setData(0, LowestPoemID_DATA, LowestPoemID);
+	item->setData(0, DownloadUrl_DATA, DownloadUrl);
+	item->setData(0, BlogUrl_DATA, BlogUrl);
+
+	if (!BlogUrl.isEmpty())
+	{
+		QLabel *blogLink = new QLabel(ui->repoSelectTree);
+		blogLink->setTextFormat(Qt::RichText);
+		blogLink->setText(QString("<a href=\"%1\" title=\"%1\" >%2</a>").arg(BlogUrl).arg(tr("Go to Release Information")));
+		//blogLink->setToolTip(BlogUrl);
+		blogLink->setOpenExternalLinks(true);
+		ui->repoSelectTree->setItemWidget(item, 3, blogLink);
+	}
+}
+
+void DataBaseUpdater::setRepositories(const QStringList &urls)
+{
+	repositoriesUrls = urls;
+}
+
+QStringList DataBaseUpdater::repositories()
+{
+	return repositoriesUrls;
+}
+
+void DataBaseUpdater::setupUi()
+{
+	ui->lineEditDownloadLocation->setText(DataBaseUpdater::downloadLocation);
+	ui->downloadProgressBar->hide();
+	ui->labelDownloadStatus->hide();
+	//ui->hButtonsLayout->addWidget(downloaderObject->downloadProgressBar(this));
+	//downloaderObject->downloadProgressBar(this)->hide();
+//	ui->downloadProgressBar->hide();
+//	repoSelectTree = new QTreeWidget(parent);
+//	repoSelectTree->setObjectName("repoSelectTree");
+//	repoSelectTree->setColumnCount(5);
+	ui->repoSelectTree->setLayoutDirection(Qt::RightToLeft);
+	QFont font(ui->repoSelectTree->font());
+	font.setBold(true);
+
+	oldRootItem = new QTreeWidgetItem(ui->repoSelectTree);
+	oldRootItem->setText(0, tr("Installed"));
+	oldRootItem->setFlags(Qt::ItemIsSelectable|Qt::ItemIsUserCheckable|Qt::ItemIsEnabled|Qt::ItemIsTristate);
+	oldRootItem->setCheckState(0, Qt::Unchecked);
+	oldRootItem->setFont(0, font);
+	oldRootItem->setExpanded(false);
+
+	newRootItem = new QTreeWidgetItem(ui->repoSelectTree);
+	newRootItem->setText(0, tr("Ready To Install"));
+	newRootItem->setFlags(Qt::ItemIsSelectable|Qt::ItemIsUserCheckable|Qt::ItemIsEnabled|Qt::ItemIsTristate);
+	newRootItem->setCheckState(0, Qt::Unchecked);
+	newRootItem->setFont(0, font);
+	newRootItem->setExpanded(true);
+}
+
+void DataBaseUpdater::readRepositories()
+{
+	//if (repositoriesUrls.isEmpty()) return;
+	repositoriesUrls.clear();
+	repositoriesUrls << "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/test.xml"
+//			<< "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/newgdbs.xml";
+//					 << "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/programgdbs.xml"
+//					 << "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/sitegdbs.xml"
+					 << "http://ganjoor.sourceforge.net/programgdbs.xml";
+					 //<< "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/sitegdbs.xml";
+	for (int i=0;i<repositoriesUrls.size();++i)
+	{
+		QString url = repositoriesUrls.at(i);
+		bool isRemote = false;
+		//url.remove("http://");
+		QUrl repoUrl = QUrl::fromUserInput(url);
+		//qDebug()<<"repoUrl=="<<repoUrl.toString();
+		url = repoUrl.toString();
+		qDebug()<<"url===="<<url;
+		if (!url.contains("file:///"))
+		{
+			isRemote = true;
+			QString tmpPath = getTempDir();
+			QDir downDir(tmpPath);
+			if (!downDir.exists() && !downDir.mkpath(tmpPath))
+			{
+				QMessageBox::information(this, tr("Error!"), tr("Can not create temp path."));
+				continue;
+			}
+
+			QFileInfo urlInfo(url);
+			downloaderObject->downloadFile(repoUrl, tmpPath, urlInfo.fileName());
+			ui->labelDownloadStatus->hide();
+			QFile file(tmpPath+"/"+urlInfo.fileName());
+			qDebug()<<"urlInfo.fileName="<<urlInfo.fileName()<<"full="<<tmpPath+"/"+urlInfo.fileName();
+			qDebug()<<"from file="<<file.fileName();
+			read(&file);
+			file.remove();
+			downDir.rmdir(tmpPath);
+//			if (!read(&file))
+//				continue;//read error!
+		}
+		else
+		{
+			url.remove("file:///");
+			QFile file(url);
+			if (!read(&file))
+				continue;//read error!
+		}
+	}
+}
+
+void DataBaseUpdater::itemDataChanged(QTreeWidgetItem */*item*/, int /*column*/)
+{
+	bool itemsChecked = (newRootItem->checkState(0) != Qt::Unchecked) || (oldRootItem->checkState(0) != Qt::Unchecked);
+	ui->pushButtonDownload->setEnabled(itemsChecked);
+}
+
+void DataBaseUpdater::getDownloadLocation()
+{
+	DataBaseUpdater::downloadLocation = QFileDialog::getExistingDirectory(this, tr("Select Download Location"), QDir::homePath());
+	ui->lineEditDownloadLocation->setText(DataBaseUpdater::downloadLocation);
+}
+
+void DataBaseUpdater::initDownload()
+{
+	downloadAboutToStart = true;
+	ui->pushButtonDownload->setText(tr("Stop"));
+	disconnect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
+	connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
+	connect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
+	ui->repoSelectTree->setEnabled(false);
+	sessionDownloadFolder = DataBaseUpdater::downloadLocation;
+	QDir downDir;
+	if (ui->groupBoxKeepDownload->isChecked())
+	{
+		if (sessionDownloadFolder.isEmpty())
+		{
+			QMessageBox::information(this, tr("Warning!"), tr("Please select download location."));
+			doStopDownload();
+			return;
+		}
+	}
+	else
+	{
+//		sessionDownloadFolder = QDir::tempPath()+"/~tmp_saaghar_"+QString::number(qrand());
+//		downDir.setPath(sessionDownloadFolder);
+//		while (downDir.exists())
+//		{
+//			sessionDownloadFolder+=QString::number(qrand());
+//			downDir.setPath(sessionDownloadFolder);
+//		}
+		randomFolder = sessionDownloadFolder = getTempDir();
+		qDebug() << "randomFolder="<<randomFolder;
+	}
+
+	downDir.setPath(sessionDownloadFolder);
+	if (!downDir.exists() && !downDir.mkpath(sessionDownloadFolder))
+	{
+		QMessageBox::information(this, tr("Error!"), tr("Can not create download path."));
+		qDebug() << "sessionDownloadFolder="<<sessionDownloadFolder;
+		doStopDownload();
+		return;
+	}
+
+	for (int i=0; i<newRootItem->childCount(); ++i)
+	{
+		QTreeWidgetItem *child = newRootItem->child(i);
+		if (!child || child->checkState(0) != Qt::Checked)
+			continue;
+		downloadItem(child);
+
+		//after install we change the parent
+		newRootItem->removeChild(child);
+		oldRootItem->addChild(child);
+		child->setCheckState(0, Qt::Unchecked);
+		child->setFlags(Qt::NoItemFlags);
+	}
+
+	for (int i=0; i<oldRootItem->childCount(); ++i)
+	{
+		QTreeWidgetItem *child = oldRootItem->child(i);
+		if (!child || child->checkState(0) != Qt::Checked)
+			continue;
+		downloadItem(child);
+
+		//after install we change the parent
+		child->setCheckState(0, Qt::Unchecked);
+		child->setFlags(Qt::NoItemFlags);
+	}
+	
+	//download ended
+	downloadAboutToStart = downloadStarted = false;
+	doStopDownload();
+}
+
+void DataBaseUpdater::doStopDownload()
+{
+	if (!downloadAboutToStart)
+		return;
+
+	if (downloadStarted)
+	{
+		if (QMessageBox::question(this, tr("Warning!"), tr("Download in progress! Are you sure to stop downloading?."), QMessageBox::Yes|QMessageBox::No, QMessageBox::No)
+			 ==
+			QMessageBox::No)
+			return;
+	}
+	downloaderObject->cancelDownload();
+	forceStopDownload();
+	qDebug() <<"doStopDownload!!!!!!";
+}
+
+void DataBaseUpdater::closeEvent(QCloseEvent *)
+{
+	DataBaseUpdater::downloadLocation = ui->lineEditDownloadLocation->text();
+	doStopDownload();
+}
+
+void DataBaseUpdater::downloadItem(QTreeWidgetItem *item)
+{
+	if (!item) return;
+	downloadStarted = true;
+	qDebug() << "downloadItem-sessionDownloadFolder="<<sessionDownloadFolder;
+	QString urlStr = item->data(0, DownloadUrl_DATA).toString();
+	qDebug() << "urlStr="<<urlStr;
+	downloaderObject->downloadFile(QUrl(urlStr), sessionDownloadFolder, item->text(0));
+}
+
+void DataBaseUpdater::forceStopDownload()
+{
+	downloadStarted = downloadAboutToStart = false;
+
+	ui->pushButtonDownload->setText(tr("Download && Install"));
+	connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
+	disconnect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
+	disconnect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
+	ui->repoSelectTree->setEnabled(true);
+
+	QDir tmpDir(randomFolder);
+	qDebug() <<"emit downloadStopped!!!!!!rmDir-randomFolder="<<randomFolder<<"bool="<< tmpDir.rmdir(randomFolder);
+}
+
+QString DataBaseUpdater::getTempDir()
+{
+	QString tmpPath = QDir::tempPath()+"/~tmp_saaghar_0";//+QString::number(qrand());
+	QDir tmpDir(tmpPath);
+	while (tmpDir.exists())
+	{
+		tmpPath+=QString::number(qrand());
+		tmpDir.setPath(tmpPath);
+	}
+	qDebug()<<"getTempDir()="<<tmpPath;
+	return tmpPath;
+}

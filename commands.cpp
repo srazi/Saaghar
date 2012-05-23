@@ -19,8 +19,6 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QtGui>
-
 #include "commands.h"
 
 #include "SaagharWidget.h"

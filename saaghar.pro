@@ -41,10 +41,12 @@ HEADERS += $${SOURCE_DIR}/mainwindow.h \
 	$${SOURCE_DIR}/version.h \
 	$${SOURCE_DIR}/bookmarks.h \
 	$${SOURCE_DIR}/commands.h \
-	$${SOURCE_DIR}/outline.h
+	$${SOURCE_DIR}/outline.h \
+	$${SOURCE_DIR}/DataBaseUpdater.h
 
 FORMS += $${SOURCE_DIR}/mainwindow.ui \
-	$${SOURCE_DIR}/settings.ui
+	$${SOURCE_DIR}/settings.ui \
+	$${SOURCE_DIR}/databaseupdater.ui
 
 SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/mainwindow.cpp \
@@ -56,11 +58,13 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/SearchPatternManager.cpp \
 	$${SOURCE_DIR}/bookmarks.cpp \
 	$${SOURCE_DIR}/commands.cpp \
-	$${SOURCE_DIR}/outline.cpp
+	$${SOURCE_DIR}/outline.cpp \
+	$${SOURCE_DIR}/DataBaseUpdater.cpp
 
 include($${SOURCE_DIR}/pQjWidgets/pQjWidgets.pri)
 include($${SOURCE_DIR}/qmusicplayer/qmusicplayer.pri)
-
+include($${SOURCE_DIR}/downloader/downloader.pri)
+# include($${SOURCE_DIR}/OSDaB-Zip/osdabzip.pri)
 
 
 #########################################

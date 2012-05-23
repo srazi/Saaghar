@@ -23,7 +23,8 @@
 #include "SearchItemDelegate.h"
 #include "QGanjoorDbStuff.h"
 #include "SaagharWidget.h"
-#include <QtGui>
+
+#include <QPainter>
 #include <QIcon>
 
 SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString phrase) : QItemDelegate(parent)

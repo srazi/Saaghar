@@ -43,7 +43,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QtGui>
+#include <QMessageBox>
+#include <QHeaderView>
 
 #include "bookmarks.h"
 #include "QGanjoorDbBrowser.h"
