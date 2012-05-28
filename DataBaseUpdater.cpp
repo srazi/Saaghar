@@ -41,12 +41,11 @@ int LowestPoemID_DATA = Qt::UserRole+5;
 int DownloadUrl_DATA = Qt::UserRole+6;
 int BlogUrl_DATA = Qt::UserRole+7;
 
-DataBaseUpdater::DataBaseUpdater(const QList<int> &IDs, QWidget *parent)
-	: QDialog(parent), ui(new Ui::DataBaseUpdater)
+DataBaseUpdater::DataBaseUpdater(QWidget *parent, Qt::WindowFlags f)
+	: QDialog(parent,f), ui(new Ui::DataBaseUpdater)
 {
 	downloadStarted = downloadAboutToStart = false;
 	repositoriesUrls.clear();
-	availableIDs = IDs;
 	ui->setupUi(this);
 	downloaderObject = new Downloader(this, ui->downloadProgressBar, ui->labelDownloadStatus);
 	setupUi();

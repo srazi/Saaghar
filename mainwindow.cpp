@@ -29,6 +29,7 @@
 #include "SearchPatternManager.h"
 #include "qmusicplayer.h"
 #include "outline.h"
+#include "DataBaseUpdater.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -1827,6 +1828,9 @@ void MainWindow::setupUi()
 		break;
 	}
 
+
+	actionInstance("DownloadRepositories", iconThemePath+"/download-sets-repositories.png",QObject::tr("&Download From Repositories..."));
+
 	//Inserting main menu items
 	ui->menuBar->addMenu(menuFile);
 	ui->menuBar->addMenu(menuNavigation);
@@ -1928,6 +1932,7 @@ void MainWindow::setupUi()
 	menuTools->addSeparator();
 	menuTools->addAction(actionInstance("actionImportNewSet"));
 	menuTools->addAction(actionInstance("actionRemovePoet"));
+	menuTools->addAction(actionInstance("DownloadRepositories"));
 	menuTools->addSeparator();
 	menuTools->addAction(actionInstance("actionSettings"));
 
@@ -3306,6 +3311,12 @@ void MainWindow::namedActionTriggered(bool checked)
 			if (saagharWidget && saagharWidget->currentPoem!=0)
 				saagharWidget->refresh();
 		}
+	}
+	else if (actionName == "DownloadRepositories")
+	{
+		DataBaseUpdater up;
+		connect(&up, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
+		up.exec();
 	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));

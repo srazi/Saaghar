@@ -40,7 +40,7 @@ class DataBaseUpdater : public QDialog
 	Q_OBJECT
 
 public:
-	DataBaseUpdater(const QList<int> &IDs, QWidget *parent = 0);
+	DataBaseUpdater(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	QStringList repositories();
 	void setRepositories(const QStringList &urls);
 	void readRepositories();
@@ -67,7 +67,6 @@ private:
 	bool downloadStarted;
 	QHash <int, QString> insertedToList;
 	Ui::DataBaseUpdater *ui;
-	QList<int> availableIDs;
 	void setupUi();
 	QTreeWidget *repoSelectTree;
 	QTreeWidgetItem *oldRootItem;
