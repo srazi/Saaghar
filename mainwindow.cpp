@@ -2816,12 +2816,13 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 	connect(senderTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
 }
 
-void MainWindow::importDataBase(const QString fileName)
+void MainWindow::importDataBase(const QString &fileName, bool *ok)
 {
 	QFileInfo dataBaseFile(QSqlDatabase::database("ganjoor.s3db").databaseName());
 	if (!dataBaseFile.isWritable())
 	{
 		QMessageBox::warning(this, tr("Error!"), tr("You have not write permission to database file, the import procedure can not proceed.\nDataBase Path: %2").arg(dataBaseFile.fileName()));
+		if (ok) *ok = false;
 		return;
 	}
 	QList<GanjoorPoet *> poetsConflictList = SaagharWidget::ganjoorDataBase->getConflictingPoets(fileName);
@@ -2845,7 +2846,10 @@ void MainWindow::importDataBase(const QString fileName)
 		warnAboutConflict.setDefaultButton(QMessageBox::Cancel);
 		int ret = warnAboutConflict.exec();
 		if ( ret == QMessageBox::Cancel)
+		{
+			if (ok) *ok = false;
 			return;
+		}
 
 		foreach(GanjoorPoet *poet, poetsConflictList)
 			SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poet->_ID);
@@ -2856,6 +2860,8 @@ void MainWindow::importDataBase(const QString fileName)
 	if (SaagharWidget::ganjoorDataBase->importDataBase(fileName))
 	{
 		SaagharWidget::ganjoorDataBase->dBConnection.commit();
+
+		if (ok) *ok = true;
 
 		outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
 
@@ -2875,6 +2881,7 @@ void MainWindow::importDataBase(const QString fileName)
 	}
 	else
 	{
+		if (ok) *ok = false;
 		SaagharWidget::ganjoorDataBase->dBConnection.rollback();
 		QMessageBox::warning(this, tr("Error!"), tr("There are some errors, the import procedure was not completed"));
 	}

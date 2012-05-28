@@ -828,42 +828,76 @@ int QGanjoorDbBrowser::getNewCatID()
 bool QGanjoorDbBrowser::importDataBase(const QString fileName)
 {
 	QString connectionID = getIdForDataBase(fileName);
-	QSqlDatabase dataBaseObject = QSqlDatabase::database(connectionID);
-	if (!dataBaseObject.open())
 	{
-		QSqlDatabase::removeDatabase(connectionID);
-		return false;
-	}
-
-	QList<GanjoorPoet *> poets = getPoets(connectionID, false);
-
-	QString strQuery;
-	QSqlQuery queryObject(dataBaseObject);
-	QMap<int, int> mapPoets;
-	QMap<int, int> mapCats;
-
-	foreach (GanjoorPoet *newPoet, poets)
-	{
-		bool insertNewPoet = true;
-
-		//skip every null poet(poet without subcat)
-		if (!poetHasSubCats(newPoet->_ID, connectionID))
-			continue;
-
-		GanjoorPoet poet = getPoet(newPoet->_Name);
-		if (!poet.isNull())//conflict on Names
+		QSqlDatabase dataBaseObject = QSqlDatabase::database(connectionID);
+		if (!dataBaseObject.open())
 		{
-			if (poet._ID == newPoet->_ID)
+			QSqlDatabase::removeDatabase(connectionID);
+			return false;
+		}
+	
+		QList<GanjoorPoet *> poets = getPoets(connectionID, false);
+	
+		QString strQuery;
+		QSqlQuery queryObject(dataBaseObject);
+		QMap<int, int> mapPoets;
+		QMap<int, int> mapCats;
+	
+		foreach (GanjoorPoet *newPoet, poets)
+		{
+			bool insertNewPoet = true;
+	
+			//skip every null poet(poet without subcat)
+			if (!poetHasSubCats(newPoet->_ID, connectionID))
+				continue;
+	
+			GanjoorPoet poet = getPoet(newPoet->_Name);
+			if (!poet.isNull())//conflict on Names
 			{
-				insertNewPoet = false;
-				mapPoets.insert(newPoet->_ID, newPoet->_ID);
-				GanjoorCat poetCat = getCategory(newPoet->_CatID);
-				if (!poetCat.isNull())
+				if (poet._ID == newPoet->_ID)
 				{
-					if (poetCat._PoetID == newPoet->_ID)
+					insertNewPoet = false;
+					mapPoets.insert(newPoet->_ID, newPoet->_ID);
+					GanjoorCat poetCat = getCategory(newPoet->_CatID);
+					if (!poetCat.isNull())
 					{
-						mapCats.insert(newPoet->_CatID, newPoet->_CatID);
+						if (poetCat._PoetID == newPoet->_ID)
+						{
+							mapCats.insert(newPoet->_CatID, newPoet->_CatID);
+						}
+						else
+						{
+							int aRealyNewCatID = getNewCatID();
+							mapCats.insert(newPoet->_CatID, getNewCatID());
+							newPoet->_CatID = aRealyNewCatID;
+						}
 					}
+				}
+				else
+				{
+					mapPoets.insert(newPoet->_ID, poet._ID);
+					mapPoets.insert(newPoet->_CatID, poet._CatID);
+					newPoet->_CatID = poet._CatID;
+				}
+			}
+			else
+			{
+				if ( !getPoet(newPoet->_ID).isNull() )//conflict on IDs
+				{
+					int aRealyNewPoetID = getNewPoetID();
+					mapPoets.insert(newPoet->_ID, aRealyNewPoetID);
+					newPoet->_ID = aRealyNewPoetID;
+	
+					int aRealyNewCatID = getNewCatID();
+					mapCats.insert(newPoet->_CatID, aRealyNewCatID);
+					newPoet->_CatID = aRealyNewCatID;
+				}
+				else //no conflict, insertNew
+				{
+					mapPoets.insert(newPoet->_ID, newPoet->_ID);
+					GanjoorCat newPoetCat = getCategory(newPoet->_CatID);
+					if (newPoetCat.isNull())
+						mapCats.insert(newPoet->_CatID, newPoet->_CatID);
 					else
 					{
 						int aRealyNewCatID = getNewCatID();
@@ -872,169 +906,139 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
 					}
 				}
 			}
-			else
+	
+			if(insertNewPoet && isConnected())
 			{
-				mapPoets.insert(newPoet->_ID, poet._ID);
-				mapPoets.insert(newPoet->_CatID, poet._CatID);
-				newPoet->_CatID = poet._CatID;
+				strQuery = QString("INSERT INTO poet (id, name, cat_id, description) VALUES (%1, \"%2\", %3, \"%4\");").arg(newPoet->_ID).arg(newPoet->_Name).arg(newPoet->_CatID).arg(newPoet->_Description);
+				QSqlQuery q(dBConnection);
+				q.exec(strQuery);
 			}
 		}
-		else
+	
+		strQuery = QString("SELECT id, poet_id, text, parent_id, url FROM cat");
+		queryObject.exec(strQuery);
+	
+		QList<GanjoorCat *> gCatList;
+		while (queryObject.next())
 		{
-			if ( !getPoet(newPoet->_ID).isNull() )//conflict on IDs
+			GanjoorCat *gCat = new GanjoorCat();
+			gCat->init(queryObject.value(0).toInt(), queryObject.value(1).toInt(), queryObject.value(2).toString(), queryObject.value(3).toInt(), queryObject.value(4).toString());
+			gCatList.append(gCat);
+		}
+	
+		foreach (GanjoorCat *newCat, gCatList)
+		{
+			newCat->_PoetID = mapPoets.value(newCat->_PoetID, newCat->_PoetID);
+			newCat->_ParentID = mapCats.value(newCat->_ParentID, newCat->_ParentID);
+	
+			bool insertNewCategory = true;
+			GanjoorCat gCat = getCategory(newCat->_ID);
+			if (!gCat.isNull())
 			{
-				int aRealyNewPoetID = getNewPoetID();
-				mapPoets.insert(newPoet->_ID, aRealyNewPoetID);
-				newPoet->_ID = aRealyNewPoetID;
-
-				int aRealyNewCatID = getNewCatID();
-				mapCats.insert(newPoet->_CatID, aRealyNewCatID);
-				newPoet->_CatID = aRealyNewCatID;
-			}
-			else //no conflict, insertNew
-			{
-				mapPoets.insert(newPoet->_ID, newPoet->_ID);
-				GanjoorCat newPoetCat = getCategory(newPoet->_CatID);
-				if (newPoetCat.isNull())
-					mapCats.insert(newPoet->_CatID, newPoet->_CatID);
+				if (gCat._PoetID == newCat->_PoetID)
+				{
+					insertNewCategory = false;
+	
+					if (mapCats.value(newCat->_ID, -1) == -1)
+						mapCats.insert(newCat->_ID, newCat->_ID);
+				}
 				else
 				{
 					int aRealyNewCatID = getNewCatID();
-					mapCats.insert(newPoet->_CatID, getNewCatID());
-					newPoet->_CatID = aRealyNewCatID;
+					mapCats.insert(newCat->_ID, aRealyNewCatID);
+					newCat->_ID = aRealyNewCatID;
 				}
 			}
-		}
-
-		if(insertNewPoet && isConnected())
-		{
-			strQuery = QString("INSERT INTO poet (id, name, cat_id, description) VALUES (%1, \"%2\", %3, \"%4\");").arg(newPoet->_ID).arg(newPoet->_Name).arg(newPoet->_CatID).arg(newPoet->_Description);
-			QSqlQuery q(dBConnection);
-			q.exec(strQuery);
-		}
-	}
-
-	strQuery = QString("SELECT id, poet_id, text, parent_id, url FROM cat");
-	queryObject.exec(strQuery);
-
-	QList<GanjoorCat *> gCatList;
-	while (queryObject.next())
-	{
-		GanjoorCat *gCat = new GanjoorCat();
-		gCat->init(queryObject.value(0).toInt(), queryObject.value(1).toInt(), queryObject.value(2).toString(), queryObject.value(3).toInt(), queryObject.value(4).toString());
-		gCatList.append(gCat);
-	}
-
-	foreach (GanjoorCat *newCat, gCatList)
-	{
-		newCat->_PoetID = mapPoets.value(newCat->_PoetID, newCat->_PoetID);
-		newCat->_ParentID = mapCats.value(newCat->_ParentID, newCat->_ParentID);
-
-		bool insertNewCategory = true;
-		GanjoorCat gCat = getCategory(newCat->_ID);
-		if (!gCat.isNull())
-		{
-			if (gCat._PoetID == newCat->_PoetID)
+			else
 			{
-				insertNewCategory = false;
-
 				if (mapCats.value(newCat->_ID, -1) == -1)
 					mapCats.insert(newCat->_ID, newCat->_ID);
 			}
-			else
+		
+			if(insertNewCategory && isConnected())
 			{
-				int aRealyNewCatID = getNewCatID();
-				mapCats.insert(newCat->_ID, aRealyNewCatID);
-				newCat->_ID = aRealyNewCatID;
+				strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id, url) VALUES (%1, %2, \"%3\", %4, \"%5\");").arg(newCat->_ID).arg(newCat->_PoetID).arg(newCat->_Text).arg(newCat->_ParentID).arg(newCat->_Url);
+				QSqlQuery q(dBConnection);
+				q.exec(strQuery);
 			}
-		}
-		else
-		{
-			if (mapCats.value(newCat->_ID, -1) == -1)
-				mapCats.insert(newCat->_ID, newCat->_ID);
+	
+			/*if ( getPoet(newCat->_PoetID).isNull() )
+			{
+				//missing poet
+				int poetCat;
+				if (newCat->_ParentID == 0)
+					poetCat = newCat->_ID;
+				else
+				{
+					//this is not good:
+					poetCat = newCat->_ParentID;
+				}
+				qDebug() << "a new poet should be created";
+				this.NewPoet("شاعر " + PoetID.ToString(), PoetID, poetCat);
+			}*/
 		}
 	
-		if(insertNewCategory && isConnected())
+		QMap<int, int> dicPoemID;
+		strQuery = "SELECT id, cat_id, title, url FROM poem";
+		queryObject.exec(strQuery);
+		QList<GanjoorPoem *> poemList;
+	
+		while(queryObject.next())
 		{
-			strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id, url) VALUES (%1, %2, \"%3\", %4, \"%5\");").arg(newCat->_ID).arg(newCat->_PoetID).arg(newCat->_Text).arg(newCat->_ParentID).arg(newCat->_Url);
-			QSqlQuery q(dBConnection);
-			q.exec(strQuery);
+			GanjoorPoem *gPoem = new GanjoorPoem();
+			gPoem->init(queryObject.value(0).toInt(), queryObject.value(1).toInt(), queryObject.value(2).toString(), queryObject.value(3).toString());
+			poemList.append(gPoem);
 		}
-
-		/*if ( getPoet(newCat->_PoetID).isNull() )
+	
+		foreach (GanjoorPoem *newPoem, poemList)
 		{
-			//missing poet
-			int poetCat;
-			if (newCat->_ParentID == 0)
-				poetCat = newCat->_ID;
-			else
+			int tmp = newPoem->_ID;
+			if (!getPoem(newPoem->_ID).isNull())
+				newPoem->_ID = getNewPoemID();
+			newPoem->_CatID = mapCats.value(newPoem->_CatID, newPoem->_CatID);
+			dicPoemID.insert(tmp, newPoem->_ID);
+			
+			if (isConnected())
 			{
-				//this is not good:
-				poetCat = newCat->_ParentID;
+				strQuery = QString("INSERT INTO poem (id, cat_id, title, url) VALUES (%1, %2, \"%3\", \"%4\");").arg(newPoem->_ID).arg(newPoem->_CatID).arg(newPoem->_Title).arg(newPoem->_Url);
+				QSqlQuery q(dBConnection);
+				q.exec(strQuery);
 			}
-			qDebug() << "a new poet should be created";
-			this.NewPoet("شاعر " + PoetID.ToString(), PoetID, poetCat);
-		}*/
-	}
-
-	QMap<int, int> dicPoemID;
-	strQuery = "SELECT id, cat_id, title, url FROM poem";
-	queryObject.exec(strQuery);
-	QList<GanjoorPoem *> poemList;
-
-	while(queryObject.next())
-	{
-		GanjoorPoem *gPoem = new GanjoorPoem();
-		gPoem->init(queryObject.value(0).toInt(), queryObject.value(1).toInt(), queryObject.value(2).toString(), queryObject.value(3).toString());
-		poemList.append(gPoem);
-	}
-
-	foreach (GanjoorPoem *newPoem, poemList)
-	{
-		int tmp = newPoem->_ID;
-		if (!getPoem(newPoem->_ID).isNull())
-			newPoem->_ID = getNewPoemID();
-		newPoem->_CatID = mapCats.value(newPoem->_CatID, newPoem->_CatID);
-		dicPoemID.insert(tmp, newPoem->_ID);
-		
+		}
+	
+		strQuery = "SELECT poem_id, vorder, position, text FROM verse";
+		queryObject.exec(strQuery);
+		QList<GanjoorVerse *> verseList;
+	
+		while(queryObject.next())
+		{
+			GanjoorVerse *gVerse = new GanjoorVerse();
+			gVerse->init(queryObject.value(0).toInt(), queryObject.value(1).toInt(), (VersePosition)queryObject.value(2).toInt(), queryObject.value(3).toString());
+			verseList.append(gVerse);
+		}
+	
 		if (isConnected())
 		{
-			strQuery = QString("INSERT INTO poem (id, cat_id, title, url) VALUES (%1, %2, \"%3\", \"%4\");").arg(newPoem->_ID).arg(newPoem->_CatID).arg(newPoem->_Title).arg(newPoem->_Url);
+			strQuery = "INSERT INTO verse (poem_id, vorder, position, text) VALUES (:poem_id,:vorder,:position,:text)";
 			QSqlQuery q(dBConnection);
-			q.exec(strQuery);
+			q.prepare(strQuery);
+	
+			foreach (GanjoorVerse *newVerse, verseList)
+			{
+				newVerse->_PoemID = dicPoemID.value(newVerse->_PoemID, newVerse->_PoemID);
+				q.bindValue( ":poem_id", newVerse->_PoemID );
+				q.bindValue( ":vorder", newVerse->_Order );
+				q.bindValue( ":position", newVerse->_Position );
+				q.bindValue( ":text", newVerse->_Text );
+				q.exec();
+			}
 		}
 	}
-
-	strQuery = "SELECT poem_id, vorder, position, text FROM verse";
-	queryObject.exec(strQuery);
-	QList<GanjoorVerse *> verseList;
-
-	while(queryObject.next())
-	{
-		GanjoorVerse *gVerse = new GanjoorVerse();
-		gVerse->init(queryObject.value(0).toInt(), queryObject.value(1).toInt(), (VersePosition)queryObject.value(2).toInt(), queryObject.value(3).toString());
-		verseList.append(gVerse);
-	}
-
-	if (isConnected())
-	{
-		strQuery = "INSERT INTO verse (poem_id, vorder, position, text) VALUES (:poem_id,:vorder,:position,:text)";
-		QSqlQuery q(dBConnection);
-		q.prepare(strQuery);
-
-		foreach (GanjoorVerse *newVerse, verseList)
-		{
-			newVerse->_PoemID = dicPoemID.value(newVerse->_PoemID, newVerse->_PoemID);
-			q.bindValue( ":poem_id", newVerse->_PoemID );
-			q.bindValue( ":vorder", newVerse->_Order );
-			q.bindValue( ":position", newVerse->_Position );
-			q.bindValue( ":text", newVerse->_Text );
-			q.exec();
-		}
-	}
-
-	dataBaseObject.close();
+	//qDebug() << "BEFORE CLOSE";
+	//dataBaseObject.close();
+	qDebug() << "AFTER CLOSE - BEFORE REMOVE";
 	QSqlDatabase::removeDatabase(connectionID);
+	qDebug() << "AFTER REMOVE";
 	return true;
 }
 

@@ -70,7 +70,7 @@ void Downloader::startRequest(QUrl url)
 {
 	//loop->quit();
 	QNetworkRequest request(url);//QNetworkRequest(url)
-	request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7 (.NET CLR 3.5.30729)");
+	//request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7 (.NET CLR 3.5.30729)");
 	reply = qnam.get(request);
 
 	connect(reply, SIGNAL(finished()),
@@ -100,7 +100,8 @@ void Downloader::startRequest(QUrl url)
 }
 
 void Downloader::downloadFile(const QUrl &downloadUrl, const QString &path, const QString &title)
-{qDebug() << "downloadFile=url="<<url<<"downloadUrl="<<downloadUrl<<"path=="<<path<<"reply="<<reply;
+{
+	qDebug() << "downloadFile=url="<<url<< "Before"<<"downloadUrl="<<downloadUrl<<"path=="<<path;
 	downloadTitle = title;
 	url = downloadUrl;
 	QFileInfo fileInfo(url.path());

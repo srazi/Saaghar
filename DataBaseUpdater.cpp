@@ -26,6 +26,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 
+#include "unzip.h"
 #include "downloader.h"
 #include "DataBaseUpdater.h"
 #include "SaagharWidget.h"
@@ -263,6 +264,8 @@ void DataBaseUpdater::initDownload()
 	connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
 	connect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
 	ui->repoSelectTree->setEnabled(false);
+	ui->groupBoxKeepDownload->setEnabled(false);
+
 	sessionDownloadFolder = DataBaseUpdater::downloadLocation;
 	QDir downDir;
 	if (ui->groupBoxKeepDownload->isChecked())
@@ -301,13 +304,17 @@ void DataBaseUpdater::initDownload()
 		QTreeWidgetItem *child = newRootItem->child(i);
 		if (!child || child->checkState(0) != Qt::Checked)
 			continue;
-		downloadItem(child);
+		installCompleted = false;
+		downloadItem(child, true);
 
-		//after install we change the parent
-		newRootItem->removeChild(child);
-		oldRootItem->addChild(child);
-		child->setCheckState(0, Qt::Unchecked);
-		child->setFlags(Qt::NoItemFlags);
+		if (installCompleted)
+		{
+			//after install we change the parent
+			newRootItem->removeChild(child);
+			oldRootItem->addChild(child);
+			child->setCheckState(0, Qt::Unchecked);
+			child->setFlags(Qt::NoItemFlags);
+		}
 	}
 
 	for (int i=0; i<oldRootItem->childCount(); ++i)
@@ -315,13 +322,26 @@ void DataBaseUpdater::initDownload()
 		QTreeWidgetItem *child = oldRootItem->child(i);
 		if (!child || child->checkState(0) != Qt::Checked)
 			continue;
-		downloadItem(child);
-
-		//after install we change the parent
-		child->setCheckState(0, Qt::Unchecked);
-		child->setFlags(Qt::NoItemFlags);
+		installCompleted = false;
+		downloadItem(child, true);
+		
+		if (installCompleted)
+		{
+			//after install we change the parent
+			child->setCheckState(0, Qt::Unchecked);
+			child->setFlags(Qt::NoItemFlags);
+		}
 	}
-	
+
+	if (!ui->groupBoxKeepDownload->isChecked())
+	{
+		//qDebug() <<"remove down File--"<< QFile::remove(sessionDownloadFolder+"/"+fileName);
+		QDir downDir(sessionDownloadFolder);
+		qDebug() <<"remove down Dir--"<< downDir.rmdir(sessionDownloadFolder);
+	}
+
+	ui->labelDownloadStatus->setText(tr("Finished!"));
+
 	//download ended
 	downloadAboutToStart = downloadStarted = false;
 	doStopDownload();
@@ -350,14 +370,36 @@ void DataBaseUpdater::closeEvent(QCloseEvent *)
 	doStopDownload();
 }
 
-void DataBaseUpdater::downloadItem(QTreeWidgetItem *item)
+void DataBaseUpdater::downloadItem(QTreeWidgetItem *item, bool install)
 {
 	if (!item) return;
+	bool keepDownlaodedFiles = ui->groupBoxKeepDownload->isChecked();
 	downloadStarted = true;
 	qDebug() << "downloadItem-sessionDownloadFolder="<<sessionDownloadFolder;
 	QString urlStr = item->data(0, DownloadUrl_DATA).toString();
 	qDebug() << "urlStr="<<urlStr;
-	downloaderObject->downloadFile(QUrl(urlStr), sessionDownloadFolder, item->text(0));
+	QUrl downloadUrl(urlStr);
+	downloaderObject->downloadFile(downloadUrl, sessionDownloadFolder, item->text(0));
+
+	QFileInfo fileInfo(downloadUrl.path());
+	QString fileName = fileInfo.fileName();
+	if (fileName.isEmpty())
+		fileName = "index.html";
+
+	if (install)
+	{
+		ui->labelDownloadStatus->setText(tr("Installing..."));
+		QString fileType = item->data(0, FileExt_DATA).toString();
+		installItemToDB(fileName, sessionDownloadFolder, fileType);
+		ui->labelDownloadStatus->setText(tr("Installed."));
+	}
+
+	if (!keepDownlaodedFiles)
+	{
+		qDebug() <<"remove down File--"<< QFile::remove(sessionDownloadFolder+"/"+fileName);
+		//QDir downDir(sessionDownloadFolder);
+		//qDebug() <<"remove down Dir--"<< downDir.rmdir(sessionDownloadFolder);
+	}
 }
 
 void DataBaseUpdater::forceStopDownload()
@@ -369,20 +411,106 @@ void DataBaseUpdater::forceStopDownload()
 	disconnect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
 	disconnect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
 	ui->repoSelectTree->setEnabled(true);
+	ui->groupBoxKeepDownload->setEnabled(true);
 
 	QDir tmpDir(randomFolder);
 	qDebug() <<"emit downloadStopped!!!!!!rmDir-randomFolder="<<randomFolder<<"bool="<< tmpDir.rmdir(randomFolder);
 }
 
-QString DataBaseUpdater::getTempDir()
+QString DataBaseUpdater::getTempDir(const QString &path, bool makeDir)
 {
-	QString tmpPath = QDir::tempPath()+"/~tmp_saaghar_0";//+QString::number(qrand());
+	QString currentPath = path.isEmpty() ? QDir::tempPath() : path;
+	QFileInfo currentPathInfo(currentPath);
+	if (!currentPathInfo.isDir())
+		currentPath = QDir::tempPath();
+	QString tmpPath = currentPath+"/~tmp_saaghar_0";//+QString::number(qrand());
 	QDir tmpDir(tmpPath);
 	while (tmpDir.exists())
 	{
 		tmpPath+=QString::number(qrand());
 		tmpDir.setPath(tmpPath);
 	}
+	if (makeDir)
+		tmpDir.mkpath(tmpPath);
 	qDebug()<<"getTempDir()="<<tmpPath;
 	return tmpPath;
+}
+
+void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &path, const QString &fileType)
+{
+	QString type = fileType;
+	if (type == ".gdb")
+		type = ".s3db";
+	if (type.isEmpty())
+	{
+		if (fileName.endsWith(".gdb") || fileName.endsWith(".s3db"))
+			type = ".s3db";
+		else
+			type = ".zip";
+	}
+
+	QString file = path+"/"+fileName;
+
+	qDebug() << "fileName="<<fileName<<"type="<<type<<"path="<<path;
+
+	if (type == ".zip")
+	{
+		if (!QFile::exists(file))
+		{
+			qDebug() << "File does not exist.";
+			return;
+		}
+	
+		UnZip::ErrorCode ec;
+		UnZip uz;
+	
+		ec = uz.openArchive(file);
+		if (ec != UnZip::Ok)
+		{
+			qDebug() << "Unable to open archive: " << uz.formatError(ec);
+			uz.closeArchive();
+			installItemToDB(fileName, path, ".s3db");//try open it as SQLite database!
+			return;
+		}
+		else
+		{
+			//qDebug() <<"ziiiiiiip file list"<< uz.fileList();
+			QList<UnZip::ZipEntry> list = uz.entryList();
+			if (list.isEmpty())
+			{
+				qDebug() << "Empty archive.";
+				return;
+			}
+			QString extractPath = getTempDir(path, true);
+			for (int i = 0; i < list.size(); ++i)
+			{
+				const UnZip::ZipEntry& entry = list.at(i);
+				QString entryFileName = entry.filename;
+				qDebug() << "entryFileName="<<entryFileName;
+				if (entry.type == UnZip::Directory ||
+					(!entryFileName.endsWith(".png") &&
+					!entryFileName.endsWith(".gdb") &&
+					!entryFileName.endsWith(".s3db")))
+					continue;
+
+				ec = uz.extractFile(entryFileName, extractPath, UnZip::SkipPaths);
+				qDebug() << "extract-ErrorCode="<< uz.formatError(ec)<<entryFileName<<extractPath;
+				if (entryFileName.endsWith(".gdb") || entryFileName.endsWith(".s3db"))
+				{
+					qDebug() << "emit installRequest="<<extractPath+"/"+entryFileName;
+					emit installRequest(extractPath+"/"+entryFileName, &installCompleted);
+				}
+				qDebug() <<"remove Extract File--"<<QFile::remove(extractPath+"/"+entryFileName);
+			}
+			QDir extractDir(extractPath);
+			qDebug() <<"remove Extract Dir--"<<extractDir.rmdir(extractPath);
+
+			uz.closeArchive();
+		}
+	} // end ".zip" type
+	else if (type == ".s3db")
+	{
+		qDebug() << "FILE TYPE IS S3DB! [SQLite 3 Data Base]";
+		emit installRequest(file, &installCompleted);
+	}
 }

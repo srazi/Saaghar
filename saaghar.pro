@@ -64,7 +64,7 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 include($${SOURCE_DIR}/pQjWidgets/pQjWidgets.pri)
 include($${SOURCE_DIR}/qmusicplayer/qmusicplayer.pri)
 include($${SOURCE_DIR}/downloader/downloader.pri)
-# include($${SOURCE_DIR}/OSDaB-Zip/osdabzip.pri)
+include($${SOURCE_DIR}/OSDaB-Zip/osdabzip.pri)
 
 
 #########################################

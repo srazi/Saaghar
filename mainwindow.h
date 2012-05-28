@@ -70,7 +70,7 @@ class MainWindow : public QMainWindow
 		QString resourcesPath;//not-writable
 		QString userHomePath;//writable
 		int previousTabIndex;
-		void importDataBase(const QString fileName);
+//		void importDataBase(const QString fileName);
 		QStringList mainToolBarItems;
 		QAction *actionInstance(const QString actionObjectName = "", QString iconPath = "", QString displayName = "");
 		void multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidget, const QStringList &selectedData = QStringList(), int insertIndex = 0);
@@ -131,6 +131,7 @@ class MainWindow : public QMainWindow
 		void updateTabsSubMenus();
 
 	private slots:
+		void importDataBase(const QString &fileName, bool *ok = 0);
 		void openParentPage(int parentID, bool newPage = false);
 		void openChildPage(int childID, bool newPage = false);
 		void openPage(int id, SaagharWidget::PageType type, bool newPage = false);

@@ -56,11 +56,13 @@ private slots:
 	void itemDataChanged(QTreeWidgetItem *item, int column);
 
 private:
-	QString getTempDir();
+	bool installCompleted;
+	void installItemToDB(const QString &fileName, const QString &path, const QString &fileType);
+	QString getTempDir(const QString &path = "", bool makeDir = false);
 	QString randomFolder;
 	Downloader *downloaderObject;
 	QString sessionDownloadFolder;
-	void downloadItem(QTreeWidgetItem *item);
+	void downloadItem(QTreeWidgetItem *item, bool install = false);
 	bool downloadAboutToStart;
 	bool downloadStarted;
 	QHash <int, QString> insertedToList;
@@ -76,6 +78,9 @@ private:
 
 protected:
 	void closeEvent(QCloseEvent *);
+
+signals:
+	void installRequest(const QString &, bool *);
 };
 
 #endif
