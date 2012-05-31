@@ -46,11 +46,23 @@ DataBaseUpdater::DataBaseUpdater(QWidget *parent, Qt::WindowFlags f)
 {
 	downloadStarted = downloadAboutToStart = false;
 	repositoriesUrls.clear();
+
+	repositoriesUrls //<< "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/test.xml"
+//			<< "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/newgdbs.xml";
+//					 << "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/programgdbs.xml"
+					 << "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/sitegdbs.xml"
+					 << "http://ganjoor.sourceforge.net/newgdbs.xml"
+					 << "http://ganjoor.sourceforge.net/programgdbs.xml"
+					 << "http://ganjoor.sourceforge.net/sitegdbs.xml";
+					 //<< "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/sitegdbs.xml";
+
 	ui->setupUi(this);
 	downloaderObject = new Downloader(this, ui->downloadProgressBar, ui->labelDownloadStatus);
 	setupUi();
-	readRepositories();
+	//readRepository("");
 
+	connect(ui->refreshPushButton, SIGNAL(clicked()), this, SLOT(readRepository()));
+	connect(ui->comboBoxRepoList, SIGNAL(currentIndexChanged(QString)), this, SLOT(readRepository(QString)));
 	//connect(ui->repoSelectTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(doubleClicked(QTreeWidgetItem*,int)));
 	connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
 	connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
@@ -68,12 +80,31 @@ bool DataBaseUpdater::read(QIODevice *device)
 	{
 		return false;
 	}
+	return parseDocument();
+}
 
+bool DataBaseUpdater::read(const QByteArray &data)
+{
+	QString errorStr;
+	int errorLine;
+	int errorColumn;
+
+	if (!domDocument.setContent(data, true, &errorStr, &errorLine, &errorColumn))
+	{
+		return false;
+	}
+	return parseDocument();
+}
+
+bool DataBaseUpdater::parseDocument()
+{
 	QDomElement root = domDocument.documentElement();
 	if (root.tagName() != "DesktopGanjoorGDBList")
 	{
 		return false;
 	}
+
+	insertedToList.clear();
 
 	QDomElement child = root.firstChildElement("gdb");
 	while (!child.isNull())
@@ -82,13 +113,7 @@ bool DataBaseUpdater::read(QIODevice *device)
 		child = child.nextSiblingElement("gdb");
 	}
 
-	ui->repoSelectTree->resizeColumnToContents(0);
-	//ui->repoSelectTree->setColumnWidth(1,0);
-//	resizeColumnToContents(1);
-	ui->repoSelectTree->resizeColumnToContents(1);
-	ui->repoSelectTree->resizeColumnToContents(2);
-	ui->repoSelectTree->resizeColumnToContents(3);
-	//ui->repoSelectTree->resizeColumnToContents(5);
+	resizeColumnsToContents();
 
 	return true;
 }
@@ -163,6 +188,9 @@ QStringList DataBaseUpdater::repositories()
 
 void DataBaseUpdater::setupUi()
 {
+	ui->comboBoxRepoList->addItems(repositoriesUrls);
+	ui->refreshPushButton->setEnabled(false);
+
 	ui->lineEditDownloadLocation->setText(DataBaseUpdater::downloadLocation);
 	ui->downloadProgressBar->hide();
 	ui->labelDownloadStatus->hide();
@@ -173,6 +201,11 @@ void DataBaseUpdater::setupUi()
 //	repoSelectTree->setObjectName("repoSelectTree");
 //	repoSelectTree->setColumnCount(5);
 	ui->repoSelectTree->setLayoutDirection(Qt::RightToLeft);
+	//setupTreeRootItems();
+}
+
+void DataBaseUpdater::setupTreeRootItems()
+{
 	QFont font(ui->repoSelectTree->font());
 	font.setBold(true);
 
@@ -182,6 +215,7 @@ void DataBaseUpdater::setupUi()
 	oldRootItem->setCheckState(0, Qt::Unchecked);
 	oldRootItem->setFont(0, font);
 	oldRootItem->setExpanded(false);
+	oldRootItem->setDisabled(true);
 
 	newRootItem = new QTreeWidgetItem(ui->repoSelectTree);
 	newRootItem->setText(0, tr("Ready To Install"));
@@ -189,28 +223,103 @@ void DataBaseUpdater::setupUi()
 	newRootItem->setCheckState(0, Qt::Unchecked);
 	newRootItem->setFont(0, font);
 	newRootItem->setExpanded(true);
+	newRootItem->setDisabled(true);
 }
-
-void DataBaseUpdater::readRepositories()
+#include <QBuffer>
+void DataBaseUpdater::readRepository(const QString &url)
 {
-	//if (repositoriesUrls.isEmpty()) return;
-	repositoriesUrls.clear();
-	repositoriesUrls << "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/test.xml"
-//			<< "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/newgdbs.xml";
-//					 << "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/programgdbs.xml"
-//					 << "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/sitegdbs.xml"
-					 << "http://ganjoor.sourceforge.net/programgdbs.xml";
-					 //<< "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/sitegdbs.xml";
-	for (int i=0;i<repositoriesUrls.size();++i)
+//	disconnect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
+//	//clear tree
+//	delete newRootItem;
+//	delete oldRootItem;
+//	setupTreeRootItems();
+//	connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
+	disconnect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
+	ui->pushButtonDownload->setEnabled(false);
+	//clear tree
+	//delete newRootItem;
+	//delete oldRootItem;
+//	QTreeWidgetItem *itm0 = ui->repoSelectTree->takeTopLevelItem(0);
+//	QTreeWidgetItem *itm1 = ui->repoSelectTree->takeTopLevelItem(1);
+//	qDebug() << "REMOOOOOOOOOVE->0"<<itm0<<itm1;
+//	delete itm0;
+//	delete itm1;
+	ui->repoSelectTree->takeTopLevelItem(1);
+	ui->repoSelectTree->takeTopLevelItem(0);
+
+	//itm1 = ui->repoSelectTree->takeTopLevelItem(1);
+	//delete oldRootItem;
+
+	QUrl repoUrl = QUrl::fromUserInput(ui->comboBoxRepoList->currentText());
+	if ( !repoUrl.isValid() )
 	{
-		QString url = repositoriesUrls.at(i);
+		qDebug()<<"if-repoUrl=="<<repoUrl.toString()<<"url="<<url;
+		ui->refreshPushButton->setEnabled(false);
+		return;
+	}
+
+	qDebug()<<"else-repoUrl=="<<repoUrl.toString()<<"url="<<url;
+	ui->refreshPushButton->setEnabled(true);
+
+	if (!url.isEmpty())
+	{
+		//ui->pushButtonDownload->setEnabled(false);
+//		//QFile file("D:/Z[Work]/Saaghar/OTHERS/repositories-XML/sitegdbs.xml");
+//	//	file.open(QFile::ReadOnly);
+//	//	QByteArray fileContent = file.readAll();
+////		QBuffer buffer(&fileContent);
+//	//ui->comboBoxRepoList->setItemData(ui->comboBoxRepoList->currentIndex(), fileContent, Qt::UserRole);
+
+//		QByteArray currentData = ui->comboBoxRepoList->itemData(0, Qt::UserRole+1+ui->comboBoxRepoList->currentIndex()).toByteArray();
+//		qDebug()<<"url.isEmpty()=="<<url<<"----------------------------\ncurrentData="<<currentData;
+//		if (!currentData.isEmpty())
+//		{
+//			//QBuffer buffer(&currentData);
+//			//buffer.open(QIODevice::ReadOnly);
+//		//	qDebug()<<"#####################################\nbuffer.readAll==\n"<<buffer.readAll()<<"#####################################\n";
+//			//if (fileContent == buffer.readAll())
+//		//		qDebug()<< "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+//			read(currentData);
+//			return;
+//		}
+		//if (itemsCache.contains(ui->comboBoxRepoList->currentIndex()))
+		{
+			QPair<QTreeWidgetItem *, QTreeWidgetItem *> cachedItems = itemsCache.value(ui->comboBoxRepoList->currentIndex(), QPair<QTreeWidgetItem *, QTreeWidgetItem *>());
+			if (cachedItems.first && cachedItems.second)
+			{
+				ui->repoSelectTree->takeTopLevelItem(1);
+				ui->repoSelectTree->takeTopLevelItem(0);
+				newRootItem = cachedItems.first;
+				oldRootItem = cachedItems.second;
+				ui->repoSelectTree->addTopLevelItem(oldRootItem);
+				ui->repoSelectTree->addTopLevelItem(newRootItem);
+				resizeColumnsToContents();
+				newRootItem->setExpanded(true);
+				itemDataChanged(0,0);
+				connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
+				return;
+			}
+		}
+	}
+	else
+	{
+		itemsCache.insert(ui->comboBoxRepoList->currentIndex(), QPair<QTreeWidgetItem *, QTreeWidgetItem *>());
+		//ui->comboBoxRepoList->setItemData(0, "", Qt::UserRole+1+ui->comboBoxRepoList->currentIndex());
+	}
+
+	//if (repositoriesUrls.isEmpty()) return;
+	//repositoriesUrls.clear();
+
+	//for (int i=0;i<repositoriesUrls.size();++i)
+	{
+		//QString urlStr = repositoriesUrls.at(i);
 		bool isRemote = false;
 		//url.remove("http://");
-		QUrl repoUrl = QUrl::fromUserInput(url);
 		//qDebug()<<"repoUrl=="<<repoUrl.toString();
-		url = repoUrl.toString();
-		qDebug()<<"url===="<<url;
-		if (!url.contains("file:///"))
+		QString urlStr = repoUrl.toString();
+		qDebug()<<"url===="<<urlStr;
+		setupTreeRootItems();
+		if (!urlStr.contains("file:///"))
 		{
 			isRemote = true;
 			QString tmpPath = getTempDir();
@@ -218,28 +327,51 @@ void DataBaseUpdater::readRepositories()
 			if (!downDir.exists() && !downDir.mkpath(tmpPath))
 			{
 				QMessageBox::information(this, tr("Error!"), tr("Can not create temp path."));
-				continue;
+				return;//continue;
 			}
 
-			QFileInfo urlInfo(url);
+			QFileInfo urlInfo(urlStr);
+			ui->comboBoxRepoList->setEnabled(false);
+			ui->refreshPushButton->setEnabled(false);
+			downloadAboutToStart = downloadStarted = true;
 			downloaderObject->downloadFile(repoUrl, tmpPath, urlInfo.fileName());
+			downloadAboutToStart = downloadStarted = false;
+			ui->comboBoxRepoList->setEnabled(true);
+			ui->refreshPushButton->setEnabled(true);
 			ui->labelDownloadStatus->hide();
-			QFile file(tmpPath+"/"+urlInfo.fileName());
-			qDebug()<<"urlInfo.fileName="<<urlInfo.fileName()<<"full="<<tmpPath+"/"+urlInfo.fileName();
-			qDebug()<<"from file="<<file.fileName();
-			read(&file);
+			QString filepath = tmpPath+"/"+urlInfo.fileName();
+			QFile file(filepath);
+//			qDebug()<<"urlInfo.fileName="<<urlInfo.fileName()<<"full="<<tmpPath+"/"+urlInfo.fileName();
+//			qDebug()<<"from file="<<file.fileName();
+//			file.open(QFile::ReadOnly);
+//			QByteArray fileContent = file.readAll();
+//			QBuffer buffer(&fileContent);
+			
+			if (read(&file))//read(&file))
+			{
+				int a;a;
+				//ui->comboBoxRepoList->setItemData(0, fileContent, Qt::UserRole+1+ui->comboBoxRepoList->currentIndex());
+			}
 			file.remove();
 			downDir.rmdir(tmpPath);
-//			if (!read(&file))
-//				continue;//read error!
 		}
 		else
 		{
-			url.remove("file:///");
-			QFile file(url);
-			if (!read(&file))
-				continue;//read error!
+			urlStr.remove("file:///");
+			QFile file(urlStr);
+			read(&file);
 		}
+
+		newRootItem->setDisabled(newRootItem->childCount() == 0);
+		oldRootItem->setDisabled(oldRootItem->childCount() == 0);
+		if (newRootItem->childCount() == 0 && oldRootItem->childCount() == 0)
+		{
+			ui->repoSelectTree->clear();
+			newRootItem = 0;
+			oldRootItem = 0;
+		}
+		itemsCache.insert(ui->comboBoxRepoList->currentIndex(), QPair<QTreeWidgetItem *, QTreeWidgetItem *>(newRootItem, oldRootItem));
+		connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
 	}
 }
 
@@ -346,27 +478,29 @@ void DataBaseUpdater::initDownload()
 	doStopDownload();
 }
 
-void DataBaseUpdater::doStopDownload()
+bool DataBaseUpdater::doStopDownload()
 {
 	if (!downloadAboutToStart)
-		return;
+		return true;
 
 	if (downloadStarted)
 	{
 		if (QMessageBox::question(this, tr("Warning!"), tr("Download in progress! Are you sure to stop downloading?."), QMessageBox::Yes|QMessageBox::No, QMessageBox::No)
 			 ==
 			QMessageBox::No)
-			return;
+			return false;
 	}
 	downloaderObject->cancelDownload();
 	forceStopDownload();
 	qDebug() <<"doStopDownload!!!!!!";
+	return true;
 }
-
-void DataBaseUpdater::closeEvent(QCloseEvent *)
+#include <QCloseEvent>
+void DataBaseUpdater::closeEvent(QCloseEvent *e)
 {
 	DataBaseUpdater::downloadLocation = ui->lineEditDownloadLocation->text();
-	doStopDownload();
+	if (!doStopDownload())
+		e->ignore();//download in progress
 }
 
 void DataBaseUpdater::downloadItem(QTreeWidgetItem *item, bool install)
@@ -512,4 +646,22 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 		qDebug() << "FILE TYPE IS S3DB! [SQLite 3 Data Base]";
 		emit installRequest(file, &installCompleted);
 	}
+}
+
+void DataBaseUpdater::resizeColumnsToContents()
+{
+	if (!newRootItem || !oldRootItem) return;
+	bool newItemState = newRootItem->isExpanded();
+	bool oldItemState = oldRootItem->isExpanded();
+
+	newRootItem->setExpanded(true);
+	oldRootItem->setExpanded(true);
+
+	ui->repoSelectTree->resizeColumnToContents(0);
+	ui->repoSelectTree->resizeColumnToContents(1);
+	ui->repoSelectTree->resizeColumnToContents(2);
+	ui->repoSelectTree->resizeColumnToContents(3);
+
+	newRootItem->setExpanded(newItemState);
+	oldRootItem->setExpanded(oldItemState);
 }

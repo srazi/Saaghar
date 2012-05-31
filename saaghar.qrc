@@ -54,5 +54,6 @@
 		<file>images/redo.png</file>
 		<file>images/bookmarks-import.png</file>
 		<file>images/outline.png</file>
+		<file>images/refresh.png</file>
 	</qresource>
 </RCC>
