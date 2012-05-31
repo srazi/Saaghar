@@ -25,6 +25,9 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QCloseEvent>
+#include <QTextEdit>
+#include <QDialogButtonBox>
 
 #include "unzip.h"
 #include "downloader.h"
@@ -32,6 +35,7 @@
 #include "SaagharWidget.h"
 
 QString DataBaseUpdater::downloadLocation = QString();
+QStringList DataBaseUpdater::repositoriesUrls = QStringList();
 
 int PoetID_DATA = Qt::UserRole+1;
 int CatID_DATA = Qt::UserRole+2;
@@ -45,16 +49,6 @@ DataBaseUpdater::DataBaseUpdater(QWidget *parent, Qt::WindowFlags f)
 	: QDialog(parent,f), ui(new Ui::DataBaseUpdater)
 {
 	downloadStarted = downloadAboutToStart = false;
-	repositoriesUrls.clear();
-
-	repositoriesUrls //<< "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/test.xml"
-//			<< "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/newgdbs.xml";
-//					 << "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/programgdbs.xml"
-					 << "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/sitegdbs.xml"
-					 << "http://ganjoor.sourceforge.net/newgdbs.xml"
-					 << "http://ganjoor.sourceforge.net/programgdbs.xml"
-					 << "http://ganjoor.sourceforge.net/sitegdbs.xml";
-					 //<< "D:/Z[Work]/Saaghar/OTHERS/repositories-XML/sitegdbs.xml";
 
 	ui->setupUi(this);
 	downloaderObject = new Downloader(this, ui->downloadProgressBar, ui->labelDownloadStatus);
@@ -188,7 +182,7 @@ QStringList DataBaseUpdater::repositories()
 
 void DataBaseUpdater::setupUi()
 {
-	ui->comboBoxRepoList->addItems(repositoriesUrls);
+	ui->comboBoxRepoList->addItems(QStringList() << repositoriesUrls << tr("Click To Add/Remove...") );
 	ui->refreshPushButton->setEnabled(false);
 
 	ui->lineEditDownloadLocation->setText(DataBaseUpdater::downloadLocation);
@@ -225,7 +219,7 @@ void DataBaseUpdater::setupTreeRootItems()
 	newRootItem->setExpanded(true);
 	newRootItem->setDisabled(true);
 }
-#include <QBuffer>
+
 void DataBaseUpdater::readRepository(const QString &url)
 {
 //	disconnect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
@@ -236,6 +230,17 @@ void DataBaseUpdater::readRepository(const QString &url)
 //	connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
 	disconnect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
 	ui->pushButtonDownload->setEnabled(false);
+
+	if (ui->comboBoxRepoList->currentIndex() == ui->comboBoxRepoList->count()-1)
+	{
+		disconnect(ui->comboBoxRepoList, SIGNAL(currentIndexChanged(QString)), this, SLOT(readRepository(QString)));
+		addRemoveRepository();
+		connect(ui->comboBoxRepoList, SIGNAL(currentIndexChanged(QString)), this, SLOT(readRepository(QString)));
+		ui->comboBoxRepoList->setCurrentIndex(-1);//maybe a bug in Qt, set to '0' does not work!
+		ui->comboBoxRepoList->setCurrentIndex(0);
+		return;
+	}
+
 	//clear tree
 	//delete newRootItem;
 	//delete oldRootItem;
@@ -284,7 +289,7 @@ void DataBaseUpdater::readRepository(const QString &url)
 //		}
 		//if (itemsCache.contains(ui->comboBoxRepoList->currentIndex()))
 		{
-			QPair<QTreeWidgetItem *, QTreeWidgetItem *> cachedItems = itemsCache.value(ui->comboBoxRepoList->currentIndex(), QPair<QTreeWidgetItem *, QTreeWidgetItem *>());
+			QPair<QTreeWidgetItem *, QTreeWidgetItem *> cachedItems = itemsCache.value(ui->comboBoxRepoList->currentText(), QPair<QTreeWidgetItem *, QTreeWidgetItem *>());
 			if (cachedItems.first && cachedItems.second)
 			{
 				ui->repoSelectTree->takeTopLevelItem(1);
@@ -303,7 +308,7 @@ void DataBaseUpdater::readRepository(const QString &url)
 	}
 	else
 	{
-		itemsCache.insert(ui->comboBoxRepoList->currentIndex(), QPair<QTreeWidgetItem *, QTreeWidgetItem *>());
+		itemsCache.insert(ui->comboBoxRepoList->currentText(), QPair<QTreeWidgetItem *, QTreeWidgetItem *>());
 		//ui->comboBoxRepoList->setItemData(0, "", Qt::UserRole+1+ui->comboBoxRepoList->currentIndex());
 	}
 
@@ -370,7 +375,7 @@ void DataBaseUpdater::readRepository(const QString &url)
 			newRootItem = 0;
 			oldRootItem = 0;
 		}
-		itemsCache.insert(ui->comboBoxRepoList->currentIndex(), QPair<QTreeWidgetItem *, QTreeWidgetItem *>(newRootItem, oldRootItem));
+		itemsCache.insert(ui->comboBoxRepoList->currentText(), QPair<QTreeWidgetItem *, QTreeWidgetItem *>(newRootItem, oldRootItem));
 		connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
 	}
 }
@@ -495,7 +500,7 @@ bool DataBaseUpdater::doStopDownload()
 	qDebug() <<"doStopDownload!!!!!!";
 	return true;
 }
-#include <QCloseEvent>
+
 void DataBaseUpdater::closeEvent(QCloseEvent *e)
 {
 	DataBaseUpdater::downloadLocation = ui->lineEditDownloadLocation->text();
@@ -664,4 +669,48 @@ void DataBaseUpdater::resizeColumnsToContents()
 
 	newRootItem->setExpanded(newItemState);
 	oldRootItem->setExpanded(oldItemState);
+}
+
+void DataBaseUpdater::addRemoveRepository()
+{
+	QDialog addRemove(this);
+	addRemove.setWindowTitle(tr("Add/Remove Repository Address"));
+	QVBoxLayout vLayout(&addRemove);
+	QLabel label(tr("Insert each address in its own line!"));
+	QTextEdit textEdit;
+	textEdit.setPlainText(repositoriesUrls.join("\n"));
+	//QHBoxLayout hLayout(this);
+	QDialogButtonBox buttonBox;
+	//QPushButton
+	addRemove.setObjectName(QString::fromUtf8("addRemove"));
+	addRemove.resize(400, 300);
+
+	vLayout.setObjectName(QString::fromUtf8("vLayout"));
+	label.setObjectName(QString::fromUtf8("label"));
+	textEdit.setObjectName(QString::fromUtf8("textEdit"));
+
+	vLayout.addWidget(&label);
+	vLayout.addWidget(&textEdit);
+
+	buttonBox.setObjectName(QString::fromUtf8("buttonBox"));
+	buttonBox.setOrientation(Qt::Horizontal);
+	buttonBox.setStandardButtons(QDialogButtonBox::Cancel|QDialogButtonBox::Ok);
+
+	vLayout.addWidget(&buttonBox);
+
+	addRemove.setLayout(&vLayout);
+
+	QObject::connect(&buttonBox, SIGNAL(accepted()), &addRemove, SLOT(accept()));
+	QObject::connect(&buttonBox, SIGNAL(rejected()), &addRemove, SLOT(reject()));
+
+	if (addRemove.exec() == QDialog::Accepted)
+	{
+		repositoriesUrls.clear();
+		repositoriesUrls = textEdit.toPlainText().split("\n", QString::SkipEmptyParts);
+		ui->comboBoxRepoList->clear();
+		ui->comboBoxRepoList->addItems(QStringList()
+										<< tr("Select From Repositories List...")
+										<< repositoriesUrls
+										<< tr("Click To Add/Remove...") );
+	}
 }

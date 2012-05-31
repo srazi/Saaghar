@@ -3314,9 +3314,19 @@ void MainWindow::namedActionTriggered(bool checked)
 	}
 	else if (actionName == "DownloadRepositories")
 	{
-		DataBaseUpdater up;
-		connect(&up, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
-		up.exec();
+		QStringList defaultRepositories = QStringList()
+				<< "http://ganjoor.sourceforge.net/newgdbs.xml"
+				<< "http://ganjoor.sourceforge.net/programgdbs.xml"
+				<< "http://ganjoor.sourceforge.net/sitegdbs.xml";
+		DataBaseUpdater::setRepositories(Settings::READ("Repositories List", defaultRepositories).toStringList());
+		DataBaseUpdater::downloadLocation = Settings::READ("Download Location", "").toString();
+
+		DataBaseUpdater dbUpdater;
+		connect(&dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
+		dbUpdater.exec();
+
+		Settings::WRITE("Repositories List", DataBaseUpdater::repositories());
+		Settings::WRITE("Download Location", DataBaseUpdater::downloadLocation);
 	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));

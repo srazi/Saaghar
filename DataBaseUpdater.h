@@ -41,8 +41,8 @@ class DataBaseUpdater : public QDialog
 
 public:
 	DataBaseUpdater(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	QStringList repositories();
-	void setRepositories(const QStringList &urls);
+	static QStringList repositories();
+	static void setRepositories(const QStringList &urls);
 
 	bool read(QIODevice *device);
 	bool read(const QByteArray &data);
@@ -59,8 +59,10 @@ private slots:
 	void itemDataChanged(QTreeWidgetItem *item, int column);
 
 private:
+	static QStringList repositoriesUrls;
+	void addRemoveRepository();
 	void resizeColumnsToContents();
-	QHash<int, QPair<QTreeWidgetItem *, QTreeWidgetItem *> > itemsCache;
+	QHash<QString, QPair<QTreeWidgetItem *, QTreeWidgetItem *> > itemsCache;
 	bool parseDocument();
 	void setupTreeRootItems();
 	bool installCompleted;
@@ -78,7 +80,6 @@ private:
 	QTreeWidget *repoSelectTree;
 	QTreeWidgetItem *oldRootItem;
 	QTreeWidgetItem *newRootItem;
-	QStringList repositoriesUrls;
 	void parseElement(const QDomElement &element);
 	QDomDocument domDocument;
 
