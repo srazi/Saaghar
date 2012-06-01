@@ -121,95 +121,95 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 		//qDebug() << text<<"count=" << maybeTatweel.captureCount()<<maybeTatweel.capturedTexts();
 		//qDebug() << "Match: "<<maybeTatweel.cap(0);
 		keyword = maybeTatweel.cap(0);
-	if (!(keyword.isEmpty() || text.indexOf(keyword) == -1 ) )
-	{
-		QString txt = text;
-		while (txt.size() > 0)
+		if (!(keyword.isEmpty() || text.indexOf(keyword) == -1 ) )
 		{
-			int index = txt.indexOf(keyword);
-			QString thisPart;
-			if (index == -1)
+			QString txt = text;
+			while (txt.size() > 0)
 			{
-				thisPart = txt;
-				txt = QString();
-			}
-			else
-			{
+				int index = txt.indexOf(keyword);
+				QString thisPart;
+				if (index == -1)
+				{
+					thisPart = txt;
+					txt = QString();
+				}
+				else
+				{
+					if (index == 0)
+					{
+						thisPart = txt.mid(0, keyword.size());
+						if (txt == keyword)
+							txt = QString();
+						else
+							txt = txt.mid(keyword.size(), txt.size() - keyword.size());
+					}
+					else
+					{
+						thisPart = txt.mid(0, index);
+						txt = txt.mid(index);
+					}
+				}
+					
+				QSize sz = fontMetric.boundingRect(thisPart).size();
 				if (index == 0)
 				{
-					thisPart = txt.mid(0, keyword.size());
-					if (txt == keyword)
-						txt = QString();
+					if (flagRightToLeft)
+					{
+						switch (itemAlignment^Qt::AlignVCenter)
+						{
+							case Qt::AlignRight:
+								lastX = option.rect.left()+textHMargin+fontMetric.boundingRect(text).width()-(lastX-option.rect.x()+sz.width()-textHMargin);
+								break;
+	
+							case Qt::AlignHCenter:
+								lastX = option.rect.left()+textHMargin+fontMetric.boundingRect(text).width()-(lastX-option.rect.x()+sz.width()-textHMargin)+((option.rect.width()-fontMetric.boundingRect(text).width()-textHMargin)/2);
+								break;
+	
+							case Qt::AlignLeft:
+							default:
+								lastX = option.rect.right()+textHMargin-1 - (lastX-option.rect.x()+sz.width());
+								break;
+						}
+					}
 					else
-						txt = txt.mid(keyword.size(), txt.size() - keyword.size());
-				}
-				else
-				{
-					thisPart = txt.mid(0, index);
-					txt = txt.mid(index);
-				}
-			}
-				
-			QSize sz = fontMetric.boundingRect(thisPart).size();
-			if (index == 0)
-			{
-				if (flagRightToLeft)
-				{
-					switch (itemAlignment^Qt::AlignVCenter)
 					{
-						case Qt::AlignRight:
-							lastX = option.rect.left()+textHMargin+fontMetric.boundingRect(text).width()-(lastX-option.rect.x()+sz.width()-textHMargin);
-							break;
-
-						case Qt::AlignHCenter:
+						if ((itemAlignment^Qt::AlignVCenter) == Qt::AlignHCenter)
+						{
 							lastX = option.rect.left()+textHMargin+fontMetric.boundingRect(text).width()-(lastX-option.rect.x()+sz.width()-textHMargin)+((option.rect.width()-fontMetric.boundingRect(text).width()-textHMargin)/2);
-							break;
-
-						case Qt::AlignLeft:
-						default:
-							lastX = option.rect.right()+textHMargin-1 - (lastX-option.rect.x()+sz.width());
-							break;
+						}
 					}
-				}
-				else
-				{
-					if ((itemAlignment^Qt::AlignVCenter) == Qt::AlignHCenter)
+	
+					QRect rectf(lastX , option.rect.y()+((option.rect.height()-qMin(option.rect.height(), fontMetric.height()))/2), sz.width(), fontMetric.height() );
+					if (!flagRightToLeft && ((itemAlignment^Qt::AlignVCenter)==Qt::AlignHCenter) )
 					{
-						lastX = option.rect.left()+textHMargin+fontMetric.boundingRect(text).width()-(lastX-option.rect.x()+sz.width()-textHMargin)+((option.rect.width()-fontMetric.boundingRect(text).width()-textHMargin)/2);
+						rectf = QStyle::visualRect(Qt::RightToLeft, option.rect, rectf );
 					}
+	
+					qreal oldOpacity = painter->opacity();
+					painter->setOpacity(opacity);
+					rectf.adjust(-iconWidth, 0, -iconWidth, 0);
+					QPainterPath roundedRect;
+					roundedRect.addRoundRect(rectf, 50, 50);
+					QPen defaultPen(painter->pen());
+					painter->setPen(SaagharWidget::matchedTextColor.darker(150));
+					painter->drawPath(roundedRect);
+					painter->fillPath( roundedRect, itemBrush );
+					painter->setOpacity(oldOpacity);
+					painter->setPen(defaultPen);
+					//painter->fillRect( rectf, itemBrush );
 				}
-
-				QRect rectf(lastX , option.rect.y()+((option.rect.height()-qMin(option.rect.height(), fontMetric.height()))/2), sz.width(), fontMetric.height() );
-				if (!flagRightToLeft && ((itemAlignment^Qt::AlignVCenter)==Qt::AlignHCenter) )
-				{
-					rectf = QStyle::visualRect(Qt::RightToLeft, option.rect, rectf );
-				}
-
-				qreal oldOpacity = painter->opacity();
-				painter->setOpacity(opacity);
-				rectf.adjust(-iconWidth, 0, -iconWidth, 0);
-				QPainterPath roundedRect;
-				roundedRect.addRoundRect(rectf, 50, 50);
-				QPen defaultPen(painter->pen());
-				painter->setPen(SaagharWidget::matchedTextColor.darker(150));
-				painter->drawPath(roundedRect);
-				painter->fillPath( roundedRect, itemBrush );
-				painter->setOpacity(oldOpacity);
-				painter->setPen(defaultPen);
-				//painter->fillRect( rectf, itemBrush );
+				x += fontMetric.width(thisPart);
+				lastX = x;
 			}
-			x += fontMetric.width(thisPart);
-			lastX = x;
 		}
-	}
-	else if (!(keyword.isEmpty() || cleanedText.indexOf(keyword) == -1 ) )
-	{
-		qreal oldOpacity = painter->opacity();
-		painter->setOpacity(0.35);
-		painter->fillRect( option.rect, itemBrush );
-		painter->setOpacity(oldOpacity);
-		//painter->fillRect( rectf, itemBrush );
-	}
+		else if (!(keyword.isEmpty() || cleanedText.indexOf(keyword) == -1 ) )
+		{
+			qreal oldOpacity = painter->opacity();
+			painter->setOpacity(0.35);
+			painter->fillRect( option.rect, itemBrush );
+			painter->setOpacity(oldOpacity);
+			//painter->fillRect( rectf, itemBrush );
+		}
 	}
 	QItemDelegate::paint(painter, option, index);
 }
