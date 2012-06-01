@@ -33,6 +33,8 @@ SaagharItemDelegate::SaagharItemDelegate(QWidget *parent, QStyle *style, QString
 	keywordList = SearchPatternManager::phraseToList(phrase, false);
 	keywordList.removeDuplicates();
 
+	parentWidget = parent;
+
 	tableStyle = style;
 	opacity = 0.65;
 	if (parent->objectName()=="searchTable")
@@ -49,7 +51,10 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 //	{
 //		qDebug() << keywordList;
 //	}
-	const bool flagRightToLeft = true;
+	bool flagRightToLeft = true;
+	if (parentWidget)
+		flagRightToLeft = parentWidget->layoutDirection() == Qt::RightToLeft;
+
 	int textHMargin = 0;
 	if (tableStyle)
 	{
@@ -166,8 +171,20 @@ void SaagharItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &o
 							break;
 					}
 				}
+				else
+				{
+					if ((itemAlignment^Qt::AlignVCenter) == Qt::AlignHCenter)
+					{
+						lastX = option.rect.left()+textHMargin+fontMetric.boundingRect(text).width()-(lastX-option.rect.x()+sz.width()-textHMargin)+((option.rect.width()-fontMetric.boundingRect(text).width()-textHMargin)/2);
+					}
+				}
 
-				QRectF rectf(lastX , option.rect.y()+((option.rect.height()-qMin(option.rect.height(), fontMetric.height()))/2), sz.width(), fontMetric.height() );
+				QRect rectf(lastX , option.rect.y()+((option.rect.height()-qMin(option.rect.height(), fontMetric.height()))/2), sz.width(), fontMetric.height() );
+				if (!flagRightToLeft && ((itemAlignment^Qt::AlignVCenter)==Qt::AlignHCenter) )
+				{
+					rectf = QStyle::visualRect(Qt::RightToLeft, option.rect, rectf );
+				}
+
 				qreal oldOpacity = painter->opacity();
 				painter->setOpacity(opacity);
 				rectf.adjust(-iconWidth, 0, -iconWidth, 0);

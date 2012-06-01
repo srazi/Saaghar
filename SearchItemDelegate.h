@@ -34,6 +34,7 @@ public:
 	SaagharItemDelegate(QWidget *parent = 0, QStyle *style = 0, const QString phrase=QString());
 
 private:
+	QWidget *parentWidget;
 	qreal opacity;
 	QStyle *tableStyle;
 	QStringList keywordList;

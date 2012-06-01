@@ -577,9 +577,16 @@ void SaagharWidget::showCategory(GanjoorCat category)
 	//QFontMetrics sectionFontMetric(sectionFont);
 	QColor sectionColor(Settings::getFromColors(Settings::SectionNameFontColor));
 
+	int betterRightToLeft = 0, betterLeftToRight = 0;
+
 	for (int i = 0; i < subcatsSize; ++i)
 	{
 		QString catText = QGanjoorDbBrowser::simpleCleanString(subcats.at(i)->_Text);
+
+		if (catText.isRightToLeft())
+			++betterRightToLeft;
+		else
+			++betterLeftToRight;
 
 		QTableWidgetItem *catItem = new QTableWidgetItem(catText);
 		catItem->setFont(sectionFont);
@@ -612,6 +619,11 @@ void SaagharWidget::showCategory(GanjoorCat category)
 			itemText.prepend("       ");//7 spaces
 		itemText+= " : " + QGanjoorDbBrowser::simpleCleanString(ganjoorDataBase->getFirstMesra(poems.at(i)->_ID));
 
+		if (itemText.isRightToLeft())
+			++betterRightToLeft;
+		else
+			++betterLeftToRight;
+
 		QTableWidgetItem *poemItem = new QTableWidgetItem(itemText);
 		poemItem->setFont(sectionFont);
 		poemItem->setForeground(sectionColor);
@@ -624,6 +636,12 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 		tableViewWidget->setItem(subcatsSize+i+startRow, 0, poemItem);
 	}
+
+	//support LTR contents
+	if (betterRightToLeft>=betterLeftToRight)
+		tableViewWidget->setLayoutDirection(Qt::RightToLeft);
+	else
+		tableViewWidget->setLayoutDirection(Qt::LeftToRight);
 
 	if (!poems.isEmpty() || !subcats.isEmpty() )
 	{
@@ -862,6 +880,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 		bookmarkedVerses = SaagharWidget::bookmarks->bookmarkList("Verses");
 	}
 
+	int betterRightToLeft = 0, betterLeftToRight = 0;
 	//very Big For loop
 	for (int i = 0; i < numberOfVerses; i++)
 	{
@@ -914,6 +933,11 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 				}
 			}
 		}
+
+		if (currentVerseText.isRightToLeft())
+			++betterRightToLeft;
+		else
+			++betterLeftToRight;
 
 		QTableWidgetItem *mesraItem = new QTableWidgetItem(currentVerseText);
 		mesraItem->setFlags(versesItemFlag);
@@ -1068,6 +1092,13 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 		delete verses[i];
 		verses[i]=0;
 	}// end of big for
+
+	//support LTR contents
+	if (betterRightToLeft>=betterLeftToRight)
+		tableViewWidget->setLayoutDirection(Qt::RightToLeft);
+	else
+		tableViewWidget->setLayoutDirection(Qt::LeftToRight);
+
 qDebug()<<"end of big for=" << QTime::currentTime().msecsTo(start);
 
 	//a trick for removing last empty row withoout QTextEdit widget
