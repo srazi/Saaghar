@@ -50,6 +50,7 @@ class QGanjoorDbBrowser : public QObject
 		QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
 		~QGanjoorDbBrowser();
 //		static QString qStringMacHelper(const QString &str);
+		static QString simpleCleanString(const QString &text);
 		static QString cleanString(const QString &text, const QStringList &excludeList = QStringList() << " ");
 		static QString cleanStringFast(const QString &text, const QStringList &excludeList = QStringList() << " ");
 		static QString justifiedText(const QString &text, const QFontMetrics &fontmetric, int width);

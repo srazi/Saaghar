@@ -1938,3 +1938,12 @@ QList<QTreeWidgetItem *> QGanjoorDbBrowser::loadOutlineFromDataBase(int parentID
 	}
 	return items;
 }
+
+QString QGanjoorDbBrowser::simpleCleanString(const QString &text)
+{
+	QString simpleCleaned = text.simplified();
+	QChar tatweel = QChar(0x0640);
+	simpleCleaned.remove(tatweel);
+
+	return simpleCleaned;
+}

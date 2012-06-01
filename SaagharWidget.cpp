@@ -579,7 +579,9 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 	for (int i = 0; i < subcatsSize; ++i)
 	{
-		QTableWidgetItem *catItem = new QTableWidgetItem(subcats.at(i)->_Text);
+		QString catText = QGanjoorDbBrowser::simpleCleanString(subcats.at(i)->_Text);
+
+		QTableWidgetItem *catItem = new QTableWidgetItem(catText);
 		catItem->setFont(sectionFont);
 		catItem->setForeground(sectionColor);
 		catItem->setFlags(catsItemFlag);
@@ -605,10 +607,10 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
 	for (int i = 0; i < poems.size(); i++)
 	{
-		QString itemText = QGanjoorDbBrowser::snippedText(poems.at(i)->_Title, "", 0, 15, true);
+		QString itemText = QGanjoorDbBrowser::snippedText(QGanjoorDbBrowser::simpleCleanString(poems.at(i)->_Title), "", 0, 15, true);
 		if (subcatsSize>0)
 			itemText.prepend("       ");//7 spaces
-		itemText+= " : " + ganjoorDataBase->getFirstMesra(poems.at(i)->_ID);
+		itemText+= " : " + QGanjoorDbBrowser::simpleCleanString(ganjoorDataBase->getFirstMesra(poems.at(i)->_ID));
 
 		QTableWidgetItem *poemItem = new QTableWidgetItem(itemText);
 		poemItem->setFont(sectionFont);
@@ -788,7 +790,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 	tableViewWidget->setItem(0, 0, flagItem);
 
 	//Title of Poem
-	QTableWidgetItem *poemTitle = new QTableWidgetItem(poem._Title);
+	QTableWidgetItem *poemTitle = new QTableWidgetItem(QGanjoorDbBrowser::simpleCleanString(poem._Title));
 	poemTitle->setFlags(poemsTitleItemFlag);
 	poemTitle->setData(Qt::UserRole, "PoemID="+QString::number(poem._ID));
 	//if (centeredView)
