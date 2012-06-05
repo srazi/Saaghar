@@ -72,6 +72,7 @@ QMusicPlayer::QMusicPlayer(QWidget *parent) : QToolBar(parent)
 {
 	setObjectName("QMusicPlayer");
 
+	notLoaded = true;
 	dockList = 0;
 
 	playListManager = new PlayListManager;
@@ -155,13 +156,20 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
 	sources.clear();
 	infoLabel->setText("");
 
-	//if (!fileName.isEmpty())
+	if (!fileName.isEmpty())
 	{
-	sources.append(source);
+		notLoaded = false;
+		sources.append(source);
+		metaInformationResolver->setCurrentSource(source);
+		load(0);
 	}
-
-	metaInformationResolver->setCurrentSource(source);
-	load(0);
+	else
+	{
+		notLoaded = true;
+		mediaObject->clear();
+		metaInformationResolver->clear();
+		qDebug() << "DISABLE";
+	}
 
 ////	if (!sources.isEmpty())
 ////	{
@@ -188,7 +196,13 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
 
 void QMusicPlayer::setSource()
 {
-	QString file = QFileDialog::getOpenFileName(this, tr("Select Music Files"), startDir);
+	qDebug() <<"setSource="<<currentID<<"\nAvailable Mime Types=\n"<<Phonon::BackendCapabilities::availableMimeTypes()/*.join("#!#")*/<<"\n=====================";
+
+	QString file = QFileDialog::getOpenFileName(this, tr("Select Music Files"), startDir,
+					"Common Supported Files ("+QMusicPlayer::commonSupportedMedia().join(" ") +
+					");;Audio Files ("+QMusicPlayer::commonSupportedMedia("audio").join(" ") +
+					");;Video Files (Audio Stream) ("+QMusicPlayer::commonSupportedMedia("video").join(" ") +
+					");;All Files (*.*)");
 
 	QFileInfo selectedFile(file);
 	startDir = selectedFile.path();
@@ -285,6 +299,18 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
 			;
 	}
 
+	if (notLoaded)
+	{
+		infoLabel->setText("");
+		stopAction->setEnabled(false);
+		togglePlayPauseAction->setEnabled(false);
+		togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+		togglePlayPauseAction->setText(tr("Play"));
+		disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
+		disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()) );
+		timeLcd->display("00:00");
+	}
+
 	if (mediaObject->currentSource().type() == Phonon::MediaSource::Invalid)
 	{
 		stopAction->setEnabled(false);
@@ -335,11 +361,14 @@ void QMusicPlayer::sourceChanged(const Phonon::MediaSource &source)
 void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State /* oldState */)
 {
 	qDebug() << "metaStateChanged";
-	if (newState == Phonon::ErrorState) {
-		QMessageBox::warning(this, tr("Error opening files"),
-			metaInformationResolver->errorString());
+	if (newState == Phonon::ErrorState)
+	{
+		//qWarning() << "Error opening files: " << metaInformationResolver->errorString();
+		infoLabel->setText("Error opening files: "+metaInformationResolver->errorString());
 		while (!sources.isEmpty() &&
-			   !(sources.takeLast() == metaInformationResolver->currentSource())) {}  /* loop */;
+			!(sources.takeLast() == metaInformationResolver->currentSource())
+		)
+		{}  /* loop */;
 		return;
 	}
 
@@ -397,6 +426,18 @@ void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State /* old
 //		if (musicTable->columnWidth(0) > 300)
 //			musicTable->setColumnWidth(0, 300);
 //	}
+
+	if (notLoaded)
+	{
+		infoLabel->setText("");
+		stopAction->setEnabled(false);
+		togglePlayPauseAction->setEnabled(false);
+		togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+		togglePlayPauseAction->setText(tr("Play"));
+		disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
+		disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()) );
+		timeLcd->display("00:00");
+	}
 }
 //![15]
 
@@ -495,7 +536,20 @@ void QMusicPlayer::setupUi()
 	seekSlider = new Phonon::SeekSlider(this);
 	seekSlider->setMediaObject(mediaObject);
 
-	infoLabel = new QLabel("");
+//	infoLabel = new QLabel("");
+//	infoLabel->setScaledContents(true);
+//QLabel *tmpLabel = new QLabel("");
+//tmpLabel->setScaledContents(true);
+//tmpLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	//QHBoxLayout *hbl = new QHBoxLayout(tmpLabel);
+	infoLabel = new ScrollText(this);
+	//infoLabel->setSeparator("---");
+	//infoLabel->setMinimumWidth(50);
+	infoLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	infoLabel->resize(seekSlider->width(), infoLabel->height());
+
+	//hbl->addWidget(infoLabel);
+	//tmpLabel->setLayout(hbl);
 
 	volumeSlider = new Phonon::VolumeSlider(this);
 	volumeSlider->setAudioOutput(audioOutput);
@@ -535,7 +589,7 @@ void QMusicPlayer::setupUi()
 
 	QVBoxLayout *infoLayout = new QVBoxLayout;
 	infoLayout->addWidget(seekSlider);
-	infoLayout->addWidget(infoLabel,0, Qt::AlignCenter);
+	infoLayout->addWidget(infoLabel/*tmpLabel*/,0, 0 /* Qt::AlignCenter*/);
 	infoLayout->setSpacing(0);
 	infoLayout->setContentsMargins(0,0,0,0);
 
@@ -596,6 +650,9 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &/*playLi
 	//#SAAGHAR!MD5SUM!				//item's MD5SUM hash
 	/*******************************************************************************/
 	QFile file(fileName);
+	if (!file.exists())
+		return;
+
 	if (!file.open(QFile::ReadOnly | QFile::Text))
 	{
 		QMessageBox::information(this->parentWidget(), tr("Read Error!"), tr("Can't load playlist!\nError: %1").arg(file.errorString()));
@@ -748,10 +805,18 @@ void QMusicPlayer::savePlayList(const QString &fileName, const QString &playList
 	 out << playListContent;
 	 file.close();
 }
-#include <QCryptographicHash>
+//#include <QCryptographicHash>
 //static
-void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle, const QString &/*mediaRelativePath*/, int mediaCurrentTime, const QString &playListName)
+void QMusicPlayer::playListItemInsertRemove(int mediaID, const QString &mediaPath, const QString &mediaTitle, const QString &/*mediaRelativePath*/, int mediaCurrentTime, const QString &playListName)
 {
+	SaagharPlayList	*playList = QMusicPlayer::playListByName(playListName);
+	if (playList && mediaPath.isEmpty()) //remove from playlist
+	{
+		qDebug() << "insertToPlayList mediaID removed";
+		playList->mediaItems.remove(mediaID);
+		return;
+	}
+
 	QFile file(mediaPath);
 	if (!file.exists() || mediaID<0) return;
 
@@ -761,13 +826,18 @@ void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const
 	//mediaTag->RELATIVE_PATH = mediaRelativePath;
 	mediaTag->time = mediaCurrentTime;
 
-	QFile mediaFile(mediaPath);
-	mediaTag->MD5SUM = QString(QCryptographicHash::hash(mediaFile.readAll(), QCryptographicHash::Md5).toHex());
+/**********************************************************/
+//compute media file MD5SUM, reserved for future versions
+//	QFile mediaFile(mediaPath);
+//	if (mediaFile.open(QFile::ReadOnly))
+//		mediaTag->MD5SUM = QString(
+//		QCryptographicHash::hash(mediaFile.readAll(),
+//		QCryptographicHash::Md5).toHex());
+/**********************************************************/
 
 	//d efaultPlayList.insert(mediaID, mediaTag);
 	//hashDefaultPlayList.mediaItems.insert(mediaID, mediaTag);
 
-	SaagharPlayList	*playList = QMusicPlayer::playListByName(playListName);
 	if (!playList)
 	{
 		playList = new SaagharPlayList;
@@ -839,6 +909,51 @@ void QMusicPlayer::playMedia(int mediaID/*, const QString &fileName, const QStri
 	emit requestPageContainedMedia(mediaID, true); //(fileName, title, mediaID);
 	mediaObject->play();
 	connect(this, SIGNAL(mediaChanged(const QString &,const QString &,int)), playListManager, SLOT(currentMediaChanged(const QString &,const QString &,int)));
+}
+
+void QMusicPlayer::resizeEvent(QResizeEvent *e)
+{
+	//infoLabel->resize(seekSlider->width(), infoLabel->height());
+//	infoLabel->setFixedWidth(50);
+//	seekSlider->resize(50, seekSlider->height());
+//	seekSlider->update();
+//	infoLabel->update();
+//	infoLabel->hide();
+//	QApplication::processEvents();
+	QToolBar::resizeEvent(e);
+	
+	infoLabel->resize(seekSlider->width(), infoLabel->height());
+//	qDebug() << "after ToolBar Resize"<<Q_FUNC_INFO;
+//	qDebug() << "seekSlider-w"<<seekSlider->width()<<"seekSlider-hintW="<<seekSlider->sizeHint().width();
+//	qDebug() << "1infoLabel-w"<<infoLabel->width()<<"1hintW="<<infoLabel->sizeHint().width();
+//	infoLabel->setFixedWidth(seekSlider->width());
+//	infoLabel->show();
+	//	qDebug() << "2infoLabel-w"<<infoLabel->width()<<"2hintW="<<infoLabel->sizeHint().width();
+}
+
+/*static*/
+QStringList QMusicPlayer::commonSupportedMedia(const QString &type)
+{
+	QStringList supportedExtentions;
+	const QStringList commonMediaExtentions = QStringList()
+			<< "mp3" << "wav" << "wma" << "ogg" << "mp4" << "mpg" << "mid"
+			<< "asf" << "3gp" << "wmv" << "avi";
+
+	const QString sep = "|";
+	QString supportedMimeTypes = Phonon::BackendCapabilities::availableMimeTypes().join(sep);
+	for (int i=0; i<commonMediaExtentions.size();++i)
+	{
+		QString extention = commonMediaExtentions.at(i);
+		if (supportedMimeTypes.contains(QRegExp( QString("(%1/[^%2]*%3[^%2]*)").arg(type).arg(sep).arg(extention) )))
+		{
+			if (type == "audio" && (extention == "mpg" || extention == "3gp") )
+				continue;
+
+			supportedExtentions << "*."+extention;
+		}
+	}
+	qDebug() << "commonSupportedMedia-"<<type<<"="<<supportedExtentions;
+	return supportedExtentions;
 }
 
 /*******************************
@@ -930,7 +1045,7 @@ void PlayListManager::currentItemChanged(QTreeWidgetItem *current, QTreeWidgetIt
 
 void PlayListManager::currentMediaChanged(const QString &fileName, const QString &title, int mediaID)
 {
-	if (fileName.isEmpty() || mediaID<=0)
+	if (/*fileName.isEmpty() ||*/ mediaID<=0) // fileName.isEmpty() for delete request!!
 		return;
 
 	for (int i=0; i<mediaList->topLevelItemCount(); ++i)
@@ -956,50 +1071,65 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
 				continue;
 			else
 			{
-				if (!title.isEmpty())
-					childItem->setText(0, title);
-				childItem->setText(1, fileName);
-				if (playListMediaObject && playListMediaObject->state() == Phonon::PlayingState)
-					childItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
-				if (mediaList->currentItem())
+				if (!fileName.isEmpty())
 				{
-					mediaList->currentItem()->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
+					if (!title.isEmpty())
+						childItem->setText(0, title);
+					childItem->setText(1, fileName);
+					if (playListMediaObject && playListMediaObject->state() == Phonon::PlayingState)
+						childItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
+					if (mediaList->currentItem())
+					{
+						mediaList->currentItem()->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
+					}
+					disconnect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
+					mediaList->setCurrentItem(childItem, 0);
+					previousItem = childItem;
+					connect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
 				}
-				disconnect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
-				mediaList->setCurrentItem(childItem, 0);
-				previousItem = childItem;
-				connect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
+				else
+				{ // remove requested!
+					if (previousItem == childItem)
+						previousItem = 0;
+					rootItem->takeChild(j);
+					delete childItem;
+					childItem = 0;
+				}
+
 				return;
 			}
 		}
 	}
 
-	QTreeWidgetItem *rootItem = 0;
-	if (!itemsAsTopItem)
-		rootItem = mediaList->topLevelItem(0);
-
-	if (rootItem || itemsAsTopItem)
+	if (!fileName.isEmpty())
 	{
-		QTreeWidgetItem *newChild = new QTreeWidgetItem;
-		newChild->setText(0, title);
-		newChild->setText(1, fileName);
-		newChild->setData(0, Qt::UserRole, mediaID);
-		if (playListMediaObject && playListMediaObject->state() == Phonon::PlayingState)
-			newChild->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
+		QTreeWidgetItem *rootItem = 0;
+		if (!itemsAsTopItem)
+			rootItem = mediaList->topLevelItem(0);
 
-		if (rootItem)
-			rootItem->addChild(newChild);
-		else //itemsAsTopItem == true
-			mediaList->addTopLevelItem(newChild);
-
-		if (mediaList->currentItem())
+		if (rootItem || itemsAsTopItem)
 		{
-			mediaList->currentItem()->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
+			QTreeWidgetItem *newChild = new QTreeWidgetItem;
+			newChild->setText(0, title);
+			newChild->setText(1, fileName);
+			newChild->setData(0, Qt::UserRole, mediaID);
+			if (playListMediaObject && playListMediaObject->state() == Phonon::PlayingState)
+				newChild->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
+	
+			if (rootItem)
+				rootItem->addChild(newChild);
+			else //itemsAsTopItem == true
+				mediaList->addTopLevelItem(newChild);
+	
+			if (mediaList->currentItem())
+			{
+				mediaList->currentItem()->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
+			}
+			disconnect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
+			mediaList->setCurrentItem(newChild, 0);
+			previousItem = newChild;
+			connect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
 		}
-		disconnect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
-		mediaList->setCurrentItem(newChild, 0);
-		previousItem = newChild;
-		connect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
 	}
 }
 
@@ -1012,8 +1142,8 @@ void PlayListManager::itemPlayRequested(QTreeWidgetItem *item, int /*col*/)
 
 	if (previousItem)
 	{
-		if (item == previousItem)
-			return;
+//		if (item == previousItem)
+//			return;
 		previousItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
 	}
 	
@@ -1040,4 +1170,143 @@ void PlayListManager::mediaObjectStateChanged(Phonon::State newState, Phonon::St
 		else
 			previousItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
 	}
+}
+
+
+/***********************************************************
+// class ScrollText by Sebastian Lehmann <http://l3.ms>
+// link: http://stackoverflow.com/a/10655396
+************************************************************/
+#include <QPainter>
+
+
+ScrollText::ScrollText(QWidget *parent) :
+	QWidget(parent), scrollPos(0)
+{
+	staticText.setTextFormat(Qt::PlainText);
+
+	setFixedHeight(fontMetrics().height());
+	leftMargin = height() / 3;
+
+	setSeparator("   ---   ");
+
+	connect(&timer, SIGNAL(timeout()), this, SLOT(timer_timeout()));
+	timer.setInterval(60);
+}
+
+QString ScrollText::text() const
+{
+	return _text;
+}
+
+void ScrollText::setText(QString text)
+{
+	_text = text;
+	updateText();
+	update();
+}
+
+QString ScrollText::separator() const
+{
+	return _separator;
+}
+
+void ScrollText::setSeparator(QString separator)
+{
+	_separator = separator;
+	updateText();
+	update();
+}
+
+void ScrollText::updateText()
+{
+	timer.stop();
+
+	singleTextWidth = fontMetrics().width(_text);
+	scrollEnabled = (singleTextWidth > width() - leftMargin);
+
+	if(scrollEnabled)
+	{
+		scrollPos = -64;
+		staticText.setText(_text + _separator);
+		timer.start();
+	}
+	else
+		staticText.setText(_text);
+
+	staticText.prepare(QTransform(), font());
+	wholeTextSize = QSize(fontMetrics().width(staticText.text()), fontMetrics().height());
+}
+
+void ScrollText::paintEvent(QPaintEvent*)
+{
+	QPainter p(this);
+
+	if(scrollEnabled)
+	{
+		buffer.fill(qRgba(0, 0, 0, 0));
+		QPainter pb(&buffer);
+		pb.setPen(p.pen());
+		pb.setFont(p.font());
+
+		int x = qMin(-scrollPos, 0) + leftMargin;
+		while(x < width())
+		{
+			pb.drawStaticText(QPointF(x, (height() - wholeTextSize.height()) / 2) /*+ QPoint(2, 2)*/, staticText);
+			x += wholeTextSize.width();
+		}
+
+		//Apply Alpha Channel
+		pb.setCompositionMode(QPainter::CompositionMode_DestinationIn);
+		pb.setClipRect(width() - 15, 0, 15, height());
+		pb.drawImage(0, 0, alphaChannel);
+		pb.setClipRect(0, 0, 15, height());
+		//initial situation: don't apply alpha channel in the left half of the image at all; apply it more and more until scrollPos gets positive
+		if(scrollPos < 0)
+			pb.setOpacity((qreal)(qMax(-8, scrollPos) + 8) / 8.0);
+		pb.drawImage(0, 0, alphaChannel);
+
+		//pb.end();
+		p.drawImage(0, 0, buffer);
+	}
+	else
+	{
+		p.drawStaticText(QPointF(leftMargin+(width()-(wholeTextSize.width()+leftMargin) )/2, (height() - wholeTextSize.height()) / 2), staticText);
+	}
+}
+
+void ScrollText::resizeEvent(QResizeEvent*)
+{
+	//When the widget is resized, we need to update the alpha channel.
+	alphaChannel = QImage(size(), QImage::Format_ARGB32_Premultiplied);
+	buffer = QImage(size(), QImage::Format_ARGB32_Premultiplied);
+
+	//Create Alpha Channel:
+	if(width() > 64)
+	{
+		//create first scanline
+		QRgb* scanline1 = (QRgb*)alphaChannel.scanLine(0);
+		for(int x = 1; x < 16; ++x)
+			scanline1[x - 1] = scanline1[width() - x] = qRgba(0, 0, 0, x << 4);
+		for(int x = 15; x < width() - 15; ++x)
+			scanline1[x] = qRgb(0, 0, 0);
+		//copy scanline to the other ones
+		for(int y = 1; y < height(); ++y)
+			memcpy(alphaChannel.scanLine(y), (uchar*)scanline1, width() * 4);
+	}
+	else
+		alphaChannel.fill(qRgb(0, 0, 0));
+
+
+	//Update scrolling state
+	bool newScrollEnabled = (singleTextWidth > width() - leftMargin);
+	if(newScrollEnabled != scrollEnabled)
+		updateText();
+}
+
+void ScrollText::timer_timeout()
+{
+	scrollPos = (scrollPos + 2)
+				% wholeTextSize.width();
+	update();
 }

@@ -130,7 +130,7 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	loadGlobalSettings();
 
 	//TODO: remove hardcoded load/save location!
-	QMusicPlayer::listOfPlayList.insert("default", userHomePath+"/media/default.m3u8");
+	QMusicPlayer::listOfPlayList.insert("default", userHomePath+"/default.m3u8");
 	SaagharWidget::musicPlayer->loadPlayList(QMusicPlayer::listOfPlayList.value("default").toString());
 
 	if (splashScreen)
@@ -717,7 +717,7 @@ void MainWindow::currentTabChanged(int tabIndex)
 				qDebug()<<"old="<< old_saagharWidget->currentPoem<<"new="<<saagharWidget->currentPoem;
 				//SaagharWidget::mediaInfoCash.insert(old_saagharWidget->currentPoem, QPair<QString, qint64>(SaagharWidget::mediaInfoCash.value(old_saagharWidget->currentPoem).first, SaagharWidget::musicPlayer->currentTime()));
 				QMusicPlayer::getFromPlayList(old_saagharWidget->currentPoem, &path, &title, &relativePath);
-				QMusicPlayer::insertToPlayList(old_saagharWidget->currentPoem, path, title, relativePath, SaagharWidget::musicPlayer->currentTime());
+				QMusicPlayer::playListItemInsertRemove(old_saagharWidget->currentPoem, path, title, relativePath, SaagharWidget::musicPlayer->currentTime());
 			}
 			path = "";
 			title = "";
@@ -725,7 +725,7 @@ void MainWindow::currentTabChanged(int tabIndex)
 			QMusicPlayer::getFromPlayList(saagharWidget->currentPoem, &path, &title, &relativePath);
 			if (SaagharWidget::musicPlayer->source() != path)
 			{
-				SaagharWidget::musicPlayer->setSource(path, saagharWidget->currentLocationList.join(">")+saagharWidget->currentPoemTitle, saagharWidget->currentPoem);
+				SaagharWidget::musicPlayer->setSource(path, saagharWidget->currentLocationList.join(">")+">"+saagharWidget->currentPoemTitle, saagharWidget->currentPoem);
 				//QApplication::processEvents();
 				//SaagharWidget::musicPlayer->setCurrentTime(currentMediaInfo.second);
 			}
@@ -737,6 +737,7 @@ void MainWindow::currentTabChanged(int tabIndex)
 //			}
 //			else
 //				SaagharWidget::musicPlayer->setSource("");
+			SaagharWidget::musicPlayer->setEnabled(saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage);
 		}
 	}
 }
@@ -3640,11 +3641,16 @@ void MainWindow::mediaInfoChanged(const QString &fileName, const QString &title,
 		time = SaagharWidget::musicPlayer->currentTime();
 	if (mediaTitle.isEmpty())
 	{
+		qDebug() <<"currentLocationList="<<saagharWidget->currentLocationList;
 		mediaTitle = saagharWidget->currentLocationList.join(">");
+		qDebug() <<"mediaTitle11="<<mediaTitle;
 		if (!saagharWidget->currentPoemTitle.isEmpty())
+		{
 			mediaTitle+=">"+saagharWidget->currentPoemTitle;
+			qDebug() <<"mediaTitle22="<<mediaTitle;
+		}
 	}
-	QMusicPlayer::insertToPlayList(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, "", time);
+	QMusicPlayer::playListItemInsertRemove(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, "", time);
 	//SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
 	//saagharWidget->pageMetaInfo.mediaFile = fileName;
 }

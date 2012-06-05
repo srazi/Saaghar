@@ -577,21 +577,25 @@ QString DataBaseUpdater::getTempDir(const QString &path, bool makeDir)
 void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &path, const QString &fileType)
 {
 	QString type = fileType;
-	if (type == ".gdb")
-		type = ".s3db";
+	if (type == ".gdb" || type == "gdb" || type == ".s3db")
+		type = "s3db";
+
+	if (type == ".zip")
+		type = "zip";
+
 	if (type.isEmpty())
 	{
 		if (fileName.endsWith(".gdb") || fileName.endsWith(".s3db"))
-			type = ".s3db";
+			type = "s3db";
 		else
-			type = ".zip";
+			type = "zip";
 	}
 
 	QString file = path+"/"+fileName;
 
 	qDebug() << "fileName="<<fileName<<"type="<<type<<"path="<<path;
 
-	if (type == ".zip")
+	if (type == "zip")
 	{
 		if (!QFile::exists(file))
 		{
@@ -607,7 +611,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 		{
 			qDebug() << "Unable to open archive: " << uz.formatError(ec);
 			uz.closeArchive();
-			installItemToDB(fileName, path, ".s3db");//try open it as SQLite database!
+			installItemToDB(fileName, path, "s3db");//try open it as SQLite database!
 			return;
 		}
 		else
@@ -645,8 +649,8 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 
 			uz.closeArchive();
 		}
-	} // end ".zip" type
-	else if (type == ".s3db")
+	} // end "zip" type
+	else if (type == "s3db")
 	{
 		qDebug() << "FILE TYPE IS S3DB! [SQLite 3 Data Base]";
 		emit installRequest(file, &installCompleted);

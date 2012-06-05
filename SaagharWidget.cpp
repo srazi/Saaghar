@@ -195,6 +195,10 @@ void SaagharWidget::navigateToPage(QString type, int id, bool noError)
 			category = ganjoorDataBase->getCategory(id);
 		showCategory(category);
 	}
+
+	
+	if (SaagharWidget::musicPlayer)
+		SaagharWidget::musicPlayer->setEnabled(pageMetaInfo.type == SaagharWidget::PoemViewerPage);
 }
 
 void SaagharWidget::parentCatClicked()
