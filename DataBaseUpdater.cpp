@@ -490,7 +490,7 @@ bool DataBaseUpdater::doStopDownload()
 
 	if (downloadStarted)
 	{
-		if (QMessageBox::question(this, tr("Warning!"), tr("Download in progress! Are you sure to stop downloading?."), QMessageBox::Yes|QMessageBox::No, QMessageBox::No)
+		if (QMessageBox::question(this, tr("Warning!"), tr("Download in progress! Are you sure to stop downloading?"), QMessageBox::Yes|QMessageBox::No, QMessageBox::No)
 			 ==
 			QMessageBox::No)
 			return false;
@@ -717,4 +717,12 @@ void DataBaseUpdater::addRemoveRepository()
 										<< repositoriesUrls
 										<< tr("Click To Add/Remove...") );
 	}
+}
+
+void DataBaseUpdater::reject()
+{
+	if (!doStopDownload())
+		return;
+
+	QDialog::reject();
 }

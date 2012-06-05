@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>509</width>
-    <height>410</height>
+    <height>430</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -304,7 +304,7 @@
      </widget>
      <widget class="QWidget" name="tab">
       <attribute name="title">
-       <string>Font &amp;&amp; Color</string>
+       <string>Fonts &amp;&amp; Colors</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>

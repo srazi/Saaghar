@@ -52,6 +52,7 @@ public slots:
 	void readRepository(const QString &url = "");
 
 private slots:
+	virtual void reject();
 	void initDownload();
 	void forceStopDownload();
 	bool doStopDownload();

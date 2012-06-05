@@ -260,7 +260,7 @@ void OutLineTree::createCustomContextMenu(const QPoint &pos)
 	if (item->childCount()>0)
 	{
 		if (item->isExpanded())
-			contextMenu->addAction(tr("Collaspe"));
+			contextMenu->addAction(tr("Collapse"));
 		else
 			contextMenu->addAction(tr("Expand"));
 	}
@@ -280,7 +280,7 @@ void OutLineTree::createCustomContextMenu(const QPoint &pos)
 	{
 		emit openParentRequested(itemID);
 	}
-	else if (text == tr("Collaspe") || text == tr("Expand"))
+	else if (text == tr("Collapse") || text == tr("Expand"))
 	{
 		item->setExpanded(!item->isExpanded());
 	}

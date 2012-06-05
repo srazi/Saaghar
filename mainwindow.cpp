@@ -127,6 +127,10 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	addDockWidget(Qt::LeftDockWidgetArea, SaagharWidget::musicPlayer->playListManagerDock());
 	SaagharWidget::musicPlayer->playListManagerDock()->hide();
 	SaagharWidget::musicPlayer->hide();
+	allActionMap.insert("playlistDockAction", SaagharWidget::musicPlayer->playListManagerDock()->toggleViewAction());
+	actionInstance("playlistDockAction")->setObjectName(QString::fromUtf8("playlistDockAction"));
+	actionInstance("playlistDockAction")->setIcon(QIcon(currentIconThemePath()+"/playlist.png"));
+
 	loadGlobalSettings();
 
 	//TODO: remove hardcoded load/save location!
@@ -1896,6 +1900,7 @@ void MainWindow::setupUi()
 	menuNavigation->addAction(actionInstance("actionRandom"));
 
 	menuView->addAction(actionInstance("outlineDockAction"));
+	menuView->addAction(actionInstance("playlistDockAction"));
 	menuView->addAction(actionInstance("Show Photo at Home"));
 
 	menuView->addSeparator();
