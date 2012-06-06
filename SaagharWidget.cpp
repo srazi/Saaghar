@@ -198,7 +198,12 @@ void SaagharWidget::navigateToPage(QString type, int id, bool noError)
 
 	
 	if (SaagharWidget::musicPlayer)
-		SaagharWidget::musicPlayer->setEnabled(pageMetaInfo.type == SaagharWidget::PoemViewerPage);
+	{
+		bool isEnabled = (pageMetaInfo.type == SaagharWidget::PoemViewerPage);
+		SaagharWidget::musicPlayer->setEnabled(isEnabled);
+		if (!isEnabled)
+			SaagharWidget::musicPlayer->stop();
+	}
 }
 
 void SaagharWidget::parentCatClicked()
@@ -1146,7 +1151,7 @@ qDebug()<<"end of big for=" << QTime::currentTime().msecsTo(start);
 			//QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(currentPoem);
 			if (SaagharWidget::musicPlayer->source() != path)
 			{
-				SaagharWidget::musicPlayer->setSource(path, currentLocationList.join(">")+currentPoemTitle, currentPoem);
+				SaagharWidget::musicPlayer->setSource(path, currentLocationList.join(">")+">"+currentPoemTitle, currentPoem);
 				//QApplication::processEvents();
 				//SaagharWidget::musicPlayer->setCurrentTime(currentMediaInfo.second);
 			}
@@ -1155,7 +1160,7 @@ qDebug()<<"end of big for=" << QTime::currentTime().msecsTo(start);
 		}
 		else
 		{ //at startup we load everythings!
-			SaagharWidget::musicPlayer->setSource("", currentLocationList.join(">")+currentPoemTitle, currentPoem);
+			SaagharWidget::musicPlayer->setSource("", currentLocationList.join(">")+">"+currentPoemTitle, currentPoem);
 		}
 //		else //at startup we load everythings!
 //		{

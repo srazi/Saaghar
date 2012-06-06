@@ -101,7 +101,8 @@ public:
 	void loadPlayList(const QString &fileName, const QString &playListName = "default", const QString &format="M3U8");
 	void savePlayList(const QString &fileName, const QString &playListName = "default", const QString &format="M3U8");
 
-	static void playListItemInsertRemove(int mediaID, const QString &mediaPath, const QString &mediaTitle = "", const QString &mediaRelativePath = "", int mediaCurrentTime = 0, const QString &playListName = "default");
+	static void insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle = "", const QString &mediaRelativePath = "", int mediaCurrentTime = 0, const QString &playListName = "default");
+	static void removeFromPlayList(int mediaID, const QString &playListName = "default");
 	static bool playListContains(int mediaID, const QString &playListName = "default");
 	static void getFromPlayList(int mediaID, QString *mediaPath, QString *mediaTitle = 0, QString *mediaRelativePath = 0, int *mediaCurrentTime = 0, const QString &playListName = "default");
 
@@ -111,8 +112,11 @@ public:
 
 	QDockWidget *playListManagerDock();
 
-private slots:
+public slots:	
+	void stop();
 	void playMedia(int mediaID/*, const QString &fileName, const QString &title = ""*/);
+
+private slots:
 	void removeSource();
 	void setSource();
 	void seekableChanged(bool seekable);
@@ -173,7 +177,7 @@ protected:
 	virtual void resizeEvent(QResizeEvent *e);
 
 signals:
-	void mediaChanged(const QString &,const QString &,int);//fileName, title, id
+	void mediaChanged(const QString &,const QString &,int,bool);//fileName, title, id, removeRequest
 	void requestPageContainedMedia(/*const QString &,const QString &,*/int,bool);//fileName, title, id
 };
 
@@ -201,7 +205,7 @@ private slots:
 	void mediaObjectStateChanged(Phonon::State newState, Phonon::State oldState);
 	void itemPlayRequested(QTreeWidgetItem*,int);
 	void currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
-	void currentMediaChanged(const QString &fileName, const QString &title, int mediaID);
+	void currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest = false);
 
 signals:
 	void mediaPlayRequested(int/*, const QString &, const QString &*/);//mediaID, fileName, title!

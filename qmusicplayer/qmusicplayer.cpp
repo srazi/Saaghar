@@ -77,7 +77,7 @@ QMusicPlayer::QMusicPlayer(QWidget *parent) : QToolBar(parent)
 
 	playListManager = new PlayListManager;
 	connect(playListManager, SIGNAL(mediaPlayRequested(int/*,const QString &,const QString &*/)), this, SLOT(playMedia(int/*,const QString &,const QString &*/)));
-	connect(this, SIGNAL(mediaChanged(const QString &,const QString &,int)), playListManager, SLOT(currentMediaChanged(const QString &,const QString &,int)));
+	connect(this, SIGNAL(mediaChanged(const QString &,const QString &,int,bool)), playListManager, SLOT(currentMediaChanged(const QString &,const QString &,int,bool)));
 	
 	QMusicPlayer::hashDefaultPlayList.PATH = "";
 
@@ -191,7 +191,7 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
 	if (!title.isEmpty())
 		currentTitle = title;
 	currentID = mediaID;
-	emit mediaChanged(fileName, currentTitle, currentID);
+	emit mediaChanged(fileName, currentTitle, currentID, false);
 }
 
 void QMusicPlayer::setSource()
@@ -234,7 +234,17 @@ void QMusicPlayer::setSource()
 
 void QMusicPlayer::removeSource()
 {
-	setSource("", currentTitle, currentID);
+	_newTime = -1;
+	sources.clear();
+	infoLabel->setText("");
+	notLoaded = true;
+	mediaObject->clear();
+	metaInformationResolver->clear();
+	qDebug() << "removeSource->DISABLE";
+
+	emit mediaChanged("", "", currentID, true);
+
+	QMusicPlayer::removeFromPlayList(currentID);
 }
 
 //![6]
@@ -251,7 +261,7 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
 {
 	switch (newState) {
 		case Phonon::ErrorState:
-			emit mediaChanged("", currentTitle, currentID);
+			emit mediaChanged("", currentTitle, currentID, false);
 		//errors are handled in metaStateChanged()
 //			if (mediaObject->errorType() == Phonon::FatalError) {
 //				QMessageBox::warning(this, tr("Fatal Error"),
@@ -805,17 +815,29 @@ void QMusicPlayer::savePlayList(const QString &fileName, const QString &playList
 	 out << playListContent;
 	 file.close();
 }
-//#include <QCryptographicHash>
-//static
-void QMusicPlayer::playListItemInsertRemove(int mediaID, const QString &mediaPath, const QString &mediaTitle, const QString &/*mediaRelativePath*/, int mediaCurrentTime, const QString &playListName)
+
+/*static*/
+void QMusicPlayer::removeFromPlayList(int mediaID, const QString &playListName)
 {
 	SaagharPlayList	*playList = QMusicPlayer::playListByName(playListName);
-	if (playList && mediaPath.isEmpty()) //remove from playlist
+	if (playList)
 	{
 		qDebug() << "insertToPlayList mediaID removed";
 		playList->mediaItems.remove(mediaID);
-		return;
 	}
+}
+
+//#include <QCryptographicHash>
+//static
+void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle, const QString &/*mediaRelativePath*/, int mediaCurrentTime, const QString &playListName)
+{
+	SaagharPlayList	*playList = QMusicPlayer::playListByName(playListName);
+//	if (playList && mediaPath.isEmpty()) //remove from playlist
+//	{
+//		qDebug() << "insertToPlayList mediaID removed";
+//		playList->mediaItems.remove(mediaID);
+//		return;
+//	}
 
 	QFile file(mediaPath);
 	if (!file.exists() || mediaID<0) return;
@@ -905,10 +927,10 @@ QDockWidget *QMusicPlayer::playListManagerDock()
 
 void QMusicPlayer::playMedia(int mediaID/*, const QString &fileName, const QString &title*/)
 {
-	disconnect(this, SIGNAL(mediaChanged(const QString &,const QString &,int)), playListManager, SLOT(currentMediaChanged(const QString &,const QString &,int)));
+	disconnect(this, SIGNAL(mediaChanged(const QString &,const QString &,int,bool)), playListManager, SLOT(currentMediaChanged(const QString &,const QString &,int,bool)));
 	emit requestPageContainedMedia(mediaID, true); //(fileName, title, mediaID);
 	mediaObject->play();
-	connect(this, SIGNAL(mediaChanged(const QString &,const QString &,int)), playListManager, SLOT(currentMediaChanged(const QString &,const QString &,int)));
+	connect(this, SIGNAL(mediaChanged(const QString &,const QString &,int,bool)), playListManager, SLOT(currentMediaChanged(const QString &,const QString &,int,bool)));
 }
 
 void QMusicPlayer::resizeEvent(QResizeEvent *e)
@@ -954,6 +976,13 @@ QStringList QMusicPlayer::commonSupportedMedia(const QString &type)
 	}
 	qDebug() << "commonSupportedMedia-"<<type<<"="<<supportedExtentions;
 	return supportedExtentions;
+}
+
+void QMusicPlayer::stop()
+{
+	if (mediaObject)
+		mediaObject->stop();
+	infoLabel->setText("");
 }
 
 /*******************************
@@ -1043,7 +1072,7 @@ void PlayListManager::currentItemChanged(QTreeWidgetItem *current, QTreeWidgetIt
 //	emit mediaPlayRequested(id/*, current->text(1), current->text(0)*/);
 }
 
-void PlayListManager::currentMediaChanged(const QString &fileName, const QString &title, int mediaID)
+void PlayListManager::currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest)
 {
 	if (/*fileName.isEmpty() ||*/ mediaID<=0) // fileName.isEmpty() for delete request!!
 		return;
@@ -1071,7 +1100,15 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
 				continue;
 			else
 			{
-				if (!fileName.isEmpty())
+				if (removeRequest)
+				{
+					if (previousItem == childItem)
+						previousItem = 0;
+					rootItem->takeChild(j);
+					delete childItem;
+					childItem = 0;
+				}
+				else if (!fileName.isEmpty())
 				{
 					if (!title.isEmpty())
 						childItem->setText(0, title);
@@ -1087,15 +1124,6 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
 					previousItem = childItem;
 					connect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
 				}
-				else
-				{ // remove requested!
-					if (previousItem == childItem)
-						previousItem = 0;
-					rootItem->takeChild(j);
-					delete childItem;
-					childItem = 0;
-				}
-
 				return;
 			}
 		}

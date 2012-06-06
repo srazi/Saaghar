@@ -721,7 +721,7 @@ void MainWindow::currentTabChanged(int tabIndex)
 				qDebug()<<"old="<< old_saagharWidget->currentPoem<<"new="<<saagharWidget->currentPoem;
 				//SaagharWidget::mediaInfoCash.insert(old_saagharWidget->currentPoem, QPair<QString, qint64>(SaagharWidget::mediaInfoCash.value(old_saagharWidget->currentPoem).first, SaagharWidget::musicPlayer->currentTime()));
 				QMusicPlayer::getFromPlayList(old_saagharWidget->currentPoem, &path, &title, &relativePath);
-				QMusicPlayer::playListItemInsertRemove(old_saagharWidget->currentPoem, path, title, relativePath, SaagharWidget::musicPlayer->currentTime());
+				QMusicPlayer::insertToPlayList(old_saagharWidget->currentPoem, path, title, relativePath, SaagharWidget::musicPlayer->currentTime());
 			}
 			path = "";
 			title = "";
@@ -741,7 +741,11 @@ void MainWindow::currentTabChanged(int tabIndex)
 //			}
 //			else
 //				SaagharWidget::musicPlayer->setSource("");
-			SaagharWidget::musicPlayer->setEnabled(saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage);
+
+			bool isEnabled = (saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage);
+			SaagharWidget::musicPlayer->setEnabled(isEnabled);
+			if (!isEnabled)
+				SaagharWidget::musicPlayer->stop();
 		}
 	}
 }
@@ -1592,7 +1596,7 @@ void MainWindow::setupUi()
 {
 	QString iconThemePath = currentIconThemePath();
 
-	connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(const QString &,const QString &,int)), this, SLOT(mediaInfoChanged(const QString &,const QString &,int)));
+	connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(const QString &,const QString &,int,bool)), this, SLOT(mediaInfoChanged(const QString &,const QString &,int)));
 	connect(SaagharWidget::musicPlayer, SIGNAL(requestPageContainedMedia(/*QString,QString,*/int,bool)), this, SLOT(openChildPage(int,bool)));
 	addToolBar(Qt::BottomToolBarArea, SaagharWidget::musicPlayer);
 
@@ -3655,7 +3659,7 @@ void MainWindow::mediaInfoChanged(const QString &fileName, const QString &title,
 			qDebug() <<"mediaTitle22="<<mediaTitle;
 		}
 	}
-	QMusicPlayer::playListItemInsertRemove(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, "", time);
+	QMusicPlayer::insertToPlayList(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, "", time);
 	//SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
 	//saagharWidget->pageMetaInfo.mediaFile = fileName;
 }
