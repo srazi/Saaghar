@@ -637,7 +637,7 @@ Error: %1</source>
     <message>
         <location filename="mainwindow.cpp" line="1806"/>
         <source>Outline</source>
-        <translation>فهرست مجموعه‌ها</translation>
+        <translation>مجموعه‌ها</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="2132"/>
@@ -1306,7 +1306,7 @@ Error: %1</source>
     <message>
         <location filename="qmusicplayer/qmusicplayer.cpp" line="901"/>
         <source>PlayList</source>
-        <translation>فهرست صداها</translation>
+        <translation>صداها</translation>
     </message>
 </context>
 <context>

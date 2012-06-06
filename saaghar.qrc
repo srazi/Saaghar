@@ -56,5 +56,9 @@
 		<file>images/outline.png</file>
 		<file>images/refresh.png</file>
 		<file>images/playlist.png</file>
+		<file>images/one-hemistich-line.png</file>
+		<file>images/two-hemistich-line.png</file>
+		<file>images/stepped-hemistich-line.png</file>
+		<file>images/empty.png</file>
 	</qresource>
 </RCC>

@@ -1776,7 +1776,7 @@ void MainWindow::setupUi()
 	QMenu *poemViewStylesMenu = new QMenu(tr("Poem View Styles")); 
 	QActionGroup *poemViewStylesGroup = new QActionGroup(this);
 
-	poemViewStylesMenu->addAction(actionInstance("TwoHemistichPoemViewStyle", iconThemePath+"/poem-view-two-hemistich-line.png",QObject::tr("&Two Hemistich Line")) );
+	poemViewStylesMenu->addAction(actionInstance("TwoHemistichPoemViewStyle", iconThemePath+"/two-hemistich-line.png",QObject::tr("&Two Hemistich Line")) );
 	actionInstance("TwoHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
 	actionInstance("TwoHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
 	actionInstance("TwoHemistichPoemViewStyle")->setCheckable(true);
@@ -1788,13 +1788,13 @@ void MainWindow::setupUi()
 //	actionInstance("LastBeytCenteredPoemViewStyle")->setCheckable(true);
 //	actionInstance("LastBeytCenteredPoemViewStyle")->setData(SaagharWidget::LastBeytCentered);
 
-	poemViewStylesMenu->addAction(actionInstance("OneHemistichPoemViewStyle", iconThemePath+"/poem-view-one-hemistich-line.png",QObject::tr("&One Hemistich Line")) );
+	poemViewStylesMenu->addAction(actionInstance("OneHemistichPoemViewStyle", iconThemePath+"/one-hemistich-line.png",QObject::tr("&One Hemistich Line")) );
 	actionInstance("OneHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
 	actionInstance("OneHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
 	actionInstance("OneHemistichPoemViewStyle")->setCheckable(true);
 	actionInstance("OneHemistichPoemViewStyle")->setData(SaagharWidget::OneHemistichLine);
 
-	poemViewStylesMenu->addAction(actionInstance("SteppedHemistichPoemViewStyle", iconThemePath+"/poem-view-stepped-hemistich-line.png",QObject::tr("&Stepped Hemistich Line")) );
+	poemViewStylesMenu->addAction(actionInstance("SteppedHemistichPoemViewStyle", iconThemePath+"/stepped-hemistich-line.png",QObject::tr("&Stepped Hemistich Line")) );
 	actionInstance("SteppedHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
 	actionInstance("SteppedHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
 	actionInstance("SteppedHemistichPoemViewStyle")->setCheckable(true);

@@ -199,7 +199,7 @@ void Settings::initializeActionTables(const QMap<QString, QAction *> &actionsMap
 			item = new QTableWidgetItem(text);
 			item->setData(Qt::UserRole+1, it.key());
 			item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-			item->setIcon(it.value()->icon());
+			item->setIcon(it.value()->icon().isNull() ? QIcon(":/resources/images/empty.png") : it.value()->icon());
 			ui->tableWidgetAllActions->insertRow(index);
 			ui->tableWidgetAllActions->setItem(index, 0, item);
 			++it;
@@ -230,7 +230,7 @@ void Settings::initializeActionTables(const QMap<QString, QAction *> &actionsMap
 				item = new QTableWidgetItem(text);
 				item->setData(Qt::UserRole+1, actionString);
 				item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-				item->setIcon(action->icon());
+				item->setIcon(action->icon().isNull() ? QIcon(":/resources/images/empty.png") : action->icon());
 			}
 			else
 			{
