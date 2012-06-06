@@ -121,11 +121,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEditDownloadLocation">
-          <property name="placeholderText">
-           <string>Please select download location...</string>
-          </property>
-         </widget>
+         <widget class="QLineEdit" name="lineEditDownloadLocation"/>
         </item>
         <item>
          <widget class="QPushButton" name="pushButtonBrowse">

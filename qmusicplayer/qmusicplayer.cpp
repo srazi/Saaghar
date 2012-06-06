@@ -1207,10 +1207,13 @@ void PlayListManager::mediaObjectStateChanged(Phonon::State newState, Phonon::St
 ************************************************************/
 #include <QPainter>
 
-
 ScrollText::ScrollText(QWidget *parent) :
 	QWidget(parent), scrollPos(0)
 {
+#if QT_VERSION < 0x040700
+	staticText.hide();
+#endif
+
 	staticText.setTextFormat(Qt::PlainText);
 
 	setFixedHeight(fontMetrics().height());
@@ -1261,8 +1264,9 @@ void ScrollText::updateText()
 	}
 	else
 		staticText.setText(_text);
-
+#if QT_VERSION >= 0x040700
 	staticText.prepare(QTransform(), font());
+#endif
 	wholeTextSize = QSize(fontMetrics().width(staticText.text()), fontMetrics().height());
 }
 
@@ -1280,7 +1284,11 @@ void ScrollText::paintEvent(QPaintEvent*)
 		int x = qMin(-scrollPos, 0) + leftMargin;
 		while(x < width())
 		{
+#if QT_VERSION >= 0x040700
 			pb.drawStaticText(QPointF(x, (height() - wholeTextSize.height()) / 2) /*+ QPoint(2, 2)*/, staticText);
+#else
+			pb.drawText(QPointF(x, height()-2- ( (height() - wholeTextSize.height()) / 2) ) /*+ QPoint(2, 2)*/, staticText.text());
+#endif
 			x += wholeTextSize.width();
 		}
 
@@ -1299,7 +1307,11 @@ void ScrollText::paintEvent(QPaintEvent*)
 	}
 	else
 	{
+#if QT_VERSION >= 0x040700
 		p.drawStaticText(QPointF(leftMargin+(width()-(wholeTextSize.width()+leftMargin) )/2, (height() - wholeTextSize.height()) / 2), staticText);
+#else
+		p.drawText(QPointF(leftMargin+(width()-(wholeTextSize.width()+leftMargin) )/2,height()-2-( (height() - wholeTextSize.height()) / 2) ), staticText.text());
+#endif
 	}
 }
 

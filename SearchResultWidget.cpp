@@ -104,7 +104,7 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 		clearIconPath = iconThemePath+"/clear-right.png";
 	filterLineEdit = new QSearchLineEdit(searchResultContents, clearIconPath, iconThemePath+"/filter.png");
 	filterLineEdit->setObjectName(QString::fromUtf8("filterLineEdit"));
-#if QT_VERSION > 0x040700
+#if QT_VERSION >= 0x040700
 	filterLineEdit->setPlaceholderText(tr("Filter"));
 #endif
 	connect(filterLineEdit, SIGNAL(textChanged(const QString &)), this, SLOT(filterResults(const QString &)));

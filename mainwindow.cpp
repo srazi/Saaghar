@@ -71,6 +71,11 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
 {
+	QCoreApplication::setOrganizationName("Pozh");
+	QCoreApplication::setApplicationName("Saaghar");
+	QCoreApplication::setOrganizationDomain("Pozh.org");
+	
+	setWindowIcon(QIcon(":/resources/images/saaghar.png"));
 
 #ifdef Q_WS_MAC
 	QFileInfo portableSettings(QCoreApplication::applicationDirPath()+"/../Resources/settings.ini");
@@ -146,12 +151,6 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 			emit loadingStatusText(QObject::tr("<i><b>Loading...</b></i>"));
 		}
 	}
-
-	QCoreApplication::setOrganizationName("Pozh");
-	QCoreApplication::setApplicationName("Saaghar");
-	QCoreApplication::setOrganizationDomain("Pozh.org");
-
-	setWindowIcon(QIcon(":/resources/images/saaghar.png"));
 
 #ifdef D_MSVC_CC
 	QTextCodec::setCodecForLocale( QTextCodec::codecForName( "Windows-1256" ) );
@@ -3171,7 +3170,7 @@ void MainWindow::setupSearchToolBarUi()
 	comboBoxSearchRegion->setMaximumSize(QSize(170, 16777215));
 	comboBoxSearchRegion->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
 	comboBoxSearchRegion->setEditable(true);
-#if QT_VERSION > 0x040700
+#if QT_VERSION >= 0x040700
 	SaagharWidget::lineEditSearchText->setPlaceholderText(tr("Enter Search Phrase"));
 	comboBoxSearchRegion->lineEdit()->setPlaceholderText(tr("Select Search Scope..."));
 #else
@@ -3488,7 +3487,7 @@ void MainWindow::setupBookmarkManagerUi()
 	bookmarkFilterLabel->setText(tr("Filter:"));
 	QSearchLineEdit *bookmarkFilter = new QSearchLineEdit(bookmarkManagerWidget, clearIconPath, currentIconThemePath()+"/filter.png");
 	bookmarkFilter->setObjectName("bookmarkFilter");
-#if QT_VERSION > 0x040700
+#if QT_VERSION >= 0x040700
 	bookmarkFilter->setPlaceholderText(tr("Filter"));
 #else
 	bookmarkFilter->setToolTip(tr("Filter"));

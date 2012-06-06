@@ -213,7 +213,11 @@ signals:
 
 /////////////////////////////////
 #include <QWidget>
-#include <QStaticText>
+#if QT_VERSION >= 0x040700
+	#include <QStaticText>
+#else
+	#include <QLabel>
+#endif
 #include <QTimer>
 
 
@@ -242,7 +246,11 @@ private:
 	void updateText();
 	QString _text;
 	QString _separator;
+#if QT_VERSION >= 0x040700
 	QStaticText staticText;
+#else
+	QLabel staticText;
+#endif
 	int singleTextWidth;
 	QSize wholeTextSize;
 	int leftMargin;

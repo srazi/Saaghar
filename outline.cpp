@@ -86,7 +86,7 @@ OutLineTree::OutLineTree(QWidget *parent)
 	filterLabel->setText(tr("Filter:"));
 	QSearchLineEdit *outLineFilter = new QSearchLineEdit(this, ""/*clearIconPath*/, ""/*currentIconThemePath()+"/filter.png"*/);
 	outLineFilter->setObjectName("outLineFilter");
-#if QT_VERSION > 0x040700
+#if QT_VERSION >= 0x040700
 	outLineFilter->setPlaceholderText(tr("Filter"));
 #else
 	outLineFilter->setToolTip(tr("Filter"));

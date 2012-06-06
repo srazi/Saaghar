@@ -182,6 +182,12 @@ QStringList DataBaseUpdater::repositories()
 
 void DataBaseUpdater::setupUi()
 {
+#if QT_VERSION >= 0x040700
+	ui->lineEditDownloadLocation->setPlaceholderText(tr("Please select download location..."));
+#else
+	ui->lineEditDownloadLocation->setToolTip(tr("Please select download location..."));
+#endif
+
 	ui->comboBoxRepoList->addItems(QStringList() << repositoriesUrls << tr("Click To Add/Remove...") );
 	ui->refreshPushButton->setEnabled(false);
 
