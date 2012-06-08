@@ -641,17 +641,28 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 					!entryFileName.endsWith(".s3db")))
 					continue;
 
+				if (entryFileName.endsWith(".png"))
+				{
+					extractPath = SaagharWidget::poetsImagesDir;
+					qDebug() << "The author's photo =>" <<extractPath+"/"+entryFileName;
+				}
+
 				ec = uz.extractFile(entryFileName, extractPath, UnZip::SkipPaths);
 				qDebug() << "extract-ErrorCode="<< uz.formatError(ec)<<entryFileName<<extractPath;
+
 				if (entryFileName.endsWith(".gdb") || entryFileName.endsWith(".s3db"))
 				{
 					qDebug() << "emit installRequest="<<extractPath+"/"+entryFileName;
 					emit installRequest(extractPath+"/"+entryFileName, &installCompleted);
+					qDebug() <<"remove Extract File--"<<QFile::remove(extractPath+"/"+entryFileName);
+					QDir extractDir(extractPath);
+					qDebug() <<"remove Extract Dir--"<<extractDir.rmdir(extractPath);
 				}
-				qDebug() <<"remove Extract File--"<<QFile::remove(extractPath+"/"+entryFileName);
+
+				//qDebug() <<"remove Extract File--"<<QFile::remove(extractPath+"/"+entryFileName);
 			}
-			QDir extractDir(extractPath);
-			qDebug() <<"remove Extract Dir--"<<extractDir.rmdir(extractPath);
+			//QDir extractDir(extractPath);
+			//qDebug() <<"remove Extract Dir--"<<extractDir.rmdir(extractPath);
 
 			uz.closeArchive();
 		}
