@@ -43,7 +43,9 @@ public:
 	DataBaseUpdater(QWidget *parent = 0, Qt::WindowFlags f = 0);
 	static QStringList repositories();
 	static void setRepositories(const QStringList &urls);
-
+	
+	void installItemToDB(const QString &fileName, const QString &filePath, const QString &fileType);
+	void installItemToDB(const QString &fullFilePath, const QString &fileType = "");
 	bool read(QIODevice *device);
 	bool read(const QByteArray &data);
 	static QString downloadLocation;
@@ -67,7 +69,6 @@ private:
 	bool parseDocument();
 	void setupTreeRootItems();
 	bool installCompleted;
-	void installItemToDB(const QString &fileName, const QString &path, const QString &fileType);
 	QString getTempDir(const QString &path = "", bool makeDir = false);
 	QString randomFolder;
 	Downloader *downloaderObject;

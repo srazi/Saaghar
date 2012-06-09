@@ -33,6 +33,7 @@
 
 class QMultiSelectWidget;
 class OutLineTree;
+class DataBaseUpdater;
 
 namespace Ui {
 	class MainWindow;
@@ -54,6 +55,7 @@ class MainWindow : public QMainWindow
 //		void emitReSizeEvent();
 
 	private:
+		DataBaseUpdater *dbUpdater;
 		QSplitter *splitter;
 		OutLineTree *outlineTree;
 		bool skipContextMenu;

@@ -1574,21 +1574,35 @@ void MainWindow::closeCurrentTab()
 
 void MainWindow::actionImportNewSet()
 {
-	QMessageBox warnAboutBackup(this);
-	warnAboutBackup.setWindowTitle(tr("Please Notice!"));
-	warnAboutBackup.setIcon(QMessageBox::Information);
-	warnAboutBackup.setText(tr("This feature is in beta state, before continue you should create a backup from your database."));
-	warnAboutBackup.addButton(tr("Continue"), QMessageBox::AcceptRole);
-	warnAboutBackup.setStandardButtons(QMessageBox::Cancel);
-	warnAboutBackup.setEscapeButton(QMessageBox::Cancel);
-	warnAboutBackup.setDefaultButton(QMessageBox::Cancel);
-	int ret = warnAboutBackup.exec();
-	if ( ret == QMessageBox::Cancel)
-		return;
+//	QMessageBox warnAboutBackup(this);
+//	warnAboutBackup.setWindowTitle(tr("Please Notice!"));
+//	warnAboutBackup.setIcon(QMessageBox::Information);
+//	warnAboutBackup.setText(tr("This feature is in beta state, before continue you should create a backup from your database."));
+//	warnAboutBackup.addButton(tr("Continue"), QMessageBox::AcceptRole);
+//	warnAboutBackup.setStandardButtons(QMessageBox::Cancel);
+//	warnAboutBackup.setEscapeButton(QMessageBox::Cancel);
+//	warnAboutBackup.setDefaultButton(QMessageBox::Cancel);
+//	int ret = warnAboutBackup.exec();
+//	if ( ret == QMessageBox::Cancel)
+//		return;
 
-	QString dataBaseName = QFileDialog::getOpenFileName(this,tr("Browse for a new set"), QDir::homePath(),"Ganjoor DataBase (*.gdb *.s3db);;All files (*.*)");
-	if (!dataBaseName.isEmpty())
-		importDataBase(dataBaseName);
+	QString fullFilePath = QFileDialog::getOpenFileName(this,tr("Browse for a new set"), QDir::homePath(),"Supported Files (*.gdb *.s3db *.zip);;Ganjoor DataBase (*.gdb *.s3db);;Compressed Data Sets (*.zip);;All Files (*.*)");
+	if (!fullFilePath.isEmpty())
+	{
+		if (!dbUpdater)
+		{
+			QStringList defaultRepositories = QStringList()
+					<< "http://ganjoor.sourceforge.net/newgdbs.xml"
+					<< "http://ganjoor.sourceforge.net/programgdbs.xml"
+					<< "http://ganjoor.sourceforge.net/sitegdbs.xml";
+			DataBaseUpdater::setRepositories(Settings::READ("Repositories List", defaultRepositories).toStringList());
+			DataBaseUpdater::downloadLocation = Settings::READ("Download Location", "").toString();
+
+			dbUpdater = new DataBaseUpdater(this);
+			connect(dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
+		}
+		dbUpdater->installItemToDB(fullFilePath);
+	}
 }
 
 void MainWindow::setupUi()
@@ -2869,7 +2883,7 @@ void MainWindow::importDataBase(const QString &fileName, bool *ok)
 			SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poet->_ID);
 	}
 
-	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+	//QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
 	if (SaagharWidget::ganjoorDataBase->importDataBase(fileName))
 	{
@@ -2900,7 +2914,7 @@ void MainWindow::importDataBase(const QString &fileName, bool *ok)
 		QMessageBox::warning(this, tr("Error!"), tr("There are some errors, the import procedure was not completed"));
 	}
 
-	QApplication::restoreOverrideCursor();
+	//QApplication::restoreOverrideCursor();
 }
 
 void MainWindow::getMaxResultPerPage()
@@ -3323,16 +3337,19 @@ void MainWindow::namedActionTriggered(bool checked)
 	}
 	else if (actionName == "DownloadRepositories")
 	{
-		QStringList defaultRepositories = QStringList()
-				<< "http://ganjoor.sourceforge.net/newgdbs.xml"
-				<< "http://ganjoor.sourceforge.net/programgdbs.xml"
-				<< "http://ganjoor.sourceforge.net/sitegdbs.xml";
-		DataBaseUpdater::setRepositories(Settings::READ("Repositories List", defaultRepositories).toStringList());
-		DataBaseUpdater::downloadLocation = Settings::READ("Download Location", "").toString();
+		if (!dbUpdater)
+		{
+			QStringList defaultRepositories = QStringList()
+					<< "http://ganjoor.sourceforge.net/newgdbs.xml"
+					<< "http://ganjoor.sourceforge.net/programgdbs.xml"
+					<< "http://ganjoor.sourceforge.net/sitegdbs.xml";
+			DataBaseUpdater::setRepositories(Settings::READ("Repositories List", defaultRepositories).toStringList());
+			DataBaseUpdater::downloadLocation = Settings::READ("Download Location", "").toString();
 
-		DataBaseUpdater dbUpdater;
-		connect(&dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
-		dbUpdater.exec();
+			dbUpdater = new DataBaseUpdater(this);
+			connect(dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
+		}
+		dbUpdater->exec();
 
 		Settings::WRITE("Repositories List", DataBaseUpdater::repositories());
 		Settings::WRITE("Download Location", DataBaseUpdater::downloadLocation);

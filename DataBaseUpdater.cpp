@@ -580,6 +580,13 @@ QString DataBaseUpdater::getTempDir(const QString &path, bool makeDir)
 	return tmpPath;
 }
 
+void DataBaseUpdater::installItemToDB(const QString &fullFilePath, const QString &fileType)
+{
+	if (fullFilePath.isEmpty()) return;
+	QFileInfo file(fullFilePath);
+	installItemToDB(file.fileName(), file.canonicalPath(), fileType);
+}
+
 void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &path, const QString &fileType)
 {
 	QString type = fileType;
@@ -601,23 +608,27 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 
 	qDebug() << "fileName="<<fileName<<"type="<<type<<"path="<<path;
 
+	QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
 	if (type == "zip")
 	{
 		if (!QFile::exists(file))
 		{
 			qDebug() << "File does not exist.";
+			QApplication::restoreOverrideCursor();
 			return;
 		}
 	
 		UnZip::ErrorCode ec;
 		UnZip uz;
-	
+
 		ec = uz.openArchive(file);
 		if (ec != UnZip::Ok)
 		{
 			qDebug() << "Unable to open archive: " << uz.formatError(ec);
 			uz.closeArchive();
 			installItemToDB(fileName, path, "s3db");//try open it as SQLite database!
+			QApplication::restoreOverrideCursor();
 			return;
 		}
 		else
@@ -627,11 +638,14 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 			if (list.isEmpty())
 			{
 				qDebug() << "Empty archive.";
+				QApplication::restoreOverrideCursor();
 				return;
 			}
-			QString extractPath = getTempDir(path, true);
+
+			QString tmpExtractPath = getTempDir(path, true);
 			for (int i = 0; i < list.size(); ++i)
 			{
+				QString extractPath = tmpExtractPath;
 				const UnZip::ZipEntry& entry = list.at(i);
 				QString entryFileName = entry.filename;
 				qDebug() << "entryFileName="<<entryFileName;
@@ -644,6 +658,8 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 				if (entryFileName.endsWith(".png"))
 				{
 					extractPath = SaagharWidget::poetsImagesDir;
+					QDir photoDir(extractPath);
+					qDebug() << "make photo dir" << photoDir.mkpath(extractPath);
 					qDebug() << "The author's photo =>" <<extractPath+"/"+entryFileName;
 				}
 
@@ -665,6 +681,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 			//qDebug() <<"remove Extract Dir--"<<extractDir.rmdir(extractPath);
 
 			uz.closeArchive();
+			QApplication::restoreOverrideCursor();
 		}
 	} // end "zip" type
 	else if (type == "s3db")
@@ -672,6 +689,8 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 		qDebug() << "FILE TYPE IS S3DB! [SQLite 3 Data Base]";
 		emit installRequest(file, &installCompleted);
 	}
+
+	QApplication::restoreOverrideCursor();
 }
 
 void DataBaseUpdater::resizeColumnsToContents()
