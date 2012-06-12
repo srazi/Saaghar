@@ -204,7 +204,6 @@ private:
 private slots:
 	void mediaObjectStateChanged(Phonon::State newState, Phonon::State oldState);
 	void itemPlayRequested(QTreeWidgetItem*,int);
-	void currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 	void currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest = false);
 
 signals:
@@ -263,4 +262,85 @@ private:
 private slots:
 	virtual void timer_timeout();
 };
+
+// //link: http://msdn.microsoft.com/en-us/library/dd374921%28VS.85%29.aspx
+// //for future
+// //Windows 7 volume notification code
+//class CAudioSessionVolume : public IAudioSessionEvents
+//{
+//public:
+//	// Static method to create an instance of the object.
+//	static HRESULT CreateInstance(
+//		UINT uNotificationMessage,
+//		HWND hwndNotification,
+//		CAudioSessionVolume **ppAudioSessionVolume
+//	);
+
+//	// IUnknown methods.
+//	STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
+//	STDMETHODIMP_(ULONG) AddRef();
+//	STDMETHODIMP_(ULONG) Release();
+
+//	// IAudioSessionEvents methods.
+
+//	STDMETHODIMP OnSimpleVolumeChanged(
+//		float NewVolume,
+//		BOOL NewMute,
+//		LPCGUID EventContext
+//		);
+
+//	// The remaining audio session events do not require any action.
+//	STDMETHODIMP OnDisplayNameChanged(LPCWSTR,LPCGUID)
+//	{
+//		return S_OK;
+//	}
+
+//	STDMETHODIMP OnIconPathChanged(LPCWSTR,LPCGUID)
+//	{
+//		return S_OK;
+//	}
+
+//	STDMETHODIMP OnChannelVolumeChanged(DWORD,float[],DWORD,LPCGUID)
+//	{
+//		return S_OK;
+//	}
+
+//	STDMETHODIMP OnGroupingParamChanged(LPCGUID,LPCGUID)
+//	{
+//		return S_OK;
+//	}
+
+//	STDMETHODIMP OnStateChanged(AudioSessionState)
+//	{
+//		return S_OK;
+//	}
+
+//	STDMETHODIMP OnSessionDisconnected(AudioSessionDisconnectReason)
+//	{
+//		return S_OK;
+//	}
+
+//	// Other methods
+//	HRESULT EnableNotifications(BOOL bEnable);
+//	HRESULT GetVolume(float *pflVolume);
+//	HRESULT SetVolume(float flVolume);
+//	HRESULT GetMute(BOOL *pbMute);
+//	HRESULT SetMute(BOOL bMute);
+//	HRESULT SetDisplayName(const WCHAR *wszName);
+
+//protected:
+//	CAudioSessionVolume(UINT uNotificationMessage, HWND hwndNotification);
+//	~CAudioSessionVolume();
+
+//	HRESULT Initialize();
+
+//protected:
+//	LONG m_cRef;                        // Reference count.
+//	UINT m_uNotificationMessage;        // Window message to send when an audio event occurs.
+//	HWND m_hwndNotification;            // Window to receives messages.
+//	BOOL m_bNotificationsEnabled;       // Are audio notifications enabled?
+
+//	IAudioSessionControl    *m_pAudioSession;
+//	ISimpleAudioVolume      *m_pSimpleAudioVolume;
+//};
 #endif // QMUSICPLAYER_H

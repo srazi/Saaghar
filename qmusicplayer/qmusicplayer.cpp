@@ -85,6 +85,16 @@ QMusicPlayer::QMusicPlayer(QWidget *parent) : QToolBar(parent)
 
 	startDir = QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
 	audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
+	QList<Phonon::AudioOutputDevice> audioOutputDevices = Phonon::BackendCapabilities::availableAudioOutputDevices();
+	foreach (const Phonon::AudioOutputDevice newAudioOutput, audioOutputDevices)
+	{
+		if (newAudioOutput.name().contains("waveout", Qt::CaseInsensitive))
+		{
+			audioOutput->setOutputDevice(newAudioOutput);
+			break;
+		}
+	}
+	qDebug() << "audioOutput=="<<audioOutputDevices<<"output="<<audioOutput->outputDevice().name();
 	mediaObject = new Phonon::MediaObject(this);
 	metaInformationResolver = new Phonon::MediaObject(this);
 
@@ -563,6 +573,7 @@ void QMusicPlayer::setupUi()
 
 	volumeSlider = new Phonon::VolumeSlider(this);
 	volumeSlider->setAudioOutput(audioOutput);
+	connect(audioOutput, SIGNAL(mutedChanged(bool)), this, SLOT(mutedChanged(bool)));
 //![4]
 	volumeSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
@@ -998,8 +1009,9 @@ PlayListManager::PlayListManager(QWidget *parent) : QWidget(parent)
 
 	mediaList = new QTreeWidget;
 	mediaList->setLayoutDirection(Qt::RightToLeft);
+	mediaList->headerItem()->setHidden(true);
 	previousItem = 0;
-	mediaList->setColumnCount(2);
+	mediaList->setColumnCount(1);
 	hLayout = new QVBoxLayout;
 
 	hLayout->addWidget(mediaList);
@@ -1045,7 +1057,7 @@ void PlayListManager::setPlayLists(const QHash<QString, QMusicPlayer::SaagharPla
 			QTreeWidgetItem *mediaItem = new QTreeWidgetItem();
 			mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
 			mediaItem->setText(0, mediaTag->TITLE);
-			mediaItem->setText(1, mediaTag->PATH);
+//			mediaItem->setText(1, mediaTag->PATH);
 			mediaItem->setData(0, Qt::UserRole, mediaIterator.key());
 
 			if (!itemsAsTopItem)
@@ -1056,20 +1068,6 @@ void PlayListManager::setPlayLists(const QHash<QString, QMusicPlayer::SaagharPla
 		}
 		++playListIterator;
 	}
-}
-
-void PlayListManager::currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous)
-{
-//	if (!current) return;
-
-//	current->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
-//	if (previous)
-//	{
-//		previous->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
-//	}
-	
-//	int id = current->data(0, Qt::UserRole).toInt();
-//	emit mediaPlayRequested(id/*, current->text(1), current->text(0)*/);
 }
 
 void PlayListManager::currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest)
@@ -1112,7 +1110,7 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
 				{
 					if (!title.isEmpty())
 						childItem->setText(0, title);
-					childItem->setText(1, fileName);
+//					childItem->setText(1, fileName);
 					if (playListMediaObject && playListMediaObject->state() == Phonon::PlayingState)
 						childItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
 					if (mediaList->currentItem())
@@ -1139,7 +1137,7 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
 		{
 			QTreeWidgetItem *newChild = new QTreeWidgetItem;
 			newChild->setText(0, title);
-			newChild->setText(1, fileName);
+//			newChild->setText(1, fileName);
 			newChild->setData(0, Qt::UserRole, mediaID);
 			if (playListMediaObject && playListMediaObject->state() == Phonon::PlayingState)
 				newChild->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
@@ -1350,3 +1348,309 @@ void ScrollText::timer_timeout()
 				% wholeTextSize.width();
 	update();
 }
+
+// //for future
+// //Windows 7 volume notification code
+//static const GUID AudioSessionVolumeCtx =
+//{ 0x2715279f, 0x4139, 0x4ba0, { 0x9c, 0xb1, 0xb3, 0x51, 0xf1, 0xb5, 0x8a, 0x4a } };
+
+
+//CAudioSessionVolume::CAudioSessionVolume(
+//	UINT uNotificationMessage,
+//	HWND hwndNotification
+//	)
+//	: m_cRef(1),
+//	  m_uNotificationMessage(uNotificationMessage),
+//	  m_hwndNotification(hwndNotification),
+//	  m_bNotificationsEnabled(FALSE),
+//	  m_pAudioSession(NULL),
+//	  m_pSimpleAudioVolume(NULL)
+//{
+//}
+
+//CAudioSessionVolume::~CAudioSessionVolume()
+//{
+//	EnableNotifications(FALSE);
+
+//	SafeRelease(&m_pAudioSession);
+//	SafeRelease(&m_pSimpleAudioVolume);
+//};
+
+
+////  Creates an instance of the CAudioSessionVolume object.
+
+///* static */
+//HRESULT CAudioSessionVolume::CreateInstance(
+//	UINT uNotificationMessage,
+//	HWND hwndNotification,
+//	CAudioSessionVolume **ppAudioSessionVolume
+//	)
+//{
+
+//	CAudioSessionVolume *pAudioSessionVolume = new (std::nothrow)
+//		CAudioSessionVolume(uNotificationMessage, hwndNotification);
+
+//	if (pAudioSessionVolume == NULL)
+//	{
+//		return E_OUTOFMEMORY;
+//	}
+
+//	HRESULT hr = pAudioSessionVolume->Initialize();
+//	if (SUCCEEDED(hr))
+//	{
+//		*ppAudioSessionVolume = pAudioSessionVolume;
+//	}
+//	else
+//	{
+//		pAudioSessionVolume->Release();
+//	}
+
+//	return hr;
+//}
+
+
+////  Initializes the CAudioSessionVolume object.
+
+//HRESULT CAudioSessionVolume::Initialize()
+//{
+//	HRESULT hr = S_OK;
+
+//	IMMDeviceEnumerator *pDeviceEnumerator = NULL;
+//	IMMDevice *pDevice = NULL;
+//	IAudioSessionManager *pAudioSessionManager = NULL;
+
+//	// Get the enumerator for the audio endpoint devices.
+//	hr = CoCreateInstance(
+//		__uuidof(MMDeviceEnumerator),
+//		NULL,
+//		CLSCTX_INPROC_SERVER,
+//		IID_PPV_ARGS(&pDeviceEnumerator)
+//		);
+
+//	if (FAILED(hr))
+//	{
+//		goto done;
+//	}
+
+//	// Get the default audio endpoint that the SAR will use.
+//	hr = pDeviceEnumerator->GetDefaultAudioEndpoint(
+//		eRender,
+//		eConsole,   // The SAR uses 'eConsole' by default.
+//		&pDevice
+//		);
+
+//	if (FAILED(hr))
+//	{
+//		goto done;
+//	}
+
+//	// Get the session manager for this device.
+//	hr = pDevice->Activate(
+//		__uuidof(IAudioSessionManager),
+//		CLSCTX_INPROC_SERVER,
+//		NULL,
+//		(void**) &pAudioSessionManager
+//		);
+
+//	if (FAILED(hr))
+//	{
+//		goto done;
+//	}
+
+//	// Get the audio session.
+//	hr = pAudioSessionManager->GetAudioSessionControl(
+//		&GUID_NULL,     // Get the default audio session.
+//		FALSE,          // The session is not cross-process.
+//		&m_pAudioSession
+//		);
+
+
+//	if (FAILED(hr))
+//	{
+//		goto done;
+//	}
+
+//	hr = pAudioSessionManager->GetSimpleAudioVolume(
+//		&GUID_NULL, 0, &m_pSimpleAudioVolume
+//		);
+
+//done:
+//	SafeRelease(&pDeviceEnumerator);
+//	SafeRelease(&pDevice);
+//	SafeRelease(&pAudioSessionManager);
+//	return hr;
+//}
+
+//STDMETHODIMP CAudioSessionVolume::QueryInterface(REFIID riid, void **ppv)
+//{
+//	static const QITAB qit[] =
+//	{
+//		QITABENT(CAudioSessionVolume, IAudioSessionEvents),
+//		{ 0 },
+//	};
+//	return QISearch(this, qit, riid, ppv);
+//}
+
+//STDMETHODIMP_(ULONG) CAudioSessionVolume::AddRef()
+//{
+//	return InterlockedIncrement(&m_cRef);
+//}
+
+//STDMETHODIMP_(ULONG) CAudioSessionVolume::Release()
+//{
+//	LONG cRef = InterlockedDecrement( &m_cRef );
+//	if (cRef == 0)
+//	{
+//		delete this;
+//	}
+//	return cRef;
+//}
+
+
+//// Enables or disables notifications from the audio session. For example, the
+//// application is notified if the user mutes the audio through the system
+//// volume-control program (Sndvol).
+
+//HRESULT CAudioSessionVolume::EnableNotifications(BOOL bEnable)
+//{
+//	HRESULT hr = S_OK;
+
+//	if (m_hwndNotification == NULL || m_pAudioSession == NULL)
+//	{
+//		return E_FAIL;
+//	}
+
+//	if (m_bNotificationsEnabled == bEnable)
+//	{
+//		// No change.
+//		return S_OK;
+//	}
+
+//	if (bEnable)
+//	{
+//		hr = m_pAudioSession->RegisterAudioSessionNotification(this);
+//	}
+//	else
+//	{
+//		hr = m_pAudioSession->UnregisterAudioSessionNotification(this);
+//	}
+
+//	if (SUCCEEDED(hr))
+//	{
+//		m_bNotificationsEnabled = bEnable;
+//	}
+
+//	return hr;
+//}
+
+
+//// Gets the session volume level.
+
+//HRESULT CAudioSessionVolume::GetVolume(float *pflVolume)
+//{
+//	if ( m_pSimpleAudioVolume == NULL)
+//	{
+//		return E_FAIL;
+//	}
+//	else
+//	{
+//		return m_pSimpleAudioVolume->GetMasterVolume(pflVolume);
+//	}
+//}
+
+////  Sets the session volume level.
+////
+////  flVolume: Ranges from 0 (silent) to 1 (full volume)
+
+//HRESULT CAudioSessionVolume::SetVolume(float flVolume)
+//{
+//	if (m_pSimpleAudioVolume == NULL)
+//	{
+//		return E_FAIL;
+//	}
+//	else
+//	{
+//		return m_pSimpleAudioVolume->SetMasterVolume(
+//			flVolume,
+//			&AudioSessionVolumeCtx  // Event context.
+//			);
+//	}
+//}
+
+
+////  Gets the muting state of the session.
+
+//HRESULT CAudioSessionVolume::GetMute(BOOL *pbMute)
+//{
+//	if (m_pSimpleAudioVolume == NULL)
+//	{
+//		return E_FAIL;
+//	}
+//	else
+//	{
+//		return m_pSimpleAudioVolume->GetMute(pbMute);
+//	}
+//}
+
+////  Mutes or unmutes the session audio.
+
+//HRESULT CAudioSessionVolume::SetMute(BOOL bMute)
+//{
+//	if (m_pSimpleAudioVolume == NULL)
+//	{
+//		return E_FAIL;
+//	}
+//	else
+//	{
+//		return m_pSimpleAudioVolume->SetMute(
+//			bMute,
+//			&AudioSessionVolumeCtx  // Event context.
+//			);
+//	}
+//}
+
+////  Sets the display name for the session audio.
+
+//HRESULT CAudioSessionVolume::SetDisplayName(const WCHAR *wszName)
+//{
+//	if (m_pAudioSession == NULL)
+//	{
+//		return E_FAIL;
+//	}
+//	else
+//	{
+//		return m_pAudioSession->SetDisplayName(wszName, NULL);
+//	}
+//}
+
+
+////  Called when the session volume level or muting state changes.
+////  (Implements IAudioSessionEvents::OnSimpleVolumeChanged.)
+
+//HRESULT CAudioSessionVolume::OnSimpleVolumeChanged(
+//	float NewVolume,
+//	BOOL NewMute,
+//	LPCGUID EventContext
+//	)
+//{
+//	// Check if we should post a message to the application.
+
+//	if ( m_bNotificationsEnabled &&
+//		(*EventContext != AudioSessionVolumeCtx) &&
+//		(m_hwndNotification != NULL)
+//		)
+//	{
+//		// Notifications are enabled, AND
+//		// We did not trigger the event ourselves, AND
+//		// We have a valid window handle.
+
+//		// Post the message.
+//		::PostMessage(
+//			m_hwndNotification,
+//			m_uNotificationMessage,
+//			*((WPARAM*)(&NewVolume)),  // Coerce the float.
+//			(LPARAM)NewMute
+//			);
+//	}
+//	return S_OK;
+//}

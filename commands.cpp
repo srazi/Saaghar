@@ -46,15 +46,15 @@ NavigateToPage::NavigateToPage(SaagharWidget *saagharWidget, const QString &type
 		newType = type;//m_saagharWidget->identifier().at(0);
 		newId = pageId;//m_saagharWidget->identifier().at(1).toInt();
 
-		newText = "";
-		if (!m_saagharWidget->currentLocationList.isEmpty())
-			newText = m_saagharWidget->currentLocationList.at(m_saagharWidget->currentLocationList.size()-1); //join("-");
-		if (!m_saagharWidget->currentPoemTitle.isEmpty())
-			newText = m_saagharWidget->currentPoemTitle;
-			//newText+="-"+m_saagharWidget->currentPoemTitle;
-		if (newText.isEmpty())
-			newText = QObject::tr("Home");
-		setText(QObject::tr("Navigate To %1").arg(newText));
+//		newText = "";
+//		if (!m_saagharWidget->currentLocationList.isEmpty())
+//			newText = m_saagharWidget->currentLocationList.at(m_saagharWidget->currentLocationList.size()-1); //join("-");
+//		if (!m_saagharWidget->currentPoemTitle.isEmpty())
+//			newText = m_saagharWidget->currentPoemTitle;
+//			//newText+="-"+m_saagharWidget->currentPoemTitle;
+//		if (newText.isEmpty())
+//			newText = QObject::tr("Home");
+//		setText(QObject::tr("Navigate To %1").arg(newText));
 	}
 	else
 	{
@@ -121,4 +121,14 @@ void NavigateToPage::redo()
 	qDebug() <<"redo-previous="<< previousType << previousId;
 	qDebug() <<"redo-NEW="<< newType << newId;
 	//setText(QObject::tr("Navigate To %1").arg(m_saagharWidget->currentCaption));
+
+	newText = "";
+	if (!m_saagharWidget->currentLocationList.isEmpty())
+		newText = m_saagharWidget->currentLocationList.at(m_saagharWidget->currentLocationList.size()-1); //join("-");
+	if (!m_saagharWidget->currentPoemTitle.isEmpty())
+		newText = m_saagharWidget->currentPoemTitle;
+		//newText+="-"+m_saagharWidget->currentPoemTitle;
+	if (newText.isEmpty())
+		newText = QObject::tr("Home");
+	setText(QObject::tr("Navigate To %1").arg(newText));
 }
