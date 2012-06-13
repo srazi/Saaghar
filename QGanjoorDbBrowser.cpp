@@ -26,6 +26,7 @@
 #include <QFileInfo>
 #include <QFileDialog>
 #include <QTime>
+#include <QPushButton>
 
 QStringList QGanjoorDbBrowser::dataBasePath = QStringList();
 
@@ -100,14 +101,17 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 	QString newPath = "";
 
 	QFileInfo dBFile(sqliteDbCompletePath);
-	dBName = dBFile.fileName();
 
 #ifdef EMBEDDED_SQLITE
 	sqlite3 *connection;
 	sqlite3_open(sqliteDbCompletePath.toUtf8().data(), &connection);
 	sqlDriver = new QSQLiteDriver(connection);
 #endif
-	
+
+	//dBName = getIdForDataBase(sqliteDbCompletePath);
+	//dBConnection = QSqlDatabase::database(dBName, false);//don't open! we won't it created if not exists
+	//dBName = dBFile.fileName();
+	dBName = sqliteDbCompletePath;
 	dBConnection = QSqlDatabase::addDatabase(sqlDriver, dBName);
 
 	dBConnection.setDatabaseName(sqliteDbCompletePath);
@@ -121,10 +125,13 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 		QMessageBox warnDataBaseOpen(0);
 		warnDataBaseOpen.setWindowTitle(tr("Cannot open Database File!"));
 		warnDataBaseOpen.setIcon(QMessageBox::Information);
+		QAbstractButton *browseButton = 0;
+		QAbstractButton *downloadButton = 0;
 		if ( errorString.simplified().isEmpty() /*contains("Driver not loaded")*/ )
 		{
 			warnDataBaseOpen.setText(tr("Cannot open database file...\nDataBase Path=%1\nSaaghar needs its database for working properly. Press 'OK' if you want to terminate application or press 'Browse' for select a new path for database.").arg(sqliteDbCompletePath));
-			warnDataBaseOpen.addButton(tr("Browse..."), QMessageBox::AcceptRole);
+			browseButton = warnDataBaseOpen.addButton(tr("Browse..."), QMessageBox::ActionRole);
+			downloadButton = warnDataBaseOpen.addButton(tr("Download..."), QMessageBox::ActionRole);
 		}
 		else
 			warnDataBaseOpen.setText(tr("Cannot open database file...\nThere is an error!\nError: %1\nDataBase Path=%2").arg(errorString).arg(sqliteDbCompletePath));
@@ -136,22 +143,63 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 		int ret = warnDataBaseOpen.exec();
 		if ( ret != QMessageBox::Ok && errorString.simplified().isEmpty() )
 		{
-			QString dir = QFileDialog::getExistingDirectory(0,tr("Add Path For Data Base"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-			if ( !dir.isEmpty() ) 
+			if (warnDataBaseOpen.clickedButton() == browseButton)
 			{
+				QString dir = QFileDialog::getExistingDirectory(0,tr("Add Path For Data Base"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+				if ( !dir.isEmpty() ) 
+				{
+					dir.replace(QString("\\"),QString("/"));
+					if ( !dir.endsWith('/') ) dir+="/";
+					dBFile.setFile(dir+"/ganjoor.s3db");
+//					dBName = getIdForDataBase(dir+"/ganjoor.s3db");
+//					dBConnection = QSqlDatabase::database(dBName, false);//don't open! we won't it created if not exists
+					//dBName = dBFile.fileName();
+					dBName = dir+"/ganjoor.s3db";
+					dBConnection = QSqlDatabase::addDatabase(sqlDriver, dBName);
+					dBConnection.setDatabaseName(dir+"/ganjoor.s3db");
+
+					flagSelectNewPath = true;
+					newPath = dir;
+				}
+				else
+				{
+					exit(1);
+				}
+			}
+			else if (warnDataBaseOpen.clickedButton() == downloadButton)
+			{
+				//do download job!!
+				QString dir = QFileDialog::getExistingDirectory(0,tr("Select Save Location"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+				while ( dir.isEmpty() || QFile::exists(dir+"/ganjoor.s3db"))
+				{
+					dir = QFileDialog::getExistingDirectory(0,tr("Select Save Location"), dir.isEmpty() ? dBFile.absoluteDir().path() : dir, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+				}
+				// now dir is not empty and it doesn't contain 'ganjoor.s3db'
 				dir.replace(QString("\\"),QString("/"));
 				if ( !dir.endsWith('/') ) dir+="/";
 				dBFile.setFile(dir+"/ganjoor.s3db");
-				dBName = dBFile.fileName();
+//				dBName = getIdForDataBase(dir+"/ganjoor.s3db");
+//				dBConnection = QSqlDatabase::database(dBName, true);//it doesn't exist, it's created.
+//				dBName = dBFile.fileName();
+				dBName = dir+"/ganjoor.s3db";
 				dBConnection = QSqlDatabase::addDatabase(sqlDriver, dBName);
 				dBConnection.setDatabaseName(dir+"/ganjoor.s3db");
-
+				if (!dBConnection.open())
+				{
+					QMessageBox::information(0, tr("Cannot open Database File!"), tr("Cannot open database file, please check if you have write permisson.\nError: %1\nDataBase Path=%2").arg(errorString).arg(dir));
+					exit(1);
+				}
+				//insert main tables
+				bool tablesInserted = createEmptyDataBase(dBName);
+				qDebug() << "insert main tables: " << tablesInserted;
+				if (!tablesInserted)
+				{
+					QFile::remove(dir+"/ganjoor.s3db");
+					exit(1);
+				}
+				//download dialog
 				flagSelectNewPath = true;
 				newPath = dir;
-			}
-			else
-			{
-				exit(1);
 			}
 		}
 		else
@@ -159,6 +207,13 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 			exit(1);
 		}
 	}
+
+	dBConnection.close();
+	QSqlDatabase::removeDatabase(dBName);
+	dBName = getIdForDataBase(dBConnection.databaseName());
+	dBConnection = QSqlDatabase::database(dBName, true);
+
+	qDebug() << "dBName=" << dBName;
 
 	if (flagSelectNewPath)
 	{
@@ -650,6 +705,9 @@ int QGanjoorDbBrowser::getRandomNumber(int minBound, int maxBound)
 QList<GanjoorPoet *> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
 {
 	QList<GanjoorPoet *> poetsInDataBase;
+
+	if (!QFile::exists(fileName)) return poetsInDataBase;
+
 	QString dataBaseID = getIdForDataBase(fileName);
 	QSqlDatabase databaseObject = QSqlDatabase::database(dataBaseID);
 	if (!databaseObject.open())
@@ -669,12 +727,14 @@ QList<GanjoorPoet *> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
 
 QString QGanjoorDbBrowser::getIdForDataBase(const QString &sqliteDataBaseName)
 {
-	QFileInfo dataBaseFile(sqliteDataBaseName);
-	QString connectionID = dataBaseFile.fileName();//we need to be sure this name is unique
+	//QFileInfo dataBaseFile(sqliteDataBaseName);
+	//QString connectionID = dataBaseFile.fileName();//we need to be sure this name is unique
+	QString connectionID = QGanjoorDbBrowser::getLongPathName(sqliteDataBaseName);
 
 	if (!QSqlDatabase::contains(connectionID))
 	{
-		QSqlDatabase::addDatabase(sqlDriver, connectionID).setDatabaseName(sqliteDataBaseName);
+		QSqlDatabase db = QSqlDatabase::addDatabase(sqlDriver, connectionID);
+		db.setDatabaseName(sqliteDataBaseName);
 	}
 
 	return connectionID;
@@ -827,6 +887,8 @@ int QGanjoorDbBrowser::getNewCatID()
 
 bool QGanjoorDbBrowser::importDataBase(const QString fileName)
 {
+	if (!QFile::exists(fileName)) return false;
+
 	QString connectionID = getIdForDataBase(fileName);
 	{
 		QSqlDatabase dataBaseObject = QSqlDatabase::database(connectionID);
@@ -1946,4 +2008,84 @@ QString QGanjoorDbBrowser::simpleCleanString(const QString &text)
 	simpleCleaned.remove(tatweel);
 
 	return simpleCleaned;
+}
+
+bool QGanjoorDbBrowser::createEmptyDataBase(const QString &connectionID)
+{
+	if ( isConnected(connectionID) )
+	{
+		QSqlDatabase dataBaseObject = dBConnection;
+		if (!connectionID.isEmpty())
+			dataBaseObject = QSqlDatabase::database(connectionID);
+		qDebug() << "tabels=="<<dataBaseObject.tables(QSql::Tables);
+		if (!dataBaseObject.tables(QSql::Tables).isEmpty())
+		{
+			qWarning() << "The Data Base is NOT empty: " << dataBaseObject.databaseName();
+			return false;
+		}
+		dataBaseObject.transaction();
+		QSqlQuery q(dataBaseObject);
+		q.exec("CREATE TABLE [cat] ([id] INTEGER  PRIMARY KEY NOT NULL,[poet_id] INTEGER  NULL,[text] NVARCHAR(100)  NULL,[parent_id] INTEGER  NULL,[url] NVARCHAR(255)  NULL);");
+		q.exec("CREATE TABLE poem (id INTEGER PRIMARY KEY, cat_id INTEGER, title NVARCHAR(255), url NVARCHAR(255));");
+		q.exec("CREATE TABLE [poet] ([id] INTEGER  PRIMARY KEY NOT NULL,[name] NVARCHAR(20)  NULL,[cat_id] INTEGER  NULL  NULL, [description] TEXT);");
+		q.exec("CREATE TABLE [verse] ([poem_id] INTEGER  NULL,[vorder] INTEGER  NULL,[position] INTEGER  NULL,[text] TEXT  NULL);");
+		q.exec("CREATE INDEX cat_pid ON cat(parent_id ASC);");
+		q.exec("CREATE INDEX poem_cid ON poem(cat_id ASC);");
+		q.exec("CREATE INDEX verse_pid ON verse(poem_id ASC);");
+		return dataBaseObject.commit();
+	}
+	return false;
+}
+
+#ifdef Q_WS_WIN
+	#define BUFSIZE 4096
+	#define _WIN32_WINNT 0x0500
+	#include <windows.h>
+	#include <tchar.h>
+#endif
+/*static*/
+QString QGanjoorDbBrowser::getLongPathName(const QString &fileName)
+{
+#ifndef Q_WS_WIN
+	QFileInfo file(fileName);
+	if (!file.exists())
+		return fileName;
+	else
+		return file.canonicalFilePath();
+#else
+	DWORD  retval=0;
+	//BOOL   success; 
+	TCHAR  bufLongFileName[BUFSIZE]=TEXT(L""); 
+	TCHAR  bufFileName[BUFSIZE]= TEXT(L""); 
+	//TCHAR** lppPart={NULL};
+
+	//QString tmp(QDir::tempPath());
+	QString winFileName = fileName;
+	winFileName.replace("/","\\");
+	qDebug() << "tmp.size=" << winFileName.size()<<winFileName<<"===\n=tmp.toWCharArray(buf)=";
+	qDebug() << winFileName.toWCharArray(bufFileName);
+
+	retval = GetLongPathName(bufFileName, bufLongFileName, BUFSIZE);
+
+	if (retval == 0) 
+	{
+		qWarning("GetLongPathName failed (%d)\n",GetLastError());
+		QFileInfo file(fileName);
+		if (!file.exists())
+			return fileName;
+		else
+			return file.canonicalFilePath();
+	}
+	else
+	{
+		QString longFileName = QString::fromWCharArray(bufLongFileName);
+		longFileName.replace("\\", "/");
+		qDebug()
+				<<"getLongPathName:\nFile Name: "
+				<< fileName
+				<< "Long File Name: "
+				<< longFileName;
+		return longFileName;
+	}
+#endif
 }

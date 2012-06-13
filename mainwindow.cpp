@@ -163,6 +163,7 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	SaagharWidget::persianIranLocal.setNumberOptions(QLocale::OmitGroupSeparator);
 
 	defaultPrinter = 0;
+	dbUpdater = 0;
 
 	//Undo FrameWork
 	undoGroup = new QUndoGroup(this);
@@ -2846,7 +2847,8 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 
 void MainWindow::importDataBase(const QString &fileName, bool *ok)
 {
-	QFileInfo dataBaseFile(QSqlDatabase::database("ganjoor.s3db").databaseName());
+	QSqlDatabase dataBaseObject = QSqlDatabase::database(SaagharWidget::ganjoorDataBase->dBName);
+	QFileInfo dataBaseFile(/*QSqlDatabase::database("ganjoor.s3db")*/ dataBaseObject.databaseName());
 	if (!dataBaseFile.isWritable())
 	{
 		QMessageBox::warning(this, tr("Error!"), tr("You have not write permission to database file, the import procedure can not proceed.\nDataBase Path: %2").arg(dataBaseFile.fileName()));
@@ -2855,7 +2857,8 @@ void MainWindow::importDataBase(const QString &fileName, bool *ok)
 	}
 	QList<GanjoorPoet *> poetsConflictList = SaagharWidget::ganjoorDataBase->getConflictingPoets(fileName);
 	
-	SaagharWidget::ganjoorDataBase->dBConnection.transaction();
+	//SaagharWidget::ganjoorDataBase->dBConnection.transaction();
+	dataBaseObject.transaction();
 
 	if ( !poetsConflictList.isEmpty() )
 	{
@@ -2887,7 +2890,8 @@ void MainWindow::importDataBase(const QString &fileName, bool *ok)
 
 	if (SaagharWidget::ganjoorDataBase->importDataBase(fileName))
 	{
-		SaagharWidget::ganjoorDataBase->dBConnection.commit();
+		//SaagharWidget::ganjoorDataBase->dBConnection.commit();
+		dataBaseObject.commit();
 
 		if (ok) *ok = true;
 
@@ -2910,7 +2914,8 @@ void MainWindow::importDataBase(const QString &fileName, bool *ok)
 	else
 	{
 		if (ok) *ok = false;
-		SaagharWidget::ganjoorDataBase->dBConnection.rollback();
+		//SaagharWidget::ganjoorDataBase->dBConnection.rollback();
+		dataBaseObject.rollback();
 		QMessageBox::warning(this, tr("Error!"), tr("There are some errors, the import procedure was not completed"));
 	}
 

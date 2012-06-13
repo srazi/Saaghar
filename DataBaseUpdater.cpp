@@ -405,7 +405,10 @@ void DataBaseUpdater::initDownload()
 	disconnect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
 	connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
 	connect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
+
 	ui->repoSelectTree->setEnabled(false);
+	ui->comboBoxRepoList->setEnabled(false);
+	ui->refreshPushButton->setEnabled(false);
 	ui->groupBoxKeepDownload->setEnabled(false);
 
 	sessionDownloadFolder = DataBaseUpdater::downloadLocation;
@@ -517,6 +520,7 @@ void DataBaseUpdater::closeEvent(QCloseEvent *e)
 void DataBaseUpdater::downloadItem(QTreeWidgetItem *item, bool install)
 {
 	if (!item) return;
+	item->treeWidget()->setCurrentItem(item);
 	bool keepDownlaodedFiles = ui->groupBoxKeepDownload->isChecked();
 	downloadStarted = true;
 	qDebug() << "downloadItem-sessionDownloadFolder="<<sessionDownloadFolder;
@@ -555,6 +559,8 @@ void DataBaseUpdater::forceStopDownload()
 	disconnect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
 	disconnect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
 	ui->repoSelectTree->setEnabled(true);
+	ui->comboBoxRepoList->setEnabled(true);
+	ui->refreshPushButton->setEnabled(true);
 	ui->groupBoxKeepDownload->setEnabled(true);
 
 	QDir tmpDir(randomFolder);
@@ -562,7 +568,7 @@ void DataBaseUpdater::forceStopDownload()
 }
 
 QString DataBaseUpdater::getTempDir(const QString &path, bool makeDir)
-{
+{ 
 	QString currentPath = path.isEmpty() ? QDir::tempPath() : path;
 	QFileInfo currentPathInfo(currentPath);
 	if (!currentPathInfo.isDir())
