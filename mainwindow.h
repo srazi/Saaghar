@@ -33,7 +33,6 @@
 
 class QMultiSelectWidget;
 class OutLineTree;
-class DataBaseUpdater;
 
 namespace Ui {
 	class MainWindow;
@@ -44,7 +43,7 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 	public:
-		explicit MainWindow(QWidget *parent = 0, QObject *splashScreen = 0, bool fresh = false);
+		explicit MainWindow(QWidget *parent = 0, QWidget *splashScreen = 0, bool fresh = false);
 		~MainWindow();
 		SaagharWidget *saagharWidget;
 //		void emitReSizeEvent();
@@ -55,7 +54,6 @@ class MainWindow : public QMainWindow
 //		void emitReSizeEvent();
 
 	private:
-		DataBaseUpdater *dbUpdater;
 		QSplitter *splitter;
 		OutLineTree *outlineTree;
 		bool skipContextMenu;

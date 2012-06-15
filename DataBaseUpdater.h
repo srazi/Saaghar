@@ -49,6 +49,8 @@ public:
 	bool read(QIODevice *device);
 	bool read(const QByteArray &data);
 	static QString downloadLocation;
+	inline static void setInstallerObject(QObject *reciver = 0)
+		{DataBaseUpdater::installerObject = reciver;}
 
 public slots:
 	void readRepository(const QString &url = "");
@@ -62,6 +64,8 @@ private slots:
 	void itemDataChanged(QTreeWidgetItem *item, int column);
 
 private:
+	static QObject *installerObject;
+	static QStringList defaultRepositories;
 	static QStringList repositoriesUrls;
 	void addRemoveRepository();
 	void resizeColumnsToContents();

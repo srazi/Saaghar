@@ -36,6 +36,12 @@
 
 QString DataBaseUpdater::downloadLocation = QString();
 QStringList DataBaseUpdater::repositoriesUrls = QStringList();
+QStringList DataBaseUpdater::defaultRepositories = QStringList()
+		<< "http://ganjoor.sourceforge.net/newgdbs.xml"
+		<< "http://ganjoor.sourceforge.net/programgdbs.xml"
+		<< "http://ganjoor.sourceforge.net/sitegdbs.xml";
+
+QObject *DataBaseUpdater::installerObject = 0;
 
 int PoetID_DATA = Qt::UserRole+1;
 int CatID_DATA = Qt::UserRole+2;
@@ -62,6 +68,11 @@ DataBaseUpdater::DataBaseUpdater(QWidget *parent, Qt::WindowFlags f)
 	connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
 	connect(ui->pushButtonBrowse, SIGNAL(clicked()), this, SLOT(getDownloadLocation()));
 	connect(downloaderObject,SIGNAL(downloadStopped()), this, SLOT(forceStopDownload()));
+
+	if (installerObject)
+		connect(this, SIGNAL(installRequest(QString,bool*)), installerObject, SLOT(importDataBase(QString,bool*)));
+	else
+		qWarning() << "You have to call DataBaseUpdater::setInstallerObject()' with appropriate reciver object before initializing 'DataBaseUpdater'";
 }
 
 bool DataBaseUpdater::read(QIODevice *device)
@@ -172,7 +183,10 @@ void DataBaseUpdater::parseElement(const QDomElement &element)
 
 void DataBaseUpdater::setRepositories(const QStringList &urls)
 {
-	repositoriesUrls = urls;
+	if (!urls.isEmpty())
+		repositoriesUrls = urls;
+	else
+		repositoriesUrls = defaultRepositories;
 }
 
 QStringList DataBaseUpdater::repositories()
@@ -406,11 +420,6 @@ void DataBaseUpdater::initDownload()
 	connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
 	connect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
 
-	ui->repoSelectTree->setEnabled(false);
-	ui->comboBoxRepoList->setEnabled(false);
-	ui->refreshPushButton->setEnabled(false);
-	ui->groupBoxKeepDownload->setEnabled(false);
-
 	sessionDownloadFolder = DataBaseUpdater::downloadLocation;
 	QDir downDir;
 	if (ui->groupBoxKeepDownload->isChecked())
@@ -443,6 +452,11 @@ void DataBaseUpdater::initDownload()
 		doStopDownload();
 		return;
 	}
+
+	ui->repoSelectTree->setEnabled(false);
+	ui->comboBoxRepoList->setEnabled(false);
+	ui->refreshPushButton->setEnabled(false);
+	ui->groupBoxKeepDownload->setEnabled(false);
 
 	for (int i=0; i<newRootItem->childCount(); ++i)
 	{
@@ -490,6 +504,11 @@ void DataBaseUpdater::initDownload()
 	//download ended
 	downloadAboutToStart = downloadStarted = false;
 	doStopDownload();
+
+	ui->repoSelectTree->setEnabled(true);
+	ui->comboBoxRepoList->setEnabled(true);
+	ui->refreshPushButton->setEnabled(true);
+	ui->groupBoxKeepDownload->setEnabled(true);
 }
 
 bool DataBaseUpdater::doStopDownload()
@@ -558,10 +577,6 @@ void DataBaseUpdater::forceStopDownload()
 	connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
 	disconnect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
 	disconnect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
-	ui->repoSelectTree->setEnabled(true);
-	ui->comboBoxRepoList->setEnabled(true);
-	ui->refreshPushButton->setEnabled(true);
-	ui->groupBoxKeepDownload->setEnabled(true);
 
 	QDir tmpDir(randomFolder);
 	qDebug() <<"emit downloadStopped!!!!!!rmDir-randomFolder="<<randomFolder<<"bool="<< tmpDir.rmdir(randomFolder);

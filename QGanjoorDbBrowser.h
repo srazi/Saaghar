@@ -32,6 +32,7 @@
 #include <QProgressDialog>
 #include <QVariant>
 
+#include "DataBaseUpdater.h"
 #include "QGanjoorDbStuff.h"
 
 #include <QDebug>
@@ -47,7 +48,7 @@ class QGanjoorDbBrowser : public QObject
 {
 	Q_OBJECT
 	public:
-		QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
+		QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db", QGanjoorDbBrowser **self = 0, QWidget *splashScreen = 0);
 		~QGanjoorDbBrowser();
 //		static QString qStringMacHelper(const QString &str);
 		static QString getLongPathName(const QString &fileName);
@@ -101,12 +102,13 @@ class QGanjoorDbBrowser : public QObject
 		int getRandomPoemID(int *CatID);
 		void removePoetFromDataBase(int PoetID);
 		bool importDataBase(const QString filename);
-		QString dBName;
 		//QSqlDatabase dBConnection;
 
 		QList<QTreeWidgetItem *> loadOutlineFromDataBase(int parentID = 0);
 
 		//STATIC Variables
+		static QString dBName;
+		static DataBaseUpdater *dbUpdater;
 		static QStringList dataBasePath;
 		static QStringList someSymbols;
 		static QStringList Ve_Variant;

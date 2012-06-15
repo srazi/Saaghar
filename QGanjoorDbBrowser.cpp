@@ -20,6 +20,8 @@
  ***************************************************************************/
 
 #include "QGanjoorDbBrowser.h"
+#include "NoDataBaseDialog.h"
+
 #include <QApplication>
 #include <QMessageBox>
 #include <QSqlQuery>
@@ -28,6 +30,8 @@
 #include <QTime>
 #include <QPushButton>
 
+DataBaseUpdater *QGanjoorDbBrowser::dbUpdater = 0;
+QString QGanjoorDbBrowser::dBName = QString();
 QStringList QGanjoorDbBrowser::dataBasePath = QStringList();
 
 const int minNewPoetID = 1001;
@@ -95,8 +99,10 @@ const QRegExp SomeSymbol_EXP = QRegExp("["+
 							+"]+");
 /***************************/
 
-QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
+QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QGanjoorDbBrowser **self, QWidget *splashScreen)
 {
+	*self = this;//an ugly trick! //we need pointer to this class before end of its initialization
+
 	bool flagSelectNewPath = false;
 	QString newPath = "";
 
@@ -117,33 +123,47 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 	dBConnection.setDatabaseName(sqliteDbCompletePath);
 	while (!dBFile.exists() || !dBConnection.open())
 	{
+		if (splashScreen)
+		{
+			splashScreen->close();
+			splashScreen = 0;
+		}
 		QString errorString = dBConnection.lastError().text();
 
 		dBConnection = QSqlDatabase();
 		QSqlDatabase::removeDatabase(dBName);
 
-		QMessageBox warnDataBaseOpen(0);
-		warnDataBaseOpen.setWindowTitle(tr("Cannot open Database File!"));
-		warnDataBaseOpen.setIcon(QMessageBox::Information);
-		QAbstractButton *browseButton = 0;
-		QAbstractButton *downloadButton = 0;
-		if ( errorString.simplified().isEmpty() /*contains("Driver not loaded")*/ )
-		{
-			warnDataBaseOpen.setText(tr("Cannot open database file...\nDataBase Path=%1\nSaaghar needs its database for working properly. Press 'OK' if you want to terminate application or press 'Browse' for select a new path for database.").arg(sqliteDbCompletePath));
-			browseButton = warnDataBaseOpen.addButton(tr("Browse..."), QMessageBox::ActionRole);
-			downloadButton = warnDataBaseOpen.addButton(tr("Download..."), QMessageBox::ActionRole);
-		}
-		else
-			warnDataBaseOpen.setText(tr("Cannot open database file...\nThere is an error!\nError: %1\nDataBase Path=%2").arg(errorString).arg(sqliteDbCompletePath));
+		NoDataBaseDialog noDataBaseDialog(0, Qt::WindowStaysOnTopHint);
+		noDataBaseDialog.ui->pathLabel->setText(tr("Data Base Path:")+" "+sqliteDbCompletePath);
+		noDataBaseDialog.ui->errorLabel->setText(tr("Error:")+" "+ (errorString.isEmpty() ? tr("No Error!") : errorString) );
 
-		warnDataBaseOpen.setStandardButtons(QMessageBox::Ok);
-		warnDataBaseOpen.setEscapeButton(QMessageBox::Ok);
-		warnDataBaseOpen.setDefaultButton(QMessageBox::Ok);
-		warnDataBaseOpen.setWindowFlags(Qt::WindowStaysOnTopHint);
-		int ret = warnDataBaseOpen.exec();
-		if ( ret != QMessageBox::Ok && errorString.simplified().isEmpty() )
+//		QMessageBox warnDataBaseOpen(0);
+//		warnDataBaseOpen.setWindowTitle(tr("Cannot open Database File!"));
+//		warnDataBaseOpen.setIcon(QMessageBox::Information);
+//		QAbstractButton *browseButton = 0;
+//		QAbstractButton *downloadButton = 0;
+//		if ( errorString.simplified().isEmpty() /*contains("Driver not loaded")*/ )
+//		{
+//			warnDataBaseOpen.setText(tr("Cannot open database file...\nDataBase Path=%1\nSaaghar needs its database for working properly. Press 'OK' if you want to terminate application or press 'Browse' for select a new path for database.").arg(sqliteDbCompletePath));
+//			browseButton = warnDataBaseOpen.addButton(tr("Browse..."), QMessageBox::ActionRole);
+//			downloadButton = warnDataBaseOpen.addButton(tr("Download..."), QMessageBox::ActionRole);
+//		}
+//		else
+//			warnDataBaseOpen.setText(tr("Cannot open database file...\nThere is an error!\nError: %1\nDataBase Path=%2").arg(errorString).arg(sqliteDbCompletePath));
+
+//		warnDataBaseOpen.setStandardButtons(QMessageBox::Ok);
+//		warnDataBaseOpen.setEscapeButton(QMessageBox::Ok);
+//		warnDataBaseOpen.setDefaultButton(QMessageBox::Ok);
+//		warnDataBaseOpen.setWindowFlags(Qt::WindowStaysOnTopHint);
+//		int ret = warnDataBaseOpen.exec();
+		int ret = noDataBaseDialog.exec();
+		if ( /*ret != QMessageBox::Ok &&*/ 
+			 noDataBaseDialog.clickedButton() != noDataBaseDialog.ui->exitPushButton
+			 &&
+			 errorString.simplified().isEmpty() )
 		{
-			if (warnDataBaseOpen.clickedButton() == browseButton)
+			//if (warnDataBaseOpen.clickedButton() == browseButton)
+			if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->selectDataBase)
 			{
 				QString dir = QFileDialog::getExistingDirectory(0,tr("Add Path For Data Base"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 				if ( !dir.isEmpty() ) 
@@ -166,7 +186,10 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 					exit(1);
 				}
 			}
-			else if (warnDataBaseOpen.clickedButton() == downloadButton)
+			//else if (warnDataBaseOpen.clickedButton() == downloadButton)
+			else if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromLocal
+					 ||
+					 noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromRemote)
 			{
 				//do download job!!
 				QString dir = QFileDialog::getExistingDirectory(0,tr("Select Save Location"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
@@ -197,7 +220,29 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath)
 					QFile::remove(dir+"/ganjoor.s3db");
 					exit(1);
 				}
-				//download dialog
+
+				if (!QGanjoorDbBrowser::dbUpdater)
+				{
+					QGanjoorDbBrowser::dbUpdater = new DataBaseUpdater(0, Qt::WindowStaysOnTopHint);
+				}
+
+				if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromLocal)
+				{//select data sets existing
+					QStringList fileList = QFileDialog::getOpenFileNames(0,tr("Select data sets to install"), QDir::homePath(),"Supported Files (*.gdb *.s3db *.zip);;Ganjoor DataBase (*.gdb *.s3db);;Compressed Data Sets (*.zip);;All Files (*.*)");
+					if (!fileList.isEmpty())
+					{
+						foreach(const QString &file, fileList)
+						{
+							//connect(QGanjoorDbBrowser::dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
+							QGanjoorDbBrowser::dbUpdater->installItemToDB(file);
+							QApplication::processEvents();
+						}
+					}
+				}
+				else if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromRemote)
+				{ //download dialog
+					QGanjoorDbBrowser::dbUpdater->exec();
+				}
 				flagSelectNewPath = true;
 				newPath = dir;
 			}

@@ -29,7 +29,6 @@
 #include "SearchPatternManager.h"
 #include "qmusicplayer.h"
 #include "outline.h"
-#include "DataBaseUpdater.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -67,7 +66,7 @@
 bool MainWindow::autoCheckForUpdatesState = true;
 bool MainWindow::isPortable = false;
 
-MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
+MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
 {
@@ -163,7 +162,6 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 	SaagharWidget::persianIranLocal.setNumberOptions(QLocale::OmitGroupSeparator);
 
 	defaultPrinter = 0;
-	dbUpdater = 0;
 
 	//Undo FrameWork
 	undoGroup = new QUndoGroup(this);
@@ -265,13 +263,13 @@ MainWindow::MainWindow(QWidget *parent, QObject *splashScreen, bool fresh) :
 		}
 	}
 	//create ganjoor DataBase browser
-	SaagharWidget::ganjoorDataBase = new QGanjoorDbBrowser(dataBaseCompleteName);
+	SaagharWidget::ganjoorDataBase = new QGanjoorDbBrowser(dataBaseCompleteName, &SaagharWidget::ganjoorDataBase,splashScreen);
+	qDebug() << "QGanjoorDbBrowser2222="<<SaagharWidget::ganjoorDataBase;
 	SaagharWidget::ganjoorDataBase->setObjectName(QString::fromUtf8("ganjoorDataBaseBrowser"));
 
 	loadTabWidgetSettings();
 
 	ui->gridLayout->setContentsMargins(0,0,0,0);
-
 	
 	outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
 	connect(outlineTree, SIGNAL(openParentRequested(int)), this, SLOT(openParentPage(int)));
@@ -592,8 +590,9 @@ void MainWindow::actionRemovePoet()
 				return;
 
 			QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+			qDebug() << "Before remove";
 			SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poetID);
-
+qDebug() << "after remove";
 			outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
 
 			comboBoxSearchRegion->clear();
@@ -610,6 +609,7 @@ void MainWindow::actionRemovePoet()
 //			labelMaxResultAction->setVisible(tmpFlag);
 			setHomeAsDirty();
 			QApplication::restoreOverrideCursor();
+			qDebug() << "end of" << Q_FUNC_INFO;
 		}
 	}
 }
@@ -1587,22 +1587,20 @@ void MainWindow::actionImportNewSet()
 //	if ( ret == QMessageBox::Cancel)
 //		return;
 
-	QString fullFilePath = QFileDialog::getOpenFileName(this,tr("Browse for a new set"), QDir::homePath(),"Supported Files (*.gdb *.s3db *.zip);;Ganjoor DataBase (*.gdb *.s3db);;Compressed Data Sets (*.zip);;All Files (*.*)");
-	if (!fullFilePath.isEmpty())
+	QStringList fileList = QFileDialog::getOpenFileNames(this,tr("Browse for a new set"), QDir::homePath(),"Supported Files (*.gdb *.s3db *.zip);;Ganjoor DataBase (*.gdb *.s3db);;Compressed Data Sets (*.zip);;All Files (*.*)");
+	if (!fileList.isEmpty())
 	{
-		if (!dbUpdater)
+		if (!QGanjoorDbBrowser::dbUpdater)
 		{
-			QStringList defaultRepositories = QStringList()
-					<< "http://ganjoor.sourceforge.net/newgdbs.xml"
-					<< "http://ganjoor.sourceforge.net/programgdbs.xml"
-					<< "http://ganjoor.sourceforge.net/sitegdbs.xml";
-			DataBaseUpdater::setRepositories(Settings::READ("Repositories List", defaultRepositories).toStringList());
-			DataBaseUpdater::downloadLocation = Settings::READ("Download Location", "").toString();
-
-			dbUpdater = new DataBaseUpdater(this);
-			connect(dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
+			QGanjoorDbBrowser::dbUpdater = new DataBaseUpdater(this);
 		}
-		dbUpdater->installItemToDB(fullFilePath);
+
+		foreach(const QString &file, fileList)
+		{
+			//connect(QGanjoorDbBrowser::dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
+			QGanjoorDbBrowser::dbUpdater->installItemToDB(file);
+			QApplication::processEvents();
+		}
 	}
 }
 
@@ -2345,6 +2343,10 @@ void MainWindow::loadGlobalSettings()
 	Settings::hashFonts = Settings::READ("Fonts Hash", QVariant(defaultFonts)).toHash();
 	Settings::hashColors = Settings::READ("Colors Hash", QVariant(defaultColors)).toHash();
 
+	DataBaseUpdater::setRepositories(Settings::READ("Repositories List").toStringList());
+	DataBaseUpdater::downloadLocation = Settings::READ("Download Location", "").toString();
+	DataBaseUpdater::setInstallerObject(this);
+
 	autoCheckForUpdatesState = config->value("Auto Check For Updates",true).toBool();
 
 	selectedRandomRange = config->value("Selected Random Range", "").toStringList();
@@ -2502,6 +2504,9 @@ void MainWindow::saveSettings()
 
 	Settings::WRITE("Fonts Hash", Settings::hashFonts);
 	Settings::WRITE("Colors Hash", Settings::hashColors);
+
+	Settings::WRITE("Repositories List", DataBaseUpdater::repositories());
+	Settings::WRITE("Download Location", DataBaseUpdater::downloadLocation);
 
 //	QHash<int, QPair<QString, qint64> >::const_iterator it = SaagharWidget::mediaInfoCash.constBegin();
 
@@ -2847,7 +2852,7 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 
 void MainWindow::importDataBase(const QString &fileName, bool *ok)
 {
-	QSqlDatabase dataBaseObject = QSqlDatabase::database(SaagharWidget::ganjoorDataBase->dBName);
+	QSqlDatabase dataBaseObject = QSqlDatabase::database(QGanjoorDbBrowser::dBName/*SaagharWidget::ganjoorDataBase->dBName*/);
 	QFileInfo dataBaseFile(/*QSqlDatabase::database("ganjoor.s3db")*/ dataBaseObject.databaseName());
 	if (!dataBaseFile.isWritable())
 	{
@@ -2891,8 +2896,9 @@ void MainWindow::importDataBase(const QString &fileName, bool *ok)
 	if (SaagharWidget::ganjoorDataBase->importDataBase(fileName))
 	{
 		//SaagharWidget::ganjoorDataBase->dBConnection.commit();
+		qDebug() << "before commit";
 		dataBaseObject.commit();
-
+qDebug() << "after commit";
 		if (ok) *ok = true;
 
 		outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
@@ -2918,7 +2924,7 @@ void MainWindow::importDataBase(const QString &fileName, bool *ok)
 		dataBaseObject.rollback();
 		QMessageBox::warning(this, tr("Error!"), tr("There are some errors, the import procedure was not completed"));
 	}
-
+qDebug() << "end of="<<Q_FUNC_INFO;
 	//QApplication::restoreOverrideCursor();
 }
 
@@ -3342,22 +3348,12 @@ void MainWindow::namedActionTriggered(bool checked)
 	}
 	else if (actionName == "DownloadRepositories")
 	{
-		if (!dbUpdater)
+		if (!QGanjoorDbBrowser::dbUpdater)
 		{
-			QStringList defaultRepositories = QStringList()
-					<< "http://ganjoor.sourceforge.net/newgdbs.xml"
-					<< "http://ganjoor.sourceforge.net/programgdbs.xml"
-					<< "http://ganjoor.sourceforge.net/sitegdbs.xml";
-			DataBaseUpdater::setRepositories(Settings::READ("Repositories List", defaultRepositories).toStringList());
-			DataBaseUpdater::downloadLocation = Settings::READ("Download Location", "").toString();
-
-			dbUpdater = new DataBaseUpdater(this);
-			connect(dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
+			QGanjoorDbBrowser::dbUpdater = new DataBaseUpdater(this);
 		}
-		dbUpdater->exec();
-
-		Settings::WRITE("Repositories List", DataBaseUpdater::repositories());
-		Settings::WRITE("Download Location", DataBaseUpdater::downloadLocation);
+		//connect(QGanjoorDbBrowser::dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
+		QGanjoorDbBrowser::dbUpdater->exec();
 	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
