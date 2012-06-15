@@ -541,21 +541,24 @@ void MainWindow::searchStart()
 
 void MainWindow::multiSelectObjectInitialize(QMultiSelectWidget *multiSelectWidget, const QStringList &selectedData, int insertIndex)
 {
+	qDebug() << "multiSelectObjectInitialize1";
 	QListWidgetItem *rootItem = multiSelectWidget->insertRow(insertIndex, tr("All"), true, "0", Qt::UserRole);
-
+qDebug() << "multiSelectObjectInitialize22";
 	QList<GanjoorPoet *> poets = SaagharWidget::ganjoorDataBase->getPoets();
-	
+	qDebug() << "multiSelectObjectInitialize333";
 	//int insertIndex = count();
 	for(int i=0; i<poets.size(); ++i)
-	{
+	{qDebug() << "for1-multiSelectObjectInitialize"<<i+4<<"i="<<i;
 		multiSelectWidget->insertRow(i+1+insertIndex, poets.at(i)->_Name, true,
 			QString::number(poets.at(i)->_ID), Qt::UserRole, false, rootItem)->setCheckState(selectedData.contains(QString::number(poets.at(i)->_ID)) ? Qt::Checked : Qt::Unchecked);
+		qDebug() << "for2-multiSelectObjectInitialize"<<i+4<<"i="<<i;
 	}
-
+qDebug() << "multiSelectObjectInitialize55555";
 	if (selectedData.contains("0"))
 		rootItem->setCheckState(Qt::Checked);
-
+qDebug() << "multiSelectObjectInitialize666666";
 	multiSelectWidget->updateSelectedLists();
+	qDebug() << "multiSelectObjectInitialize7777777";
 }
 
 void MainWindow::actionRemovePoet()
@@ -595,7 +598,8 @@ void MainWindow::actionRemovePoet()
 qDebug() << "after remove";
 			outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
 
-			comboBoxSearchRegion->clear();
+			//comboBoxSearchRegion->clear();
+			selectSearchRange->clear();
 			QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
 			QListWidgetItem *titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
 			multiSelectObjectInitialize(selectSearchRange, selectedSearchRange, 2);
@@ -2898,17 +2902,24 @@ void MainWindow::importDataBase(const QString &fileName, bool *ok)
 		//SaagharWidget::ganjoorDataBase->dBConnection.commit();
 		qDebug() << "before commit";
 		dataBaseObject.commit();
-qDebug() << "after commit";
+qDebug() << "after commit1";
 		if (ok) *ok = true;
 
 		outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
-
-		comboBoxSearchRegion->clear();
+qDebug() << "after commit22";
+		//comboBoxSearchRegion->clear();
+		selectSearchRange->clear();
+		qDebug() << "after commit333";
 		QListWidgetItem *item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
+		qDebug() << "after commit4444";
 		QListWidgetItem *titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
+		qDebug() << "after commit55555";
 		multiSelectObjectInitialize(selectSearchRange, selectedSearchRange, 2);
+		qDebug() << "after commit666666";
 		item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
+		qDebug() << "after commit7777777";
 		titleSearchItem->setCheckState(selectedSearchRange.contains("ALL_TITLES") ? Qt::Checked : Qt::Unchecked);
+		qDebug() << "after commit88888888";
 		setHomeAsDirty();
 		//update visible region of searchToolBar
 //		bool tmpFlag = labelMaxResultAction->isVisible();
