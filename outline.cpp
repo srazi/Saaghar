@@ -236,9 +236,17 @@ void OutLineTree::justClicked(QTreeWidgetItem *item, int /*column*/)
 {
 	if (pressedMouseButton==Qt::RightButton) return;
 
-	if (item && item->childCount()>0)
+	if (item)
 	{
-		item->setExpanded(!item->isExpanded());
+		if (item->childCount()>0)
+		{
+			item->setExpanded(!item->isExpanded());
+		}
+		else
+		{
+			int itemID = item->data(0, Qt::UserRole).toInt();
+			emit openParentRequested(itemID);
+		}
 	}
 }
 

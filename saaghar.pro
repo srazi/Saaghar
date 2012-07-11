@@ -20,8 +20,14 @@ CONFIG	+= qt
 #warn_off
 
 ##un-comment the following two lines for skipping all warning and debug messages.
-#DEFINES += QT_NO_WARNING_OUTPUT
-#DEFINES += QT_NO_DEBUG_OUTPUT
+CONFIG(debug, debug|release) {
+	!build_pass:message("DEBUG BUILD")
+} else {
+	!build_pass:message("RELEASE BUILD")
+
+	DEFINES += QT_NO_WARNING_OUTPUT
+	DEFINES += QT_NO_DEBUG_OUTPUT
+}
 
 ##for static building un-comment the following two lines
 #CONFIG	+= static
