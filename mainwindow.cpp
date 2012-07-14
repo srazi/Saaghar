@@ -27,7 +27,6 @@
 #include "settings.h"
 #include "SearchResultWidget.h"
 #include "SearchPatternManager.h"
-#include "qmusicplayer.h"
 #include "outline.h"
 
 #include <QTextBrowserDialog>
@@ -60,6 +59,10 @@
 #include <QNetworkReply>
 #include <QActionGroup>
 //#include <QSplitter>
+
+#ifndef NO_PHONON_LIB
+	#include "qmusicplayer.h"
+#endif
 
 //const int ITEM_SEARCH_DATA = Qt::UserRole+10;
 
@@ -125,7 +128,7 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 	if (!saagharUserPath.exists())
 		saagharUserPath.mkpath(userHomePath);
 
-	
+#ifndef NO_PHONON_LIB
 	SaagharWidget::musicPlayer = new QMusicPlayer(this);
 	SaagharWidget::musicPlayer->setWindowTitle(tr("Audio Player"));
 	addDockWidget(Qt::LeftDockWidgetArea, SaagharWidget::musicPlayer->playListManagerDock());
@@ -135,11 +138,12 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 	actionInstance("playlistDockAction")->setObjectName(QString::fromUtf8("playlistDockAction"));
 	actionInstance("playlistDockAction")->setIcon(QIcon(currentIconThemePath()+"/playlist.png"));
 
-	loadGlobalSettings();
-
 	//TODO: remove hardcoded load/save location!
 	QMusicPlayer::listOfPlayList.insert("default", userHomePath+"/default.m3u8");
 	SaagharWidget::musicPlayer->loadPlayList(QMusicPlayer::listOfPlayList.value("default").toString());
+#endif
+
+	loadGlobalSettings();
 
 	if (splashScreen)
 	{
@@ -713,6 +717,7 @@ void MainWindow::currentTabChanged(int tabIndex)
 		actionInstance("actionPreviousPoem")->setEnabled( !SaagharWidget::ganjoorDataBase->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull() );
 		actionInstance("actionNextPoem")->setEnabled( !SaagharWidget::ganjoorDataBase->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull() );
 
+#ifndef NO_PHONON_LIB
 		if (SaagharWidget::musicPlayer)
 		{
 			//QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(saagharWidget->currentPoem);
@@ -752,6 +757,8 @@ void MainWindow::currentTabChanged(int tabIndex)
 			if (!isEnabled)
 				SaagharWidget::musicPlayer->stop();
 		}
+#endif //NO_PHONON_LIB
+
 	}
 }
 
@@ -1616,9 +1623,12 @@ void MainWindow::setupUi()
 {
 	QString iconThemePath = currentIconThemePath();
 
+#ifndef NO_PHONON_LIB
 	connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(const QString &,const QString &,int,bool)), this, SLOT(mediaInfoChanged(const QString &,const QString &,int)));
 	connect(SaagharWidget::musicPlayer, SIGNAL(requestPageContainedMedia(/*QString,QString,*/int,bool)), this, SLOT(openChildPage(int,bool)));
+
 	addToolBar(Qt::BottomToolBarArea, SaagharWidget::musicPlayer);
+#endif
 
 	if (Settings::READ("MainWindowState").isNull())
 	{
@@ -1762,7 +1772,10 @@ void MainWindow::setupUi()
 		ui->menuToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
 	ui->searchToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
 	parentCatsToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
+
+#ifndef NO_PHONON_LIB
 	SaagharWidget::musicPlayer->setMovable(!Settings::READ("Lock ToolBars").toBool());
+#endif
 
 	actionInstance("Ganjoor Verification", iconThemePath+"/ocr-verification.png", tr("&OCR Verification") );
 
@@ -1924,7 +1937,11 @@ void MainWindow::setupUi()
 	menuNavigation->addAction(actionInstance("actionRandom"));
 
 	menuView->addAction(actionInstance("outlineDockAction"));
+
+#ifndef NO_PHONON_LIB
 	menuView->addAction(actionInstance("playlistDockAction"));
+#endif
+
 	menuView->addAction(actionInstance("Show Photo at Home"));
 
 	menuView->addSeparator();
@@ -1937,7 +1954,11 @@ void MainWindow::setupUi()
 	toolbarsView->addAction(ui->mainToolBar->toggleViewAction());
 	toolbarsView->addAction(ui->searchToolBar->toggleViewAction());
 	toolbarsView->addAction(parentCatsToolBar->toggleViewAction());
+
+#ifndef NO_PHONON_LIB
 	toolbarsView->addAction(SaagharWidget::musicPlayer->toggleViewAction());
+#endif
+
 	toolbarsView->addSeparator();
 	toolbarsView->addAction(actionInstance("Lock ToolBars"));
 	menuView->addMenu(toolbarsView);
@@ -2280,7 +2301,9 @@ void MainWindow::loadGlobalSettings()
 {
 	QSettings *config = getSettingsObject();
 
+#ifndef NO_PHONON_LIB
 	SaagharWidget::musicPlayer->readPlayerSettings(config);
+#endif
 
 	Settings::LOAD_VARIABLES(config->value("VariableHash").toHash());
 
@@ -2418,8 +2441,10 @@ void MainWindow::loadTabWidgetSettings()
 
 void MainWindow::saveSettings()
 {
+#ifndef NO_PHONON_LIB
 	if (SaagharWidget::musicPlayer)
 		SaagharWidget::musicPlayer->savePlayList(QMusicPlayer::listOfPlayList.value("default").toString());
+#endif
 
 	QFile bookmarkFile(userHomePath+"/bookmarks.xbel");
 	if (!bookmarkFile.open(QFile::WriteOnly | QFile::Text))
@@ -2438,7 +2463,9 @@ void MainWindow::saveSettings()
 
 	config->setValue("UI Language", Settings::READ("UI Language", "fa"));
 
+#ifndef NO_PHONON_LIB
 	SaagharWidget::musicPlayer->savePlayerSettings(config);
+#endif
 
 	//config->setValue("Main ToolBar Items", mainToolBarItems.join("|"));
 
@@ -3289,7 +3316,9 @@ void MainWindow::namedActionTriggered(bool checked)
 			ui->menuToolBar->setMovable(!checked);
 		ui->searchToolBar->setMovable(!checked);
 		parentCatsToolBar->setMovable(!checked);
+#ifndef NO_PHONON_LIB
 		SaagharWidget::musicPlayer->setMovable(!checked);
+#endif
 	}
 	else if ( actionName == "actionSearchTips" )
 	{
@@ -3691,6 +3720,7 @@ void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString 
 	}
 }
 
+#ifndef NO_PHONON_LIB
 void MainWindow::mediaInfoChanged(const QString &fileName, const QString &title, int id)
 {
 	if (!saagharWidget) return;
@@ -3725,6 +3755,7 @@ void MainWindow::mediaInfoChanged(const QString &fileName, const QString &title,
 	//SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
 	//saagharWidget->pageMetaInfo.mediaFile = fileName;
 }
+#endif
 
 void MainWindow::createCustomContextMenu(const QPoint &pos)
 {

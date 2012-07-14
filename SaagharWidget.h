@@ -42,7 +42,10 @@
 class QSearchLineEdit;
 class QTextEdit;
 class QSplitter;
-class QMusicPlayer;
+
+#ifndef NO_PHONON_LIB
+	class QMusicPlayer;
+#endif
 
 class SaagharWidget : public QWidget
 {
@@ -51,6 +54,11 @@ Q_OBJECT
 public:
 	SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidget *tableWidget);
 	~SaagharWidget();
+
+#ifndef NO_PHONON_LIB
+	//Music Player
+	static QMusicPlayer *musicPlayer;
+#endif
 
 	enum PoemViewStyle{
 		TwoHemistichLine,
@@ -112,9 +120,6 @@ public:
 	//DataBase
 	static QGanjoorDbBrowser *ganjoorDataBase;
 	static int computeRowHeight(const QFontMetrics &fontMetric, int textWidth, int width, int height=0);
-
-	//Music Player
-	static QMusicPlayer *musicPlayer;
 
 	static QHash<int, QPair<QString, qint64> > mediaInfoCash;
 	static QHash<int, QString> longestHemistiches;

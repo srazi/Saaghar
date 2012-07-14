@@ -23,7 +23,6 @@
 #include "SearchItemDelegate.h"
 #include "SaagharWidget.h"
 #include "commands.h"
-#include "qmusicplayer.h"
 
 #include <QSearchLineEdit>
 
@@ -62,8 +61,6 @@ Bookmarks *SaagharWidget::bookmarks = 0;
 QSearchLineEdit *SaagharWidget::lineEditSearchText = 0;
 //ganjoor data base browser
 QGanjoorDbBrowser *SaagharWidget::ganjoorDataBase = NULL;
-//QMusicPlayer
-QMusicPlayer *SaagharWidget::musicPlayer = NULL;
 
 //Constants
 const int ITEM_BOOKMARKED_STATE = Qt::UserRole+20;
@@ -72,6 +69,11 @@ const Qt::ItemFlags catsItemFlag = Qt::ItemIsEnabled;
 const Qt::ItemFlags poemsItemFlag = Qt::ItemIsEnabled;
 const Qt::ItemFlags versesItemFlag = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 const Qt::ItemFlags poemsTitleItemFlag = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
+
+#ifndef NO_PHONON_LIB
+	#include "qmusicplayer.h"
+	QMusicPlayer *SaagharWidget::musicPlayer = NULL;
+#endif
 
 SaagharWidget::SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidget *tableWidget)
 	: QWidget(parent), tableViewWidget(tableWidget), parentCatsToolBar(catsToolBar)
@@ -196,7 +198,7 @@ void SaagharWidget::navigateToPage(QString type, int id, bool noError)
 		showCategory(category);
 	}
 
-	
+#ifndef NO_PHONON_LIB
 	if (SaagharWidget::musicPlayer)
 	{
 		bool isEnabled = (pageMetaInfo.type == SaagharWidget::PoemViewerPage);
@@ -204,6 +206,7 @@ void SaagharWidget::navigateToPage(QString type, int id, bool noError)
 		if (!isEnabled)
 			SaagharWidget::musicPlayer->stop();
 	}
+#endif
 }
 
 void SaagharWidget::parentCatClicked()
@@ -1137,6 +1140,7 @@ qDebug()<<"end of big for=" << QTime::currentTime().msecsTo(start);
 
 	currentPoem = poem._ID;
 
+#ifndef NO_PHONON_LIB
 	//if (pageMetaInfo.id != currentPoem /*|| pageMetaInfo.mediaFile.isEmpty()*/)
 	{
 		pageMetaInfo.id = currentPoem;
@@ -1172,6 +1176,7 @@ qDebug()<<"end of big for=" << QTime::currentTime().msecsTo(start);
 //			//SaagharWidget::musicPlayer->
 //		}
 	}
+#endif //NO_PHONON_LIB
 
 	emit navPreviousActionState( !ganjoorDataBase->getPreviousPoem(currentPoem, currentCat).isNull() );
 	emit navNextActionState( !ganjoorDataBase->getNextPoem(currentPoem, currentCat).isNull() );

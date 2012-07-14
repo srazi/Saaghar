@@ -136,7 +136,11 @@ class MainWindow : public QMainWindow
 		void openChildPage(int childID, bool newPage = false);
 		void openPage(int id, SaagharWidget::PageType type, bool newPage = false);
 		void createCustomContextMenu(const QPoint &pos);
+
+#ifndef NO_PHONON_LIB
 		void mediaInfoChanged(const QString &fileName, const QString &title = "", int id = -1);
+#endif
+
 		void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true, bool unbookmark = true);
 		void setHomeAsDirty();
 		void setAllAsDirty();

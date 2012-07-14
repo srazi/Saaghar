@@ -31,7 +31,12 @@ CONFIG(debug, debug|release) {
 
 ##for static building un-comment the following two lines
 #CONFIG	+= static
-#DEFINES += STATIC
+
+CONFIG(static) {
+	!build_pass:message("STATIC BUILD")
+	DEFINES += STATIC
+	DEFINES += NO_PHONON_LIB
+}
 
 QT += sql network xml
 
@@ -71,10 +76,12 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/NoDataBaseDialog.cpp
 
 include($${SOURCE_DIR}/pQjWidgets/pQjWidgets.pri)
-include($${SOURCE_DIR}/qmusicplayer/qmusicplayer.pri)
 include($${SOURCE_DIR}/downloader/downloader.pri)
 include($${SOURCE_DIR}/OSDaB-Zip/osdabzip.pri)
 
+!contains( DEFINES, NO_PHONON_LIB ) {
+	include($${SOURCE_DIR}/qmusicplayer/qmusicplayer.pri)
+}
 
 #########################################
 ##for embeding SQlite and its Qt Driver
