@@ -73,6 +73,7 @@ private:
 signals:
 	void openParentRequested(int);
 	void newParentRequested(int);
+	void openRandomRequested(int,bool);
 };
 
 #endif

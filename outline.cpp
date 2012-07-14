@@ -262,8 +262,8 @@ void OutLineTree::createCustomContextMenu(const QPoint &pos)
 	contextMenu->addAction(tr("Open in New Tab"));
 	contextMenu->addAction(tr("Open"));
 	contextMenu->addSeparator();
-//	contextMenu->addAction(tr("Random in New Tab"));
-//	contextMenu->addAction(tr("Random"));
+	contextMenu->addAction(tr("Random in New Tab"));
+	contextMenu->addAction(tr("Random"));
 	contextMenu->addSeparator();
 	if (item->childCount()>0)
 	{
@@ -292,16 +292,14 @@ void OutLineTree::createCustomContextMenu(const QPoint &pos)
 	{
 		item->setExpanded(!item->isExpanded());
 	}
-		
-//	else if (text == tr("Random in New Tab"))
-//	{
-////		QString tableText = tableToString(saagharWidget->tableViewWidget, "          "/*ten blank spaces-Mesra separator*/, "\n"/*Beyt separator*/, 0, 1, saagharWidget->tableViewWidget->rowCount(), saagharWidget->tableViewWidget->columnCount());
-////		QApplication::clipboard()->setText(tableText);
-//	}
-//	else if (text == tr("Random"))
-//	{
-////		insertNewTab();
-	//	}
+	else if (text == tr("Random in New Tab"))
+	{
+		emit openRandomRequested(itemID,true);
+	}
+	else if (text == tr("Random"))
+	{
+		emit openRandomRequested(itemID,false);
+	}
 }
 
 void OutLineTree::itemPressed(QTreeWidgetItem */*item*/, int /*column*/)

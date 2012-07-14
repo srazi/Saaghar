@@ -160,7 +160,7 @@ class MainWindow : public QMainWindow
 		void actionExportAsPDFClicked();
 		void actionExportClicked();
 		void actionPrintClicked();
-		void actionFaalRandomClicked();
+		void openRandomPoem(int parentID, bool newPage = false);
 		void aboutSaaghar();
 		void tableSelectChanged();
 		void tableItemPress(QTableWidgetItem *item);

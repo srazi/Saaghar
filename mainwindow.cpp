@@ -274,6 +274,7 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 	outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
 	connect(outlineTree, SIGNAL(openParentRequested(int)), this, SLOT(openParentPage(int)));
 	connect(outlineTree, SIGNAL(newParentRequested(int)), this, SLOT(newTabForItem(int)));
+	connect(outlineTree, SIGNAL(openRandomRequested(int,bool)), this, SLOT(openRandomPoem(int,bool)));
 
 //	splitter = new QSplitter(ui->centralWidget);
 //	splitter->setObjectName("splitter");
@@ -1504,47 +1505,50 @@ void MainWindow::actFullScreenClicked(bool checked)
 	setUpdatesEnabled(true);
 }
 
-void MainWindow::actionFaalRandomClicked()
+void MainWindow::openRandomPoem(int parentID, bool newPage)
 {
-	QAction *triggeredAction = qobject_cast<QAction *>(sender());
-	int actionData = -1;//Faal
-	if (triggeredAction && triggeredAction->data().isValid())
-		actionData = triggeredAction->data().toInt();
-	if (actionData == -1)
-		actionData = 24;
-	else
-	{
-		if (selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS"))
-		{
-			if (saagharWidget->currentPoem != 0)
-				actionData = SaagharWidget::ganjoorDataBase->getPoem(saagharWidget->currentPoem)._CatID;
-			else
-				actionData = saagharWidget->currentCat;
-		}
-		else if (selectedRandomRange.contains("0")) //all
-			actionData = 0;//home
-		else
-		{
-			if (selectedRandomRange.isEmpty())
-				actionData = 0;//all
-			else
-			{
-				int randIndex = QGanjoorDbBrowser::getRandomNumber(0, selectedRandomRange.size()-1);
-				actionData = SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex).toInt())._CatID;
-				qDebug() << "actionData=" << actionData << "randIndex=" << randIndex << SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex))._Name;
-			}
-		}
-	}
+//	QAction *triggeredAction = qobject_cast<QAction *>(sender());
+//	int actionData = -1;//Faal
+//	if (triggeredAction && triggeredAction->data().isValid())
+//		actionData = triggeredAction->data().toInt();
+
+//	if (actionData == -1)
+//		actionData = 24;
+//	else
+//	{
+//		if (selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS"))
+//		{
+//			if (saagharWidget->currentPoem != 0)
+//				actionData = SaagharWidget::ganjoorDataBase->getPoem(saagharWidget->currentPoem)._CatID;
+//			else
+//				actionData = saagharWidget->currentCat;
+//		}
+//		else if (selectedRandomRange.contains("0")) //all
+//			actionData = 0;//home
+//		else
+//		{
+//			if (selectedRandomRange.isEmpty())
+//				actionData = 0;//all
+//			else
+//			{
+//				int randIndex = QGanjoorDbBrowser::getRandomNumber(0, selectedRandomRange.size()-1);
+//				actionData = SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex).toInt())._CatID;
+//				qDebug() << "actionData=" << actionData << "randIndex=" << randIndex << SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex))._Name;
+//			}
+//		}
+//	}
+
+	int actionData = parentID;
 
 	int PoemID = SaagharWidget::ganjoorDataBase->getRandomPoemID(&actionData);
 	GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(PoemID);
 	if (!poem.isNull() && poem._CatID == actionData)
-		if (randomOpenInNewTab)
+		if (newPage)
 			newTabForItem(poem._ID, "PoemID", true);
 		else
 			saagharWidget->processClickedItem("PoemID", poem._ID, true);
 	else
-		actionFaalRandomClicked();//not any random id exists, so repeat until finding a valid id
+		openRandomPoem(parentID, newPage);//not any random id exists, so repeat until finding a valid id
 }
 
 void MainWindow::aboutSaaghar()
@@ -2052,8 +2056,8 @@ void MainWindow::createConnections()
 	connect(actionInstance("actionHome")				,	SIGNAL(triggered())		,	this, SLOT(actionHomeClicked())			);
 	connect(actionInstance("actionPreviousPoem")		,	SIGNAL(triggered())		,	this, SLOT(actionPreviousPoemClicked())	);
 	connect(actionInstance("actionNextPoem")			,	SIGNAL(triggered())		,	this, SLOT(actionNextPoemClicked())		);
-	connect(actionInstance("actionFaal")				,	SIGNAL(triggered())		,	this, SLOT(actionFaalRandomClicked())	);
-	connect(actionInstance("actionRandom")				,	SIGNAL(triggered())		,	this, SLOT(actionFaalRandomClicked())	);
+//	connect(actionInstance("actionFaal")				,	SIGNAL(triggered())		,	this, SLOT(actionFaalRandomClicked())	);
+//	connect(actionInstance("actionRandom")				,	SIGNAL(triggered())		,	this, SLOT(actionFaalRandomClicked())	);
 
 		//View
 	connect(actionInstance("actionFullScreen")			,	SIGNAL(toggled(bool))	,	this, SLOT(actFullScreenClicked(bool))	);
@@ -3365,6 +3369,36 @@ void MainWindow::namedActionTriggered(bool checked)
 		}
 		//connect(QGanjoorDbBrowser::dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
 		QGanjoorDbBrowser::dbUpdater->exec();
+	}
+	else if (actionName == "actionFaal")
+	{
+		openRandomPoem(24, randomOpenInNewTab);// '24' is for Hafez!
+	}
+	else if (actionName == "actionRandom")
+	{
+		int id = 0;
+		if (selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS"))
+		{
+			if (saagharWidget->currentPoem != 0)
+				id = SaagharWidget::ganjoorDataBase->getPoem(saagharWidget->currentPoem)._CatID;
+			else
+				id = saagharWidget->currentCat;
+		}
+		else if (selectedRandomRange.contains("0")) //all
+			id = 0;//home
+		else
+		{
+			if (selectedRandomRange.isEmpty())
+				id = 0;//all
+			else
+			{
+				int randIndex = QGanjoorDbBrowser::getRandomNumber(0, selectedRandomRange.size()-1);
+				id = SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex).toInt())._CatID;
+				qDebug() << "actionData=" << id << "randIndex=" << randIndex << SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex))._Name;
+			}
+		}
+		qDebug() << "Random Parent ID=" << id;
+		openRandomPoem(id, randomOpenInNewTab);
 	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
