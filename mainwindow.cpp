@@ -198,10 +198,10 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 	parentCatsToolBar->setWindowTitle(QApplication::translate("MainWindow", "Parent Categories", 0, QApplication::UnicodeUTF8));
 
 	//create Tab Widget
-	mainTabWidget = new QTabWidget;//(ui->centralWidget);
-	mainTabWidget->setDocumentMode(true);
-	mainTabWidget->setUsesScrollButtons(true);
-	mainTabWidget->setMovable(true);
+	mainTabWidget = ui->tabWidget;// new QTabWidget;//(ui->centralWidget);
+//	mainTabWidget->setDocumentMode(true);
+//	mainTabWidget->setUsesScrollButtons(true);
+//	mainTabWidget->setMovable(true);
 
 	//emit loadingStatusText(tr("<i><b>Loading settings...</b></i>"));
 	//loadGlobalSettings();
@@ -273,7 +273,7 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 
 	loadTabWidgetSettings();
 
-	ui->gridLayout->setContentsMargins(0,0,0,0);
+	//ui->gridLayout->setContentsMargins(0,0,0,0);
 	
 	outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
 	connect(outlineTree, SIGNAL(openParentRequested(int)), this, SLOT(openParentPage(int)));
@@ -285,7 +285,7 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 //	//splitter->addWidget(dock);
 //	splitter->addWidget(mainTabWidget);
 
-	ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
+	//ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
 
 	if (!fresh)
 	{
