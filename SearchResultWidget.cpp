@@ -78,6 +78,9 @@ void SearchResultWidget::setupUi(QMainWindow *qmw, const QString &iconThemePath)
 	searchResultWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
 	searchResultWidget->setAttribute(Qt::WA_DeleteOnClose, true);
 
+	searchResultWidget->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
+		"QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
+
 	QGridLayout *searchGridLayout = new QGridLayout(searchResultContents);
 	searchGridLayout->setSpacing(6);
 	searchGridLayout->setContentsMargins(11, 11, 11, 11);

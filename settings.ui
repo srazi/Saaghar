@@ -139,7 +139,7 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="1">
+              <item row="2" column="2">
                <layout class="QHBoxLayout" name="horizontalLayout_12">
                 <item>
                  <spacer name="horizontalSpacer_4">
@@ -180,6 +180,13 @@
                 </property>
                 <property name="checked">
                  <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QCheckBox" name="checkBoxTransparent">
+                <property name="text">
+                 <string>Use transparent background</string>
                 </property>
                </widget>
               </item>
@@ -708,8 +715,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>355</x>
-     <y>347</y>
+     <x>417</x>
+     <y>419</y>
     </hint>
     <hint type="destinationlabel">
      <x>294</x>
@@ -724,8 +731,8 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>436</x>
-     <y>347</y>
+     <x>498</x>
+     <y>419</y>
     </hint>
     <hint type="destinationlabel">
      <x>446</x>
@@ -788,8 +795,8 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>412</x>
-     <y>143</y>
+     <x>150</x>
+     <y>166</y>
     </hint>
     <hint type="destinationlabel">
      <x>88</x>
@@ -804,8 +811,8 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>412</x>
-     <y>143</y>
+     <x>150</x>
+     <y>166</y>
     </hint>
     <hint type="destinationlabel">
      <x>330</x>
@@ -820,8 +827,8 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>412</x>
-     <y>143</y>
+     <x>150</x>
+     <y>166</y>
     </hint>
     <hint type="destinationlabel">
      <x>411</x>
@@ -836,12 +843,12 @@
    <slot>setEnabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>37</x>
-     <y>48</y>
+     <x>48</x>
+     <y>180</y>
     </hint>
     <hint type="destinationlabel">
-     <x>46</x>
-     <y>212</y>
+     <x>57</x>
+     <y>376</y>
     </hint>
    </hints>
   </connection>
@@ -852,12 +859,12 @@
    <slot>setDisabled(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>38</x>
-     <y>45</y>
+     <x>49</x>
+     <y>177</y>
     </hint>
     <hint type="destinationlabel">
-     <x>90</x>
-     <y>239</y>
+     <x>101</x>
+     <y>376</y>
     </hint>
    </hints>
   </connection>

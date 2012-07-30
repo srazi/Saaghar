@@ -54,7 +54,8 @@ HEADERS += $${SOURCE_DIR}/mainwindow.h \
 	$${SOURCE_DIR}/commands.h \
 	$${SOURCE_DIR}/outline.h \
 	$${SOURCE_DIR}/DataBaseUpdater.h \
-	$${SOURCE_DIR}/NoDataBaseDialog.h
+	$${SOURCE_DIR}/NoDataBaseDialog.h \
+	$${SOURCE_DIR}/qtwin.h
 
 FORMS += $${SOURCE_DIR}/mainwindow.ui \
 	$${SOURCE_DIR}/settings.ui \
@@ -73,7 +74,8 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/commands.cpp \
 	$${SOURCE_DIR}/outline.cpp \
 	$${SOURCE_DIR}/DataBaseUpdater.cpp \
-	$${SOURCE_DIR}/NoDataBaseDialog.cpp
+	$${SOURCE_DIR}/NoDataBaseDialog.cpp \
+	$${SOURCE_DIR}/qtwin.cpp
 
 include($${SOURCE_DIR}/pQjWidgets/pQjWidgets.pri)
 include($${SOURCE_DIR}/downloader/downloader.pri)

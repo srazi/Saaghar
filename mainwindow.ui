@@ -13,6 +13,9 @@
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true"/>
+  </property>
   <widget class="QWidget" name="centralWidget">
    <layout class="QGridLayout" name="gridLayout">
     <property name="margin">
@@ -23,6 +26,9 @@
     </property>
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
+      <property name="styleSheet">
+       <string notr="true"/>
+      </property>
       <property name="documentMode">
        <bool>true</bool>
       </property>
@@ -45,6 +51,9 @@
      <height>21</height>
     </rect>
    </property>
+   <property name="styleSheet">
+    <string notr="true"/>
+   </property>
   </widget>
   <widget class="QToolBar" name="menuToolBar">
    <property name="cursor">
@@ -58,6 +67,13 @@
    </property>
    <property name="windowTitle">
     <string>Menu Bar</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QToolBar
+{
+    background-image:url(&quot;:/resources/images/transp.png&quot;);
+    border:none;
+}</string>
    </property>
    <property name="allowedAreas">
     <set>Qt::BottomToolBarArea|Qt::TopToolBarArea</set>
@@ -79,6 +95,13 @@
    <property name="windowTitle">
     <string>Search</string>
    </property>
+   <property name="styleSheet">
+    <string notr="true">QToolBar
+{
+    background-image:url(&quot;:/resources/images/transp.png&quot;);
+    border:none;
+}</string>
+   </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
@@ -92,6 +115,13 @@
    </property>
    <property name="windowTitle">
     <string>Buttons</string>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QToolBar
+{
+    background-image:url(&quot;:/resources/images/transp.png&quot;);
+    border:none;
+}</string>
    </property>
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>

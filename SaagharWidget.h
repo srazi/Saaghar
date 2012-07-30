@@ -35,7 +35,7 @@
 #include <QUndoStack>
 
 #include "QGanjoorDbBrowser.h"
-#include "settings.h"
+//#include "settings.h"
 
 #include "bookmarks.h"
 

@@ -60,5 +60,6 @@
 		<file>images/two-hemistich-line.png</file>
 		<file>images/stepped-hemistich-line.png</file>
 		<file>images/empty.png</file>
+		<file>images/transp.png</file>
 	</qresource>
 </RCC>

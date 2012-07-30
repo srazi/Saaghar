@@ -156,6 +156,7 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QGanjoorDbBro
 //		warnDataBaseOpen.setDefaultButton(QMessageBox::Ok);
 //		warnDataBaseOpen.setWindowFlags(Qt::WindowStaysOnTopHint);
 //		int ret = warnDataBaseOpen.exec();
+		QtWin::easyBlurUnBlur(&noDataBaseDialog, Settings::READ("UseTransparecy").toBool());
 		int ret = noDataBaseDialog.exec();
 		if ( /*ret != QMessageBox::Ok &&*/ 
 			 noDataBaseDialog.clickedButton() != noDataBaseDialog.ui->exitPushButton
@@ -241,6 +242,7 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QGanjoorDbBro
 				}
 				else if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromRemote)
 				{ //download dialog
+					QtWin::easyBlurUnBlur(QGanjoorDbBrowser::dbUpdater, Settings::READ("UseTransparecy").toBool());
 					QGanjoorDbBrowser::dbUpdater->exec();
 				}
 				flagSelectNewPath = true;

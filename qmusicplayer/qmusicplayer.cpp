@@ -72,6 +72,8 @@ QMusicPlayer::QMusicPlayer(QWidget *parent) : QToolBar(parent)
 {
 	setObjectName("QMusicPlayer");
 
+	setStyleSheet("background-image:url(\":/resources/images/transp.png\"); border:none;");
+
 	notLoaded = true;
 	dockList = 0;
 
@@ -931,6 +933,8 @@ QDockWidget *QMusicPlayer::playListManagerDock()
 	if (dockList) return dockList;
 	dockList = new QDockWidget;
 	dockList->setObjectName("PlayListManagerDock");
+	dockList->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
+		"QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
 	dockList->setWindowTitle(tr("PlayList"));
 	dockList->setWidget(playListManager);
 	return dockList;

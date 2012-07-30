@@ -22,13 +22,13 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VER_FILEVERSION             1,0,94,1975
-#define VER_FILEVERSION_STR         "1.0.94.1975\0"
+#define VER_FILEVERSION             2,0,155,2580
+#define VER_FILEVERSION_STR         "2.0.155.2580\0"
 
-#define VER_FILEBUILDTIME_STR       "23Dec2011, 19:53:10\0"
+#define VER_FILEBUILDTIME_STR       "31Jul2012, 03:15:28\0"
 
-#define VER_PRODUCTVERSION          1,0
-#define VER_PRODUCTVERSION_STR      "1.0\0"
+#define VER_PRODUCTVERSION          2,0
+#define VER_PRODUCTVERSION_STR      "2.0\0"
 
 #define VER_COMPANYNAME_STR         "Pozh"
 #define VER_FILEDESCRIPTION_STR     "Saaghar, a Persian Poetry Software"

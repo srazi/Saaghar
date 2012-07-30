@@ -24,10 +24,11 @@
 #include "ui_mainwindow.h"
 #include "SearchItemDelegate.h"
 #include "version.h"
-#include "settings.h"
+//#include "settings.h"
 #include "SearchResultWidget.h"
 #include "SearchPatternManager.h"
 #include "outline.h"
+//#include "qtwin.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -239,19 +240,6 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 	cornerButton->setMenu(cornerMenu);
 	mainTabWidget->setCornerWidget(cornerButton);
 
-	if (windowState() & Qt::WindowFullScreen)
-	{
-		actionInstance("actionFullScreen")->setChecked(true);
-		actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
-		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/no-fullscreen.png"));
-	}
-	else
-	{
-		actionInstance("actionFullScreen")->setChecked(false);
-		actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
-		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/fullscreen.png"));
-	}
-
 	//searching database-path for database-file
 	//following lines are for support old default data-base pathes.
 	QStringList dataBaseCompatibilityPath(QGanjoorDbBrowser::dataBasePath);
@@ -342,6 +330,22 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 //		int bigOne = (width()*3)/4;
 //		splitter->setSizes( QList<int>() <<  width()-bigOne << bigOne);
 //	}
+		
+
+	if (windowState() & Qt::WindowFullScreen)
+	{
+		actionInstance("actionFullScreen")->setChecked(true);
+		actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
+		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/no-fullscreen.png"));
+	}
+	else
+	{
+		actionInstance("actionFullScreen")->setChecked(false);
+		actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
+		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/fullscreen.png"));
+		//apply transparent effect just in windowed mode!
+		QtWin::easyBlurUnBlur(this, Settings::READ("UseTransparecy").toBool());
+	}
 
 	emit loadingStatusText(tr("<i><b>Saaghar is starting...</b></i>"));
 }
@@ -1263,6 +1267,7 @@ void MainWindow::actionPrintClicked()
 	if (!defaultPrinter)
 		defaultPrinter = new QPrinter(QPrinter::HighResolution);
 	QPrintDialog printDialog(defaultPrinter, this);
+
 	if (printDialog.exec() == QDialog::Accepted)
 		print(defaultPrinter);
 }
@@ -1277,6 +1282,13 @@ void MainWindow::actionPrintPreviewClicked()
 void MainWindow::printPreview(QPrinter *printer)
 {
 	QPrintPreviewDialog *previewDialog = new QPrintPreviewDialog(printer, this);
+
+	if (QtWin::isCompositionEnabled())
+	{
+		previewDialog->setStyleSheet("QToolBar{ background-image:url(\":/resources/images/transp.png\"); border:none;}");
+	}
+	QtWin::easyBlurUnBlur(previewDialog, Settings::READ("UseTransparecy").toBool());
+
 	connect( previewDialog, SIGNAL(paintRequested(QPrinter *) ), this, SLOT(print(QPrinter *)) );
 	previewDialog->exec();
 }
@@ -1502,12 +1514,17 @@ void MainWindow::actFullScreenClicked(bool checked)
 		setWindowState(windowState() | Qt::WindowFullScreen);
 		actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
 		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/no-fullscreen.png"));
+
+		//disable transparent effect in fullscreen mode!
+		QtWin::easyBlurUnBlur(this, false);
 	}
 	else
 	{
 		setWindowState(windowState() & ~Qt::WindowFullScreen);
 		actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
 		actionInstance("actionFullScreen")->setIcon(QIcon(currentIconThemePath()+"/fullscreen.png"));
+
+		QtWin::easyBlurUnBlur(this, Settings::READ("UseTransparecy").toBool());
 	}
 	setUpdatesEnabled(true);
 }
@@ -1561,6 +1578,9 @@ void MainWindow::openRandomPoem(int parentID, bool newPage)
 void MainWindow::aboutSaaghar()
 {
 	QMessageBox about(this);
+
+	QtWin::easyBlurUnBlur(&about, Settings::READ("UseTransparecy").toBool());
+
 	QPixmap pixmap(":/resources/images/saaghar.png");
 	about.setIconPixmap(pixmap);
 	about.setWindowTitle(tr("About Saaghar"));
@@ -1843,6 +1863,8 @@ void MainWindow::setupUi()
 	QDockWidget *outlineDock = new QDockWidget(tr("Outline"), this);
 	outlineDock->setObjectName("outlineDock");
 	outlineDock->setWidget(outlineTree);
+	outlineDock->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
+		"QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
 	addDockWidget(Qt::RightDockWidgetArea, outlineDock);
 	allActionMap.insert("outlineDockAction", outlineDock->toggleViewAction());
 	actionInstance("outlineDockAction")->setIcon(QIcon(currentIconThemePath()+"/outline.png"));
@@ -1870,7 +1892,6 @@ void MainWindow::setupUi()
 		break;
 	}
 
-
 	actionInstance("DownloadRepositories", iconThemePath+"/download-sets-repositories.png",QObject::tr("&Download From Repositories..."));
 
 	//Inserting main menu items
@@ -1882,10 +1903,11 @@ void MainWindow::setupUi()
 	ui->menuBar->addMenu(menuHelp);
 
 	//QMenuBar style sheet
-	ui->menuBar->setStyleSheet("QMenuBar {background-color: transparent;}"
-	"QMenuBar::item {spacing: 3px;padding: 1px 7px 4px 7px;background: transparent;border-radius: 4px;}"
+	ui->menuBar->setStyleSheet("QMenuBar {background-color: transparent; border:none;}"
+	"QMenuBar::item {/*color: black;*/spacing: 3px;padding: 1px 7px 4px 7px;background: transparent;border-radius: 4px;}"
 	"QMenuBar::item:selected { background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #dadada, stop: 0.4 #d4d4d4, stop: 0.5 #c7c7c7, stop: 1.0 #dadada); border: 1px; }"
-	"QMenuBar::item:pressed {background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #9a9a9a, stop: 0.4 #949494, stop: 0.5 #a7a7a7, stop: 1.0 #9a9a9a); color: #fefefe; border: 1px; }");
+	"QMenuBar::item:pressed {background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #9a9a9a, stop: 0.4 #949494, stop: 0.5 #a7a7a7, stop: 1.0 #9a9a9a); color: #fefefe;"
+	"border: 1px; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-left-radius: 0px; border-bottom-right-radius: 0px; border-bottom: none;}");
 
 	int menuBarWidth = 0;
 	foreach(QAction *act, ui->menuBar->actions())
@@ -2105,6 +2127,12 @@ void MainWindow::createConnections()
 void MainWindow::globalSettings()
 {
 	Settings *settingsDlg = new Settings(this);
+
+	//if (Settings::READ("UseTransparecy").toBool())
+	////settingsDlg->setStyleSheet("QGroupBox{border: 1px solid lightgray;\nborder-radius: 5px;\n}");
+	//settingsDlg->setStyleSheet("QGroupBox {\n     border: 1px solid lightgray;\n     border-radius: 5px;\n\n     margin-top: 1ex; /* leave space at the top for the title */\n }\n ");
+	QtWin::easyBlurUnBlur(settingsDlg, Settings::READ("UseTransparecy").toBool());
+
 	connect(settingsDlg->ui->pushButtonRandomOptions, SIGNAL(clicked()), this, SLOT(customizeRandomDialog()));
 
 	/************initializing saved state of Settings dialog object!************/
@@ -2166,6 +2194,8 @@ void MainWindow::globalSettings()
 	connect(settingsDlg->ui->pushButtonActionTop, SIGNAL(clicked()), settingsDlg, SLOT(topAction()));
 	connect(settingsDlg->ui->pushButtonActionAdd, SIGNAL(clicked()), settingsDlg, SLOT(addActionToToolbarTable()));
 	connect(settingsDlg->ui->pushButtonActionRemove, SIGNAL(clicked()), settingsDlg, SLOT(removeActionFromToolbarTable()));
+
+	settingsDlg->ui->checkBoxTransparent->setChecked(Settings::READ("UseTransparecy").toBool());
 	/************end of initialization************/
 
 	if (settingsDlg->exec())
@@ -2214,7 +2244,7 @@ void MainWindow::globalSettings()
 		Settings::WRITE("Main ToolBar Items", mainToolBarItems.join("|"));
 
 		Settings::WRITE("Global Font", settingsDlg->ui->globalFontColorGroupBox->isChecked());
-		QFont fnt;
+		//QFont fnt;
 		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->outlineFontColor->sampleFont(), Settings::OutLineFontColor);
 		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->globalTextFontColor->sampleFont(), Settings::DefaultFontColor);
 		Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->poemTextFontColor->sampleFont(), Settings::PoemTextFontColor);
@@ -2231,9 +2261,8 @@ void MainWindow::globalSettings()
 		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->titlesFontColor->color(), Settings::TitlesFontColor);
 		Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->numbersFontColor->color(), Settings::NumbersFontColor);
 
-//		//temp
-//		Settings::WRITE("Fonts Hash", Settings::hashFonts);
-//		Settings::WRITE("Colors Hash", Settings::hashColors);
+		Settings::WRITE("UseTransparecy", settingsDlg->ui->checkBoxTransparent->isChecked());
+		QtWin::easyBlurUnBlur(this, Settings::READ("UseTransparecy").toBool());
 
 		/************end of setup new settings************/
 
@@ -2384,6 +2413,13 @@ void MainWindow::loadGlobalSettings()
 	selectedSearchRange = config->value("Selected Search Range", "").toStringList();
 
 	randomOpenInNewTab = config->value("Random Open New Tab", true).toBool();
+
+	//initialize default value for "UseTransparecy"
+#ifdef Q_WS_WIN
+	Settings::READ("UseTransparecy", true);
+#else
+	Settings::READ("UseTransparecy", false);
+#endif
 
 //	mainToolBarItems = config->value("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").toString().split("|", QString::SkipEmptyParts);
 //	QString tmp = mainToolBarItems.join("");
@@ -3396,6 +3432,9 @@ void MainWindow::namedActionTriggered(bool checked)
 		{
 			QGanjoorDbBrowser::dbUpdater = new DataBaseUpdater(this);
 		}
+
+		QtWin::easyBlurUnBlur(QGanjoorDbBrowser::dbUpdater, Settings::READ("UseTransparecy").toBool());
+
 		//connect(QGanjoorDbBrowser::dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
 		QGanjoorDbBrowser::dbUpdater->exec();
 	}
@@ -3560,6 +3599,8 @@ void MainWindow::setupBookmarkManagerUi()
 {
 	QDockWidget *bookmarkManagerWidget = new QDockWidget(tr("Bookmarks"), this);
 	bookmarkManagerWidget->setObjectName("bookMarkWidget");
+	bookmarkManagerWidget->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
+		"QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
 	bookmarkManagerWidget->hide();
 
 	QWidget *bookmarkContainer = new QWidget(bookmarkManagerWidget);

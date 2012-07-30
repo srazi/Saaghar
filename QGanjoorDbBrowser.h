@@ -34,6 +34,8 @@
 
 #include "DataBaseUpdater.h"
 #include "QGanjoorDbStuff.h"
+#include "settings.h"
+#include "qtwin.h"
 
 #include <QDebug>
 

@@ -772,7 +772,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 	}
 //	parentCatWidget->setLayout(parentCatLayout);
 //	parentCatsToolBar->addWidget(parentCatWidget);
-	parentCatsToolBar->setStyleSheet("QToolBar { padding: 3px; spacing: 0px; /* spacing between items in the tool bar */ }");
+	parentCatsToolBar->setStyleSheet("QToolBar { background-image:url(\":/resources/images/transp.png\"); border:none; padding: 3px; spacing: 0px; /* spacing between items in the tool bar */ }");
 
 	currentCat = !category.isNull() ? category._ID : 0;
 	currentParentID = !category.isNull() ? category._ParentID : 0;
