@@ -475,10 +475,16 @@
        <item>
         <widget class="QGroupBox" name="advancedFontColorGroupBox">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="title">
           <string>Advanced</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>false</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout_10">
           <item row="0" column="0">
@@ -833,38 +839,6 @@
     <hint type="destinationlabel">
      <x>411</x>
      <y>117</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>globalFontColorGroupBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>advancedFontColorGroupBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>48</x>
-     <y>180</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>57</x>
-     <y>376</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>globalFontColorGroupBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>advancedFontColorGroupBox</receiver>
-   <slot>setDisabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>49</x>
-     <y>177</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>101</x>
-     <y>376</y>
     </hint>
    </hints>
   </connection>

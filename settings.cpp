@@ -33,6 +33,10 @@ Settings::Settings(QWidget *parent) :	QDialog(parent), ui(new Ui::Settings)
 {
 	ui->setupUi(this);
 
+	connect(ui->globalFontColorGroupBox, SIGNAL(toggled(bool)), this, SLOT(setUnCheckedOtherFontColorGroupBox(bool)));
+	connect(ui->advancedFontColorGroupBox, SIGNAL(toggled(bool)), this, SLOT(setUnCheckedOtherFontColorGroupBox(bool)));
+
+
 	ui->globalFontColorGroupBox->setChecked(Settings::READ("Global Font", false).toBool());
 	//QHash<QString, QVariant> defaultFonts;
 	//QFont fnt;
@@ -331,8 +335,15 @@ void Settings::browseForIconTheme()
 		}
 }
 
+void Settings::setUnCheckedOtherFontColorGroupBox(bool unChecked)
+{
+	if (sender() == ui->advancedFontColorGroupBox)
+		ui->globalFontColorGroupBox->setChecked(!unChecked);
+	else if (sender() == ui->globalFontColorGroupBox)
+		ui->advancedFontColorGroupBox->setChecked(!unChecked);
+}
+
 /* static */
-#include <QDebug>
 QFont Settings::getFromFonts(FontColorItem type, bool canLoadDefault)
 {
 	QFont font;
@@ -476,6 +487,7 @@ FontColorSelector::FontColorSelector(const QFont &defaultFont, const QColor &def
 	fontSelector = new QPushButton(tr("Set Font..."), parent); 
 	colorSelector = new QPushButton(parent);
 	colorSelector->setFlat(true);
+	//colorSelector->setStyleSheet("QPushButton{border: 1px solid gray; border-radius: 3px;}");
 	colorSelector->setFixedSize(24,24);
 	QSpacerItem *horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
 

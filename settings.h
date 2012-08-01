@@ -93,6 +93,7 @@ public:
 	}
 
 private slots:
+	void setUnCheckedOtherFontColorGroupBox(bool unChecked);
 	void removeActionFromToolbarTable();
 	void addActionToToolbarTable();
 	void topAction();
