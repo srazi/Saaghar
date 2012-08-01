@@ -25,12 +25,12 @@ NoDataBaseDialog::NoDataBaseDialog(QWidget *parent, Qt::WindowFlags f) :
 	QDialog(parent, f),
 	ui(new Ui::NoDataBaseDialog)
 {
-	_clickedButton = 0;
 	ui->setupUi(this);
-	connect(ui->exitPushButton, SIGNAL(toggled(bool)), this, SLOT(buttonCheckStateToggled()));
-	connect(ui->selectDataBase, SIGNAL(toggled(bool)), this, SLOT(buttonCheckStateToggled()));
-	connect(ui->createDataBaseFromLocal, SIGNAL(toggled(bool)), this, SLOT(buttonCheckStateToggled()));
-	connect(ui->createDataBaseFromRemote, SIGNAL(toggled(bool)), this, SLOT(buttonCheckStateToggled()));
+	_clickedButton = ui->exitPushButton;
+	connect(ui->exitPushButton, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
+	connect(ui->selectDataBase, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
+	connect(ui->createDataBaseFromLocal, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
+	connect(ui->createDataBaseFromRemote, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
 }
 
 NoDataBaseDialog::~NoDataBaseDialog()
@@ -41,12 +41,16 @@ NoDataBaseDialog::~NoDataBaseDialog()
 void NoDataBaseDialog::buttonCheckStateToggled()
 {
 	QPushButton *senderButton = qobject_cast<QPushButton *>(sender());
-	if (senderButton && senderButton->isChecked())
+	if (senderButton /*&& senderButton->isChecked()*/)
 		_clickedButton = senderButton;
+
 	if (_clickedButton)
-		ui->buttonBox->setEnabled(true);
-	else
-		ui->buttonBox->setEnabled(false);
+		this->accept();
+
+//	if (_clickedButton)
+//		ui->buttonBox->setEnabled(true);
+//	else
+//		ui->buttonBox->setEnabled(false);
 }
 
 QPushButton * NoDataBaseDialog::clickedButton()

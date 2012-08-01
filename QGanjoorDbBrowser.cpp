@@ -193,10 +193,24 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QGanjoorDbBro
 					 noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromRemote)
 			{
 				//do download job!!
-				QString dir = QFileDialog::getExistingDirectory(0,tr("Select Save Location"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+				QFileDialog getDir(0,tr("Select Save Location"), dBFile.absoluteDir().path());
+				getDir.setFileMode(QFileDialog::Directory);
+				getDir.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks /*| QFileDialog::DontUseNativeDialog*/);
+				//getDir.setOptions(getDir.options() & ~QFileDialog::DontUseNativeDialog);
+				//getDir.setLayoutDirection(Qt::LeftToRight);
+				getDir.setAcceptMode(QFileDialog::AcceptOpen);
+				QtWin::easyBlurUnBlur(&getDir, Settings::READ("UseTransparecy").toBool());
+				getDir.exec();
+				QString dir = "";
+				if (!getDir.selectedFiles().isEmpty())
+					dir = getDir.selectedFiles().at(0);
+				//QString dir = QFileDialog::getExistingDirectory(0,tr("Select Save Location"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks | QFileDialog::DontUseNativeDialog);
 				while ( dir.isEmpty() || QFile::exists(dir+"/ganjoor.s3db"))
 				{
-					dir = QFileDialog::getExistingDirectory(0,tr("Select Save Location"), dir.isEmpty() ? dBFile.absoluteDir().path() : dir, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+					getDir.exec();
+					if (!getDir.selectedFiles().isEmpty())
+						dir = getDir.selectedFiles().at(0);
+//					dir = QFileDialog::getExistingDirectory(0,tr("Select Save Location"), dir.isEmpty() ? dBFile.absoluteDir().path() : dir, QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks | QFileDialog::DontUseNativeDialog);
 				}
 				// now dir is not empty and it doesn't contain 'ganjoor.s3db'
 				dir.replace(QString("\\"),QString("/"));

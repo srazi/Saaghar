@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>416</width>
-    <height>350</height>
+    <width>413</width>
+    <height>364</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -49,7 +49,7 @@
       <item>
        <widget class="QLabel" name="label">
         <property name="text">
-         <string>Saaghar can not open the database file, Saaghar needs its database for working properly. Choose one of the following options and  press 'OK' button.</string>
+         <string>Saaghar can not open the database file, Saaghar needs its database for working properly. Choose one of the following options.</string>
         </property>
         <property name="scaledContents">
          <bool>false</bool>
@@ -60,202 +60,84 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="exitPushButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
+       <widget class="QCommandLinkButton" name="exitPushButton">
         <property name="text">
-         <string>Nothing to do, Just exit!</string>
+         <string>Nothing to do, just exit!</string>
         </property>
         <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
          <bool>false</bool>
         </property>
         <property name="autoExclusive">
          <bool>true</bool>
         </property>
-        <property name="autoDefault">
-         <bool>true</bool>
-        </property>
         <property name="default">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
          <bool>true</bool>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="selectDataBase">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
+       <widget class="QCommandLinkButton" name="selectDataBase">
         <property name="toolTip">
-         <string>Select folder containing 'ganjoor.s3db' file!</string>
+         <string>&lt;p&gt;By selecting this option opens a dialog, and you should select a path containing 'ganjoor.s3db' file. Then Saaghar starts by setting it as its default data base!&lt;/p&gt;</string>
         </property>
         <property name="whatsThis">
          <string>By selecting this option opens a dialog, and you should select a path containing 'ganjoor.s3db' file. Then Saaghar starts by setting it as its default data base!</string>
         </property>
         <property name="text">
-         <string>Select New Path For  Data Base</string>
+         <string>Select new path for  data base</string>
         </property>
         <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
          <bool>false</bool>
         </property>
         <property name="autoExclusive">
          <bool>true</bool>
         </property>
-        <property name="autoDefault">
-         <bool>false</bool>
-        </property>
-        <property name="default">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
+        <property name="description">
+         <string>Select folder containing 'ganjoor.s3db' file!</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="createDataBaseFromLocal">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
+       <widget class="QCommandLinkButton" name="createDataBaseFromLocal">
         <property name="toolTip">
-         <string>Select folder for saving 'ganjoor.s3db' file! And then select the data sets you want to install.</string>
+         <string>&lt;p&gt;Firstly a dialog appears for select a path for saving 'ganjoor.s3db' file. It has not to contain 'ganjoor.s3db'! And then a dialog appears that you should select the data sets you want to install.&lt;/p&gt;</string>
         </property>
         <property name="whatsThis">
          <string>Firstly a dialog appears for select a path for saving 'ganjoor.s3db' file. It has not to contain 'ganjoor.s3db'! And then a dialog appears that you should select the data sets you want to install.</string>
         </property>
         <property name="text">
-         <string>Create Data Base And Install Existing Data Sets to it.</string>
+         <string>Create data base and install existing data sets to it.</string>
         </property>
         <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
          <bool>false</bool>
         </property>
         <property name="autoExclusive">
          <bool>true</bool>
         </property>
-        <property name="autoDefault">
-         <bool>false</bool>
-        </property>
-        <property name="default">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
+        <property name="description">
+         <string>Select folder for saving 'ganjoor.s3db' file! And then select the data sets you want to install.</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="createDataBaseFromRemote">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>0</width>
-          <height>50</height>
-         </size>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>10</pointsize>
-          <weight>75</weight>
-          <bold>true</bold>
-         </font>
-        </property>
+       <widget class="QCommandLinkButton" name="createDataBaseFromRemote">
         <property name="toolTip">
-         <string>Select folder for saving 'ganjoor.s3db' file! And then select the data sets you want to download and install.</string>
+         <string>&lt;p&gt;Firstly a dialog appears for select a path for saving 'ganjoor.s3db' file. It has not to contain 'ganjoor.s3db'! And then a dialog appears that you should select the data sets you want to download and install.&lt;/p&gt;</string>
         </property>
         <property name="whatsThis">
          <string>Firstly a dialog appears for select a path for saving 'ganjoor.s3db' file. It has not to contain 'ganjoor.s3db'! And then a dialog appears that you should select the data sets you want to download and install.</string>
         </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
         <property name="text">
-         <string>Create Data Base And Download and install data sets to it.</string>
+         <string>Create data base then download and install data sets to it.</string>
         </property>
         <property name="checkable">
-         <bool>true</bool>
-        </property>
-        <property name="checked">
          <bool>false</bool>
         </property>
         <property name="autoExclusive">
          <bool>true</bool>
         </property>
-        <property name="autoDefault">
-         <bool>false</bool>
-        </property>
-        <property name="default">
-         <bool>false</bool>
-        </property>
-        <property name="flat">
-         <bool>true</bool>
+        <property name="description">
+         <string>Select folder for saving 'ganjoor.s3db' file! And then select the data sets you want to download and install.</string>
         </property>
        </widget>
       </item>
@@ -309,57 +191,8 @@
      </layout>
     </widget>
    </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Ok</set>
-     </property>
-     <property name="centerButtons">
-      <bool>true</bool>
-     </property>
-    </widget>
-   </item>
   </layout>
  </widget>
  <resources/>
- <connections>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>accepted()</signal>
-   <receiver>NoDataBaseDialog</receiver>
-   <slot>accept()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>248</x>
-     <y>254</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>157</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>buttonBox</sender>
-   <signal>rejected()</signal>
-   <receiver>NoDataBaseDialog</receiver>
-   <slot>reject()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>316</x>
-     <y>260</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>286</x>
-     <y>274</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
