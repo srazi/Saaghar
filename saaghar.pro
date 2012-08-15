@@ -55,12 +55,14 @@ HEADERS += $${SOURCE_DIR}/mainwindow.h \
 	$${SOURCE_DIR}/outline.h \
 	$${SOURCE_DIR}/DataBaseUpdater.h \
 	$${SOURCE_DIR}/NoDataBaseDialog.h \
-	$${SOURCE_DIR}/qtwin.h
+	$${SOURCE_DIR}/qtwin.h \
+	$${SOURCE_DIR}/RegisterationForm.h
 
 FORMS += $${SOURCE_DIR}/mainwindow.ui \
 	$${SOURCE_DIR}/settings.ui \
 	$${SOURCE_DIR}/databaseupdater.ui \
-	$${SOURCE_DIR}/nodatabasedialog.ui
+	$${SOURCE_DIR}/nodatabasedialog.ui \
+	$${SOURCE_DIR}/registerationform.ui
 
 SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/mainwindow.cpp \
@@ -75,7 +77,8 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/outline.cpp \
 	$${SOURCE_DIR}/DataBaseUpdater.cpp \
 	$${SOURCE_DIR}/NoDataBaseDialog.cpp \
-	$${SOURCE_DIR}/qtwin.cpp
+	$${SOURCE_DIR}/qtwin.cpp \
+	$${SOURCE_DIR}/RegisterationForm.cpp
 
 include($${SOURCE_DIR}/pQjWidgets/pQjWidgets.pri)
 include($${SOURCE_DIR}/downloader/downloader.pri)

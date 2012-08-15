@@ -24,11 +24,10 @@
 #include "ui_mainwindow.h"
 #include "SearchItemDelegate.h"
 #include "version.h"
-//#include "settings.h"
 #include "SearchResultWidget.h"
 #include "SearchPatternManager.h"
 #include "outline.h"
-//#include "qtwin.h"
+#include "RegisterationForm.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -74,6 +73,8 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
 {
+	setObjectName("SaagharMainWindow");
+
 	QCoreApplication::setOrganizationName("Pozh");
 	QCoreApplication::setApplicationName("Saaghar");
 	QCoreApplication::setOrganizationDomain("Pozh.org");
@@ -1893,6 +1894,7 @@ void MainWindow::setupUi()
 	}
 
 	actionInstance("DownloadRepositories", iconThemePath+"/download-sets-repositories.png",QObject::tr("&Download From Repositories..."));
+	actionInstance("Registeration", iconThemePath+"/registeration.png",QObject::tr("&Registeration..."));
 
 	//Inserting main menu items
 	ui->menuBar->addMenu(menuFile);
@@ -2012,6 +2014,8 @@ void MainWindow::setupUi()
 	menuHelp->addAction(actionInstance("actionHelpContents"));
 	menuHelp->addSeparator();
 	menuHelp->addAction(actionInstance("actionCheckUpdates"));
+	menuHelp->addSeparator();
+	menuHelp->addAction(actionInstance("Registeration"));
 	menuHelp->addSeparator();
 	menuHelp->addAction(actionInstance("actionAboutSaaghar"));
 	menuHelp->addAction(actionInstance("actionAboutQt"));
@@ -3468,6 +3472,10 @@ void MainWindow::namedActionTriggered(bool checked)
 		qDebug() << "Random Parent ID=" << id;
 		openRandomPoem(id, randomOpenInNewTab);
 	}
+	else if (actionName == "Registeration")
+	{
+		checkRegistration(true);
+	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
 }
@@ -3900,4 +3908,12 @@ void MainWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
 		insertNewTab();
 	QString typeSTR = (type == SaagharWidget::CategoryViewerPage ? "CatID" : "PoemID");
 	saagharWidget->processClickedItem(typeSTR, id, true);
+}
+
+void MainWindow::checkRegistration(bool forceShow)
+{
+	if (!forceShow && !RegisterationForm::showRegisterForm()) return;
+	RegisterationForm regForm(this);
+	QtWin::easyBlurUnBlur(&regForm, Settings::READ("UseTransparecy").toBool());
+	regForm.exec();
 }

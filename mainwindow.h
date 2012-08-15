@@ -49,6 +49,7 @@ class MainWindow : public QMainWindow
 //		void emitReSizeEvent();
 		static bool autoCheckForUpdatesState;
 		static QSettings *getSettingsObject();
+		void checkRegistration(bool forceShow = false);
 
 //	public slots:
 //		void emitReSizeEvent();
