@@ -197,12 +197,12 @@ bool QtWin::easyBlurUnBlur(QWidget *widget, bool enable)
 	bool result = false;
 	if (enable)
 	{
-#ifdef Q_WS_X11
+#ifndef Q_WS_WIN //X11
 		widget->setAttribute(Qt::WA_TranslucentBackground);
 		widget->setAttribute(Qt::WA_NoSystemBackground, false);
 		QPalette pal = widget->palette();
 		QColor bg = pal.window().color();
-		bg.setAlpha(220);
+		bg.setAlpha(235);
 		pal.setColor(QPalette::Window, bg);
 		widget->setPalette(pal);
 		widget->ensurePolished(); // workaround Oxygen filling the background
@@ -213,12 +213,14 @@ bool QtWin::easyBlurUnBlur(QWidget *widget, bool enable)
 		{
 			result = QtWin::extendFrameIntoClientArea(widget);
 			widget->setContentsMargins(0, 0, 0, 0);
+			if (!widget->inherits("QMainWindow"))
+				widget->setStyleSheet(widget->styleSheet()+" QGroupBox {border: 1px solid lightgray; border-radius: 5px; margin-top: 7px; margin-bottom: 7px; padding: 0px;}QGroupBox::title {top: -7 ex;left: 10px; subcontrol-origin: border;}");
 		}
 #endif
 	}
 	else
 	{
-#ifdef Q_WS_X11
+#ifndef Q_WS_WIN //X11
 		widget->setAttribute(Qt::WA_TranslucentBackground, false);
 		QPalette pal = widget->palette();
 		QColor bg = pal.window().color();
