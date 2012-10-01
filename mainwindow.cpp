@@ -763,7 +763,32 @@ void MainWindow::currentTabChanged(int tabIndex)
 				SaagharWidget::musicPlayer->stop();
 		}
 #endif //NO_PHONON_LIB
+		parentCatsToolBar->setEnabled(true);
+		globalRedoAction->setEnabled(saagharWidget->undoStack->canRedo());
+		globalUndoAction->setEnabled(saagharWidget->undoStack->canUndo());
+		actionInstance("fixedNameRedoAction")->setEnabled(globalRedoAction->isEnabled());
+		actionInstance("fixedNameUndoAction")->setEnabled(globalUndoAction->isEnabled());
+		actionInstance("actionHome")->setEnabled(true);
+	}
+	else
+	{
+		saagharWidget = 0;
+		actionInstance("actionPreviousPoem")->setEnabled(false);
+		actionInstance("actionNextPoem")->setEnabled(false);
+		actionInstance("actionHome")->setEnabled(false);
+		parentCatsToolBar->setEnabled(false);
 
+		globalRedoAction->setEnabled(false);
+		globalUndoAction->setEnabled(false);
+		actionInstance("fixedNameRedoAction")->setEnabled(false);
+		actionInstance("fixedNameUndoAction")->setEnabled(false);
+#ifndef NO_PHONON_LIB
+		if (SaagharWidget::musicPlayer)
+		{
+			SaagharWidget::musicPlayer->setEnabled(false);
+			SaagharWidget::musicPlayer->stop();
+		}
+#endif
 	}
 }
 
@@ -895,6 +920,29 @@ void MainWindow::checkForUpdates()
 
 void MainWindow::tabCloser(int tabIndex)
 {
+	QWidget *closedTabContent = mainTabWidget->widget(tabIndex);
+	if (closedTabContent)
+		qDebug() << "closedTabContent="<<closedTabContent->objectName();
+	else
+		qDebug() << "closedTabContent NUUUUUUL";
+	if (closedTabContent && closedTabContent->objectName().startsWith("WidgetTab"))
+	{
+		mainTabWidget->setUpdatesEnabled(false);
+		mainTabWidget->removeTab(tabIndex);
+		mainTabWidget->setUpdatesEnabled(true);
+
+		if (closedTabContent->objectName() == "WidgetTab-Registeration")
+			actionInstance("Registeration")->setData(0);
+
+		delete closedTabContent;
+		closedTabContent = 0;
+	
+		if (mainTabWidget->count() == 1) //there is just one tab present.
+			mainTabWidget->setTabsClosable(false);
+
+		return;
+	}
+
 	if (tabIndex == mainTabWidget->currentIndex())
 		SaagharWidget::lastOveredItem = 0;
 	//if EditMode app need to ask about save changes!
@@ -918,7 +966,6 @@ void MainWindow::tabCloser(int tabIndex)
 //	tabAction->setData(mainTabWidget->widget(i) /*QString::number(i)*/);
 //	menuOpenedTabs->addAction(tabAction);
 
-	QWidget *closedTabContent = mainTabWidget->widget(tabIndex);
 	mainTabWidget->setUpdatesEnabled(false);
 	mainTabWidget->removeTab(tabIndex);
 	mainTabWidget->setUpdatesEnabled(true);
@@ -931,104 +978,117 @@ void MainWindow::tabCloser(int tabIndex)
 	connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
 }
 
-void MainWindow::insertNewTab()
+QWidget *MainWindow::insertNewTab(TabType tabType)
 {
 	QWidget *tabContent = new QWidget();
-	QGridLayout *tabGridLayout = new QGridLayout(tabContent);
-	tabGridLayout->setObjectName(QString::fromUtf8("tabGridLayout"));
-	QTableWidget *tabTableWidget = new QTableWidget;//(tabContent);
 
-	//table defaults
-	tabTableWidget->setObjectName(QString::fromUtf8("mainTableWidget"));
-	tabTableWidget->setLayoutDirection(Qt::RightToLeft);
-	tabTableWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-	tabTableWidget->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-	tabTableWidget->setShowGrid(false);
-	tabTableWidget->setGridStyle(Qt::NoPen);
-	tabTableWidget->setFrameShape(QFrame::NoFrame);
-	tabTableWidget->setFrameStyle(QFrame::NoFrame|QFrame::Plain);
-	tabTableWidget->horizontalHeader()->setVisible(false);
-	tabTableWidget->verticalHeader()->setVisible(false);
-	tabTableWidget->setMouseTracking(true);
-	tabTableWidget->setAutoScroll(false);
-	//install event filter on viewport
-	tabTableWidget->viewport()->installEventFilter(this);
-	//install 'delegate' on QTableWidget
-	QAbstractItemDelegate *tmpDelegate = tabTableWidget->itemDelegate();
-	delete tmpDelegate;
-	tmpDelegate = 0;
+	if (tabType == MainWindow::SaagharViewerTab)
+	{
+		QGridLayout *tabGridLayout = new QGridLayout(tabContent);
+		tabGridLayout->setObjectName(QString::fromUtf8("tabGridLayout"));
+		tabGridLayout->setContentsMargins(0,0,0,0);//3,4,3,3);
 
-	SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(tabTableWidget, tabTableWidget->style(), SaagharWidget::lineEditSearchText->text());
-	tabTableWidget->setItemDelegate(searchDelegate);
-	connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(const QString &)), searchDelegate, SLOT(keywordChanged(const QString &)) );
+		tabContent->setObjectName(QString::fromUtf8("SaagharViewerTab"));
+		QTableWidget *tabTableWidget = new QTableWidget;//(tabContent);
 
-	//tmp->scrollToFirstItemContains(SaagharWidget::lineEditSearchText->text());
-	//tabTableWidget->setItemDelegate(new SaagharItemDelegate(tabTableWidget, tabTableWidget->style()));
-	///////
-	//SaagharWidget *old_saagharWidget = saagharWidget;
-	saagharWidget = new SaagharWidget( tabContent, parentCatsToolBar, tabTableWidget);
-	saagharWidget->setObjectName(QString::fromUtf8("saagharWidget"));
+		//table defaults
+		tabTableWidget->setObjectName(QString::fromUtf8("mainTableWidget"));
+		tabTableWidget->setLayoutDirection(Qt::RightToLeft);
+		tabTableWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+		tabTableWidget->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+		tabTableWidget->setShowGrid(false);
+		tabTableWidget->setGridStyle(Qt::NoPen);
+		tabTableWidget->setFrameShape(QFrame::NoFrame);
+		tabTableWidget->setFrameStyle(QFrame::NoFrame|QFrame::Plain);
+		tabTableWidget->horizontalHeader()->setVisible(false);
+		tabTableWidget->verticalHeader()->setVisible(false);
+		tabTableWidget->setMouseTracking(true);
+		tabTableWidget->setAutoScroll(false);
 
-	undoGroup->addStack(saagharWidget->undoStack);
-	//currentTabChanged() does this
-	//undoGroup->setActiveStack(saagharWidget->undoStack);
+		//install event filter on viewport
+		tabTableWidget->viewport()->installEventFilter(this);
+		//install 'delegate' on QTableWidget
+		QAbstractItemDelegate *tmpDelegate = tabTableWidget->itemDelegate();
+		delete tmpDelegate;
+		tmpDelegate = 0;
 
-////	saagharWidget->splitter = new QSplitter(tabContent);
-////	//QTextEdit *test = new QTextEdit("TESSSSSSSSSSSSSSSSSST TESSSSSSSSSSSST");
-////	saagharWidget->splitter->addWidget(outlineTree);
-////	saagharWidget->splitter->addWidget(tabTableWidget);
-//	if (old_saagharWidget && old_saagharWidget->splitter)
-//	{//calculate place and size based previous one.
-//		QList<int> sizes = old_saagharWidget->splitter->sizes();
-//		saagharWidget->splitter->insertWidget(old_saagharWidget->splitter->indexOf(outlineTree), outlineTree);
-//		saagharWidget->splitter->setSizes(sizes);
-//	}
+		SaagharItemDelegate *searchDelegate = new SaagharItemDelegate(tabTableWidget, tabTableWidget->style(), SaagharWidget::lineEditSearchText->text());
+		tabTableWidget->setItemDelegate(searchDelegate);
+		connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(const QString &)), searchDelegate, SLOT(keywordChanged(const QString &)) );
 
-//	saagharWidget->splitter->handle(1)->setStyleSheet("QSplitter::handle {\
-//											background: red;\
-//											image: url(images/splitter.png);}\
-//										QSplitter::handle:horizontal {\
-//											width: 2px;}\
-//										QSplitter::handle:vertical {\
-//											height: 2px;\
-//										QSplitter::handle:pressed {\
-//											url(images/splitter_pressed.png);}");
+		saagharWidget = new SaagharWidget( tabContent, parentCatsToolBar, tabTableWidget);
+		saagharWidget->setObjectName(QString::fromUtf8("saagharWidget"));
+		
+		undoGroup->addStack(saagharWidget->undoStack);
 
-	connect(saagharWidget, SIGNAL(loadingStatusText(QString)), this, SIGNAL(loadingStatusText(QString)));
+		connect(saagharWidget, SIGNAL(loadingStatusText(QString)), this, SIGNAL(loadingStatusText(QString)));
 
-	//connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(const QString &)), saagharWidget, SLOT(scrollToFirstItemContains(const QString &)) );
+		connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateCaption()));
+		//temp
+		connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateTabsSubMenus()));
+		
+		connect(saagharWidget->tableViewWidget, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
+		connect(saagharWidget->tableViewWidget, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
+		connect(saagharWidget->tableViewWidget, SIGNAL(itemEntered(QTableWidgetItem *)), this, SLOT(tableItemMouseOver(QTableWidgetItem *)));
+		connect(saagharWidget->tableViewWidget, SIGNAL(currentItemChanged(QTableWidgetItem *,QTableWidgetItem *)), this, SLOT(tableCurrentItemChanged(QTableWidgetItem *,QTableWidgetItem *)));
+		
+		connect(saagharWidget->tableViewWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
+		connect(saagharWidget, SIGNAL(createContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
+		
+		//Enable/Disable navigation actions
+		connect(saagharWidget, SIGNAL(navPreviousActionState(bool)),	actionInstance("actionPreviousPoem"), SLOT(setEnabled(bool)) );
+		connect(saagharWidget, SIGNAL(navNextActionState(bool)),	actionInstance("actionNextPoem"), SLOT(setEnabled(bool)) );
+		actionInstance("actionPreviousPoem")->setEnabled( !SaagharWidget::ganjoorDataBase->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull() );
+		actionInstance("actionNextPoem")->setEnabled( !SaagharWidget::ganjoorDataBase->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull() );
+		
+		//Updating table on changing of selection
+		connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
+		//tabGridLayout->setContentsMargins(0,0,0,0);//3,4,3,3);
+		tabGridLayout->addWidget(tabTableWidget, 0, 0, 1, 1);
+		mainTabWidget->setUpdatesEnabled(false);
+		mainTabWidget->setCurrentIndex(mainTabWidget->addTab(tabContent,""));//add and gets focus to it
+		mainTabWidget->setUpdatesEnabled(true);
+	}
+	else if (tabType == MainWindow::WidgetTab)
+	{
+		QScrollArea *scrollArea = new QScrollArea;
+		scrollArea->setObjectName(QString::fromUtf8("WidgetTab"));
 
-	connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateCaption()));
-	//temp
-	connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateTabsSubMenus()));
+		QPalette p(scrollArea->palette());
+		p.setColor(QPalette::Base, Qt::white);
+		p.setColor(QPalette::Window, QColor(Qt::lightGray).lighter(131));
+		p.setColor(QPalette::Text, Qt::black);
+		scrollArea->setPalette(p);
+		/****/
+		QWidget *baseContainer = new QWidget(mainTabWidget);
+		QGridLayout *baseLayout = new QGridLayout(baseContainer);
+		baseLayout->addWidget(scrollArea, 0, 0, 1, 1, Qt::AlignCenter);
+		baseContainer->setLayout(baseLayout);
+		/****/
 
-	connect(saagharWidget->tableViewWidget, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
-	connect(saagharWidget->tableViewWidget, SIGNAL(itemPressed(QTableWidgetItem *)), this, SLOT(tableItemPress(QTableWidgetItem *)));
-	connect(saagharWidget->tableViewWidget, SIGNAL(itemEntered(QTableWidgetItem *)), this, SLOT(tableItemMouseOver(QTableWidgetItem *)));
-	connect(saagharWidget->tableViewWidget, SIGNAL(currentItemChanged(QTableWidgetItem *,QTableWidgetItem *)), this, SLOT(tableCurrentItemChanged(QTableWidgetItem *,QTableWidgetItem *)));
+		QPixmap pixmap(resourcesPath+"/themes/backgrounds/saaghar-pattern_1.png");
+		if (!pixmap.isNull())
+		{
+			QPalette p(scrollArea->viewport()->palette());
+			p.setBrush(QPalette::Base, QBrush(pixmap));
+			scrollArea->viewport()->setPalette(p);
+		}
 
-	connect(saagharWidget->tableViewWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
-	qDebug()<<"createContextMenuRequested="<< connect(saagharWidget, SIGNAL(createContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
+		scrollArea->setWidget(tabContent);
+		scrollArea->setAlignment(Qt::AlignCenter);
+		mainTabWidget->setUpdatesEnabled(false);
+		mainTabWidget->setCurrentIndex(mainTabWidget->addTab(scrollArea,""));//add and gets focus to it
+		mainTabWidget->setUpdatesEnabled(true);
+	}
+	else
+	{
+		return 0;
+	}
 
-	//Enable/Disable navigation actions
-	connect(saagharWidget, SIGNAL(navPreviousActionState(bool)),	actionInstance("actionPreviousPoem"), SLOT(setEnabled(bool)) );
-	connect(saagharWidget, SIGNAL(navNextActionState(bool)),	actionInstance("actionNextPoem"), SLOT(setEnabled(bool)) );
-	actionInstance("actionPreviousPoem")->setEnabled( !SaagharWidget::ganjoorDataBase->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull() );
-	actionInstance("actionNextPoem")->setEnabled( !SaagharWidget::ganjoorDataBase->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull() );
-	
-	//Updating table on changing of selection
-	connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
-
-	tabGridLayout->setContentsMargins(3,4,3,3);
-	tabGridLayout->addWidget(tabTableWidget, 0, 0, 1, 1);
-
-	mainTabWidget->setUpdatesEnabled(false);
-
-	mainTabWidget->setCurrentIndex(mainTabWidget->addTab(tabContent,""));//add and gets focus to it
 	if (mainTabWidget->count() > 1)
 		mainTabWidget->setTabsClosable(true);//there are two or more tabs opened
 
-	mainTabWidget->setUpdatesEnabled(true);
+	return tabContent;
 }
 
 void MainWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack)
@@ -1043,6 +1103,8 @@ void MainWindow::newTabForItem(int id, const QString &type, bool noError, bool p
 
 void MainWindow::updateCaption()
 {
+	if (!saagharWidget)
+		return;
 	QString newTabCaption = QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption, "", 0, 6, true, Qt::ElideRight)+QString(QChar(0x200F));
 	mainTabWidget->setTabText(mainTabWidget->currentIndex(), newTabCaption );
 	setWindowTitle(QString(QChar(0x202B))+QString::fromLocal8Bit("ساغر")+":"+saagharWidget->currentCaption+QString(QChar(0x202C)));
@@ -1097,6 +1159,8 @@ void MainWindow::actionExportAsPDFClicked()
 
 void MainWindow::actionExportClicked()
 {
+	if (!saagharWidget)
+		return;
 	QString exportedFileName = QFileDialog::getSaveFileName(this, tr("Export As"), QDir::homePath(), "HTML Document (*.html);;TeX - XePersian (*.tex);;Tab Separated (*.csv);;UTF-8 Text (*.txt)");
 	if (exportedFileName.endsWith(".html", Qt::CaseInsensitive))
 	{
@@ -1149,6 +1213,8 @@ void MainWindow::writeToFile(QString fileName, QString textToWrite)
 
 void MainWindow::print(QPrinter *printer)
 {
+	if (!saagharWidget)
+		return;
 	QPainter painter;
 	painter.begin(printer);
 
@@ -1335,7 +1401,7 @@ QString MainWindow::convertToHtml(SaagharWidget *saagharObject)
 					mesraText = item->text();
 					if (mesraText.isEmpty())
 					{
-						QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharWidget->tableViewWidget->cellWidget(row, 1));
+						QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharObject->tableViewWidget->cellWidget(row, 1));
 						if (textEdit)
 						{
 							mesraText = textEdit->toPlainText();
@@ -1428,7 +1494,7 @@ QString MainWindow::convertToTeX(SaagharWidget *saagharObject)
 					mesraText = item->text();
 					if (mesraText.isEmpty())
 					{
-						QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharWidget->tableViewWidget->cellWidget(row, 1));
+						QTextEdit *textEdit = qobject_cast<QTextEdit *>(saagharObject->tableViewWidget->cellWidget(row, 1));
 						if (textEdit)
 						{
 							mesraText = textEdit->toPlainText();
@@ -1568,7 +1634,7 @@ void MainWindow::openRandomPoem(int parentID, bool newPage)
 	int PoemID = SaagharWidget::ganjoorDataBase->getRandomPoemID(&actionData);
 	GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(PoemID);
 	if (!poem.isNull() && poem._CatID == actionData)
-		if (newPage)
+		if (newPage || !saagharWidget)
 			newTabForItem(poem._ID, "PoemID", true);
 		else
 			saagharWidget->processClickedItem("PoemID", poem._ID, true);
@@ -2543,13 +2609,16 @@ void MainWindow::saveSettings()
 	for (int i = 0; i < mainTabWidget->count(); ++i)
 	{
 		SaagharWidget *tmp = getSaagharWidget(i);
-		QString tabViewType;
-		if (tmp->currentPoem > 0)
-			tabViewType = "PoemID="+QString::number(tmp->currentPoem);
-		else
-			tabViewType = "CatID="+QString::number(tmp->currentCat);
-		
-		openedTabs << tabViewType;
+		if (tmp)
+		{
+			QString tabViewType;
+			if (tmp->currentPoem > 0)
+				tabViewType = "PoemID="+QString::number(tmp->currentPoem);
+			else
+				tabViewType = "CatID="+QString::number(tmp->currentCat);
+			
+			openedTabs << tabViewType;
+		}
 	}
 	Settings::WRITE("Opened tabs from last session", openedTabs);
 	//config->setValue("openedTabs", openedTabs);
@@ -2709,22 +2778,30 @@ void MainWindow::copySelectedItems()
 //Navigation
 void MainWindow::actionHomeClicked()
 {
+	if (!saagharWidget)
+		return;
 	saagharWidget->showHome();
 }
 
 void MainWindow::actionPreviousPoemClicked()
 {
+	if (!saagharWidget)
+		return;
 	saagharWidget->previousPoem();
 }
 
 void MainWindow::actionNextPoemClicked()
 {
+	if (!saagharWidget)
+		return;
 	saagharWidget->nextPoem();
 }
 
 //Tools
 void MainWindow::actionGanjoorSiteClicked()
 {
+	if (!saagharWidget)
+		return;
 	if ( saagharWidget->currentPageGanjoorUrl().isEmpty() )
 	{
 		QMessageBox::critical(this, tr("Error!"), tr("There is no equivalent page there at ganjoor website."), QMessageBox::Ok, QMessageBox::Ok );
@@ -3451,10 +3528,15 @@ void MainWindow::namedActionTriggered(bool checked)
 		int id = 0;
 		if (selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS"))
 		{
-			if (saagharWidget->currentPoem != 0)
-				id = SaagharWidget::ganjoorDataBase->getPoem(saagharWidget->currentPoem)._CatID;
+			if (saagharWidget)
+			{
+				if	(saagharWidget->currentPoem != 0)
+					id = SaagharWidget::ganjoorDataBase->getPoem(saagharWidget->currentPoem)._CatID;
+				else
+					id = saagharWidget->currentCat;
+			}
 			else
-				id = saagharWidget->currentCat;
+				id = 0;
 		}
 		else if (selectedRandomRange.contains("0")) //all
 			id = 0;//home
@@ -3474,7 +3556,13 @@ void MainWindow::namedActionTriggered(bool checked)
 	}
 	else if (actionName == "Registeration")
 	{
-		checkRegistration(true);
+		QWidget *regForm = qvariant_cast<QWidget *>(actionInstance("Registeration")->data());
+		if (!regForm)
+			checkRegistration(true);
+		else
+		{
+			mainTabWidget->setCurrentWidget(regForm);
+		}
 	}
 
 	connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
@@ -3913,7 +4001,46 @@ void MainWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
 void MainWindow::checkRegistration(bool forceShow)
 {
 	if (!forceShow && !RegisterationForm::showRegisterForm()) return;
-	RegisterationForm regForm(this);
-	QtWin::easyBlurUnBlur(&regForm, Settings::READ("UseTransparecy").toBool());
-	regForm.exec();
+
+	QWidget *formContainer = insertNewTab(MainWindow::WidgetTab);
+	if (!formContainer)
+	{
+		RegisterationForm regForm(this);
+		QtWin::easyBlurUnBlur(&regForm, Settings::READ("UseTransparecy").toBool());
+		regForm.show();
+	}
+	else
+	{
+		qDebug() << "formContainer="<<formContainer->objectName();
+		QGridLayout *gridLayout = new QGridLayout(formContainer);
+		gridLayout->setObjectName(QString::fromUtf8("tabGridLayout"));
+		gridLayout->setContentsMargins(0, 0, 0, 0);
+		formContainer->setObjectName(QString::fromUtf8("WidgetTab-RegFormContainer"));
+
+		RegisterationForm *regForm = new RegisterationForm(formContainer);
+		regForm->setStyleSheet(regForm->styleSheet() + "QGroupBox {border: 1px solid lightgray; border-radius: 5px; margin-top: 7px; margin-bottom: 7px; padding: 0px;}QGroupBox::title {top: -7 ex;left: 10px; subcontrol-origin: border;}");
+		regForm->setAutoFillBackground(true);
+		QPalette p(regForm->palette());
+		p.setColor(QPalette::Window, QColor(Qt::lightGray).lighter(130));
+		p.setColor(QPalette::Base, QColor(Qt::white));
+		regForm->setPalette(p);
+
+		formContainer->setMinimumSize(regForm->sizeHint());
+		gridLayout->addWidget(regForm, 1, 1, 1, 1, Qt::AlignCenter );
+
+		QSpacerItem *leftSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+		gridLayout->addItem(leftSpacer, 1, 0, 1, 1);
+		QSpacerItem *bottomSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+		gridLayout->addItem(bottomSpacer, 2, 1, 1, 1);
+		QSpacerItem *rightSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+		gridLayout->addItem(rightSpacer, 1, 2, 1, 1);
+		QSpacerItem *topSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
+		gridLayout->addItem(topSpacer, 0, 1, 1, 1);
+
+		formContainer->setLayout(gridLayout);
+		formContainer->adjustSize();
+		mainTabWidget->currentWidget()->setObjectName("WidgetTab-Registeration");
+		mainTabWidget->setTabText(mainTabWidget->currentIndex(), tr("Registeration"));
+		actionInstance("Registeration")->setData(QVariant::fromValue(mainTabWidget->currentWidget()));
+	}
 }

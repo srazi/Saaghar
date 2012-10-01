@@ -21,7 +21,7 @@ const QString INFO_PAGE = HOST+"/actions/get_info.php";
 const QString RESET_PAGE = HOST+"/actions/reset.php";
 
 RegisterationForm::RegisterationForm(QWidget *parent) :
-	QDialog(parent),
+	QWidget(parent),
 	ui(new Ui::RegisterationForm)
 {
 	_isRegisteredUser = false;

@@ -9,7 +9,7 @@ namespace Ui {
 	class RegisterationForm;
 }
 
-class RegisterationForm : public QDialog
+class RegisterationForm : public QWidget
 {
 	Q_OBJECT
 

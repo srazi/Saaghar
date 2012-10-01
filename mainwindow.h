@@ -45,6 +45,12 @@ class MainWindow : public QMainWindow
 	public:
 		explicit MainWindow(QWidget *parent = 0, QWidget *splashScreen = 0, bool fresh = false);
 		~MainWindow();
+
+		enum TabType {
+			SaagharViewerTab,
+			WidgetTab
+		};
+
 		SaagharWidget *saagharWidget;
 //		void emitReSizeEvent();
 		static bool autoCheckForUpdatesState;
@@ -93,7 +99,7 @@ class MainWindow : public QMainWindow
 		QToolBar *parentCatsToolBar;
 		SaagharWidget *getSaagharWidget(int tabIndex);
 		Qt::MouseButtons pressedMouseButton;
-		void insertNewTab();
+		QWidget *insertNewTab(TabType tabType = MainWindow::SaagharViewerTab);
 		Ui::MainWindow *ui;
 		void createConnections();
 		void setupUi();
