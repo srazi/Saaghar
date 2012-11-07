@@ -1,0 +1,10 @@
+OTHERS
+OTHERS/*
+.hgignore
+.hg/*
+.hg
+Saaghar-Win
+Saaghar-Win/*
+saaghar.pro.*
+sqlite-driver
+sqlite-driver/*

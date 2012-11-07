@@ -1,0 +1,8 @@
+<RCC>
+	<qresource>
+		<file>images/cancel.png</file>
+		<file>images/search.png</file>
+		<file>images/clear-left.png</file>
+		<file>images/clear-right.png</file>
+	</qresource>
+</RCC>

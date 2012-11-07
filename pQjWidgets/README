@@ -1,0 +1,18 @@
+Widgets:
+
+ QMultiSelectWidget:
+  a multi select list view and combobox.
+ 
+ QSearchLineEdit:
+  a line edit with search icon and search menu and clear button and even better, there is an embeded progress bar.
+ 
+ QTextBrowserDialog:
+  a messagebox dialog for support long text. it's good for show long text within small screens.
+ 
+ QExtendedSplashScreen:
+  a splash screen widget like QSplashScreen with support text position and transparent splashes. 
+ 
+
+ 
+Installation:
+ Just include 'pQjWidgets.pri' in your .pro file and include header files where they are needed.

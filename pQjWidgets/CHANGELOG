@@ -1,0 +1,19 @@
+== 0.1-->0.1.1 ==
+New: Using default icons for QSearchLineEdit's empty icons.
+Improved: QSearchLineEdit can use a custom icon for 'cancel' button
+Fixed: Moving '.pri' files to root directory.
+
+== Version 0.1 ==
+ * Initial version. 23 OCT 2011
+ Now pQjWidgets contains this widgets:
+ QMultiSelectWidget:
+  a multi select list view and combobox.
+ 
+ QSearchLineEdit:
+  a line edit with search icon and search menu and clear button and even better, there is an embeded progress bar.
+ 
+ QTextBrowserDialog:
+  a messagebox dialog for support long text. it's good for show long text within small screens.
+ 
+ QExtendedSplashScreen:
+  a splash screen widget like QSplashScreen with support text position and transparent splashes. 
