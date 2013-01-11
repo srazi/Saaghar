@@ -1,6 +1,9 @@
 OTHERS
 OTHERS/*
 .hgignore
+.hgsub
+.hgtags
+.hgsubstate
 .hg/*
 .hg
 Saaghar-Win
