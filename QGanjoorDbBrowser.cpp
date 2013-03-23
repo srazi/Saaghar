@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -2116,8 +2116,8 @@ QString QGanjoorDbBrowser::getLongPathName(const QString &fileName)
 #else
 	DWORD  retval=0;
 	//BOOL   success; 
-	TCHAR  bufLongFileName[BUFSIZE]=TEXT(L""); 
-	TCHAR  bufFileName[BUFSIZE]= TEXT(L""); 
+	TCHAR  bufLongFileName[BUFSIZE]=TEXT("");
+	TCHAR  bufFileName[BUFSIZE]= TEXT("");
 	//TCHAR** lppPart={NULL};
 
 	//QString tmp(QDir::tempPath());

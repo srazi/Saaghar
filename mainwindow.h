@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -43,7 +43,7 @@ class MainWindow : public QMainWindow
 	Q_OBJECT
 
 	public:
-		explicit MainWindow(QWidget *parent = 0, QWidget *splashScreen = 0, bool fresh = false);
+		explicit MainWindow(QWidget *parent = 0, QWidget *splashScreen = 0);
 		~MainWindow();
 
 		enum TabType {

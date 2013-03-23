@@ -1,7 +1,7 @@
 ﻿/***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -58,7 +58,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QActionGroup>
-//#include <QSplitter>
+#include <QTranslator>
 
 #ifndef NO_PHONON_LIB
 	#include "qmusicplayer.h"
@@ -69,7 +69,7 @@
 bool MainWindow::autoCheckForUpdatesState = true;
 bool MainWindow::isPortable = false;
 
-MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
+MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen) :
 	QMainWindow(parent),
 	ui(new Ui::MainWindow)
 {
@@ -115,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 #endif
 #ifdef Q_WS_X11
 		//dataBaseCompleteName = "/usr/share/saaghar/"+dataBaseCompleteName;
-		resourcesPath = "/usr/share/saaghar/";
+		resourcesPath = PREFIX"/share/saaghar/";
 		userHomePath = QDir::homePath()+"/.Pozh/Saaghar/";
 #endif
 #ifdef Q_WS_MAC
@@ -124,6 +124,22 @@ MainWindow::MainWindow(QWidget *parent, QWidget *splashScreen, bool fresh) :
 		userHomePath = QDir::homePath()+"/Library/Saaghar/";
 #endif
 		dataBaseCompleteName = resourcesPath+dataBaseCompleteName;
+	}
+
+	bool fresh = false;
+	if (QCoreApplication::arguments().contains("-fresh", Qt::CaseInsensitive))
+		fresh = true;
+
+	QString uiLanguage = getSettingsObject()->value("UI Language", "fa").toString();
+
+	QTranslator* appTranslator=new QTranslator();
+	QTranslator* basicTranslator=new QTranslator();
+
+	if (appTranslator->load(QString("saaghar_")+uiLanguage, resourcesPath))
+	{
+		QCoreApplication::installTranslator(appTranslator);
+		if (basicTranslator->load(QString("qt_")+uiLanguage, resourcesPath))
+			QCoreApplication::installTranslator(basicTranslator);
 	}
 
 	QDir saagharUserPath(userHomePath);
@@ -1107,7 +1123,7 @@ void MainWindow::updateCaption()
 		return;
 	QString newTabCaption = QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption, "", 0, 6, true, Qt::ElideRight)+QString(QChar(0x200F));
 	mainTabWidget->setTabText(mainTabWidget->currentIndex(), newTabCaption );
-	setWindowTitle(QString(QChar(0x202B))+QString::fromLocal8Bit("ساغر")+":"+saagharWidget->currentCaption+QString(QChar(0x202C)));
+	setWindowTitle(QString(QChar(0x202B))+tr("Saaghar: ")+saagharWidget->currentCaption+QString(QChar(0x202C)));
 }
 
 void MainWindow::tableSelectChanged()

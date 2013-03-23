@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -19,7 +19,6 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QTranslator>
 #include <QtGui/QApplication>
 //#include<QMessageBox>
 
@@ -37,30 +36,6 @@ int main(int argc, char *argv[])
 {
 	QApplication a(argc, argv);
 
-	bool fresh = false;
-	if (QCoreApplication::arguments().contains("-fresh", Qt::CaseInsensitive))
-		fresh = true;
-
-	QSettings *config = MainWindow::getSettingsObject();
-	QString uiLanguage = config->value("UI Language", "fa").toString();
-
-	QTranslator* appTranslator=new QTranslator();
-	QTranslator* basicTranslator=new QTranslator();
-
-	QStringList translationDirs = QStringList() << "/usr/share/saaghar" << QCoreApplication::applicationDirPath() + "/../Resources" << QCoreApplication::applicationDirPath();
-
-	for (int i=0; i<translationDirs.size(); ++i)
-	{
-		QString translationDir = translationDirs.at(i);
-		if (appTranslator->load(QString("saaghar_")+uiLanguage, translationDir))
-		{
-			QCoreApplication::installTranslator(appTranslator);
-			if (basicTranslator->load(QString("qt_")+uiLanguage, translationDir))
-				QCoreApplication::installTranslator(basicTranslator);
-			break;
-		}
-	}
-
 	//'At Development Stage' message
 	//QMessageBox::information(0, QObject::tr("At Development Stage"), QObject::tr("This is an experimental version! Don\'t release it!\nWWW: http://saaghar.pozh.org"));
 
@@ -68,7 +43,7 @@ int main(int argc, char *argv[])
 	QExtendedSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
 	splash.setMessageOptions(QRect(pixmap.rect().topLeft()+QPoint(30,400), pixmap.rect().bottomRight()+QPoint(-300,0)), Qt::AlignLeft|Qt::AlignBottom, Qt::blue);
 
-	MainWindow w(0, &splash, fresh);
+	MainWindow w(0, &splash);
 	w.show();
 
 	splash.finish(&w);
