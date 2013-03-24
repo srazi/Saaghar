@@ -187,19 +187,23 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
 	QString id = "";
 	if (parentElement.tagName() == "folder")
 	{
-		id = parentElement.attribute("id", "Verses");//old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
-		QDomElement oldTitleElement = parentElement.firstChildElement("title");
-		QDomElement newTitleElement = domDocument.createElement("title");
-		QDomText newTitleText = domDocument.createTextNode(tr(id.toLocal8Bit().data()));
-		newTitleElement.appendChild(newTitleText);
-
-		parentElement.replaceChild(newTitleElement, oldTitleElement);
+		//old files that their 'folder' tag don't use 'id' attribute
+		// just contain 'folder' tag of type 'Verses'!
+		id = parentElement.attribute("id", "Verses");
 		parentElement.setAttribute("id", id);
 	}
 
 	QTreeWidgetItem *item = createItem(parentElement, parentItem, id);
 
-	QString title = element.firstChildElement("title").text();
+	QString title;
+	if (id == "Verses")
+	{
+		title = tr("Verses");
+	}
+	else
+	{
+		title = element.firstChildElement("title").text();
+	}
 	if (title.isEmpty())
 		title = QObject::tr("Folder");
 
