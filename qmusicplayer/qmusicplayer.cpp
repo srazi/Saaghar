@@ -576,7 +576,7 @@ void QMusicPlayer::setupUi()
 
     volumeSlider = new Phonon::VolumeSlider(this);
     volumeSlider->setAudioOutput(audioOutput);
-    connect(audioOutput, SIGNAL(mutedChanged(bool)), this, SLOT(mutedChanged(bool)));
+
 //![4]
     volumeSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
@@ -678,6 +678,7 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &/*playLi
 
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         QMessageBox::information(this->parentWidget(), tr("Read Error!"), tr("Can't load playlist!\nError: %1").arg(file.errorString()));
+        return;
     }
 
     QString playListName;
@@ -798,6 +799,7 @@ void QMusicPlayer::savePlayList(const QString &fileName, const QString &playList
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::information(this->parentWidget(), tr("Save Error!"), tr("Can't save playlist!\nError: %1").arg(file.errorString()));
+        return;
     }
 
     QTextStream out(&file);

@@ -159,8 +159,11 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen) :
     actionInstance("playlistDockAction")->setObjectName(QString::fromUtf8("playlistDockAction"));
     actionInstance("playlistDockAction")->setIcon(QIcon(currentIconThemePath() + "/playlist.png"));
 
-    //TODO: remove hardcoded load/save location!
-    QMusicPlayer::listOfPlayList.insert("default", userHomePath + "/default.m3u8");
+    SaagharWidget::musicPlayer->readPlayerSettings(getSettingsObject());
+
+    if (QMusicPlayer::listOfPlayList.value("default").toString().isEmpty()) {
+        QMusicPlayer::listOfPlayList.insert("default", userHomePath + "/default.m3u8");
+    }
     SaagharWidget::musicPlayer->loadPlayList(QMusicPlayer::listOfPlayList.value("default").toString());
 #endif
 
@@ -2380,10 +2383,6 @@ QSettings* MainWindow::getSettingsObject()
 void MainWindow::loadGlobalSettings()
 {
     QSettings* config = getSettingsObject();
-
-#ifndef NO_PHONON_LIB
-    SaagharWidget::musicPlayer->readPlayerSettings(config);
-#endif
 
     Settings::LOAD_VARIABLES(config->value("VariableHash").toHash());
 
