@@ -8,7 +8,7 @@
  *                                                                         *
  * This file is part of the examples of the Qt Toolkit.                    *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  * $QT_BEGIN_LICENSE:BSD$                                                  *
@@ -65,44 +65,44 @@ QT_END_NAMESPACE
 
 class Downloader : public QObject
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	Downloader(QObject *parent = 0, QProgressBar *progressBar = 0, QLabel *statusLabel = 0);
+    Downloader(QObject* parent = 0, QProgressBar* progressBar = 0, QLabel* statusLabel = 0);
 
-	void startRequest(QUrl url);
-	//QProgressBar *downloadProgressBar(QWidget *parent = 0);
-	QEventLoop *loop;
+    void startRequest(QUrl url);
+    //QProgressBar *downloadProgressBar(QWidget *parent = 0);
+    QEventLoop* loop;
 
 public slots:
-	void downloadFile(const QUrl &downloadUrl, const QString &path, const QString &title = "");
-	void cancelDownload();
+    void downloadFile(const QUrl &downloadUrl, const QString &path, const QString &title = "");
+    void cancelDownload();
 
 private slots:
-	void redirectTo(const QUrl &newUrl);
-	void requestFinished();
-	void replyReadyRead();
-	void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
-	//void enableDownloadButton();
-	void slotAuthenticationRequired(QNetworkReply*,QAuthenticator *);
+    void redirectTo(const QUrl &newUrl);
+    void requestFinished();
+    void replyReadyRead();
+    void updateDataReadProgress(qint64 bytesRead, qint64 totalBytes);
+    //void enableDownloadButton();
+    void slotAuthenticationRequired(QNetworkReply*, QAuthenticator*);
 #ifndef QT_NO_OPENSSL
-	void sslErrors(QNetworkReply*,const QList<QSslError> &errors);
+    void sslErrors(QNetworkReply*, const QList<QSslError> &errors);
 #endif
 
 private:
-	QString dataText;
-	QString downloadTitle;
-	QUrl url;
-	QLabel *_statusLabel;
-	QProgressBar *_progressBar;
+    QString dataText;
+    QString downloadTitle;
+    QUrl url;
+    QLabel* _statusLabel;
+    QProgressBar* _progressBar;
 
-	QNetworkAccessManager qnam;
-	QNetworkReply *reply;
-	QFile *file;
-	int httpGetId;
-	bool requestAborted;
+    QNetworkAccessManager qnam;
+    QNetworkReply* reply;
+    QFile* file;
+    int httpGetId;
+    bool requestAborted;
 signals:
-	void downloadStopped();
+    void downloadStopped();
 };
 
 #endif

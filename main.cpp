@@ -27,29 +27,29 @@
 
 #ifdef Q_WS_WIN
 #ifdef STATIC
-	#include <QtPlugin>
-	Q_IMPORT_PLUGIN(qsqlite)
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(qsqlite)
 #endif
 #endif
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	QApplication a(argc, argv);
+    QApplication a(argc, argv);
 
-	//'At Development Stage' message
-	//QMessageBox::information(0, QObject::tr("At Development Stage"), QObject::tr("This is an experimental version! Don\'t release it!\nWWW: http://saaghar.pozh.org"));
+    //'At Development Stage' message
+    //QMessageBox::information(0, QObject::tr("At Development Stage"), QObject::tr("This is an experimental version! Don\'t release it!\nWWW: http://saaghar.pozh.org"));
 
-	QPixmap pixmap(":/resources/images/saaghar-splash.png");
-	QExtendedSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
-	splash.setMessageOptions(QRect(pixmap.rect().topLeft()+QPoint(30,400), pixmap.rect().bottomRight()+QPoint(-300,0)), Qt::AlignLeft|Qt::AlignBottom, Qt::blue);
+    QPixmap pixmap(":/resources/images/saaghar-splash.png");
+    QExtendedSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
+    splash.setMessageOptions(QRect(pixmap.rect().topLeft() + QPoint(30, 400), pixmap.rect().bottomRight() + QPoint(-300, 0)), Qt::AlignLeft | Qt::AlignBottom, Qt::blue);
 
-	MainWindow w(0, &splash);
-	w.show();
+    MainWindow w(0, &splash);
+    w.show();
 
-	splash.finish(&w);
+    splash.finish(&w);
 
-	w.checkRegistration();
-//	w.emitReSizeEvent();//maybe a Qt BUG//before 'QMainWindow::show()' the computation of width of QMainWindow is not correct!
+    w.checkRegistration();
+//  w.emitReSizeEvent();//maybe a Qt BUG//before 'QMainWindow::show()' the computation of width of QMainWindow is not correct!
 
-	return a.exec();
+    return a.exec();
 }

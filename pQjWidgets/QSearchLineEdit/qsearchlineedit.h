@@ -34,53 +34,53 @@ class QToolButton;
 
 class QSearchLineEdit : public QLineEdit
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	QSearchLineEdit(QWidget *parent = 0,
-					const QString &clearIconFileName = "",
-					const QString &optionsIconFileName = "",
-					const QString &cancelIconFileName = "");
-	QToolButton *optionsButton();
-	void notFound();
-	
+    QSearchLineEdit(QWidget* parent = 0,
+                    const QString &clearIconFileName = "",
+                    const QString &optionsIconFileName = "",
+                    const QString &cancelIconFileName = "");
+    QToolButton* optionsButton();
+    void notFound();
+
 
 protected:
-	void resizeEvent(QResizeEvent *);
+    void resizeEvent(QResizeEvent*);
 
 private slots:
-	void updateCloseButton(const QString &text);
-	void resetNotFound();
+    void updateCloseButton(const QString &text);
+    void resetNotFound();
 
 private:
-	void moveToRight(QToolButton *button);
-	void moveToLeft(QToolButton *button);
-	QToolButton *clearButton;
-	QToolButton *optionButton;
-	bool maybeFound;
+    void moveToRight(QToolButton* button);
+    void moveToLeft(QToolButton* button);
+    QToolButton* clearButton;
+    QToolButton* optionButton;
+    bool maybeFound;
 
 signals:
-	void clearButtonPressed();
+    void clearButtonPressed();
 
 //embeded progress-bar
 public:
-	bool searchWasCanceled();
-	QProgressBar *searchProgressBar();
+    bool searchWasCanceled();
+    QProgressBar* searchProgressBar();
 
 public slots:
-	void searchStart(bool *canceled = 0, int min = 0, int max = 0);
-	void searchStop();
-	void setSearchProgressText(const QString &str);
+    void searchStart(bool* canceled = 0, int min = 0, int max = 0);
+    void searchStop();
+    void setSearchProgressText(const QString &str);
 
 private:
-	QProgressBar *sPbar;
-	QToolButton *stopButton;
-	bool searchStarted;
-	bool *cancelPointer;
-	QString cancelButtonIcon;
+    QProgressBar* sPbar;
+    QToolButton* stopButton;
+    bool searchStarted;
+    bool* cancelPointer;
+    QString cancelButtonIcon;
 
 signals:
-	void searchCanceled();
+    void searchCanceled();
 };
 
 #endif // QSEARCHLINEEDIT_H

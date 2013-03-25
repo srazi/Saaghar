@@ -8,7 +8,7 @@
  *                                                                         *
  * This file is part of the examples of the Qt Toolkit.                    *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  * $QT_BEGIN_LICENSE:BSD$                                                  *
@@ -70,115 +70,115 @@ class PlayListManager;
 class QMusicPlayer : public QToolBar
 {
 //![0]
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	struct SaagharMediaTag {
-		int time;
-		QString TITLE;
-		QString PATH;
-		QString RELATIVE_PATH;
-		QString MD5SUM;
-	};
+    struct SaagharMediaTag {
+        int time;
+        QString TITLE;
+        QString PATH;
+        QString RELATIVE_PATH;
+        QString MD5SUM;
+    };
 
-	struct SaagharPlayList {
-		QString PATH;
-		QHash<int, SaagharMediaTag *> mediaItems;
-//		~SaagharPlayList()
-//		{
-//			PATH.clear();
-//			mediaItems.clear();
-//		}
-	};
+    struct SaagharPlayList {
+        QString PATH;
+        QHash<int, SaagharMediaTag*> mediaItems;
+//      ~SaagharPlayList()
+//      {
+//          PATH.clear();
+//          mediaItems.clear();
+//      }
+    };
 
-	QMusicPlayer(QWidget *parent = 0);
-	QString source();
-	void setSource(const QString &fileName, const QString &title = "", int mediaID = -1);
-	void readPlayerSettings(QSettings *settingsObject);
-	void savePlayerSettings(QSettings *settingsObject);
-	qint64 currentTime();
-	void setCurrentTime(qint64 time);
-	void loadPlayList(const QString &fileName, const QString &playListName = "default", const QString &format="M3U8");
-	void savePlayList(const QString &fileName, const QString &playListName = "default", const QString &format="M3U8");
+    QMusicPlayer(QWidget* parent = 0);
+    QString source();
+    void setSource(const QString &fileName, const QString &title = "", int mediaID = -1);
+    void readPlayerSettings(QSettings* settingsObject);
+    void savePlayerSettings(QSettings* settingsObject);
+    qint64 currentTime();
+    void setCurrentTime(qint64 time);
+    void loadPlayList(const QString &fileName, const QString &playListName = "default", const QString &format = "M3U8");
+    void savePlayList(const QString &fileName, const QString &playListName = "default", const QString &format = "M3U8");
 
-	static void insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle = "", const QString &mediaRelativePath = "", int mediaCurrentTime = 0, const QString &playListName = "default");
-	static void removeFromPlayList(int mediaID, const QString &playListName = "default");
-	static bool playListContains(int mediaID, const QString &playListName = "default");
-	static void getFromPlayList(int mediaID, QString *mediaPath, QString *mediaTitle = 0, QString *mediaRelativePath = 0, int *mediaCurrentTime = 0, const QString &playListName = "default");
+    static void insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle = "", const QString &mediaRelativePath = "", int mediaCurrentTime = 0, const QString &playListName = "default");
+    static void removeFromPlayList(int mediaID, const QString &playListName = "default");
+    static bool playListContains(int mediaID, const QString &playListName = "default");
+    static void getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle = 0, QString* mediaRelativePath = 0, int* mediaCurrentTime = 0, const QString &playListName = "default");
 
-	static QHash<QString, QVariant> listOfPlayList;
-	static QStringList commonSupportedMedia(const QString &type = "");//"" or "audio" or "video"
-	//static QHash<int, SaagharMediaTag> d efaultPlayList;
+    static QHash<QString, QVariant> listOfPlayList;
+    static QStringList commonSupportedMedia(const QString &type = "");//"" or "audio" or "video"
+    //static QHash<int, SaagharMediaTag> d efaultPlayList;
 
-	QDockWidget *playListManagerDock();
+    QDockWidget* playListManagerDock();
 
-public slots:	
-	void stop();
-	void playMedia(int mediaID/*, const QString &fileName, const QString &title = ""*/);
+public slots:
+    void stop();
+    void playMedia(int mediaID/*, const QString &fileName, const QString &title = ""*/);
 
 private slots:
-	void removeSource();
-	void setSource();
-	void seekableChanged(bool seekable);
+    void removeSource();
+    void setSource();
+    void seekableChanged(bool seekable);
 
 //![1]
-	void stateChanged(Phonon::State newState, Phonon::State oldState);
-	void tick(qint64 time);
-	void sourceChanged(const Phonon::MediaSource &source);
-	void metaStateChanged(Phonon::State newState, Phonon::State oldState);
-	void aboutToFinish();
-	void load(int index);
+    void stateChanged(Phonon::State newState, Phonon::State oldState);
+    void tick(qint64 time);
+    void sourceChanged(const Phonon::MediaSource &source);
+    void metaStateChanged(Phonon::State newState, Phonon::State oldState);
+    void aboutToFinish();
+    void load(int index);
 //![1]
 
 private:
-	bool notLoaded;
-	int currentID;
-	QString currentTitle;
-	QDockWidget	*dockList;
-	PlayListManager *playListManager;
-	inline static SaagharPlayList *playListByName(const QString &playListName = "default")
-		{return hashPlayLists.value(playListName);}
-	inline static void pushPlayList(SaagharPlayList *playList,const QString &playListName = "default")
-		{hashPlayLists.insert(playListName, playList);}
+    bool notLoaded;
+    int currentID;
+    QString currentTitle;
+    QDockWidget* dockList;
+    PlayListManager* playListManager;
+    inline static SaagharPlayList* playListByName(const QString &playListName = "default")
+    {return hashPlayLists.value(playListName);}
+    inline static void pushPlayList(SaagharPlayList* playList, const QString &playListName = "default")
+    {hashPlayLists.insert(playListName, playList);}
 
-	static QHash<QString, QHash<int, SaagharMediaTag> > playLists;
-	static QHash<QString, SaagharPlayList *> hashPlayLists;
-	static SaagharPlayList hashDefaultPlayList;
-	qint64 _newTime;
-	void setupActions();
-	//void setupMenus();
-	void setupUi();
+    static QHash<QString, QHash<int, SaagharMediaTag> > playLists;
+    static QHash<QString, SaagharPlayList*> hashPlayLists;
+    static SaagharPlayList hashDefaultPlayList;
+    qint64 _newTime;
+    void setupActions();
+    //void setupMenus();
+    void setupUi();
 
 //![2]
-	Phonon::SeekSlider *seekSlider;
-	Phonon::MediaObject *mediaObject;
-	Phonon::MediaObject *metaInformationResolver;
-	Phonon::AudioOutput *audioOutput;
-	Phonon::VolumeSlider *volumeSlider;
-	QList<Phonon::MediaSource> sources;
+    Phonon::SeekSlider* seekSlider;
+    Phonon::MediaObject* mediaObject;
+    Phonon::MediaObject* metaInformationResolver;
+    Phonon::AudioOutput* audioOutput;
+    Phonon::VolumeSlider* volumeSlider;
+    QList<Phonon::MediaSource> sources;
 //![2]
 
-	QAction *togglePlayPauseAction;
-	QAction *stopAction;
-	QAction *nextAction;
-	QAction *previousAction;
-	QAction *setSourceAction;
-	QAction *removeSourceAction;
-	QAction *repeatAction;
-	QAction *autoPlayAction;
+    QAction* togglePlayPauseAction;
+    QAction* stopAction;
+    QAction* nextAction;
+    QAction* previousAction;
+    QAction* setSourceAction;
+    QAction* removeSourceAction;
+    QAction* repeatAction;
+    QAction* autoPlayAction;
 
-	QLCDNumber *timeLcd;
-	//QLabel *infoLabel;
-	ScrollText *infoLabel;
-	QString startDir;
-	//QTableWidget *musicTable;
+    QLCDNumber* timeLcd;
+    //QLabel *infoLabel;
+    ScrollText* infoLabel;
+    QString startDir;
+    //QTableWidget *musicTable;
 
 protected:
-	virtual void resizeEvent(QResizeEvent *e);
+    virtual void resizeEvent(QResizeEvent* e);
 
 signals:
-	void mediaChanged(const QString &,const QString &,int,bool);//fileName, title, id, removeRequest
-	void requestPageContainedMedia(/*const QString &,const QString &,*/int,bool);//fileName, title, id
+    void mediaChanged(const QString &, const QString &, int, bool); //fileName, title, id, removeRequest
+    void requestPageContainedMedia(/*const QString &,const QString &,*/int, bool); //fileName, title, id
 };
 
 class QTreeWidget;
@@ -187,80 +187,80 @@ class QTreeWidgetItem;
 
 class PlayListManager : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	PlayListManager(QWidget *parent = 0);
-	void setPlayLists(const QHash<QString, QMusicPlayer::SaagharPlayList *> &playLists, bool justMediaList = false);
-	void setMediaObject(Phonon::MediaObject *MediaObject);
+    PlayListManager(QWidget* parent = 0);
+    void setPlayLists(const QHash<QString, QMusicPlayer::SaagharPlayList*> &playLists, bool justMediaList = false);
+    void setMediaObject(Phonon::MediaObject* MediaObject);
 
 private:
-	QTreeWidgetItem *previousItem;
-	QVBoxLayout *hLayout;
-	QTreeWidget *mediaList;
-	bool itemsAsTopItem;
-	Phonon::MediaObject *playListMediaObject;
+    QTreeWidgetItem* previousItem;
+    QVBoxLayout* hLayout;
+    QTreeWidget* mediaList;
+    bool itemsAsTopItem;
+    Phonon::MediaObject* playListMediaObject;
 
 private slots:
-	void mediaObjectStateChanged(Phonon::State newState, Phonon::State oldState);
-	void itemPlayRequested(QTreeWidgetItem*,int);
-	void currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest = false);
+    void mediaObjectStateChanged(Phonon::State newState, Phonon::State oldState);
+    void itemPlayRequested(QTreeWidgetItem*, int);
+    void currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest = false);
 
 signals:
-	void mediaPlayRequested(int/*, const QString &, const QString &*/);//mediaID, fileName, title!
+    void mediaPlayRequested(int/*, const QString &, const QString &*/);//mediaID, fileName, title!
 };
 
 /////////////////////////////////
 #include <QWidget>
 #if QT_VERSION >= 0x040700
-	#include <QStaticText>
+#include <QStaticText>
 #else
-	#include <QLabel>
+#include <QLabel>
 #endif
 #include <QTimer>
 
 
 class ScrollText : public QWidget
 {
-	Q_OBJECT
-	Q_PROPERTY(QString text READ text WRITE setText)
-	Q_PROPERTY(QString separator READ separator WRITE setSeparator)
+    Q_OBJECT
+    Q_PROPERTY(QString text READ text WRITE setText)
+    Q_PROPERTY(QString separator READ separator WRITE setSeparator)
 
 public:
-	explicit ScrollText(QWidget *parent = 0);
+    explicit ScrollText(QWidget* parent = 0);
 
 public slots:
-	QString text() const;
-	void setText(QString text);
+    QString text() const;
+    void setText(QString text);
 
-	QString separator() const;
-	void setSeparator(QString separator);
+    QString separator() const;
+    void setSeparator(QString separator);
 
 
 protected:
-	virtual void paintEvent(QPaintEvent *);
-	virtual void resizeEvent(QResizeEvent *);
+    virtual void paintEvent(QPaintEvent*);
+    virtual void resizeEvent(QResizeEvent*);
 
 private:
-	void updateText();
-	QString _text;
-	QString _separator;
+    void updateText();
+    QString _text;
+    QString _separator;
 #if QT_VERSION >= 0x040700
-	QStaticText staticText;
+    QStaticText staticText;
 #else
-	QLabel staticText;
+    QLabel staticText;
 #endif
-	int singleTextWidth;
-	QSize wholeTextSize;
-	int leftMargin;
-	bool scrollEnabled;
-	int scrollPos;
-	QImage alphaChannel;
-	QImage buffer;
-	QTimer timer;
+    int singleTextWidth;
+    QSize wholeTextSize;
+    int leftMargin;
+    bool scrollEnabled;
+    int scrollPos;
+    QImage alphaChannel;
+    QImage buffer;
+    QTimer timer;
 
 private slots:
-	virtual void timer_timeout();
+    virtual void timer_timeout();
 };
 
 // //link: http://msdn.microsoft.com/en-us/library/dd374921%28VS.85%29.aspx
@@ -269,78 +269,78 @@ private slots:
 //class CAudioSessionVolume : public IAudioSessionEvents
 //{
 //public:
-//	// Static method to create an instance of the object.
-//	static HRESULT CreateInstance(
-//		UINT uNotificationMessage,
-//		HWND hwndNotification,
-//		CAudioSessionVolume **ppAudioSessionVolume
-//	);
+//  // Static method to create an instance of the object.
+//  static HRESULT CreateInstance(
+//      UINT uNotificationMessage,
+//      HWND hwndNotification,
+//      CAudioSessionVolume **ppAudioSessionVolume
+//  );
 
-//	// IUnknown methods.
-//	STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
-//	STDMETHODIMP_(ULONG) AddRef();
-//	STDMETHODIMP_(ULONG) Release();
+//  // IUnknown methods.
+//  STDMETHODIMP QueryInterface(REFIID iid, void** ppv);
+//  STDMETHODIMP_(ULONG) AddRef();
+//  STDMETHODIMP_(ULONG) Release();
 
-//	// IAudioSessionEvents methods.
+//  // IAudioSessionEvents methods.
 
-//	STDMETHODIMP OnSimpleVolumeChanged(
-//		float NewVolume,
-//		BOOL NewMute,
-//		LPCGUID EventContext
-//		);
+//  STDMETHODIMP OnSimpleVolumeChanged(
+//      float NewVolume,
+//      BOOL NewMute,
+//      LPCGUID EventContext
+//      );
 
-//	// The remaining audio session events do not require any action.
-//	STDMETHODIMP OnDisplayNameChanged(LPCWSTR,LPCGUID)
-//	{
-//		return S_OK;
-//	}
+//  // The remaining audio session events do not require any action.
+//  STDMETHODIMP OnDisplayNameChanged(LPCWSTR,LPCGUID)
+//  {
+//      return S_OK;
+//  }
 
-//	STDMETHODIMP OnIconPathChanged(LPCWSTR,LPCGUID)
-//	{
-//		return S_OK;
-//	}
+//  STDMETHODIMP OnIconPathChanged(LPCWSTR,LPCGUID)
+//  {
+//      return S_OK;
+//  }
 
-//	STDMETHODIMP OnChannelVolumeChanged(DWORD,float[],DWORD,LPCGUID)
-//	{
-//		return S_OK;
-//	}
+//  STDMETHODIMP OnChannelVolumeChanged(DWORD,float[],DWORD,LPCGUID)
+//  {
+//      return S_OK;
+//  }
 
-//	STDMETHODIMP OnGroupingParamChanged(LPCGUID,LPCGUID)
-//	{
-//		return S_OK;
-//	}
+//  STDMETHODIMP OnGroupingParamChanged(LPCGUID,LPCGUID)
+//  {
+//      return S_OK;
+//  }
 
-//	STDMETHODIMP OnStateChanged(AudioSessionState)
-//	{
-//		return S_OK;
-//	}
+//  STDMETHODIMP OnStateChanged(AudioSessionState)
+//  {
+//      return S_OK;
+//  }
 
-//	STDMETHODIMP OnSessionDisconnected(AudioSessionDisconnectReason)
-//	{
-//		return S_OK;
-//	}
+//  STDMETHODIMP OnSessionDisconnected(AudioSessionDisconnectReason)
+//  {
+//      return S_OK;
+//  }
 
-//	// Other methods
-//	HRESULT EnableNotifications(BOOL bEnable);
-//	HRESULT GetVolume(float *pflVolume);
-//	HRESULT SetVolume(float flVolume);
-//	HRESULT GetMute(BOOL *pbMute);
-//	HRESULT SetMute(BOOL bMute);
-//	HRESULT SetDisplayName(const WCHAR *wszName);
-
-//protected:
-//	CAudioSessionVolume(UINT uNotificationMessage, HWND hwndNotification);
-//	~CAudioSessionVolume();
-
-//	HRESULT Initialize();
+//  // Other methods
+//  HRESULT EnableNotifications(BOOL bEnable);
+//  HRESULT GetVolume(float *pflVolume);
+//  HRESULT SetVolume(float flVolume);
+//  HRESULT GetMute(BOOL *pbMute);
+//  HRESULT SetMute(BOOL bMute);
+//  HRESULT SetDisplayName(const WCHAR *wszName);
 
 //protected:
-//	LONG m_cRef;                        // Reference count.
-//	UINT m_uNotificationMessage;        // Window message to send when an audio event occurs.
-//	HWND m_hwndNotification;            // Window to receives messages.
-//	BOOL m_bNotificationsEnabled;       // Are audio notifications enabled?
+//  CAudioSessionVolume(UINT uNotificationMessage, HWND hwndNotification);
+//  ~CAudioSessionVolume();
 
-//	IAudioSessionControl    *m_pAudioSession;
-//	ISimpleAudioVolume      *m_pSimpleAudioVolume;
+//  HRESULT Initialize();
+
+//protected:
+//  LONG m_cRef;                        // Reference count.
+//  UINT m_uNotificationMessage;        // Window message to send when an audio event occurs.
+//  HWND m_hwndNotification;            // Window to receives messages.
+//  BOOL m_bNotificationsEnabled;       // Are audio notifications enabled?
+
+//  IAudioSessionControl    *m_pAudioSession;
+//  ISimpleAudioVolume      *m_pSimpleAudioVolume;
 //};
 #endif // QMUSICPLAYER_H

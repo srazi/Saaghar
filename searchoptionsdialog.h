@@ -3,24 +3,25 @@
 
 #include <QDialog>
 
-namespace Ui {
-    class SearchOptionsDialog;
+namespace Ui
+{
+class SearchOptionsDialog;
 }
 
 class SearchOptionsDialog : public QDialog
 {
-		Q_OBJECT
-		
-	public:
-        explicit SearchOptionsDialog(QWidget *parent = 0);
-        ~SearchOptionsDialog();
+    Q_OBJECT
 
-	private:
-		void accept();
-        Ui::SearchOptionsDialog *ui;
+public:
+    explicit SearchOptionsDialog(QWidget* parent = 0);
+    ~SearchOptionsDialog();
 
-	signals:
-		void resultsRefreshRequired();
+private:
+    void accept();
+    Ui::SearchOptionsDialog* ui;
+
+signals:
+    void resultsRefreshRequired();
 };
 
 #endif // SEARCHOPTIONSDIALOG_H

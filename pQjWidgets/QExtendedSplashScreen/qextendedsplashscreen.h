@@ -30,42 +30,42 @@ class QLabel;
 
 class QExtendedSplashScreen : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit QExtendedSplashScreen(const QPixmap &pixmap = QPixmap(), Qt::WindowFlags f = 0);
-	QExtendedSplashScreen(QWidget *parent, const QPixmap &pixmap = QPixmap(), Qt::WindowFlags f = 0);
-	virtual ~QExtendedSplashScreen();
+    explicit QExtendedSplashScreen(const QPixmap &pixmap = QPixmap(), Qt::WindowFlags f = 0);
+    QExtendedSplashScreen(QWidget* parent, const QPixmap &pixmap = QPixmap(), Qt::WindowFlags f = 0);
+    virtual ~QExtendedSplashScreen();
 
-	const QPixmap pixmap() const;
-	void setPixmap(const QPixmap &pixmap);
-	void finish(QWidget *mainWin);
-	void repaint();
-	void forceRepaint();//after repaint calls 'processEvent()'
+    const QPixmap pixmap() const;
+    void setPixmap(const QPixmap &pixmap);
+    void finish(QWidget* mainWin);
+    void repaint();
+    void forceRepaint();//after repaint calls 'processEvent()'
 
 public slots:
-	void showMessage(const QString &message, int alignment, const QColor &color = Qt::black);
-	void showMessage(const QString &message);//uses last setted alignment and color
-	void setMessageOptions(QRect rect, int alignment = Qt::AlignLeft, const QColor &color = Qt::black);
-	void clearMessage();
+    void showMessage(const QString &message, int alignment, const QColor &color = Qt::black);
+    void showMessage(const QString &message);//uses last setted alignment and color
+    void setMessageOptions(QRect rect, int alignment = Qt::AlignLeft, const QColor &color = Qt::black);
+    void clearMessage();
 
 private:
-	void init(const QPixmap &pixmap);
-	QLabel *pixmapLabel;
-	QVBoxLayout *mainLayout;
-	void drawContents();
-	QPixmap splashPixmap;
-	QString currentStatus;
-	QColor textColor;
-	int textAlign;
-	QRect textRect;
-	Q_DISABLE_COPY(QExtendedSplashScreen)
+    void init(const QPixmap &pixmap);
+    QLabel* pixmapLabel;
+    QVBoxLayout* mainLayout;
+    void drawContents();
+    QPixmap splashPixmap;
+    QString currentStatus;
+    QColor textColor;
+    int textAlign;
+    QRect textRect;
+    Q_DISABLE_COPY(QExtendedSplashScreen)
 
 protected:
-	void mouseDoubleClickEvent(QMouseEvent *);
-	virtual void drawContents(QPainter *painter);
+    void mouseDoubleClickEvent(QMouseEvent*);
+    virtual void drawContents(QPainter* painter);
 
 signals:
-	void messageChanged(const QString &);
+    void messageChanged(const QString &);
 };
 #endif // QTRANSPARENTSPLASH_H

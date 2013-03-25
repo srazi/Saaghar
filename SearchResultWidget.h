@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -31,52 +31,52 @@
 
 class QSearchLineEdit;
 
-const int ITEM_SEARCH_DATA = Qt::UserRole+10;
+const int ITEM_SEARCH_DATA = Qt::UserRole + 10;
 
 
 class SearchResultWidget : public QWidget
-{ 
-	Q_OBJECT
+{
+    Q_OBJECT
 
 public:
-	SearchResultWidget(QWidget *parent = 0, const QString &searchPhrase = "", const QString &poetName = "");
-	~SearchResultWidget();
+    SearchResultWidget(QWidget* parent = 0, const QString &searchPhrase = "", const QString &poetName = "");
+    ~SearchResultWidget();
 
-	bool init(QMainWindow *qmw, const QString &iconThemePath);
-	void setResultList(const QMap<int, QString> &map);
-	//static void setMaxItemPerPage(int max);
-	QTableWidget *searchTable;
-	static int maxItemPerPage;
-	static bool nonPagedSearch;
-	static bool skipVowelSigns;
-	static bool skipVowelLetters;
+    bool init(QMainWindow* qmw, const QString &iconThemePath);
+    void setResultList(const QMap<int, QString> &map);
+    //static void setMaxItemPerPage(int max);
+    QTableWidget* searchTable;
+    static int maxItemPerPage;
+    static bool nonPagedSearch;
+    static bool skipVowelSigns;
+    static bool skipVowelLetters;
 
 private:
-	QDockWidget *searchResultWidget;
-	QWidget *searchResultContents;
-	void setupUi(QMainWindow *qmw, const QString &iconThemePath);
-	void showSearchResult(int start);
-	QString phrase;
-	bool navButtonsNeeded;
-	bool moreThanOnePage;
-	QString sectionName;
-	QToolButton *searchNextPage, *searchPreviousPage;
-	QAction *actSearchNextPage, *actSearchPreviousPage;
-	int pageNumber, pageCount;
-	QLabel *pageLabel;
-	QSearchLineEdit *filterLineEdit;
-	QMap<int, QString> resultList;
-	QMap<int, QString> copyResultList;
-	QStringList viewedItems;
+    QDockWidget* searchResultWidget;
+    QWidget* searchResultContents;
+    void setupUi(QMainWindow* qmw, const QString &iconThemePath);
+    void showSearchResult(int start);
+    QString phrase;
+    bool navButtonsNeeded;
+    bool moreThanOnePage;
+    QString sectionName;
+    QToolButton* searchNextPage, *searchPreviousPage;
+    QAction* actSearchNextPage, *actSearchPreviousPage;
+    int pageNumber, pageCount;
+    QLabel* pageLabel;
+    QSearchLineEdit* filterLineEdit;
+    QMap<int, QString> resultList;
+    QMap<int, QString> copyResultList;
+    QStringList viewedItems;
 
 private slots:
-	void currentRowColumnChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
-	void searchPageNavigationClicked(QAction *action);
-	void maxItemPerPageChange();
-	void filterResults(const QString &text);
+    void currentRowColumnChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
+    void searchPageNavigationClicked(QAction* action);
+    void maxItemPerPageChange();
+    void filterResults(const QString &text);
 
 signals:
-	void searchFiltered(const QString &);
+    void searchFiltered(const QString &);
 };
 
 #endif // SEARCHRESULTWIDGET_H

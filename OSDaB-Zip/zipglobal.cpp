@@ -66,14 +66,16 @@ int OSDAB_ZIP_MANGLE(currentUtcOffset)()
     tm res;
     tm_struct = gmtime_r(&curr_time_t, &res);
 #elif defined Q_OS_WIN && !defined Q_CC_MINGW
-    if (gmtime_s(tm_struct, &curr_time_t))
+    if (gmtime_s(tm_struct, &curr_time_t)) {
         return 0;
+    }
 #else
     tm_struct = gmtime(&curr_time_t);
 #endif
 
-    if (!tm_struct)
+    if (!tm_struct) {
         return 0;
+    }
 
     const time_t global_time_t = mktime(tm_struct);
 
@@ -81,14 +83,16 @@ int OSDAB_ZIP_MANGLE(currentUtcOffset)()
     // use the reentrant version of localtime() where available
     tm_struct = localtime_r(&curr_time_t, &res);
 #elif defined Q_OS_WIN && !defined Q_CC_MINGW
-    if (localtime_s(tm_struct, &curr_time_t))
+    if (localtime_s(tm_struct, &curr_time_t)) {
         return 0;
+    }
 #else
     tm_struct = localtime(&curr_time_t);
 #endif
 
-    if (!tm_struct)
+    if (!tm_struct) {
         return 0;
+    }
 
     const time_t local_time_t = mktime(tm_struct);
 
@@ -99,7 +103,7 @@ int OSDAB_ZIP_MANGLE(currentUtcOffset)()
     return 0;
 }
 
-QDateTime OSDAB_ZIP_MANGLE(fromFileTimestamp)(const QDateTime& dateTime)
+QDateTime OSDAB_ZIP_MANGLE(fromFileTimestamp)(const QDateTime &dateTime)
 {
 #if !defined OSDAB_ZIP_NO_UTC && defined OSDAB_ZIP_HAS_UTC
     const int utc = OSDAB_ZIP_MANGLE(currentUtcOffset)();
@@ -109,14 +113,15 @@ QDateTime OSDAB_ZIP_MANGLE(fromFileTimestamp)(const QDateTime& dateTime)
 #endif // OSDAB_ZIP_NO_UTC
 }
 
-bool OSDAB_ZIP_MANGLE(setFileTimestamp)(const QString& fileName, const QDateTime& dateTime)
+bool OSDAB_ZIP_MANGLE(setFileTimestamp)(const QString &fileName, const QDateTime &dateTime)
 {
-    if (fileName.isEmpty())
+    if (fileName.isEmpty()) {
         return true;
+    }
 
 #ifdef Q_OS_WIN
     HANDLE hFile = CreateFile(fileName.toStdWString().c_str(),
-        GENERIC_WRITE, FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
+                              GENERIC_WRITE, FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
     if (hFile == INVALID_HANDLE_VALUE) {
         return false;
     }

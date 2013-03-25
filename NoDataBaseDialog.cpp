@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -21,39 +21,41 @@
 
 #include "NoDataBaseDialog.h"
 
-NoDataBaseDialog::NoDataBaseDialog(QWidget *parent, Qt::WindowFlags f) :
-	QDialog(parent, f),
-	ui(new Ui::NoDataBaseDialog)
+NoDataBaseDialog::NoDataBaseDialog(QWidget* parent, Qt::WindowFlags f) :
+    QDialog(parent, f),
+    ui(new Ui::NoDataBaseDialog)
 {
-	ui->setupUi(this);
-	_clickedButton = ui->exitPushButton;
-	connect(ui->exitPushButton, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
-	connect(ui->selectDataBase, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
-	connect(ui->createDataBaseFromLocal, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
-	connect(ui->createDataBaseFromRemote, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
+    ui->setupUi(this);
+    _clickedButton = ui->exitPushButton;
+    connect(ui->exitPushButton, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
+    connect(ui->selectDataBase, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
+    connect(ui->createDataBaseFromLocal, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
+    connect(ui->createDataBaseFromRemote, SIGNAL(clicked(bool)), this, SLOT(buttonCheckStateToggled()));
 }
 
 NoDataBaseDialog::~NoDataBaseDialog()
 {
-	delete ui;
+    delete ui;
 }
 
 void NoDataBaseDialog::buttonCheckStateToggled()
 {
-	QPushButton *senderButton = qobject_cast<QPushButton *>(sender());
-	if (senderButton /*&& senderButton->isChecked()*/)
-		_clickedButton = senderButton;
+    QPushButton* senderButton = qobject_cast<QPushButton*>(sender());
+    if (senderButton /*&& senderButton->isChecked()*/) {
+        _clickedButton = senderButton;
+    }
 
-	if (_clickedButton)
-		this->accept();
+    if (_clickedButton) {
+        this->accept();
+    }
 
-//	if (_clickedButton)
-//		ui->buttonBox->setEnabled(true);
-//	else
-//		ui->buttonBox->setEnabled(false);
+//  if (_clickedButton)
+//      ui->buttonBox->setEnabled(true);
+//  else
+//      ui->buttonBox->setEnabled(false);
 }
 
-QPushButton * NoDataBaseDialog::clickedButton()
+QPushButton* NoDataBaseDialog::clickedButton()
 {
-	return _clickedButton;
+    return _clickedButton;
 }

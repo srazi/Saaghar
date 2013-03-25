@@ -36,24 +36,24 @@ class QSpacerItem;
 
 class QTextBrowserDialog : public QTextBrowser
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit QTextBrowserDialog(QWidget *parent = 0, const QString &title = "",const QString &text = "", const QPixmap &pixmapIcon = QPixmap(), Qt::WindowFlags f = 0);
-	inline int exec() {return containerDialog->exec();}
-	void setIconPixmap(const QPixmap &pixmap);
-	inline const QPixmap *iconPixmap()
-		{return labelIcon->pixmap();}
+    explicit QTextBrowserDialog(QWidget* parent = 0, const QString &title = "", const QString &text = "", const QPixmap &pixmapIcon = QPixmap(), Qt::WindowFlags f = 0);
+    inline int exec() {return containerDialog->exec();}
+    void setIconPixmap(const QPixmap &pixmap);
+    inline const QPixmap* iconPixmap()
+    {return labelIcon->pixmap();}
 
 private:
-	QDialog *containerDialog;
-	QGridLayout *gridLayout;
-	QTextBrowser *textBrowser;
-	QDialogButtonBox *buttonBox;
-	QVBoxLayout *verticalLayout;
-	QLabel *labelIcon;
-	QSpacerItem *verticalSpacer;
-	void setupui();
-	void retranslateUi();
+    QDialog* containerDialog;
+    QGridLayout* gridLayout;
+    QTextBrowser* textBrowser;
+    QDialogButtonBox* buttonBox;
+    QVBoxLayout* verticalLayout;
+    QLabel* labelIcon;
+    QSpacerItem* verticalSpacer;
+    void setupui();
+    void retranslateUi();
 };
 #endif // QTEXTBROWSERDIALOG_H

@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -26,26 +26,27 @@
 
 #include <QDialog>
 
-namespace Ui {
-	class NoDataBaseDialog;
+namespace Ui
+{
+class NoDataBaseDialog;
 }
 
 class NoDataBaseDialog : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	explicit NoDataBaseDialog(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	~NoDataBaseDialog();
-	Ui::NoDataBaseDialog *ui;
+    explicit NoDataBaseDialog(QWidget* parent = 0, Qt::WindowFlags f = 0);
+    ~NoDataBaseDialog();
+    Ui::NoDataBaseDialog* ui;
 
-	QPushButton *clickedButton();
+    QPushButton* clickedButton();
 
 private:
-	QPushButton *_clickedButton;
+    QPushButton* _clickedButton;
 
 private slots:
-	void buttonCheckStateToggled();
+    void buttonCheckStateToggled();
 };
 
 #endif // NODATABASEDIALOG_H

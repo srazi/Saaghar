@@ -36,15 +36,15 @@
 //#include <QDebug>
 
 QExtendedSplashScreen::QExtendedSplashScreen(const QPixmap &pixmap, Qt::WindowFlags f)
-	: QWidget(0, Qt::FramelessWindowHint | f)
+    : QWidget(0, Qt::FramelessWindowHint | f)
 {
-	init(pixmap);
+    init(pixmap);
 }
 
-QExtendedSplashScreen::QExtendedSplashScreen(QWidget *parent, const QPixmap &pixmap, Qt::WindowFlags f)
-	: QWidget(parent, Qt::FramelessWindowHint | f)
+QExtendedSplashScreen::QExtendedSplashScreen(QWidget* parent, const QPixmap &pixmap, Qt::WindowFlags f)
+    : QWidget(parent, Qt::FramelessWindowHint | f)
 {
-	init(pixmap);
+    init(pixmap);
 }
 
 QExtendedSplashScreen::~QExtendedSplashScreen()
@@ -53,162 +53,159 @@ QExtendedSplashScreen::~QExtendedSplashScreen()
 
 void QExtendedSplashScreen::init(const QPixmap &pixmap)
 {
-	setAttribute(Qt::WA_TranslucentBackground);
-	mainLayout = new QVBoxLayout;
-	mainLayout->setContentsMargins(0,0,0,0);
-	mainLayout->setSpacing(0);
-	pixmapLabel = new QLabel(this);
+    setAttribute(Qt::WA_TranslucentBackground);
+    mainLayout = new QVBoxLayout;
+    mainLayout->setContentsMargins(0, 0, 0, 0);
+    mainLayout->setSpacing(0);
+    pixmapLabel = new QLabel(this);
 
-	mainLayout->addWidget(pixmapLabel);
-	this->setLayout(mainLayout);
+    mainLayout->addWidget(pixmapLabel);
+    this->setLayout(mainLayout);
 
-	showMessage("", int(Qt::AlignLeft), Qt::black);
-	setPixmap(pixmap);
+    showMessage("", int(Qt::AlignLeft), Qt::black);
+    setPixmap(pixmap);
 }
 
-void QExtendedSplashScreen::finish(QWidget *mainWin)
+void QExtendedSplashScreen::finish(QWidget* mainWin)
 {
-	if (mainWin)
-	{
+    if (mainWin) {
 #if defined(Q_WS_X11)
-		extern void qt_x11_wait_for_window_manager(QWidget *mainWin);
-		qt_x11_wait_for_window_manager(mainWin);
+        extern void qt_x11_wait_for_window_manager(QWidget * mainWin);
+        qt_x11_wait_for_window_manager(mainWin);
 #endif
-	}
-	close();
+    }
+    close();
 }
 
 void QExtendedSplashScreen::repaint()
 {
-	drawContents();
-	QWidget::repaint();
-	QApplication::flush();
+    drawContents();
+    QWidget::repaint();
+    QApplication::flush();
 }
 
 void QExtendedSplashScreen::forceRepaint()
 {
-	repaint();
-	QCoreApplication::processEvents();
+    repaint();
+    QCoreApplication::processEvents();
 }
 
 void QExtendedSplashScreen::showMessage(const QString &message, int alignment, const QColor &color)
 {
-	textColor = color;
-	textAlign = alignment;
-	showMessage(message);
+    textColor = color;
+    textAlign = alignment;
+    showMessage(message);
 }
 
 void QExtendedSplashScreen::showMessage(const QString &message)
 {
-	if (message.startsWith("!QTransparentSplashInternalCommands:"))
-	{
-		QString command = message;
-		command.remove("!QTransparentSplashInternalCommands:");
-		if (command == "CLOSE")
-			close();
-		else if (command == "HIDE")
-			hide();
-		else if (command == "SHOW")
-			show();
+    if (message.startsWith("!QTransparentSplashInternalCommands:")) {
+        QString command = message;
+        command.remove("!QTransparentSplashInternalCommands:");
+        if (command == "CLOSE") {
+            close();
+        }
+        else if (command == "HIDE") {
+            hide();
+        }
+        else if (command == "SHOW") {
+            show();
+        }
 
-		return;
-	}
-	currentStatus = message;
-	forceRepaint();
-	emit messageChanged(message);
+        return;
+    }
+    currentStatus = message;
+    forceRepaint();
+    emit messageChanged(message);
 }
 
 void QExtendedSplashScreen::clearMessage()
 {
-	showMessage("");
+    showMessage("");
 }
 
-void QExtendedSplashScreen::mouseDoubleClickEvent(QMouseEvent *)
+void QExtendedSplashScreen::mouseDoubleClickEvent(QMouseEvent*)
 {
-	close();
+    close();
 }
 
 void QExtendedSplashScreen::drawContents()
 {
-	if (!splashPixmap.isNull())
-	{
-		QPixmap textPix = splashPixmap;
-		QPainter painter(&textPix);
-		painter.initFrom(this);
-		drawContents(&painter);
-		pixmapLabel->setPixmap(textPix);
-	}
+    if (!splashPixmap.isNull()) {
+        QPixmap textPix = splashPixmap;
+        QPainter painter(&textPix);
+        painter.initFrom(this);
+        drawContents(&painter);
+        pixmapLabel->setPixmap(textPix);
+    }
 }
 
-void QExtendedSplashScreen::drawContents(QPainter *painter)
+void QExtendedSplashScreen::drawContents(QPainter* painter)
 {
-	painter->setPen(textColor);
+    painter->setPen(textColor);
 
-	if (Qt::mightBeRichText(currentStatus))
-	{
-		QTextDocument doc;
+    if (Qt::mightBeRichText(currentStatus)) {
+        QTextDocument doc;
 #ifdef QT_NO_TEXTHTMLPARSER
-		doc.setPlainText(currentStatus);
+        doc.setPlainText(currentStatus);
 #else
-		//this does not override any existence of color formatting
-		doc.setHtml("<span style=\"color: "+textColor.name()+";\">"+currentStatus+"</span>");
+        //this does not override any existence of color formatting
+        doc.setHtml("<span style=\"color: " + textColor.name() + ";\">" + currentStatus + "</span>");
 #endif
-		doc.setTextWidth(textRect.width());
-		QTextCursor cursor(&doc);
-		cursor.select(QTextCursor::Document);
-		QTextBlockFormat fmt;
-		fmt.setAlignment(Qt::Alignment(textAlign));
-		cursor.mergeBlockFormat(fmt);
-		int docHeight = doc.blockCount()*doc.documentLayout()->blockBoundingRect(doc.begin()).height();
+        doc.setTextWidth(textRect.width());
+        QTextCursor cursor(&doc);
+        cursor.select(QTextCursor::Document);
+        QTextBlockFormat fmt;
+        fmt.setAlignment(Qt::Alignment(textAlign));
+        cursor.mergeBlockFormat(fmt);
+        int docHeight = doc.blockCount() * doc.documentLayout()->blockBoundingRect(doc.begin()).height();
 
-		painter->save();
+        painter->save();
 
-		switch (Qt::Alignment(textAlign) & Qt::AlignVertical_Mask )
-		{
-			case Qt::AlignTop:
-					painter->translate(textRect.topLeft());
-				break;
+        switch (Qt::Alignment(textAlign) & Qt::AlignVertical_Mask) {
+        case Qt::AlignTop:
+            painter->translate(textRect.topLeft());
+            break;
 
-			case Qt::AlignVCenter:
-					painter->translate(QPoint(textRect.left(), textRect.top()+qMax( (textRect.height()-docHeight)/2-5, 0) ) );
-				break;
+        case Qt::AlignVCenter:
+            painter->translate(QPoint(textRect.left(), textRect.top() + qMax((textRect.height() - docHeight) / 2 - 5, 0)));
+            break;
 
-			case Qt::AlignBottom:
-					painter->translate(QPoint(textRect.left(), textRect.top()+qMax(textRect.height()-docHeight-5, 0) ) );
-				break;
+        case Qt::AlignBottom:
+            painter->translate(QPoint(textRect.left(), textRect.top() + qMax(textRect.height() - docHeight - 5, 0)));
+            break;
 
-			default:
-				break;
-		}
+        default:
+            break;
+        }
 
-		doc.drawContents(painter);
-		painter->restore();
-	}
-	else
-	{
-		painter->drawText(textRect, textAlign, currentStatus);
-	}
+        doc.drawContents(painter);
+        painter->restore();
+    }
+    else {
+        painter->drawText(textRect, textAlign, currentStatus);
+    }
 }
 
 void QExtendedSplashScreen::setMessageOptions(QRect rect, int alignment, const QColor &color)
 {
-	textRect = rect;
-	textAlign = alignment;
-	textColor = color;
-	forceRepaint();
+    textRect = rect;
+    textAlign = alignment;
+    textColor = color;
+    forceRepaint();
 }
 
 const QPixmap QExtendedSplashScreen::pixmap() const
 {
-	return splashPixmap;
+    return splashPixmap;
 }
 
 void QExtendedSplashScreen::setPixmap(const QPixmap &pixmap)
 {
-	splashPixmap = pixmap;
-	textRect = splashPixmap.rect();
-	QRect r(0, 0, splashPixmap.size().width(), splashPixmap.size().height());
-	move(QApplication::desktop()->screenGeometry().center() - r.center());
-	pixmapLabel->setPixmap(splashPixmap);
-	forceRepaint();
+    splashPixmap = pixmap;
+    textRect = splashPixmap.rect();
+    QRect r(0, 0, splashPixmap.size().width(), splashPixmap.size().height());
+    move(QApplication::desktop()->screenGeometry().center() - r.center());
+    pixmapLabel->setPixmap(splashPixmap);
+    forceRepaint();
 }

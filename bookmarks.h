@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *                                                                         *
@@ -53,38 +53,38 @@
 
 class Bookmarks : public QTreeWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	Bookmarks(QWidget *parent = 0);
+    Bookmarks(QWidget* parent = 0);
 
-	bool read(QIODevice *device);
-	bool write(QIODevice *device);
-	bool updateBookmarkState(const QString &type, const QVariant &data, bool state);
-	QStringList bookmarkList(const QString &type);
-	void insertBookmarkList(const QVariantList &list);
+    bool read(QIODevice* device);
+    bool write(QIODevice* device);
+    bool updateBookmarkState(const QString &type, const QVariant &data, bool state);
+    QStringList bookmarkList(const QString &type);
+    void insertBookmarkList(const QVariantList &list);
 
 private slots:
-	bool unBookmarkItem(QTreeWidgetItem *item = 0);
-	void doubleClicked(QTreeWidgetItem *item, int column);
-	void updateDomElement(QTreeWidgetItem *item, int column);
-	void filterItems(const QString &str);
+    bool unBookmarkItem(QTreeWidgetItem* item = 0);
+    void doubleClicked(QTreeWidgetItem* item, int column);
+    void updateDomElement(QTreeWidgetItem* item, int column);
+    void filterItems(const QString &str);
 
 private:
-	//QMultiHash<QString, QString> bookmarkHash;
-	QDomElement findChildNode(const QString &tagName, const QString &type);
-	void parseFolderElement(const QDomElement &element,
-							QTreeWidgetItem *parentItem = 0, const QString &elementID = QString());
-	QTreeWidgetItem *createItem(const QDomElement &element,
-								QTreeWidgetItem *parentItem = 0, const QString &elementID = QString());
+    //QMultiHash<QString, QString> bookmarkHash;
+    QDomElement findChildNode(const QString &tagName, const QString &type);
+    void parseFolderElement(const QDomElement &element,
+                            QTreeWidgetItem* parentItem = 0, const QString &elementID = QString());
+    QTreeWidgetItem* createItem(const QDomElement &element,
+                                QTreeWidgetItem* parentItem = 0, const QString &elementID = QString());
 
-	QDomDocument domDocument;
-	QHash<QTreeWidgetItem *, QDomElement> domElementForItem;
-	QIcon folderIcon;
-	QIcon bookmarkIcon;
+    QDomDocument domDocument;
+    QHash<QTreeWidgetItem*, QDomElement> domElementForItem;
+    QIcon folderIcon;
+    QIcon bookmarkIcon;
 
 signals:
-	void showBookmarkedItem(const QString &, const QString &, const QString &, bool, bool);
+    void showBookmarkedItem(const QString &, const QString &, const QString &, bool, bool);
 };
 
 #endif

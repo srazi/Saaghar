@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -44,128 +44,128 @@ class QTextEdit;
 class QSplitter;
 
 #ifndef NO_PHONON_LIB
-	class QMusicPlayer;
+class QMusicPlayer;
 #endif
 
 class SaagharWidget : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
 
 public:
-	SaagharWidget(QWidget *parent, QToolBar *catsToolBar, QTableWidget *tableWidget);
-	~SaagharWidget();
+    SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidget* tableWidget);
+    ~SaagharWidget();
 
 #ifndef NO_PHONON_LIB
-	//Music Player
-	static QMusicPlayer *musicPlayer;
+    //Music Player
+    static QMusicPlayer* musicPlayer;
 #endif
 
-	enum PoemViewStyle{
-		TwoHemistichLine,
-		//LastBeytCentered,
-		OneHemistichLine,
-		SteppedHemistichLine/*,
-		MesraPerLineGroupedBeyt*/
-	};
+    enum PoemViewStyle {
+        TwoHemistichLine,
+        //LastBeytCentered,
+        OneHemistichLine,
+        SteppedHemistichLine/*,
+        MesraPerLineGroupedBeyt*/
+    };
 
-	enum PageType {
-		CategoryViewerPage,
-		PoemViewerPage
-	};
+    enum PageType {
+        CategoryViewerPage,
+        PoemViewerPage
+    };
 
-	struct MetaInfo {
-		PageType type;
-		int id;
-		//QString mediaFile;
-	} pageMetaInfo;
+    struct MetaInfo {
+        PageType type;
+        int id;
+        //QString mediaFile;
+    } pageMetaInfo;
 
-	QString currentCaption;
-	QPushButton *parentCatButton;
-	QTableWidget *tableViewWidget;
-	void resizeTable(QTableWidget *table);
-	bool nextPoem();
-	bool previousPoem();
-	void clearSaagharWidget();
-	QToolBar *parentCatsToolBar;
-	void showHome();
-	QString currentPageGanjoorUrl ();
-	void loadSettings();
-	void showParentCategory(GanjoorCat category);
-	void processClickedItem(QString type, int id, bool error, bool pushToStack = true);
-	void navigateToPage(QString type, int id, bool error);
-	int minMesraWidth;
+    QString currentCaption;
+    QPushButton* parentCatButton;
+    QTableWidget* tableViewWidget;
+    void resizeTable(QTableWidget* table);
+    bool nextPoem();
+    bool previousPoem();
+    void clearSaagharWidget();
+    QToolBar* parentCatsToolBar;
+    void showHome();
+    QString currentPageGanjoorUrl();
+    void loadSettings();
+    void showParentCategory(GanjoorCat category);
+    void processClickedItem(QString type, int id, bool error, bool pushToStack = true);
+    void navigateToPage(QString type, int id, bool error);
+    int minMesraWidth;
 
-	//STATIC Variables
-	static QString poetsImagesDir;
-	static QLocale  persianIranLocal;
-	//static QFont tableFont;
-	static bool showBeytNumbers;
-	static bool backgroundImageState;
-	static PoemViewStyle CurrentViewStyle;
-	//static bool newSearchFlag;
-	//static bool newSearchSkipNonAlphabet;
-	static QString backgroundImagePath;
-	//static QColor textColor;
-	static QColor matchedTextColor;
-	static QColor backgroundColor;
-	static QTableWidgetItem *lastOveredItem;
-	static int maxPoetsPerGroup;
+    //STATIC Variables
+    static QString poetsImagesDir;
+    static QLocale  persianIranLocal;
+    //static QFont tableFont;
+    static bool showBeytNumbers;
+    static bool backgroundImageState;
+    static PoemViewStyle CurrentViewStyle;
+    //static bool newSearchFlag;
+    //static bool newSearchSkipNonAlphabet;
+    static QString backgroundImagePath;
+    //static QColor textColor;
+    static QColor matchedTextColor;
+    static QColor backgroundColor;
+    static QTableWidgetItem* lastOveredItem;
+    static int maxPoetsPerGroup;
 
-	//bookmark widget
-	static Bookmarks *bookmarks;
+    //bookmark widget
+    static Bookmarks* bookmarks;
 
-	//search field object
-	static QSearchLineEdit *lineEditSearchText;
+    //search field object
+    static QSearchLineEdit* lineEditSearchText;
 
-	//DataBase
-	static QGanjoorDbBrowser *ganjoorDataBase;
-	static int computeRowHeight(const QFontMetrics &fontMetric, int textWidth, int width, int height=0);
+    //DataBase
+    static QGanjoorDbBrowser* ganjoorDataBase;
+    static int computeRowHeight(const QFontMetrics &fontMetric, int textWidth, int width, int height = 0);
 
-	static QHash<int, QPair<QString, qint64> > mediaInfoCash;
-	static QHash<int, QString> longestHemistiches;
+    static QHash<int, QPair<QString, qint64> > mediaInfoCash;
+    static QHash<int, QString> longestHemistiches;
 
-	int currentPoem;
-	int currentCat;
-	int currentParentID;
-	QStringList currentLocationList;
-	QString currentPoemTitle;
+    int currentPoem;
+    int currentCat;
+    int currentParentID;
+    QStringList currentLocationList;
+    QString currentPoemTitle;
 
-	void homeResizeColsRows();
-	inline bool isDirty()
-		{return dirty;}
-	inline void setDirty()
-		{dirty = true;}
-	QStringList identifier();
-	void refresh();
+    void homeResizeColsRows();
+    inline bool isDirty()
+    {return dirty;}
+    inline void setDirty()
+    {dirty = true;}
+    QStringList identifier();
+    void refresh();
 
-	//Undo FrameWork
-	QUndoStack *undoStack;
+    //Undo FrameWork
+    QUndoStack* undoStack;
 
 private:
-	void doPoemLayout(int *prow, QTableWidgetItem *mesraItem, const QString &currentVerseText, const QFontMetrics &fontMetric, VersePosition versePosition/*, Qt::Alignment beytAlignment*/);
-	QTextEdit *createItemForLongText(int row, int column, const QString &text = "", const QString &highlightText = "");
-	bool initializeCustomizedHome();
-	QMap<int, QPair<int,int> > rowParagraphHeightMap;
-	QMap<int,int> rowSingleHeightMap;
-	void showCategory(GanjoorCat category);
-	void showPoem(GanjoorPoem poem);
-	QPoint pressedPosition;
-	bool dirty;
+    void doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const QString &currentVerseText, const QFontMetrics &fontMetric, VersePosition versePosition/*, Qt::Alignment beytAlignment*/);
+    QTextEdit* createItemForLongText(int row, int column, const QString &text = "", const QString &highlightText = "");
+    bool initializeCustomizedHome();
+    QMap<int, QPair<int, int> > rowParagraphHeightMap;
+    QMap<int, int> rowSingleHeightMap;
+    void showCategory(GanjoorCat category);
+    void showPoem(GanjoorPoem poem);
+    QPoint pressedPosition;
+    bool dirty;
 
 private slots:
-	void createCustomContextMenu(const QPoint &pos);
-	void parentCatClicked();
-	void clickedOnItem(int row,int col);
-	void pressedOnItem(int row,int col);
+    void createCustomContextMenu(const QPoint &pos);
+    void parentCatClicked();
+    void clickedOnItem(int row, int col);
+    void pressedOnItem(int row, int col);
 
 public slots:
-	QTableWidgetItem *scrollToFirstItemContains(const QString &phrase, bool pharseIsList = true, bool scroll = true);
+    QTableWidgetItem* scrollToFirstItemContains(const QString &phrase, bool pharseIsList = true, bool scroll = true);
 
 signals:
-	void captionChanged();
-	void navNextActionState(bool);
-	void navPreviousActionState(bool);
-	void loadingStatusText(const QString &);
-	void createContextMenuRequested(const QPoint &);
+    void captionChanged();
+    void navNextActionState(bool);
+    void navPreviousActionState(bool);
+    void loadingStatusText(const QString &);
+    void createContextMenuRequested(const QPoint &);
 };
 #endif // SAAGHARWIDGET_H

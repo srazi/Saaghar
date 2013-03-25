@@ -30,76 +30,75 @@
 
 class CustomComboBox : public QComboBox
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	CustomComboBox(QWidget* parent = 0, QListWidget *viewWidget = 0, QObject *filterObject = 0);
-	~CustomComboBox();
+    CustomComboBox(QWidget* parent = 0, QListWidget* viewWidget = 0, QObject* filterObject = 0);
+    ~CustomComboBox();
 
-	void hidePopup();
+    void hidePopup();
 
-	bool containerMousePress;
+    bool containerMousePress;
 
 protected:
-	virtual void wheelEvent( QWheelEvent * e );
+    virtual void wheelEvent(QWheelEvent* e);
 };
 
 class QMultiSelectWidget : public QListWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	enum WidgetType
-	{
-		ComboBoxView,
-		ListView
-	};
-	explicit QMultiSelectWidget(QWidget* parent = 0, QMultiSelectWidget::WidgetType type = QMultiSelectWidget::ComboBoxView);
-	virtual ~QMultiSelectWidget();
-	
-	//QWidget *getWidgetInstance();
-	QComboBox *getComboWidgetInstance();
-	
-	void insertNoMultiSelectItem(QListWidgetItem *item);
-	void setSeparator(const QString &sep);
-	void updateSelectedLists();
+    enum WidgetType {
+        ComboBoxView,
+        ListView
+    };
+    explicit QMultiSelectWidget(QWidget* parent = 0, QMultiSelectWidget::WidgetType type = QMultiSelectWidget::ComboBoxView);
+    virtual ~QMultiSelectWidget();
 
-	QList<QListWidgetItem *> getSelectedItemList();
-	QStringList getSelectedStringList();
-	QString getSelectedString();
-	//void insertPoets(const QList<GanjoorPoet *> &poets);
-	QListWidgetItem *insertRow(int row, const QString &label = "", bool checkable = true,
-							const QString &data = "", Qt::ItemDataRole role = Qt::UserRole,
-							bool monoSelection = false, QListWidgetItem *parent = 0);
+    //QWidget *getWidgetInstance();
+    QComboBox* getComboWidgetInstance();
+
+    void insertNoMultiSelectItem(QListWidgetItem* item);
+    void setSeparator(const QString &sep);
+    void updateSelectedLists();
+
+    QList<QListWidgetItem*> getSelectedItemList();
+    QStringList getSelectedStringList();
+    QString getSelectedString();
+    //void insertPoets(const QList<GanjoorPoet *> &poets);
+    QListWidgetItem* insertRow(int row, const QString &label = "", bool checkable = true,
+                               const QString &data = "", Qt::ItemDataRole role = Qt::UserRole,
+                               bool monoSelection = false, QListWidgetItem* parent = 0);
 
 public slots:
-	void clear();
+    void clear();
 
 private:
-	void disableOtherItems(QListWidgetItem *excludedItem);
-	void enableOtherItems(QListWidgetItem *excludedItem);
-	bool overCheckBox;
-	bool isCheckBoxUnderPosition(const QPoint& pos);
-	bool eventFilter(QObject* receiver, QEvent* event);
-	void init();
-	QListWidget *listWidget;
-	CustomComboBox *comboWidget;
-	QWidget *containerWidget;
-	QHash<QListWidgetItem *, QListWidgetItem *> parentChildHash;
-	QList<QListWidgetItem *> noMultiSelectItems;
-	QString selectedStr;
-	QStringList selectedList;
-	QList<QListWidgetItem *> selectedItemsList;
-	void updateToolTips();
-	QString separator;
+    void disableOtherItems(QListWidgetItem* excludedItem);
+    void enableOtherItems(QListWidgetItem* excludedItem);
+    bool overCheckBox;
+    bool isCheckBoxUnderPosition(const QPoint &pos);
+    bool eventFilter(QObject* receiver, QEvent* event);
+    void init();
+    QListWidget* listWidget;
+    CustomComboBox* comboWidget;
+    QWidget* containerWidget;
+    QHash<QListWidgetItem*, QListWidgetItem*> parentChildHash;
+    QList<QListWidgetItem*> noMultiSelectItems;
+    QString selectedStr;
+    QStringList selectedList;
+    QList<QListWidgetItem*> selectedItemsList;
+    void updateToolTips();
+    QString separator;
 
 private slots:
-	void checkStateChanged(QListWidgetItem *changedItem);
-	void itemDataChanged(QListWidgetItem *item);
-	void clickedOnItem(QListWidgetItem *item);
-	void doubleClickedOnItem(QListWidgetItem *item);
+    void checkStateChanged(QListWidgetItem* changedItem);
+    void itemDataChanged(QListWidgetItem* item);
+    void clickedOnItem(QListWidgetItem* item);
+    void doubleClickedOnItem(QListWidgetItem* item);
 
 signals:
-	void itemCheckStateChanged(QListWidgetItem*);
+    void itemCheckStateChanged(QListWidgetItem*);
 };
 #endif // QMULTISELECTWIDGET_H

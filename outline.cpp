@@ -55,270 +55,265 @@
 #include "outline.h"
 #include "QGanjoorDbBrowser.h"
 
-OutLineTree::OutLineTree(QWidget *parent)
-	: QWidget(parent)
+OutLineTree::OutLineTree(QWidget* parent)
+    : QWidget(parent)
 {
-	pressedMouseButton==Qt::LeftButton;
+    pressedMouseButton == Qt::LeftButton;
 
-	outlineWidget = new QTreeWidget(parent);
-	outlineWidget->setObjectName("outlineTreeWidget");
-	outlineWidget->setLayoutDirection(Qt::RightToLeft);
-	outlineWidget->header()->hide();
-	outlineWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-	connect(outlineWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
+    outlineWidget = new QTreeWidget(parent);
+    outlineWidget->setObjectName("outlineTreeWidget");
+    outlineWidget->setLayoutDirection(Qt::RightToLeft);
+    outlineWidget->header()->hide();
+    outlineWidget->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(outlineWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
 
-	QStringList labels;
-	labels << tr("Title") << tr("Comments");
+    QStringList labels;
+    labels << tr("Title") << tr("Comments");
 
-	setObjectName("OutLineWidget");
-	//hide();
+    setObjectName("OutLineWidget");
+    //hide();
 
-	//QWidget *bookmarkContainer = new QWidget(bookmarkManagerWidget);
-	QVBoxLayout *mainLayout = new QVBoxLayout;
-	QHBoxLayout *toolsLayout = new QHBoxLayout;
+    //QWidget *bookmarkContainer = new QWidget(bookmarkManagerWidget);
+    QVBoxLayout* mainLayout = new QVBoxLayout;
+    QHBoxLayout* toolsLayout = new QHBoxLayout;
 
-//	QString clearIconPath = currentIconThemePath()+"/clear-left.png";
-//	if (layoutDirection() == Qt::RightToLeft)
-//		clearIconPath = currentIconThemePath()+"/clear-right.png";
+//  QString clearIconPath = currentIconThemePath()+"/clear-left.png";
+//  if (layoutDirection() == Qt::RightToLeft)
+//      clearIconPath = currentIconThemePath()+"/clear-right.png";
 
-	QLabel *filterLabel = new QLabel;
-	filterLabel->setObjectName(QString::fromUtf8("OutLineTreeFilterLabel"));
-	filterLabel->setText(tr("Filter:"));
-	QSearchLineEdit *outLineFilter = new QSearchLineEdit(this, ""/*clearIconPath*/, ""/*currentIconThemePath()+"/filter.png"*/);
-	outLineFilter->setObjectName("outLineFilter");
+    QLabel* filterLabel = new QLabel;
+    filterLabel->setObjectName(QString::fromUtf8("OutLineTreeFilterLabel"));
+    filterLabel->setText(tr("Filter:"));
+    QSearchLineEdit* outLineFilter = new QSearchLineEdit(this, ""/*clearIconPath*/, ""/*currentIconThemePath()+"/filter.png"*/);
+    outLineFilter->setObjectName("outLineFilter");
 #if QT_VERSION >= 0x040700
-	outLineFilter->setPlaceholderText(tr("Filter"));
+    outLineFilter->setPlaceholderText(tr("Filter"));
 #else
-	outLineFilter->setToolTip(tr("Filter"));
+    outLineFilter->setToolTip(tr("Filter"));
 #endif
-	connect(outLineFilter, SIGNAL(textChanged(const QString &)), this, SLOT(filterItems(const QString &)));
-	connect(outLineFilter, SIGNAL(clearButtonPressed()), this, SLOT(filterItems()));
+    connect(outLineFilter, SIGNAL(textChanged(QString)), this, SLOT(filterItems(QString)));
+    connect(outLineFilter, SIGNAL(clearButtonPressed()), this, SLOT(filterItems()));
 
-	QSpacerItem *filterHorizSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
-	toolsLayout->addWidget(filterLabel, 0, Qt::AlignRight|Qt::AlignCenter);
-	toolsLayout->addWidget(outLineFilter);
-	toolsLayout->addItem(filterHorizSpacer);
+    QSpacerItem* filterHorizSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
+    toolsLayout->addWidget(filterLabel, 0, Qt::AlignRight | Qt::AlignCenter);
+    toolsLayout->addWidget(outLineFilter);
+    toolsLayout->addItem(filterHorizSpacer);
 
-	mainLayout->addWidget(outlineWidget);
-	mainLayout->addLayout(toolsLayout);
-	setLayout(mainLayout);
+    mainLayout->addWidget(outlineWidget);
+    mainLayout->addLayout(toolsLayout);
+    setLayout(mainLayout);
 
-	connect(outlineWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(doubleClicked(QTreeWidgetItem*,int)));
-	connect(outlineWidget, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(justClicked(QTreeWidgetItem*,int)));
-	connect(outlineWidget, SIGNAL(itemPressed(QTreeWidgetItem*,int)), this, SLOT(itemPressed(QTreeWidgetItem*,int)));
+    connect(outlineWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(doubleClicked(QTreeWidgetItem*,int)));
+    connect(outlineWidget, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(justClicked(QTreeWidgetItem*,int)));
+    connect(outlineWidget, SIGNAL(itemPressed(QTreeWidgetItem*,int)), this, SLOT(itemPressed(QTreeWidgetItem*,int)));
 }
 
-void OutLineTree::setItems(const QList<QTreeWidgetItem *> &items)
+void OutLineTree::setItems(const QList<QTreeWidgetItem*> &items)
 {
-	outlineWidget->clear();
-	outlineWidget->addTopLevelItems(items);
+    outlineWidget->clear();
+    outlineWidget->addTopLevelItems(items);
 }
 
-bool OutLineTree::filterItems(const QString &str, QTreeWidgetItem *parentItem)
+bool OutLineTree::filterItems(const QString &str, QTreeWidgetItem* parentItem)
 {
-//	QList<QTreeWidgetItem *> list = outlineWidget->findItems("", Qt::MatchContains|Qt::MatchWrap|Qt::MatchRecursive);
-	
-//		for (int i=0; i<list.size();++i)
-//		{
-//			if (list.at(i))
-//			{
-//				QString text = list.at(i)->text(0);
-//				text = QGanjoorDbBrowser::cleanString(text);
-//				if (!str.isEmpty() && !text.contains(str))
-//					list.at(i)->setHidden(true);
-//				else
-//					list.at(i)->setHidden(false);
-//			}
-//		}
+//  QList<QTreeWidgetItem *> list = outlineWidget->findItems("", Qt::MatchContains|Qt::MatchWrap|Qt::MatchRecursive);
 
-	int childrenSize;
-	if (!parentItem)
-		childrenSize = outlineWidget->topLevelItemCount();
-	else
-		childrenSize = parentItem->childCount();
+//      for (int i=0; i<list.size();++i)
+//      {
+//          if (list.at(i))
+//          {
+//              QString text = list.at(i)->text(0);
+//              text = QGanjoorDbBrowser::cleanString(text);
+//              if (!str.isEmpty() && !text.contains(str))
+//                  list.at(i)->setHidden(true);
+//              else
+//                  list.at(i)->setHidden(false);
+//          }
+//      }
 
-	bool result = true;
+    int childrenSize;
+    if (!parentItem) {
+        childrenSize = outlineWidget->topLevelItemCount();
+    }
+    else {
+        childrenSize = parentItem->childCount();
+    }
 
-	for (int i=0; i<childrenSize; ++i)
-	{
-		QTreeWidgetItem *ithChild;
-		if (!parentItem)
-			ithChild = outlineWidget->topLevelItem(i);
-		else
-			ithChild = parentItem->child(i);
+    bool result = true;
 
-		QString text = ithChild->text(0);
-		text = QGanjoorDbBrowser::cleanString(text);
-		QString cleanStr = QGanjoorDbBrowser::cleanString(str);
-		if (!cleanStr.isEmpty() && !text.contains(cleanStr))
-		{
-			if (ithChild->childCount()>0)//if all its children are hidden it should be hidden, too.
-			{
-				bool tmp = filterItems(cleanStr, ithChild);
-				if (!tmp)
-				{
-					ithChild->setExpanded(true);
-					//recursivelyUnHide(ithChild);
-				}
+    for (int i = 0; i < childrenSize; ++i) {
+        QTreeWidgetItem* ithChild;
+        if (!parentItem) {
+            ithChild = outlineWidget->topLevelItem(i);
+        }
+        else {
+            ithChild = parentItem->child(i);
+        }
 
-				ithChild->setHidden(tmp);
-				result = result && tmp;
-			}
-			else
-			{
-				ithChild->setHidden(true);
-				result = result && true;//return true when all children are hidden
-			}
-		}
-		else
-		{
-			////if (ithChild->isHidden())
-//			{
-//				ithChild->setHidden(false);
-//				int childCount = ithChild->childCount();
-//				for (int j=0; j<childCount;++j)
-//				{
-//					QTreeWidgetItem *child = ithChild->child(j);
-//					child->setHidden(false);
-//				}
-//			}
-			recursivelyUnHide(ithChild);
-			ithChild->setExpanded(false);
-			result = result && false;//return false when at least one child is visible
-		}
-//		int childCount = ithChild->childCount();
-//		for (int j=0; j<childCount;++j)
-//		{
-//			QTreeWidgetItem *child = ithRootChild->child(j);
-//			QString text = child->text(0)+child->text(1);
-//			text = QGanjoorDbBrowser::cleanString(text);
-//			if (!str.isEmpty() && !text.contains(str))
-//				child->setHidden(true);
-//			else
-//				child->setHidden(false);
-//		}
-	}
-	return result;
+        QString text = ithChild->text(0);
+        text = QGanjoorDbBrowser::cleanString(text);
+        QString cleanStr = QGanjoorDbBrowser::cleanString(str);
+        if (!cleanStr.isEmpty() && !text.contains(cleanStr)) {
+            if (ithChild->childCount() > 0) { //if all its children are hidden it should be hidden, too.
+                bool tmp = filterItems(cleanStr, ithChild);
+                if (!tmp) {
+                    ithChild->setExpanded(true);
+                    //recursivelyUnHide(ithChild);
+                }
+
+                ithChild->setHidden(tmp);
+                result = result && tmp;
+            }
+            else {
+                ithChild->setHidden(true);
+                result = result && true;//return true when all children are hidden
+            }
+        }
+        else {
+            ////if (ithChild->isHidden())
+//          {
+//              ithChild->setHidden(false);
+//              int childCount = ithChild->childCount();
+//              for (int j=0; j<childCount;++j)
+//              {
+//                  QTreeWidgetItem *child = ithChild->child(j);
+//                  child->setHidden(false);
+//              }
+//          }
+            recursivelyUnHide(ithChild);
+            ithChild->setExpanded(false);
+            result = result && false;//return false when at least one child is visible
+        }
+//      int childCount = ithChild->childCount();
+//      for (int j=0; j<childCount;++j)
+//      {
+//          QTreeWidgetItem *child = ithRootChild->child(j);
+//          QString text = child->text(0)+child->text(1);
+//          text = QGanjoorDbBrowser::cleanString(text);
+//          if (!str.isEmpty() && !text.contains(str))
+//              child->setHidden(true);
+//          else
+//              child->setHidden(false);
+//      }
+    }
+    return result;
 }
 
-void OutLineTree::recursivelyUnHide(QTreeWidgetItem *parentItem)
+void OutLineTree::recursivelyUnHide(QTreeWidgetItem* parentItem)
 {
-	int childrenSize;
-	if (!parentItem)
-		childrenSize = outlineWidget->topLevelItemCount();
-	else
-	{
-		childrenSize = parentItem->childCount();
-		parentItem->setHidden(false);
-	}
+    int childrenSize;
+    if (!parentItem) {
+        childrenSize = outlineWidget->topLevelItemCount();
+    }
+    else {
+        childrenSize = parentItem->childCount();
+        parentItem->setHidden(false);
+    }
 
-	for (int i=0; i<childrenSize; ++i)
-	{
-		QTreeWidgetItem *ithChild;
-		if (!parentItem)
-			ithChild = outlineWidget->topLevelItem(i);
-		else
-			ithChild = parentItem->child(i);
-		recursivelyUnHide(ithChild);
-	}
+    for (int i = 0; i < childrenSize; ++i) {
+        QTreeWidgetItem* ithChild;
+        if (!parentItem) {
+            ithChild = outlineWidget->topLevelItem(i);
+        }
+        else {
+            ithChild = parentItem->child(i);
+        }
+        recursivelyUnHide(ithChild);
+    }
 }
 
-void OutLineTree::doubleClicked(QTreeWidgetItem *item, int /*column*/)
+void OutLineTree::doubleClicked(QTreeWidgetItem* item, int /*column*/)
 {
-	if (item)
-	{
-		int id = item->data(0, Qt::UserRole).toInt();
-		emit openParentRequested(id);
-	}
+    if (item) {
+        int id = item->data(0, Qt::UserRole).toInt();
+        emit openParentRequested(id);
+    }
 }
 
-void OutLineTree::justClicked(QTreeWidgetItem *item, int /*column*/)
+void OutLineTree::justClicked(QTreeWidgetItem* item, int /*column*/)
 {
-	if (pressedMouseButton==Qt::RightButton) return;
+    if (pressedMouseButton == Qt::RightButton) {
+        return;
+    }
 
-	if (item)
-	{
-		if (item->childCount()>0)
-		{
-			item->setExpanded(!item->isExpanded());
-		}
-		else
-		{
-			int itemID = item->data(0, Qt::UserRole).toInt();
-			emit openParentRequested(itemID);
-		}
-	}
+    if (item) {
+        if (item->childCount() > 0) {
+            item->setExpanded(!item->isExpanded());
+        }
+        else {
+            int itemID = item->data(0, Qt::UserRole).toInt();
+            emit openParentRequested(itemID);
+        }
+    }
 }
 
 void OutLineTree::createCustomContextMenu(const QPoint &pos)
 {
-	QTreeWidgetItem *item = outlineWidget->itemAt(pos);
-	if (!item)
-		return;
+    QTreeWidgetItem* item = outlineWidget->itemAt(pos);
+    if (!item) {
+        return;
+    }
 
-	int itemID = item->data(0, Qt::UserRole).toInt();
+    int itemID = item->data(0, Qt::UserRole).toInt();
 
-	QMenu *contextMenu = new QMenu;
-	contextMenu->addAction(tr("Open in New Tab"));
-	contextMenu->addAction(tr("Open"));
-	contextMenu->addSeparator();
-	contextMenu->addAction(tr("Random in New Tab"));
-	contextMenu->addAction(tr("Random"));
-	contextMenu->addSeparator();
-	if (item->childCount()>0)
-	{
-		if (item->isExpanded())
-			contextMenu->addAction(tr("Collapse"));
-		else
-			contextMenu->addAction(tr("Expand"));
-	}
+    QMenu* contextMenu = new QMenu;
+    contextMenu->addAction(tr("Open in New Tab"));
+    contextMenu->addAction(tr("Open"));
+    contextMenu->addSeparator();
+    contextMenu->addAction(tr("Random in New Tab"));
+    contextMenu->addAction(tr("Random"));
+    contextMenu->addSeparator();
+    if (item->childCount() > 0) {
+        if (item->isExpanded()) {
+            contextMenu->addAction(tr("Collapse"));
+        }
+        else {
+            contextMenu->addAction(tr("Expand"));
+        }
+    }
 
-	QAction *action = contextMenu->exec(QCursor::pos());
-	if (!action)
-		return;
+    QAction* action = contextMenu->exec(QCursor::pos());
+    if (!action) {
+        return;
+    }
 
-	QString text = action->text();
-	text.remove("&");
+    QString text = action->text();
+    text.remove("&");
 
-	if (text == tr("Open in New Tab"))
-	{
-		emit newParentRequested(itemID);
-	}
-	else if (text == tr("Open"))
-	{
-		emit openParentRequested(itemID);
-	}
-	else if (text == tr("Collapse") || text == tr("Expand"))
-	{
-		item->setExpanded(!item->isExpanded());
-	}
-	else if (text == tr("Random in New Tab"))
-	{
-		emit openRandomRequested(itemID,true);
-	}
-	else if (text == tr("Random"))
-	{
-		emit openRandomRequested(itemID,false);
-	}
+    if (text == tr("Open in New Tab")) {
+        emit newParentRequested(itemID);
+    }
+    else if (text == tr("Open")) {
+        emit openParentRequested(itemID);
+    }
+    else if (text == tr("Collapse") || text == tr("Expand")) {
+        item->setExpanded(!item->isExpanded());
+    }
+    else if (text == tr("Random in New Tab")) {
+        emit openRandomRequested(itemID, true);
+    }
+    else if (text == tr("Random")) {
+        emit openRandomRequested(itemID, false);
+    }
 }
 
-void OutLineTree::itemPressed(QTreeWidgetItem */*item*/, int /*column*/)
+void OutLineTree::itemPressed(QTreeWidgetItem* /*item*/, int /*column*/)
 {
-	pressedMouseButton = QApplication::mouseButtons();
+    pressedMouseButton = QApplication::mouseButtons();
 }
 
 void OutLineTree::setTreeFont(const QFont &font)
 {
-	if (outlineWidget)
-		outlineWidget->setFont(font);
+    if (outlineWidget) {
+        outlineWidget->setFont(font);
+    }
 }
 
 void OutLineTree::setTreeColor(const QColor &color)
 {
-	if (outlineWidget && color.isValid())
-	{
-		QPalette p(outlineWidget->palette());
-		p.setColor(QPalette::Text, color);
-		outlineWidget->setPalette(p);
-	}
+    if (outlineWidget && color.isValid()) {
+        QPalette p(outlineWidget->palette());
+        p.setColor(QPalette::Text, color);
+        outlineWidget->setPalette(p);
+    }
 }

@@ -23,18 +23,18 @@ class WindowNotifier;
 class QtWin
 {
 public:
-	static bool enableBlurBehindWindow(QWidget *widget, bool enable = true);
-	static bool extendFrameIntoClientArea(QWidget *widget,
-										  int left = -1, int top = -1,
-										  int right = -1, int bottom = -1);
-	static bool isCompositionEnabled();
-	static QColor colorizatinColor();
-	static bool easyBlurUnBlur(QWidget *widget, bool enable = true);
-	static void blurAll();
-	static void unBlurAll();
+    static bool enableBlurBehindWindow(QWidget* widget, bool enable = true);
+    static bool extendFrameIntoClientArea(QWidget* widget,
+                                          int left = -1, int top = -1,
+                                          int right = -1, int bottom = -1);
+    static bool isCompositionEnabled();
+    static QColor colorizatinColor();
+    static bool easyBlurUnBlur(QWidget* widget, bool enable = true);
+    static void blurAll();
+    static void unBlurAll();
 
 private:
-	static WindowNotifier *windowNotifier();
+    static WindowNotifier* windowNotifier();
 };
 
 #endif // QTWIN_H

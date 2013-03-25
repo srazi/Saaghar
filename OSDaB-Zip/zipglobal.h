@@ -69,8 +69,8 @@
 OSDAB_BEGIN_NAMESPACE(Zip)
 
 OSDAB_ZIP_EXPORT int OSDAB_ZIP_MANGLE(currentUtcOffset)();
-OSDAB_ZIP_EXPORT QDateTime OSDAB_ZIP_MANGLE(fromFileTimestamp)(const QDateTime& dateTime);
-OSDAB_ZIP_EXPORT bool OSDAB_ZIP_MANGLE(setFileTimestamp)(const QString& fileName, const QDateTime& dateTime);
+OSDAB_ZIP_EXPORT QDateTime OSDAB_ZIP_MANGLE(fromFileTimestamp)(const QDateTime &dateTime);
+OSDAB_ZIP_EXPORT bool OSDAB_ZIP_MANGLE(setFileTimestamp)(const QString &fileName, const QDateTime &dateTime);
 
 OSDAB_END_NAMESPACE
 

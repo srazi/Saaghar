@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *                                                                         *
@@ -50,30 +50,30 @@
 
 class OutLineTree : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	OutLineTree(QWidget *parent = 0);
-	void setItems(const QList<QTreeWidgetItem *> &items);
-	void setTreeFont(const QFont &font);
-	void setTreeColor(const QColor &color);
+    OutLineTree(QWidget* parent = 0);
+    void setItems(const QList<QTreeWidgetItem*> &items);
+    void setTreeFont(const QFont &font);
+    void setTreeColor(const QColor &color);
 
 private slots:
-	bool filterItems(const QString &str = "", QTreeWidgetItem *parentItem = 0);
-	void recursivelyUnHide(QTreeWidgetItem *parentItem = 0);
-	void doubleClicked(QTreeWidgetItem *item, int column);
-	void justClicked(QTreeWidgetItem *item, int column);
-	void itemPressed(QTreeWidgetItem *item, int column);
-	void createCustomContextMenu(const QPoint &pos);
+    bool filterItems(const QString &str = "", QTreeWidgetItem* parentItem = 0);
+    void recursivelyUnHide(QTreeWidgetItem* parentItem = 0);
+    void doubleClicked(QTreeWidgetItem* item, int column);
+    void justClicked(QTreeWidgetItem* item, int column);
+    void itemPressed(QTreeWidgetItem* item, int column);
+    void createCustomContextMenu(const QPoint &pos);
 
 private:
-	QTreeWidget *outlineWidget;
-	Qt::MouseButtons pressedMouseButton;
+    QTreeWidget* outlineWidget;
+    Qt::MouseButtons pressedMouseButton;
 
 signals:
-	void openParentRequested(int);
-	void newParentRequested(int);
-	void openRandomRequested(int,bool);
+    void openParentRequested(int);
+    void newParentRequested(int);
+    void openRandomRequested(int, bool);
 };
 
 #endif

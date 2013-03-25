@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -29,71 +29,72 @@
 #include <QIcon>
 #include <QTreeWidget>
 
-namespace Ui {
-	class DataBaseUpdater;
+namespace Ui
+{
+class DataBaseUpdater;
 }
 
 class Downloader;
 
 class DataBaseUpdater : public QDialog
 {
-	Q_OBJECT
+    Q_OBJECT
 
 public:
-	DataBaseUpdater(QWidget *parent = 0, Qt::WindowFlags f = 0);
-	static QStringList repositories();
-	static void setRepositories(const QStringList &urls);
-	
-	void installItemToDB(const QString &fileName, const QString &filePath, const QString &fileType);
-	void installItemToDB(const QString &fullFilePath, const QString &fileType = "");
-	bool read(QIODevice *device);
-	bool read(const QByteArray &data);
-	static QString downloadLocation;
-	inline static void setInstallerObject(QObject *reciver = 0)
-		{DataBaseUpdater::installerObject = reciver;}
+    DataBaseUpdater(QWidget* parent = 0, Qt::WindowFlags f = 0);
+    static QStringList repositories();
+    static void setRepositories(const QStringList &urls);
+
+    void installItemToDB(const QString &fileName, const QString &filePath, const QString &fileType);
+    void installItemToDB(const QString &fullFilePath, const QString &fileType = "");
+    bool read(QIODevice* device);
+    bool read(const QByteArray &data);
+    static QString downloadLocation;
+    inline static void setInstallerObject(QObject* reciver = 0)
+    {DataBaseUpdater::installerObject = reciver;}
 
 public slots:
-	void readRepository(const QString &url = "");
+    void readRepository(const QString &url = "");
 
 private slots:
-	virtual void reject();
-	void initDownload();
-	void forceStopDownload();
-	bool doStopDownload();
-	void getDownloadLocation();
-	void itemDataChanged(QTreeWidgetItem *item, int column);
+    virtual void reject();
+    void initDownload();
+    void forceStopDownload();
+    bool doStopDownload();
+    void getDownloadLocation();
+    void itemDataChanged(QTreeWidgetItem* item, int column);
 
 private:
-	static QObject *installerObject;
-	static QStringList defaultRepositories;
-	static QStringList repositoriesUrls;
-	void addRemoveRepository();
-	void resizeColumnsToContents();
-	QHash<QString, QPair<QTreeWidgetItem *, QTreeWidgetItem *> > itemsCache;
-	bool parseDocument();
-	void setupTreeRootItems();
-	bool installCompleted;
-	QString getTempDir(const QString &path = "", bool makeDir = false);
-	QString randomFolder;
-	Downloader *downloaderObject;
-	QString sessionDownloadFolder;
-	void downloadItem(QTreeWidgetItem *item, bool install = false);
-	bool downloadAboutToStart;
-	bool downloadStarted;
-	QHash <int, QString> insertedToList;
-	Ui::DataBaseUpdater *ui;
-	void setupUi();
-	QTreeWidget *repoSelectTree;
-	QTreeWidgetItem *oldRootItem;
-	QTreeWidgetItem *newRootItem;
-	void parseElement(const QDomElement &element);
-	QDomDocument domDocument;
+    static QObject* installerObject;
+    static QStringList defaultRepositories;
+    static QStringList repositoriesUrls;
+    void addRemoveRepository();
+    void resizeColumnsToContents();
+    QHash<QString, QPair<QTreeWidgetItem*, QTreeWidgetItem*> > itemsCache;
+    bool parseDocument();
+    void setupTreeRootItems();
+    bool installCompleted;
+    QString getTempDir(const QString &path = "", bool makeDir = false);
+    QString randomFolder;
+    Downloader* downloaderObject;
+    QString sessionDownloadFolder;
+    void downloadItem(QTreeWidgetItem* item, bool install = false);
+    bool downloadAboutToStart;
+    bool downloadStarted;
+    QHash <int, QString> insertedToList;
+    Ui::DataBaseUpdater* ui;
+    void setupUi();
+    QTreeWidget* repoSelectTree;
+    QTreeWidgetItem* oldRootItem;
+    QTreeWidgetItem* newRootItem;
+    void parseElement(const QDomElement &element);
+    QDomDocument domDocument;
 
 protected:
-	void closeEvent(QCloseEvent *);
+    void closeEvent(QCloseEvent*);
 
 signals:
-	void installRequest(const QString &, bool *);
+    void installRequest(const QString &, bool*);
 };
 
 #endif

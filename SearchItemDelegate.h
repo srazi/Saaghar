@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -27,37 +27,37 @@
 
 
 class SaagharItemDelegate : public QItemDelegate
-{ 
-	Q_OBJECT
+{
+    Q_OBJECT
 
 public:
-	SaagharItemDelegate(QWidget *parent = 0, QStyle *style = 0, const QString phrase=QString());
+    SaagharItemDelegate(QWidget* parent = 0, QStyle* style = 0, const QString phrase = QString());
 
 private:
-	QWidget *parentWidget;
-	qreal opacity;
-	QStyle *tableStyle;
-	QStringList keywordList;
-	void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    QWidget* parentWidget;
+    qreal opacity;
+    QStyle* tableStyle;
+    QStringList keywordList;
+    void paint(QPainter* painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 private slots:
-	void keywordChanged(const QString &text);
+    void keywordChanged(const QString &text);
 };
 
 class ParagraphHighlighter : public QSyntaxHighlighter
-{ 
-	Q_OBJECT
+{
+    Q_OBJECT
 
 public:
-	ParagraphHighlighter(QTextDocument *parent = 0, const QString &phrase = "");
+    ParagraphHighlighter(QTextDocument* parent = 0, const QString &phrase = "");
 
 protected:
-	void highlightBlock(const QString &text);
+    void highlightBlock(const QString &text);
 
 private:
-	QStringList keywordList;
+    QStringList keywordList;
 
 private slots:
-	void keywordChanged(const QString &text);
+    void keywordChanged(const QString &text);
 };
 #endif // SEARCHITEMDELEGATE_H
