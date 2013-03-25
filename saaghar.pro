@@ -24,9 +24,9 @@ CONFIG(debug, debug|release) {
 	!build_pass:message("DEBUG BUILD")
 } else {
 	!build_pass:message("RELEASE BUILD")
-
-	DEFINES += QT_NO_WARNING_OUTPUT
-	DEFINES += QT_NO_DEBUG_OUTPUT
+##un-comment for release version
+#	DEFINES += QT_NO_WARNING_OUTPUT
+#	DEFINES += QT_NO_DEBUG_OUTPUT
 }
 
 ##for static building un-comment the following two lines
@@ -56,13 +56,15 @@ HEADERS += $${SOURCE_DIR}/mainwindow.h \
 	$${SOURCE_DIR}/DataBaseUpdater.h \
 	$${SOURCE_DIR}/NoDataBaseDialog.h \
 	$${SOURCE_DIR}/qtwin.h \
-	$${SOURCE_DIR}/RegisterationForm.h
+	$${SOURCE_DIR}/RegisterationForm.h \
+	$${SOURCE_DIR}/searchoptionsdialog.h
 
 FORMS += $${SOURCE_DIR}/mainwindow.ui \
 	$${SOURCE_DIR}/settings.ui \
 	$${SOURCE_DIR}/databaseupdater.ui \
 	$${SOURCE_DIR}/nodatabasedialog.ui \
-	$${SOURCE_DIR}/registerationform.ui
+	$${SOURCE_DIR}/registerationform.ui \
+	$${SOURCE_DIR}/searchoptionsdialog.ui
 
 SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/mainwindow.cpp \
@@ -78,7 +80,8 @@ SOURCES += $${SOURCE_DIR}/main.cpp \
 	$${SOURCE_DIR}/DataBaseUpdater.cpp \
 	$${SOURCE_DIR}/NoDataBaseDialog.cpp \
 	$${SOURCE_DIR}/qtwin.cpp \
-	$${SOURCE_DIR}/RegisterationForm.cpp
+	$${SOURCE_DIR}/RegisterationForm.cpp \
+	$${SOURCE_DIR}/searchoptionsdialog.cpp
 
 include($${SOURCE_DIR}/pQjWidgets/pQjWidgets.pri)
 include($${SOURCE_DIR}/downloader/downloader.pri)

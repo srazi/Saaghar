@@ -21,6 +21,7 @@
 
 #include "QGanjoorDbBrowser.h"
 #include "NoDataBaseDialog.h"
+#include "SearchResultWidget.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -49,8 +50,7 @@ const QString sqlDriver = "QSQLITE";
 //#include <QStringList>
 /***************************/
 //from unicode table:
-//	"»" cell= 187 row= 0 
-//	"!" cell= 33 row= 0 
+//	"»" cell= 187 row= 0
 //	"«" cell= 171 row= 0 
 //	"." cell= 46 row= 0 
 //	"؟" cell= 31 row= 6 
@@ -58,8 +58,8 @@ const QString sqlDriver = "QSQLITE";
 //	"؛" cell= 27 row= 6 
 QStringList QGanjoorDbBrowser::someSymbols = QStringList()
 		<< QChar(31,6) << QChar(12,6) << QChar(27,6)
-		<< QChar(187,0) << QChar(33,0) << QChar(171,0) << QChar(46,0)
-		<< ")"<<"("<<"["<<"]"<<":"<<"!"<<"-"<<".";
+		<< QChar(187,0) << QChar(171,0) << QChar(46,0)
+		<< ")"<<"("<<"["<<"]"<<":"<<"!"<<"-"<<"." << "?";
 //the zero index of following stringlists is equipped by expected variant!
 //	"ؤ" cell= 36 row= 6 
 //	"و" cell= 72 row= 6 
@@ -1181,10 +1181,13 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
 //	cleanedText.replace(QRegExp("["+Ye_Variant.join("").remove(Ye_Variant.at(0))+"]"), Ye_Variant.at(0));
 //	cleanedText.replace(QRegExp("["+AE_Variant.join("").remove(AE_Variant.at(0))+"]"), AE_Variant.at(0));
 //	cleanedText.replace(QRegExp("["+He_Variant.join("").remove(He_Variant.at(0))+"]"), He_Variant.at(0));
-	cleanedText.replace(Ve_EXP, QChar(72,6) /*Ve_Variant.at(0)*/);
-	cleanedText.replace(Ye_EXP, QChar(204,6) /*Ye_Variant.at(0)*/);
-	cleanedText.replace(AE_EXP, QChar(39,6) /*AE_Variant.at(0)*/);
-	cleanedText.replace(He_EXP, QChar(71,6) /*He_Variant.at(0)*/);
+	if (SearchResultWidget::skipVowelLetters)
+	{
+		cleanedText.replace(Ve_EXP, QChar(72,6) /*Ve_Variant.at(0)*/);
+		cleanedText.replace(Ye_EXP, QChar(204,6) /*Ye_Variant.at(0)*/);
+		cleanedText.replace(AE_EXP, QChar(39,6) /*AE_Variant.at(0)*/);
+		cleanedText.replace(He_EXP, QChar(71,6) /*He_Variant.at(0)*/);
+	}
 ////	qDebug()<<"AfterReplace-cleanedText="<<cleanedText;
 ////	QRegExp regExp("[\)\(:-»؟!«\[\]\.،؛]+");
 ////	QString temp=QString::fromLocal8Bit("»؟!«.،؛هيؤویئآاأإة");
@@ -1216,7 +1219,8 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
 		QChar::Direction chDir = tmpChar.direction();
 
 		//someSymbols.contains(tmpChar) consumes lots of time, 8s --> 10s
-		if (chDir == QChar::DirNSM || tmpChar.isSpace() || someSymbols.contains(tmpChar))
+		if ((SearchResultWidget::skipVowelSigns && chDir == QChar::DirNSM) ||
+				tmpChar.isSpace() || someSymbols.contains(tmpChar))
 		{
 			cleanedText.remove(tmpChar);
 			--i;
@@ -1244,10 +1248,13 @@ QString QGanjoorDbBrowser::cleanStringFast(const QString &text, const QStringLis
 //	cleanedText.replace(QRegExp("["+AE_STR+"]"), QChar(39,6) /*AE_Variant.at(0)*/);
 //	cleanedText.replace(QRegExp("["+He_STR+"]"), QChar(71,6) /*He_Variant.at(0)*/);
 //	cleanedText.remove(QRegExp("["+SomeSymbol_STR+"]+"));
-	cleanedText.replace(Ve_EXP, QChar(72,6) /*Ve_Variant.at(0)*/);
-	cleanedText.replace(Ye_EXP, QChar(204,6) /*Ye_Variant.at(0)*/);
-	cleanedText.replace(AE_EXP, QChar(39,6) /*AE_Variant.at(0)*/);
-	cleanedText.replace(He_EXP, QChar(71,6) /*He_Variant.at(0)*/);
+	if (SearchResultWidget::skipVowelLetters)
+	{
+		cleanedText.replace(Ve_EXP, QChar(72,6) /*Ve_Variant.at(0)*/);
+		cleanedText.replace(Ye_EXP, QChar(204,6) /*Ye_Variant.at(0)*/);
+		cleanedText.replace(AE_EXP, QChar(39,6) /*AE_Variant.at(0)*/);
+		cleanedText.replace(He_EXP, QChar(71,6) /*He_Variant.at(0)*/);
+	}
 	cleanedText.remove(SomeSymbol_EXP);
 
 	for (int i=0; i<cleanedText.size(); ++i)
@@ -1259,7 +1266,7 @@ QString QGanjoorDbBrowser::cleanStringFast(const QString &text, const QStringLis
 		QChar::Direction chDir = tmpChar.direction();
 
 		//someSymbols.contains(tmpChar) consumes lots of time, 8s --> 10s
-		if (chDir == QChar::DirNSM || tmpChar.isSpace())
+		if ((SearchResultWidget::skipVowelSigns && chDir == QChar::DirNSM) || tmpChar.isSpace())
 		{
 			cleanedText.remove(tmpChar);
 			--i;
@@ -1291,27 +1298,38 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 		else
 			firstPhrase.remove("=");
 
+		QString joiner;
+		if (SearchResultWidget::skipVowelSigns)
+		{
+			joiner = QLatin1String("%");
+		}
 		//replace characters that have some variants with anyWord replaceholder!
 		//we have not to worry about this replacement, because phraseList.at(0) is tested again!
 		qDebug() << "firstPhrase11="<<firstPhrase;
 		bool variantPresent = false;
-		QRegExp variantEXP("["+Ve_Variant.join("")+AE_Variant.join("")+He_Variant.join("")+Ye_Variant.join("")+"]+");
-		if (firstPhrase.contains(variantEXP))
+		if (SearchResultWidget::skipVowelLetters)
 		{
-			firstPhrase.replace(variantEXP, "%");
-			variantPresent = true;
+			QRegExp variantEXP("["+Ve_Variant.join("")+AE_Variant.join("")+He_Variant.join("")+Ye_Variant.join("")+"]+");
+			if (firstPhrase.contains(variantEXP))
+			{
+				firstPhrase.replace(variantEXP, "%");
+				variantPresent = true;
+			}
 		}
 		qDebug() << "firstPhrase222="<<firstPhrase;
 		QStringList anyWordedList = firstPhrase.split("%%", QString::SkipEmptyParts);
 		for (int i=0; i<anyWordedList.size();++i)
 		{
 			QString subPhrase = anyWordedList.at(i);
-			subPhrase.remove("%");
+			if (SearchResultWidget::skipVowelSigns)
+			{
+				subPhrase.remove("%");
+			}
 			//TODO: remove skipNonAlphabet and replace it with NEAR operator
 			//search for firstPhrase then go for other ones
 			subPhrase = subPhrase.simplified();
 			if (!subPhrase.contains(" ") || variantPresent)
-				subPhrase = QGanjoorDbBrowser::cleanString(subPhrase, excludeWhenCleaning).split("",QString::SkipEmptyParts).join("%");
+				subPhrase = QGanjoorDbBrowser::cleanString(subPhrase, excludeWhenCleaning).split("",QString::SkipEmptyParts).join(joiner);
 			subPhrase.replace("% %", "%");
 			anyWordedList[i] = subPhrase;
 		}

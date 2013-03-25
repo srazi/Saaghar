@@ -39,7 +39,7 @@ class SearchResultWidget : public QWidget
 	Q_OBJECT
 
 public:
-	SearchResultWidget(QWidget *parent = 0, const QString &searchPhrase = "", int count = 0, const QString &poetName = "");
+	SearchResultWidget(QWidget *parent = 0, const QString &searchPhrase = "", const QString &poetName = "");
 	~SearchResultWidget();
 
 	bool init(QMainWindow *qmw, const QString &iconThemePath);
@@ -47,6 +47,9 @@ public:
 	//static void setMaxItemPerPage(int max);
 	QTableWidget *searchTable;
 	static int maxItemPerPage;
+	static bool nonPagedSearch;
+	static bool skipVowelSigns;
+	static bool skipVowelLetters;
 
 private:
 	QDockWidget *searchResultWidget;
@@ -69,7 +72,7 @@ private:
 private slots:
 	void currentRowColumnChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
 	void searchPageNavigationClicked(QAction *action);
-	void maxItemPerPageChange(int value);
+	void maxItemPerPageChange();
 	void filterResults(const QString &text);
 
 signals:

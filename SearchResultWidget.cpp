@@ -34,16 +34,19 @@
 #include <QHeaderView>
 #include <QApplication>
 
-int SearchResultWidget::maxItemPerPage = 0;
+int SearchResultWidget::maxItemPerPage = 100;
+bool SearchResultWidget::nonPagedSearch = false;
+bool SearchResultWidget::skipVowelSigns = false;
+bool SearchResultWidget::skipVowelLetters = false;
 
-SearchResultWidget::SearchResultWidget(QWidget *parent, const QString &searchPhrase, int count, const QString &poetName)
+SearchResultWidget::SearchResultWidget(QWidget *parent, const QString &searchPhrase, const QString &poetName)
 	: QWidget(parent), searchResultContents(parent)
 {
 	actSearchNextPage = 0;
 	actSearchPreviousPage = 0;
 	phrase = searchPhrase;
 	sectionName = poetName;
-	maxItemPerPageChange(count);
+	maxItemPerPageChange();
 }
 
 SearchResultWidget::~SearchResultWidget()
@@ -238,8 +241,10 @@ void SearchResultWidget::showSearchResult(int start)
 	if (resultList.isEmpty()) return;
 	if (start < 0) start = 0;
 	int end = 0;
-	if (SearchResultWidget::maxItemPerPage == 0)
+	if (SearchResultWidget::maxItemPerPage == 0 || SearchResultWidget::nonPagedSearch) {
+		SearchResultWidget::nonPagedSearch = true;
 		moreThanOnePage = false;
+	}
 	else
 	{
 		end = start + SearchResultWidget::maxItemPerPage-1;
@@ -469,7 +474,7 @@ void SearchResultWidget::searchPageNavigationClicked(QAction *action)
 		showSearchResult(dataList.at(1).toInt());
 }
 
-void SearchResultWidget::maxItemPerPageChange(int value)
+void SearchResultWidget::maxItemPerPageChange()
 {
 	//update 'actSearchPreviousPage' data object
 	if (actSearchPreviousPage && searchPreviousPage)
@@ -482,13 +487,11 @@ void SearchResultWidget::maxItemPerPageChange(int value)
 			if (dataList.size() == 2)
 			{
 				int start = dataList.at(1).toInt()+SearchResultWidget::maxItemPerPage;
-				actSearchPreviousPage->setData("actSearchPreviousPage|"+QString::number(start-value));
+				actSearchPreviousPage->setData("actSearchPreviousPage|"+QString::number(start-SearchResultWidget::maxItemPerPage));
 			}
 		}
 		searchPreviousPage->setEnabled(enabled);
 	}
-
-	SearchResultWidget::maxItemPerPage = value;
 }
 
 void SearchResultWidget::filterResults(const QString &text)

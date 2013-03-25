@@ -157,7 +157,6 @@ class MainWindow : public QMainWindow
 		void toolbarViewChanges(QAction *action);
 		void customizeRandomDialog();
 		void toolBarContextMenu(const QPoint &pos);
-		void getMaxResultPerPage();
 		void checkForUpdates();
 		void actFullScreenClicked(bool checked);
 		void actionRemovePoet();
@@ -195,14 +194,16 @@ class MainWindow : public QMainWindow
 		void actionGanjoorSiteClicked();
 		
 			//search options
+		void showSearchOptionsDialog();
 		void showSearchOptionMenu();
+		void showSearchTips();
 
 	protected:
 //		void resizeEvent( QResizeEvent * event );
 		void closeEvent( QCloseEvent * event );
 	
 	signals:
-		void maxItemPerPageChanged(int);
+		void maxItemPerPageChanged();
 		void loadingStatusText(const QString &);
 };
 #endif // MAINWINDOW_H

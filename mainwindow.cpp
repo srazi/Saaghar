@@ -28,6 +28,7 @@
 #include "SearchPatternManager.h"
 #include "outline.h"
 #include "RegisterationForm.h"
+#include "searchoptionsdialog.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -480,7 +481,7 @@ void MainWindow::searchStart()
 			//searchResultContents->setLayoutDirection(Qt::RightToLeft);
 
 			phrase = QGanjoorDbBrowser::cleanString(phrase);
-			SearchResultWidget *searchResultWidget = new SearchResultWidget(searchResultContents, phrase, SearchResultWidget::maxItemPerPage, poetName);
+			SearchResultWidget *searchResultWidget = new SearchResultWidget(searchResultContents, phrase, poetName);
 
 			/////////////////////////////////////
 			QMap<int, QString> finalResult;
@@ -503,9 +504,13 @@ void MainWindow::searchStart()
 				QStringList phrases = phraseVectorList.at(j);
 //				int phraseCount = phrases.size();
 				QStringList excluded = excludedVectorList.at(j);
-
+				int start = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
 				QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, resultCount, slowSearch);
-
+				int end = QDateTime::currentDateTime().toTime_t()*1000+QDateTime::currentDateTime().time().msec();
+				int miliSec= end-start;
+				qDebug() << "\n------------------------------------------------\n"
+						 << phrases << "\tsearch-duration=" << miliSec
+						 << "\n------------------------------------------------\n";
 				QMap<int, QString>::const_iterator it = mapResult.constBegin();
 
 //				qDebug() << "mapResult-size" << mapResult.size();
@@ -549,7 +554,7 @@ void MainWindow::searchStart()
 					continue;
 			}
 
-			connect(this, SIGNAL(maxItemPerPageChanged(int)), searchResultWidget, SLOT(maxItemPerPageChange(int)));
+			connect(this, SIGNAL(maxItemPerPageChanged()), searchResultWidget, SLOT(maxItemPerPageChange()));
 
 			//create connections for mouse signals
 			connect(searchResultWidget->searchTable, SIGNAL(itemClicked(QTableWidgetItem *)), this, SLOT(tableItemClick(QTableWidgetItem *)));
@@ -2121,6 +2126,35 @@ void MainWindow::showSearchOptionMenu()
 	searchOptionMenu->exec(SaagharWidget::lineEditSearchText->optionsButton()->mapToGlobal(QPoint(0, SaagharWidget::lineEditSearchText->optionsButton()->height()))/*QCursor::pos()*/);
 }
 
+void MainWindow::showSearchTips()
+{
+	QString searchTips;
+	searchTips = tr("<b>Tip1:</b> Search operators and commands:"
+					"%5"
+					"<TR><TD%3 id=\"and-operator\"><b>%1+%2</b></TD>%8<TD%4>Mesras containing both <b>%1</b> and <b>%2</b>, <i>at any order</i>.</TD></TR>"
+					"<TR><TD%3><b>%1**%2</b></TD>%8<TD%4>Mesras containing both <b>%1</b> and <b>%2</b>, <i>at this order</i>.</TD></TR>"
+					"<TR><TD%3><b>%1 %2</b></TD>%8<TD%4>Same as <b><a href=\"#and-operator\">%1+%2</a></b>.</TD></TR>"
+					"<TR><TD%3><b>%1 | %2</b></TD>%8<TD%4>Mesras containing <b>%1</b> or <b>%2</b>, or both.</TD></TR>"
+					"<TR><TD%3><b>%1 -%2</b></TD>%8<TD%4>Mesras containing <b>%1</b>, but not <b>%2</b>.</TD></TR>"
+					"<TR><TD%3><b>\"%1\"</b></TD>%8<TD%4>Mesras containing the whole word <b>%1</b>.</TD></TR>"
+					"<TR><TD%3><b>\"%1 %2\"</b></TD>%8<TD%4>Mesras containing the whole mixed word <b>%1 %2</b>.</TD></TR>"
+					"<TR><TD%3><b>Sp*ng</b></TD>%8<TD%4>Mesras containing any phrase started with <b>Sp</b> and ended with <b>ng</b>; i.e: Mesras containing <b>Spring</b> or <b>Spying</b> or <b>Spoking</b> or...</TD></TR>"
+					"<TR><TD%3><b>=%1</b></TD>%8<TD%4>Mesras containing the word <b>%1</b> <i>as Rhyme</i>.</TD></TR>"
+					"<TR><TD%3><b>==%1</b></TD>%8<TD%4>Mesras containing the word <b>%1</b> <i>as Radif</i>.</TD></TR>"
+					"</TBODY></TABLE><br />"
+					"<br /><b>Tip2:</b> All search queries are case insensitive.<br />"
+					"<br /><b>Tip3:</b> User can use an operator more than once;"
+					"<br />i.e: <b>%1+%2+%6</b>, <b>%1 -%6 -%7</b>, <b>%1**%2**%7</b> and <b>S*r*g</b> are valid search terms.<br />"
+					"<br /><b>Tip4:</b> User can use operators mixed together;"
+					"<br />i.e: <b>\"%1\"+\"%2\"+%6</b>, <b>%1+%2|%6 -%7</b>, <b>\"%1\"**\"%2\"</b>, <b>S*r*g -Spring</b> and <b>\"Gr*en\"</b> are valid search terms.<br />"
+					"<br />")
+				 .arg(tr("Spring")).arg(tr("Flower")).arg(tr(" ALIGN=CENTER")).arg(tr(" ALIGN=Left"))
+				 .arg(tr("<TABLE DIR=LTR FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0><TBODY>")).arg(tr("Rain")).arg(tr("Sunny"))
+				 .arg(tr("<TD  ALIGN=Left>:</TD>"));
+	QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(currentIconThemePath()+"/search.png").scaledToHeight(64, Qt::SmoothTransformation));
+	searchTipsDialog.exec();
+}
+
 //void MainWindow::newSearchNonAlphabetChanged(bool checked)
 //{
 //	SaagharWidget::newSearchSkipNonAlphabet = checked;
@@ -2439,6 +2473,9 @@ void MainWindow::loadGlobalSettings()
 	//SaagharWidget::newSearchFlag = config->value("New Search",true).toBool();
 	//SaagharWidget::newSearchSkipNonAlphabet  = config->value("New Search non-Alphabet",false).toBool();
 	SearchResultWidget::maxItemPerPage  = config->value("Max Search Results Per Page", 100).toInt();
+	SearchResultWidget::nonPagedSearch = config->value("SearchNonPagedResults", false).toBool();
+	SearchResultWidget::skipVowelSigns = config->value("SearchSkipVowelSigns", false).toBool();
+	SearchResultWidget::skipVowelLetters = config->value("SearchSkipVowelLetters", false).toBool();
 
 	SaagharWidget::backgroundImageState = Settings::READ("Background State", true).toBool();
 	SaagharWidget::backgroundImagePath = Settings::READ("Background Path", resourcesPath+"/themes/backgrounds/saaghar-pattern_1.png").toString();
@@ -2646,6 +2683,9 @@ void MainWindow::saveSettings()
 	//config->setValue("New Search", SaagharWidget::newSearchFlag);
 	//config->setValue("New Search non-Alphabet", SaagharWidget::newSearchSkipNonAlphabet);
 	config->setValue("Max Search Results Per Page", SearchResultWidget::maxItemPerPage);
+	config->setValue("SearchNonPagedResults", SearchResultWidget::nonPagedSearch);
+	config->setValue("SearchSkipVowelSigns", SearchResultWidget::skipVowelSigns);
+	config->setValue("SearchSkipVowelLetters", SearchResultWidget::skipVowelLetters);
 
 	//Search and Random Range
 	config->setValue("Selected Random Range", selectedRandomRange);
@@ -3103,16 +3143,11 @@ qDebug() << "end of="<<Q_FUNC_INFO;
 	//QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::getMaxResultPerPage()
+void MainWindow::showSearchOptionsDialog()
 {
-	bool Ok = false;
-	int max = QInputDialog::getInt(this, tr("Results Per Page"), tr("Set max results per page:"), SearchResultWidget::maxItemPerPage, 0, 5000, 5, &Ok );
-	if (Ok)
-	{
-		emit maxItemPerPageChanged(max);
-		SearchResultWidget::maxItemPerPage = max;
-		//SearchResultWidget::setMaxItemPerPage(max);
-	}
+	SearchOptionsDialog searchDialog(this);
+	connect(&searchDialog, SIGNAL(resultsRefreshRequired()), this, SIGNAL(maxItemPerPageChanged()));
+	searchDialog.exec();
 }
 
 void MainWindow::toolBarContextMenu(const QPoint &/*pos*/)
@@ -3401,15 +3436,14 @@ void MainWindow::setupSearchToolBarUi()
 	ui->searchToolBar->addWidget(searchToolBarContent);
 
 	searchOptionMenu = new QMenu(ui->searchToolBar);
-	
-	actionInstance("actionGetMaxResultPerPage", "", tr("Max Result per Page...") );
-	connect(actionInstance("actionGetMaxResultPerPage"), SIGNAL(triggered()), this, SLOT(getMaxResultPerPage()));
-	
+
+	actionInstance("searchOptions", "", tr("Search &Options...") );
+	connect(actionInstance("searchOptions"), SIGNAL(triggered()), this, SLOT(showSearchOptionsDialog()));
+
 	actionInstance("actionSearchTips", "", tr("&Search Tips...") );
+	connect(actionInstance("actionSearchTips"), SIGNAL(triggered()), this, SLOT(showSearchTips()));
 
-	//connect(actionInstance("actionSearchTips"), SIGNAL(toggled(bool)), this, SLOT(newSearchNonAlphabetChanged(bool)));
-
-	searchOptionMenu->addAction(actionInstance("actionGetMaxResultPerPage"));
+	searchOptionMenu->addAction(actionInstance("searchOptions"));
 	searchOptionMenu->addAction(actionInstance("separator"));
 	searchOptionMenu->addAction(actionInstance("actionSearchTips"));
 
@@ -3452,33 +3486,6 @@ void MainWindow::namedActionTriggered(bool checked)
 #ifndef NO_PHONON_LIB
 		SaagharWidget::musicPlayer->setMovable(!checked);
 #endif
-	}
-	else if ( actionName == "actionSearchTips" )
-	{
-		QString searchTips = tr("<b>Tip1:</b> Search operators and commands:"
-					"%5"
-					"<TR><TD%3 id=\"and-operator\"><b>%1+%2</b></TD>%8<TD%4>Mesras containing both <b>%1</b> and <b>%2</b>, <i>at any order</i>.</TD></TR>"
-					"<TR><TD%3><b>%1**%2</b></TD>%8<TD%4>Mesras containing both <b>%1</b> and <b>%2</b>, <i>at this order</i>.</TD></TR>"
-					"<TR><TD%3><b>%1 %2</b></TD>%8<TD%4>Same as <b><a href=\"#and-operator\">%1+%2</a></b>.</TD></TR>"
-					"<TR><TD%3><b>%1 | %2</b></TD>%8<TD%4>Mesras containing <b>%1</b> or <b>%2</b>, or both.</TD></TR>"
-					"<TR><TD%3><b>%1 -%2</b></TD>%8<TD%4>Mesras containing <b>%1</b>, but not <b>%2</b>.</TD></TR>"
-					"<TR><TD%3><b>\"%1\"</b></TD>%8<TD%4>Mesras containing the whole word <b>%1</b>.</TD></TR>"
-					"<TR><TD%3><b>\"%1 %2\"</b></TD>%8<TD%4>Mesras containing the whole mixed word <b>%1 %2</b>.</TD></TR>"
-					"<TR><TD%3><b>Sp*ng</b></TD>%8<TD%4>Mesras containing any phrase started with <b>Sp</b> and ended with <b>ng</b>; i.e: Mesras containing <b>Spring</b> or <b>Spying</b> or <b>Spoking</b> or...</TD></TR>"
-					"<TR><TD%3><b>=%1</b></TD>%8<TD%4>Mesras containing the word <b>%1</b> <i>as Rhyme</i>.</TD></TR>"
-					"<TR><TD%3><b>==%1</b></TD>%8<TD%4>Mesras containing the word <b>%1</b> <i>as Radif</i>.</TD></TR>"
-					"</TBODY></TABLE><br />"
-					"<br /><b>Tip2:</b> All search queries are case insensitive.<br />"
-					"<br /><b>Tip3:</b> User can use an operator more than once;"
-						"<br />i.e: <b>%1+%2+%6</b>, <b>%1 -%6 -%7</b>, <b>%1**%2**%7</b> and <b>S*r*g</b> are valid search terms.<br />"
-					"<br /><b>Tip4:</b> User can use operators mixed together;"
-						"<br />i.e: <b>\"%1\"+\"%2\"+%6</b>, <b>%1+%2|%6 -%7</b>, <b>\"%1\"**\"%2\"</b>, <b>S*r*g -Spring</b> and <b>\"Gr*en\"</b> are valid search terms.<br />"
-					"<br />")
-				.arg(tr("Spring")).arg(tr("Flower")).arg(tr(" ALIGN=CENTER")).arg(tr(" ALIGN=Left"))
-				.arg(tr("<TABLE DIR=LTR FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0><TBODY>")).arg(tr("Rain")).arg(tr("Sunny"))
-				.arg(tr("<TD  ALIGN=Left>:</TD>"));
-		QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(currentIconThemePath()+"/search.png").scaledToHeight(64, Qt::SmoothTransformation));
-		searchTipsDialog.exec();
 	}
 	else if ( actionName == "Ganjoor Verification" )
 	{
