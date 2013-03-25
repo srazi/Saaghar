@@ -2971,7 +2971,8 @@ void MainWindow::tableItemPress(QTableWidgetItem *item)
 void MainWindow::tableItemClick(QTableWidgetItem *item)
 {
 	QTableWidget *senderTable = item->tableWidget();
-	if (!saagharWidget || !senderTable)	return;
+	if (!senderTable)
+		return;
 	if (item)
 	{
 		if (pressedMouseButton == Qt::RightButton)
@@ -3039,11 +3040,14 @@ void MainWindow::tableItemClick(QTableWidgetItem *item)
 	if (itemData.at(0) == "PoemID")
 		pageType = SaagharWidget::PoemViewerPage;
 
-	if (senderTable->objectName() != "searchTable" || //when clicked on searchTable's item we don't expect a refresh!
+	if (!saagharWidget ||
+		senderTable->objectName() != "searchTable" || //when clicked on searchTable's item we don't expect a refresh!
 		saagharWidget->isDirty() ||
 		saagharWidget->pageMetaInfo.id != idData ||
 		saagharWidget->pageMetaInfo.type != pageType)
 	{
+		if (!saagharWidget)
+			insertNewTab();
 		saagharWidget->processClickedItem(itemData.at(0), idData, noError);
 	}
 
@@ -3999,24 +4003,25 @@ void MainWindow::openChildPage(int childID, bool newPage)
 
 void MainWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
 {
-	if (!saagharWidget)
-		insertNewTab();
-
-	for (int j = 0; j < mainTabWidget->count(); ++j)
+	if (!newPage)
 	{
-		SaagharWidget *tmp = getSaagharWidget(j);
-
-		if (tmp && tmp->pageMetaInfo.type == type && tmp->pageMetaInfo.id == id)
+		for (int j = 0; j < mainTabWidget->count(); ++j)
 		{
-			qDebug() << "mainTabWidget->setCurrentWidget--Bef";
-			mainTabWidget->setCurrentWidget(tmp->parentWidget());
-			qDebug() << "mainTabWidget->setCurrentWidget--Aft";
-			return;
+			SaagharWidget *tmp = getSaagharWidget(j);
+			
+			if (tmp && tmp->pageMetaInfo.type == type && tmp->pageMetaInfo.id == id)
+			{
+				qDebug() << "mainTabWidget->setCurrentWidget--Bef";
+				mainTabWidget->setCurrentWidget(tmp->parentWidget());
+				qDebug() << "mainTabWidget->setCurrentWidget--Aft";
+				return;
+			}
 		}
 	}
 
-	if (newPage)
+	if (!saagharWidget || newPage)
 		insertNewTab();
+
 	QString typeSTR = (type == SaagharWidget::CategoryViewerPage ? "CatID" : "PoemID");
 	saagharWidget->processClickedItem(typeSTR, id, true);
 }
