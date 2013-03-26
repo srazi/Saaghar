@@ -72,7 +72,6 @@ public:
         int time;
         QString TITLE;
         QString PATH;
-        QString RELATIVE_PATH;
         QString MD5SUM;
     };
 
@@ -93,13 +92,12 @@ public:
     void savePlayList(const QString &fileName, const QString &playListName = "default",
                       const QString &format = "M3U8");
 
-    static void insertToPlayList(int mediaID, const QString &mediaPath,
-                                 const QString &mediaTitle = "",
-                                 const QString &mediaRelativePath = "",
+    static void insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle = "",
                                  int mediaCurrentTime = 0, const QString &playListName = "default");
     static void removeFromPlayList(int mediaID, const QString &playListName = "default");
     static bool playListContains(int mediaID, const QString &playListName = "default");
-    static void getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle = 0, QString* mediaRelativePath = 0, int* mediaCurrentTime = 0, const QString &playListName = "default");
+    static void getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle = 0,
+                                int* mediaCurrentTime = 0, const QString &playListName = "default");
 
     static QHash<QString, QVariant> listOfPlayList;
     static QStringList commonSupportedMedia(const QString &type = "");//"" or "audio" or "video"

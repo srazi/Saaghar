@@ -731,17 +731,15 @@ void MainWindow::currentTabChanged(int tabIndex)
             qDebug() << "CTABinternalName=" << SaagharWidget::musicPlayer->source();
             QString path;
             QString title;
-            QString relativePath;
             if (old_saagharWidget) {
                 qDebug() << "old=" << old_saagharWidget->currentPoem << "new=" << saagharWidget->currentPoem;
                 //SaagharWidget::mediaInfoCash.insert(old_saagharWidget->currentPoem, QPair<QString, qint64>(SaagharWidget::mediaInfoCash.value(old_saagharWidget->currentPoem).first, SaagharWidget::musicPlayer->currentTime()));
-                QMusicPlayer::getFromPlayList(old_saagharWidget->currentPoem, &path, &title, &relativePath);
-                QMusicPlayer::insertToPlayList(old_saagharWidget->currentPoem, path, title, relativePath, SaagharWidget::musicPlayer->currentTime());
+                QMusicPlayer::getFromPlayList(old_saagharWidget->currentPoem, &path, &title);
+                QMusicPlayer::insertToPlayList(old_saagharWidget->currentPoem, path, title, SaagharWidget::musicPlayer->currentTime());
             }
             path = "";
             title = "";
-            relativePath = "";
-            QMusicPlayer::getFromPlayList(saagharWidget->currentPoem, &path, &title, &relativePath);
+            QMusicPlayer::getFromPlayList(saagharWidget->currentPoem, &path, &title);
             if (SaagharWidget::musicPlayer->source() != path) {
                 SaagharWidget::musicPlayer->setSource(path, saagharWidget->currentLocationList.join(">") + ">" + saagharWidget->currentPoemTitle, saagharWidget->currentPoem);
                 //QApplication::processEvents();
@@ -3816,7 +3814,7 @@ void MainWindow::mediaInfoChanged(const QString &fileName, const QString &title,
             qDebug() << "mediaTitle22=" << mediaTitle;
         }
     }
-    QMusicPlayer::insertToPlayList(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, "", time);
+    QMusicPlayer::insertToPlayList(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, time);
     //SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
     //saagharWidget->pageMetaInfo.mediaFile = fileName;
 }

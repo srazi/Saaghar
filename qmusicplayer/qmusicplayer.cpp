@@ -462,8 +462,9 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &, const 
     //#SAAGHAR!ITEMS!               //start of items
     //#SAAGHAR!TITLE!               //item's title tag
     //#SAAGHAR!ID!                  //item's id tag
-    //#SAAGHAR!RELATIVEPATH!        //item's path relative to playlist file
+    //#SAAGHAR!PATH!                //item's full path
     //#SAAGHAR!MD5SUM!              //item's MD5SUM hash
+    //<last property>               //item's path relative to playlist file
     /*******************************************************************************/
     QFile file(fileName);
     if (!file.exists()) {
@@ -498,9 +499,12 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &, const 
         line = out.readLine();
     }
 
+    QFileInfo playListFileInfo(fileName);
+    QDir playListDir(playListFileInfo.absolutePath());
+
     int ID;
     QString TITLE;
-    QString RELATIVE_PATH;
+    QString FULL_PATH;
     QString MD5SUM;
     bool ok = false;
     while (!out.atEnd()) {
@@ -525,9 +529,9 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &, const 
                         continue;
                     }
                 }
-                else if (line.startsWith("RELATIVEPATH!")) {
-                    line.remove("RELATIVEPATH!");
-                    RELATIVE_PATH = line;
+                else if (line.startsWith("PATH!")) {
+                    line.remove("PATH!");
+                    FULL_PATH = line;
                 }
                 else if (line.startsWith("MD5SUM!")) {
                     line.remove("MD5SUM!");
@@ -537,18 +541,30 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &, const 
         }
         else {
             line = line.trimmed();
-            if (ID != -1 && !line.isEmpty()) { //at least path and id is necessary!!
-                SaagharMediaTag* mediaTag = new SaagharMediaTag;
-                mediaTag->time = 0;
-                mediaTag->PATH = line;
-                mediaTag->TITLE = TITLE;
-                TITLE = "";
-                mediaTag->MD5SUM = MD5SUM;
-                MD5SUM = "";
-                mediaTag->RELATIVE_PATH = RELATIVE_PATH;
-                RELATIVE_PATH = "";
-                playList->mediaItems.insert(ID, mediaTag);
-                qDebug() << "id=" << ID << "struct=" << mediaTag->PATH << mediaTag->TITLE << mediaTag->MD5SUM << mediaTag->RELATIVE_PATH;
+            if (ID != -1 && (!line.isEmpty() || !FULL_PATH.isEmpty())) {
+                //at least one of path and id is necessary!!
+                QString absoluteMediaPath = playListDir.absoluteFilePath(line);
+                bool mediaExists = false;
+                if (QFile::exists(absoluteMediaPath)) {
+                    absoluteMediaPath = QDir::cleanPath(absoluteMediaPath);
+                    mediaExists = true;
+                }
+                else if (QFile::exists(FULL_PATH)) {
+                    absoluteMediaPath = FULL_PATH;
+                    mediaExists = true;
+                }
+
+                if (mediaExists) {
+                    SaagharMediaTag* mediaTag = new SaagharMediaTag;
+                    mediaTag->time = 0;
+                    mediaTag->PATH = absoluteMediaPath;
+                    mediaTag->TITLE = TITLE;
+                    mediaTag->MD5SUM = MD5SUM;
+                    playList->mediaItems.insert(ID, mediaTag);
+                }
+                FULL_PATH.clear();
+                TITLE.clear();
+                MD5SUM.clear();
                 ID = -1;
             }
         }
@@ -588,18 +604,25 @@ void QMusicPlayer::savePlayList(const QString &fileName, const QString &playList
         return;
     }
 
+    QFileInfo playListFileInfo(fileName);
+    QDir playListInfo(playListFileInfo.absolutePath());
     QTextStream out(&file);
     out.setCodec("UTF-8");
     QString playListContent = QString("#SAAGHAR!PLAYLIST!V%1\n#SAAGHAR!PLAYLIST!TITLE!%2\n##################\n#SAAGHAR!ITEMS!\n").arg("0.1").arg(playListName);
     QHash<int, SaagharMediaTag*>::const_iterator it = playList->mediaItems.constBegin();  //playList.constBegin();
     while (it != playList->mediaItems.constEnd()) {
+        QString relativePath = playListInfo.relativeFilePath(it.value()->PATH);
+        QString md5sumStr;
+        if (!it.value()->MD5SUM.isEmpty()) {
+            md5sumStr = QString("#SAAGHAR!MD5SUM!%1\n").arg(it.value()->MD5SUM);
+        }
         QString itemStr = QString(
                               "#SAAGHAR!TITLE!%1\n"
                               "#SAAGHAR!ID!%2\n"
-                              "#SAAGHAR!MD5SUM!%3\n"
-                              "#SAAGHAR!RELATIVEPATH!%4\n"
+                              "%3"
+                              "#SAAGHAR!PATH!%4\n"
                               "%5\n")
-                          .arg(it.value()->TITLE).arg(it.key()).arg(it.value()->MD5SUM).arg(it.value()->RELATIVE_PATH).arg(it.value()->PATH);
+                          .arg(it.value()->TITLE).arg(it.key()).arg(md5sumStr).arg(it.value()->PATH).arg(relativePath);
         playListContent += itemStr;
         ++it;
     }
@@ -621,8 +644,7 @@ void QMusicPlayer::removeFromPlayList(int mediaID, const QString &playListName)
 }
 
 /*static*/
-void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath,
-                                    const QString &mediaTitle, const QString &,
+void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle,
                                     int mediaCurrentTime, const QString &playListName)
 {
     SaagharPlayList* playList = QMusicPlayer::playListByName(playListName);
@@ -635,7 +657,6 @@ void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath,
     SaagharMediaTag* mediaTag = new SaagharMediaTag;
     mediaTag->TITLE = mediaTitle;
     mediaTag->PATH = mediaPath;
-    //mediaTag->RELATIVE_PATH = mediaRelativePath;
     mediaTag->time = mediaCurrentTime;
 
     /**********************************************************/
@@ -659,7 +680,8 @@ void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath,
 }
 
 /*static*/
-void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle, QString* mediaRelativePath, int* mediaCurrentTime, const QString &playListName)
+void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle,
+                                   int* mediaCurrentTime, const QString &playListName)
 {
     if (mediaID < 0 || !mediaPath || !playListContains(mediaID, playListName)) {
         return;
@@ -669,7 +691,6 @@ void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* med
     if (!mediaTag) {
         *mediaPath = "";
         *mediaTitle = "";
-        *mediaRelativePath = "";
         *mediaCurrentTime = 0;
         return;
     }
@@ -677,9 +698,6 @@ void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* med
     *mediaPath = mediaTag->PATH;
     if (mediaTitle) {
         *mediaTitle = mediaTag->TITLE;
-    }
-    if (mediaRelativePath) {
-        *mediaRelativePath = mediaTag->RELATIVE_PATH;
     }
     if (mediaCurrentTime) {
         *mediaCurrentTime = mediaTag->time;

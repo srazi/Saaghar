@@ -1130,8 +1130,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
         if (QMusicPlayer::playListContains(currentPoem)) {
             QString path;
             QString title;
-            QString relativePath;
-            QMusicPlayer::getFromPlayList(currentPoem, &path, &title, &relativePath);
+            QMusicPlayer::getFromPlayList(currentPoem, &path, &title);
             //QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(currentPoem);
             if (SaagharWidget::musicPlayer->source() != path) {
                 SaagharWidget::musicPlayer->setSource(path, currentLocationList.join(">") + ">" + currentPoemTitle, currentPoem);
