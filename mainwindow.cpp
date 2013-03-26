@@ -1686,7 +1686,7 @@ void MainWindow::setupUi()
 
 #ifndef NO_PHONON_LIB
     connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(QString,QString,int,bool)), this, SLOT(mediaInfoChanged(QString,QString,int)));
-    connect(SaagharWidget::musicPlayer, SIGNAL(requestPageContainedMedia(/*QString,QString,*/int,bool)), this, SLOT(openChildPage(int,bool)));
+    connect(SaagharWidget::musicPlayer, SIGNAL(requestPageContainedMedia(int,bool)), this, SLOT(openChildPage(int,bool)));
 
     addToolBar(Qt::BottomToolBarArea, SaagharWidget::musicPlayer);
 #endif

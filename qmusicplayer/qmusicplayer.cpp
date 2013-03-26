@@ -62,12 +62,9 @@
 #include <QDockWidget>
 
 QHash<QString, QVariant> QMusicPlayer::listOfPlayList = QHash<QString, QVariant>();
-//QHash<int, QMusicPlayer::SaagharMediaTag> QMusicPlayer::d efaultPlayList = QHash<int, QMusicPlayer::SaagharMediaTag>();
 QMusicPlayer::SaagharPlayList QMusicPlayer::hashDefaultPlayList = QMusicPlayer::SaagharPlayList();
-//QHash<QString, QHash<int, QMusicPlayer::SaagharMediaTag> > QMusicPlayer::playLists = QHash<QString, QHash<int, QMusicPlayer::SaagharMediaTag> >();
 QHash<QString, QMusicPlayer::SaagharPlayList*> QMusicPlayer::hashPlayLists = QHash<QString, QMusicPlayer::SaagharPlayList*>();
-//QString("default"), QHash<int, QMusicPlayer::SaagharMediaTag>()
-//![0]
+
 QMusicPlayer::QMusicPlayer(QWidget* parent) : QToolBar(parent)
 {
     setObjectName("QMusicPlayer");
@@ -78,7 +75,7 @@ QMusicPlayer::QMusicPlayer(QWidget* parent) : QToolBar(parent)
     dockList = 0;
 
     playListManager = new PlayListManager;
-    connect(playListManager, SIGNAL(mediaPlayRequested(int/*,QString,const QString&*/)), this, SLOT(playMedia(int/*,QString,const QString&*/)));
+    connect(playListManager, SIGNAL(mediaPlayRequested(int)), this, SLOT(playMedia(int)));
     connect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), playListManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
 
     QMusicPlayer::hashDefaultPlayList.PATH = "";
@@ -99,8 +96,7 @@ QMusicPlayer::QMusicPlayer(QWidget* parent) : QToolBar(parent)
     metaInformationResolver = new Phonon::MediaObject(this);
 
     mediaObject->setTickInterval(1000);
-//![0]
-//![2]
+
     playListManager->setMediaObject(mediaObject);
 
     connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
@@ -110,23 +106,17 @@ QMusicPlayer::QMusicPlayer(QWidget* parent) : QToolBar(parent)
             this, SLOT(metaStateChanged(Phonon::State,Phonon::State)));
     connect(mediaObject, SIGNAL(currentSourceChanged(Phonon::MediaSource)),
             this, SLOT(sourceChanged(Phonon::MediaSource)));
-    //connect(mediaObject, SIGNAL(aboutToFinish()), this, SLOT(aboutToFinish()));
     connect(mediaObject, SIGNAL(finished()), this, SLOT(aboutToFinish()));
 
-    qDebug() << "connect=" << connect(mediaObject, SIGNAL(seekableChanged(bool)), this, SLOT(seekableChanged(bool)));
-//![2]
+    connect(mediaObject, SIGNAL(seekableChanged(bool)), this, SLOT(seekableChanged(bool)));
 
-//![1]
     Phonon::createPath(mediaObject, audioOutput);
-//![1]
 
     setupActions();
-//  setupMenus();
     setupUi();
     timeLcd->display("00:00");
 }
 
-//![6]
 void QMusicPlayer::seekableChanged(bool seekable)
 {
     qDebug() << "seekableChanged" << seekable << "_newTime=" << _newTime;
@@ -144,13 +134,6 @@ qint64 QMusicPlayer::currentTime()
 void QMusicPlayer::setCurrentTime(qint64 time)
 {
     _newTime = time;
-    /*
-    Phonon::State currentState = mediaObject->state();
-    qDebug() <<"isSeakable="<<mediaObject->isSeekable()<< "setCTime-state="<<currentState<<"time="<<mediaObject->currentTime()<<"newTime="<<time;
-    //stateChanged(Phonon::PausedState, Phonon::PausedState);
-    mediaObject->play();
-    mediaObject->seek(time);
-    qDebug() <<"isSeakable="<<mediaObject->isSeekable() << "setCTime-state="<<currentState<<"time="<<mediaObject->currentTime()<<"newTime="<<time;*/
 }
 
 QString QMusicPlayer::source()
@@ -178,23 +161,6 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
         qDebug() << "DISABLE";
     }
 
-////    if (!sources.isEmpty())
-////    {
-
-////    }
-////    else
-//  if (fileName.isEmpty())
-//  {
-//      stopAction->setEnabled(false);
-//      togglePlayPauseAction->setEnabled(false);
-//      //pauseAction->setEnabled(false);
-//      togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-//      togglePlayPauseAction->setText(tr("Play"));
-//      disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
-//      disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
-//      timeLcd->display("00:00");
-//  }
-
     if (!title.isEmpty()) {
         currentTitle = title;
     }
@@ -204,7 +170,10 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
 
 void QMusicPlayer::setSource()
 {
-    qDebug() << "setSource=" << currentID << "\nAvailable Mime Types=\n" << Phonon::BackendCapabilities::availableMimeTypes()/*.join("#!#")*/ << "\n=====================";
+    qDebug() << "setSource=" << currentID
+             << "\n=====================\nAvailable Mime Types=\n"
+             << Phonon::BackendCapabilities::availableMimeTypes()
+             << "\n=====================";
 
     QString file = QFileDialog::getOpenFileName(this, tr("Select Music Files"), startDir,
                    "Common Supported Files (" + QMusicPlayer::commonSupportedMedia().join(" ") +
@@ -219,26 +188,7 @@ void QMusicPlayer::setSource()
         return;
     }
 
-//  int index = sources.size();
-//  foreach (QString string, files) {
-//          Phonon::MediaSource source(string);
-
-//      sources.append(source);
-//  }
-
     setSource(file, currentTitle, currentID);
-
-//  Phonon::MediaSource source(file);
-//  sources.clear();
-//  sources.append(source);
-
-//  if (!sources.isEmpty())
-//  {
-//      setSource(file);
-//      //metaInformationResolver->setCurrentSource(sources.at(0/*index*/));
-//      //load(0);
-//  }
-
 }
 
 void QMusicPlayer::removeSource()
@@ -256,35 +206,14 @@ void QMusicPlayer::removeSource()
     QMusicPlayer::removeFromPlayList(currentID);
 }
 
-//![6]
-
-//void QMusicPlayer::about()
-//{
-//  QMessageBox::information(this, tr("About Music Player"),
-//      tr("The Music Player example shows how to use Phonon - the multimedia"
-//         " framework that comes with Qt - to create a simple music player."));
-//}
-
-//![9]
 void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldState */)
 {
     switch (newState) {
     case Phonon::ErrorState:
         emit mediaChanged("", currentTitle, currentID, false);
-        //errors are handled in metaStateChanged()
-//          if (mediaObject->errorType() == Phonon::FatalError) {
-//              QMessageBox::warning(this, tr("Fatal Error"),
-//              mediaObject->errorString());
-//          } else {
-//              QMessageBox::warning(this, tr("Error"),
-//              mediaObject->errorString());
-//          }
         break;
-//![9]
-//![10]
+
     case Phonon::PlayingState:
-        //togglePlayPauseAction->setEnabled(false);
-        //pauseAction->setEnabled(true);
         stopAction->setEnabled(true);
         togglePlayPauseAction->setEnabled(true);
         togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
@@ -295,7 +224,6 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
     case Phonon::StoppedState:
         stopAction->setEnabled(false);
         togglePlayPauseAction->setEnabled(true);
-        //pauseAction->setEnabled(false);
         togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
         togglePlayPauseAction->setText(tr("Play"));
         connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
@@ -303,7 +231,6 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
         timeLcd->display("00:00");
         break;
     case Phonon::PausedState:
-        //pauseAction->setEnabled(false);
         stopAction->setEnabled(true);
         togglePlayPauseAction->setEnabled(true);
         togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
@@ -311,7 +238,7 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
         connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
         disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
         break;
-//![10]
+
     case Phonon::BufferingState:
         break;
     default:
@@ -337,16 +264,13 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
     }
 }
 
-//![11]
 void QMusicPlayer::tick(qint64 time)
 {
     QTime displayTime(0, (time / 60000) % 60, (time / 1000) % 60);
 
     timeLcd->display(displayTime.toString("mm:ss"));
 }
-//![11]
 
-//![12]
 void QMusicPlayer::load(int index)
 {
     bool wasPlaying = mediaObject->state() == Phonon::PlayingState;
@@ -367,22 +291,16 @@ void QMusicPlayer::load(int index)
         mediaObject->stop();
     }
 }
-//![12]
 
-//![13]
-void QMusicPlayer::sourceChanged(const Phonon::MediaSource &source)
+void QMusicPlayer::sourceChanged(const Phonon::MediaSource &)
 {
-    //musicTable->selectRow(sources.indexOf(source));
     timeLcd->display("00:00");
 }
-//![13]
 
-//![14]
-void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State /* oldState */)
+void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State)
 {
-    qDebug() << "metaStateChanged";
     if (newState == Phonon::ErrorState) {
-        //qWarning() << "Error opening files: " << metaInformationResolver->errorString();
+        qWarning() << "Error opening files: " << metaInformationResolver->errorString();
         infoLabel->setText("Error opening files: " + metaInformationResolver->errorString());
         while (!sources.isEmpty() &&
                 !(sources.takeLast() == metaInformationResolver->currentSource())
@@ -405,9 +323,7 @@ void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State /* old
     if (title == "") {
         title = metaInformationResolver->currentSource().fileName();
     }
-    //qDebug() << "metaData-keys="<<QStringList(metaData.keys()).join("!#!");
-    //qDebug() <<"---"<<metaInformationResolver->metaData(Phonon::DateMetaData).join("{}");
-    //qDebug() << "metaData-values="<<QStringList(metaData.values()).join("!#!");
+
     QStringList metaInfos;
     metaInfos << title << metaData.value("ARTIST") << metaData.value("ALBUM") << metaData.value("DATE");
     metaInfos.removeDuplicates();
@@ -415,39 +331,11 @@ void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State /* old
     metaInfos = tmp.split("-", QString::SkipEmptyParts);
     infoLabel->setText(metaInfos.join(" - "));
 
-//  QTableWidgetItem *titleItem = new QTableWidgetItem(title);
-//  titleItem->setFlags(titleItem->flags() ^ Qt::ItemIsEditable);
-//  QTableWidgetItem *artistItem = new QTableWidgetItem(metaData.value("ARTIST"));
-//  artistItem->setFlags(artistItem->flags() ^ Qt::ItemIsEditable);
-//  QTableWidgetItem *albumItem = new QTableWidgetItem(metaData.value("ALBUM"));
-//  albumItem->setFlags(albumItem->flags() ^ Qt::ItemIsEditable);
-//  QTableWidgetItem *yearItem = new QTableWidgetItem(metaData.value("DATE"));
-//  yearItem->setFlags(yearItem->flags() ^ Qt::ItemIsEditable);
-//![14]
-
-//  int currentRow = musicTable->rowCount();
-//  musicTable->insertRow(currentRow);
-//  musicTable->setItem(currentRow, 0, titleItem);
-//  musicTable->setItem(currentRow, 1, artistItem);
-//  musicTable->setItem(currentRow, 2, albumItem);
-//  musicTable->setItem(currentRow, 3, yearItem);
-
-////![15]
-//  if (musicTable->selectedItems().isEmpty()) {
-//      musicTable->selectRow(0);
-//      mediaObject->setCurrentSource(metaInformationResolver->currentSource());
-//  }
-
     Phonon::MediaSource source = metaInformationResolver->currentSource();
     int index = sources.indexOf(metaInformationResolver->currentSource()) + 1;
     if (sources.size() > index) {
         metaInformationResolver->setCurrentSource(sources.at(index));
     }
-//  else {
-//      musicTable->resizeColumnsToContents();
-//      if (musicTable->columnWidth(0) > 300)
-//          musicTable->setColumnWidth(0, 300);
-//  }
 
     if (notLoaded) {
         infoLabel->setText("");
@@ -460,27 +348,17 @@ void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State /* old
         timeLcd->display("00:00");
     }
 }
-//![15]
 
-//![16]
 void QMusicPlayer::aboutToFinish()
 {
     mediaObject->stop();
-//  int index = sources.indexOf(mediaObject->currentSource()) + 1;
-//  if (sources.size() > index) {
-//      mediaObject->enqueue(sources.at(index));
-//  }
 }
-//![16]
 
 void QMusicPlayer::setupActions()
 {
     togglePlayPauseAction = new QAction(style()->standardIcon(QStyle::SP_MediaPlay), tr("Play"), this);
     togglePlayPauseAction->setShortcut(tr("Ctrl+P"));
     togglePlayPauseAction->setDisabled(true);
-//  pauseAction = new QAction(style()->standardIcon(QStyle::SP_MediaPause), tr("Pause"), this);
-//  pauseAction->setShortcut(tr("Ctrl+A"));
-//  pauseAction->setDisabled(true);
     stopAction = new QAction(style()->standardIcon(QStyle::SP_MediaStop), tr("Stop"), this);
     stopAction->setShortcut(tr("Ctrl+S"));
     stopAction->setDisabled(true);
@@ -491,50 +369,14 @@ void QMusicPlayer::setupActions()
     setSourceAction = new QAction(tr("&Set Audio..."), this);
     removeSourceAction = new QAction(tr("&Remove Audio"), this);
 
-    //setSourceAction->setShortcut(tr("Ctrl+F"));
-//  exitAction = new QAction(tr("E&xit"), this);
-//  exitAction->setShortcuts(QKeySequence::Quit);
-//  aboutAction = new QAction(tr("A&bout"), this);
-//  aboutAction->setShortcut(tr("Ctrl+B"));
-//  aboutQtAction = new QAction(tr("About &Qt"), this);
-//  aboutQtAction->setShortcut(tr("Ctrl+Q"));
-
-//![5]
     connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
-    //connect(pauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()) );
     connect(stopAction, SIGNAL(triggered()), mediaObject, SLOT(stop()));
-//![5]
     connect(setSourceAction, SIGNAL(triggered()), this, SLOT(setSource()));
     connect(removeSourceAction, SIGNAL(triggered()), this, SLOT(removeSource()));
-
-//  connect(exitAction, SIGNAL(triggered()), this, SLOT(close()));
-//  connect(aboutAction, SIGNAL(triggered()), this, SLOT(about()));
-//  connect(aboutQtAction, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 }
 
-//void QMusicPlayer::setupMenus()
-//{
-//  QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
-//  fileMenu->addAction(setSourceAction);
-//  fileMenu->addSeparator();
-//  fileMenu->addAction(exitAction);
-
-//  QMenu *aboutMenu = menuBar()->addMenu(tr("&Help"));
-//  aboutMenu->addAction(aboutAction);
-//  aboutMenu->addAction(aboutQtAction);
-//}
-
-//![3]
 void QMusicPlayer::setupUi()
 {
-    //return;
-//![3]
-//  QToolBar *bar = new QToolBar(this);
-
-//  bar->addAction(togglePlayPauseAction);
-//  bar->addAction(pauseAction);
-//  bar->addAction(stopAction);
-
     QToolButton* options = new QToolButton;
     options->setIcon(QIcon(":/images/options.png"));
     options->setPopupMode(QToolButton::InstantPopup);
@@ -551,65 +393,26 @@ void QMusicPlayer::setupUi()
     addWidget(options);
     addSeparator();
     addAction(togglePlayPauseAction);
-    //addAction(pauseAction);
     addAction(stopAction);
     addSeparator();
 
-//![4]
     seekSlider = new Phonon::SeekSlider(this);
     seekSlider->setMediaObject(mediaObject);
 
-//  infoLabel = new QLabel("");
-//  infoLabel->setScaledContents(true);
-//QLabel *tmpLabel = new QLabel("");
-//tmpLabel->setScaledContents(true);
-//tmpLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    //QHBoxLayout *hbl = new QHBoxLayout(tmpLabel);
     infoLabel = new ScrollText(this);
-    //infoLabel->setSeparator("---");
-    //infoLabel->setMinimumWidth(50);
     infoLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     infoLabel->resize(seekSlider->width(), infoLabel->height());
-
-    //hbl->addWidget(infoLabel);
-    //tmpLabel->setLayout(hbl);
 
     volumeSlider = new Phonon::VolumeSlider(this);
     volumeSlider->setAudioOutput(audioOutput);
 
-//![4]
     volumeSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
-
-    //QLabel *volumeLabel = new QLabel;
-    //volumeLabel->setPixmap(QPixmap("images/volume.png"));
 
     QPalette palette;
     palette.setBrush(QPalette::Light, Qt::darkGray);
 
     timeLcd = new QLCDNumber;
     timeLcd->setPalette(palette);
-
-    //QStringList headers;
-    //headers << tr("Title") << tr("Artist") << tr("Album") << tr("Year");
-
-//  musicTable = new QTableWidget(0, 4);
-//  musicTable->setFixedSize(1,1);
-//  musicTable->hide();
-//  musicTable->setHorizontalHeaderLabels(headers);
-//  musicTable->setSelectionMode(QAbstractItemView::SingleSelection);
-//  musicTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-//  connect(musicTable, SIGNAL(cellPressed(int,int)),
-//          this, SLOT(tableClicked(int,int)));
-
-//  QHBoxLayout *seekerLayout = new QHBoxLayout;
-//  seekerLayout->addWidget(seekSlider);
-//  seekerLayout->addWidget(timeLcd);
-
-//  QHBoxLayout *playbackLayout = new QHBoxLayout;
-//  playbackLayout->addWidget(bar);
-//  playbackLayout->addStretch();
-//  playbackLayout->addWidget(volumeLabel);
-//  playbackLayout->addWidget(volumeSlider);
 
     QVBoxLayout* infoLayout = new QVBoxLayout;
     infoLayout->addWidget(seekSlider);
@@ -620,21 +423,12 @@ void QMusicPlayer::setupUi()
     QWidget* infoWidget = new QWidget;
     infoWidget->setLayout(infoLayout);
 
-//  QHBoxLayout *mainLayout = new QHBoxLayout;
-//  mainLayout->addWidget(seekSlider);
-//  mainLayout->addWidget(timeLcd);
-//  mainLayout->addWidget(volumeSlider);
-
     addWidget(infoWidget);
     addWidget(timeLcd);
     addWidget(volumeSlider);
 
 
     setLayoutDirection(Qt::LeftToRight);
-
-    //addWidget(widget);
-    //setCentralWidget(widget);
-    //setWindowTitle("Phonon Music Player");
 }
 
 void QMusicPlayer::readPlayerSettings(QSettings* settingsObject)
@@ -658,8 +452,8 @@ void QMusicPlayer::savePlayerSettings(QSettings* settingsObject)
     }
     settingsObject->endGroup();
 }
-#include<QDebug>
-void QMusicPlayer::loadPlayList(const QString &fileName, const QString &/*playListName*/, const QString &/*format*/)
+
+void QMusicPlayer::loadPlayList(const QString &fileName, const QString &, const QString &)
 {
     /*******************************************************************************/
     //tags for Version-0.1 of Saaghar media playlist
@@ -696,7 +490,6 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &/*playLi
 
     playListName = line.remove("#SAAGHAR!PLAYLIST!TITLE!");
 
-    //QHash<int, SaagharMediaTag> playList;
     SaagharPlayList* playList = new SaagharPlayList;
     playList->PATH = fileName;
     listOfPlayList.insert(playListName, fileName);
@@ -704,14 +497,7 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &/*playLi
     while (!line.startsWith("#SAAGHAR!ITEMS!")) { //start of items
         line = out.readLine();
     }
-//      struct SaagharMediaTag {
-//          int time;
-//          QString TITLE;
-//          QString PATH;
-//          QString RELATIVE_PATH;
-//          QString MD5SUM;
-//      };
-    //lines = out.readAll();//read all items!
+
     int ID;
     QString TITLE;
     QString RELATIVE_PATH;
@@ -781,7 +567,7 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &/*playLi
 //#SAAGHAR!(TITLE|ID|MD5SUM|RELATIVE)!(\s[^#]+)
 }
 
-void QMusicPlayer::savePlayList(const QString &fileName, const QString &playListName, const QString &/*format*/)
+void QMusicPlayer::savePlayList(const QString &fileName, const QString &playListName, const QString &)
 {
     SaagharPlayList* playList = playListByName(playListName);
 
@@ -805,7 +591,6 @@ void QMusicPlayer::savePlayList(const QString &fileName, const QString &playList
     QTextStream out(&file);
     out.setCodec("UTF-8");
     QString playListContent = QString("#SAAGHAR!PLAYLIST!V%1\n#SAAGHAR!PLAYLIST!TITLE!%2\n##################\n#SAAGHAR!ITEMS!\n").arg("0.1").arg(playListName);
-    //QHash<int, SaagharMediaTag>
     QHash<int, SaagharMediaTag*>::const_iterator it = playList->mediaItems.constBegin();  //playList.constBegin();
     while (it != playList->mediaItems.constEnd()) {
         QString itemStr = QString(
@@ -835,17 +620,12 @@ void QMusicPlayer::removeFromPlayList(int mediaID, const QString &playListName)
     }
 }
 
-//#include <QCryptographicHash>
-//static
-void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle, const QString &/*mediaRelativePath*/, int mediaCurrentTime, const QString &playListName)
+/*static*/
+void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath,
+                                    const QString &mediaTitle, const QString &,
+                                    int mediaCurrentTime, const QString &playListName)
 {
     SaagharPlayList* playList = QMusicPlayer::playListByName(playListName);
-//  if (playList && mediaPath.isEmpty()) //remove from playlist
-//  {
-//      qDebug() << "insertToPlayList mediaID removed";
-//      playList->mediaItems.remove(mediaID);
-//      return;
-//  }
 
     QFile file(mediaPath);
     if (!file.exists() || mediaID < 0) {
@@ -867,9 +647,6 @@ void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const
 //      QCryptographicHash::Md5).toHex());
     /**********************************************************/
 
-    //d efaultPlayList.insert(mediaID, mediaTag);
-    //hashDefaultPlayList.mediaItems.insert(mediaID, mediaTag);
-
     if (!playList) {
         playList = new SaagharPlayList;
         playList->PATH = listOfPlayList.value(playListName).toString();
@@ -878,19 +655,17 @@ void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const
     }
     else {
         playList->mediaItems.insert(mediaID, mediaTag);
-        //pushPlayList(playList, playListName);//playList is a pointer we don't need to push it!
     }
 }
 
-//static
+/*static*/
 void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle, QString* mediaRelativePath, int* mediaCurrentTime, const QString &playListName)
 {
     if (mediaID < 0 || !mediaPath || !playListContains(mediaID, playListName)) {
         return;
     }
-    //SaagharMediaTag mediaTag = d efaultPlayList.value(mediaID);
-    //SaagharPlayList   playList = playListByName(playListName);
-    SaagharMediaTag* mediaTag = playListByName(playListName)->mediaItems.value(mediaID); //.value(mediaID);
+
+    SaagharMediaTag* mediaTag = playListByName(playListName)->mediaItems.value(mediaID);
     if (!mediaTag) {
         *mediaPath = "";
         *mediaTitle = "";
@@ -911,11 +686,9 @@ void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* med
     }
 }
 
-//static
+/*static*/
 bool QMusicPlayer::playListContains(int mediaID, const QString &playListName)
 {
-    //return d efaultPlayList.contains(mediaID);
-    //return hashDefaultPlayList.mediaItems.contains(mediaID);
     SaagharPlayList* playList = playListByName(playListName);
 
     qDebug() << "playListName=" << playListName << "playListContains:\nmediaID=" << mediaID << "PlayLists=" << hashPlayLists.values() << "IDs=" << hashPlayLists.keys();
@@ -924,7 +697,7 @@ bool QMusicPlayer::playListContains(int mediaID, const QString &playListName)
     }
     qDebug() << "mediaID=" << mediaID << "pointer=" << playList << "*po=" << playList->mediaItems.keys();
     bool ret = playList->mediaItems.contains(mediaID);
-    return ret;//playListByName(playListName).mediaItems.contains(mediaID);
+    return ret;
 }
 
 QDockWidget* QMusicPlayer::playListManagerDock()
@@ -944,32 +717,19 @@ QDockWidget* QMusicPlayer::playListManagerDock()
     return dockList;
 }
 
-void QMusicPlayer::playMedia(int mediaID/*, const QString &fileName, const QString &title*/)
+void QMusicPlayer::playMedia(int mediaID)
 {
     disconnect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), playListManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
-    emit requestPageContainedMedia(mediaID, true); //(fileName, title, mediaID);
+    emit requestPageContainedMedia(mediaID, true);
     mediaObject->play();
     connect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), playListManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
 }
 
 void QMusicPlayer::resizeEvent(QResizeEvent* e)
 {
-    //infoLabel->resize(seekSlider->width(), infoLabel->height());
-//  infoLabel->setFixedWidth(50);
-//  seekSlider->resize(50, seekSlider->height());
-//  seekSlider->update();
-//  infoLabel->update();
-//  infoLabel->hide();
-//  QApplication::processEvents();
     QToolBar::resizeEvent(e);
 
     infoLabel->resize(seekSlider->width(), infoLabel->height());
-//  qDebug() << "after ToolBar Resize"<<Q_FUNC_INFO;
-//  qDebug() << "seekSlider-w"<<seekSlider->width()<<"seekSlider-hintW="<<seekSlider->sizeHint().width();
-//  qDebug() << "1infoLabel-w"<<infoLabel->width()<<"1hintW="<<infoLabel->sizeHint().width();
-//  infoLabel->setFixedWidth(seekSlider->width());
-//  infoLabel->show();
-    //  qDebug() << "2infoLabel-w"<<infoLabel->width()<<"2hintW="<<infoLabel->sizeHint().width();
 }
 
 /*static*/
@@ -1025,7 +785,6 @@ PlayListManager::PlayListManager(QWidget* parent) : QWidget(parent)
     hLayout->addWidget(mediaList);
     this->setLayout(hLayout);
     connect(mediaList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(itemPlayRequested(QTreeWidgetItem*,int)));
-    connect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
 }
 
 void PlayListManager::setPlayLists(const QHash<QString, QMusicPlayer::SaagharPlayList*> &playLists, bool /*justMediaList*/)
@@ -1079,7 +838,7 @@ void PlayListManager::setPlayLists(const QHash<QString, QMusicPlayer::SaagharPla
 
 void PlayListManager::currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest)
 {
-    if (/*fileName.isEmpty() ||*/ mediaID <= 0) { // fileName.isEmpty() for delete request!!
+    if (mediaID <= 0) { // fileName.isEmpty() for delete request!!
         return;
     }
 
@@ -1128,10 +887,8 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
                     if (mediaList->currentItem()) {
                         mediaList->currentItem()->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
                     }
-                    disconnect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
                     mediaList->setCurrentItem(childItem, 0);
                     previousItem = childItem;
-                    connect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
                 }
                 return;
             }
@@ -1163,10 +920,8 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
             if (mediaList->currentItem()) {
                 mediaList->currentItem()->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
             }
-            disconnect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
             mediaList->setCurrentItem(newChild, 0);
             previousItem = newChild;
-            connect(mediaList, SIGNAL(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)), this, SLOT(currentItemChanged(QTreeWidgetItem*,QTreeWidgetItem*)));
         }
     }
 }
@@ -1182,15 +937,13 @@ void PlayListManager::itemPlayRequested(QTreeWidgetItem* item, int /*col*/)
     }
 
     if (previousItem) {
-//      if (item == previousItem)
-//          return;
         previousItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
     }
 
     item->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
     int id = item->data(0, Qt::UserRole).toInt();
     previousItem = item;
-    emit mediaPlayRequested(id/*, current->text(1), current->text(0)*/);
+    emit mediaPlayRequested(id);
 }
 
 void PlayListManager::setMediaObject(Phonon::MediaObject* MediaObject)
@@ -1200,9 +953,8 @@ void PlayListManager::setMediaObject(Phonon::MediaObject* MediaObject)
             this, SLOT(mediaObjectStateChanged(Phonon::State,Phonon::State)));
 }
 
-void PlayListManager::mediaObjectStateChanged(Phonon::State newState, Phonon::State oldState)
+void PlayListManager::mediaObjectStateChanged(Phonon::State newState, Phonon::State)
 {
-    //QTreeWidgetItem *item = mediaList->; mediaList->currentIndex()
     if (previousItem) {
         if (newState == Phonon::PlayingState) {
             previousItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
@@ -1296,9 +1048,9 @@ void ScrollText::paintEvent(QPaintEvent*)
         int x = qMin(-scrollPos, 0) + leftMargin;
         while (x < width()) {
 #if QT_VERSION >= 0x040700
-            pb.drawStaticText(QPointF(x, (height() - wholeTextSize.height()) / 2) /*+ QPoint(2, 2)*/, staticText);
+            pb.drawStaticText(QPointF(x, (height() - wholeTextSize.height()) / 2), staticText);
 #else
-            pb.drawText(QPointF(x, height() - 2 - ((height() - wholeTextSize.height()) / 2)) /*+ QPoint(2, 2)*/, staticText.text());
+            pb.drawText(QPointF(x, height() - 2 - ((height() - wholeTextSize.height()) / 2)), staticText.text());
 #endif
             x += wholeTextSize.width();
         }
@@ -1314,7 +1066,6 @@ void ScrollText::paintEvent(QPaintEvent*)
         }
         pb.drawImage(0, 0, alphaChannel);
 
-        //pb.end();
         p.drawImage(0, 0, buffer);
     }
     else {

@@ -54,22 +54,17 @@
 #include <phonon/backendcapabilities.h>
 #include <QList>
 
-QT_BEGIN_NAMESPACE
 class QAction;
-//class QTableWidget;
 class QLCDNumber;
 class QLabel;
 class QSettings;
 class QDockWidget;
-QT_END_NAMESPACE
 
-//![0]
 class ScrollText;
 class PlayListManager;
 
 class QMusicPlayer : public QToolBar
 {
-//![0]
     Q_OBJECT
 
 public:
@@ -84,11 +79,6 @@ public:
     struct SaagharPlayList {
         QString PATH;
         QHash<int, SaagharMediaTag*> mediaItems;
-//      ~SaagharPlayList()
-//      {
-//          PATH.clear();
-//          mediaItems.clear();
-//      }
     };
 
     QMusicPlayer(QWidget* parent = 0);
@@ -98,37 +88,39 @@ public:
     void savePlayerSettings(QSettings* settingsObject);
     qint64 currentTime();
     void setCurrentTime(qint64 time);
-    void loadPlayList(const QString &fileName, const QString &playListName = "default", const QString &format = "M3U8");
-    void savePlayList(const QString &fileName, const QString &playListName = "default", const QString &format = "M3U8");
+    void loadPlayList(const QString &fileName, const QString &playListName = "default",
+                      const QString &format = "M3U8");
+    void savePlayList(const QString &fileName, const QString &playListName = "default",
+                      const QString &format = "M3U8");
 
-    static void insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle = "", const QString &mediaRelativePath = "", int mediaCurrentTime = 0, const QString &playListName = "default");
+    static void insertToPlayList(int mediaID, const QString &mediaPath,
+                                 const QString &mediaTitle = "",
+                                 const QString &mediaRelativePath = "",
+                                 int mediaCurrentTime = 0, const QString &playListName = "default");
     static void removeFromPlayList(int mediaID, const QString &playListName = "default");
     static bool playListContains(int mediaID, const QString &playListName = "default");
     static void getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle = 0, QString* mediaRelativePath = 0, int* mediaCurrentTime = 0, const QString &playListName = "default");
 
     static QHash<QString, QVariant> listOfPlayList;
     static QStringList commonSupportedMedia(const QString &type = "");//"" or "audio" or "video"
-    //static QHash<int, SaagharMediaTag> d efaultPlayList;
 
     QDockWidget* playListManagerDock();
 
 public slots:
     void stop();
-    void playMedia(int mediaID/*, const QString &fileName, const QString &title = ""*/);
+    void playMedia(int mediaID);
 
 private slots:
     void removeSource();
     void setSource();
     void seekableChanged(bool seekable);
 
-//![1]
     void stateChanged(Phonon::State newState, Phonon::State oldState);
     void tick(qint64 time);
-    void sourceChanged(const Phonon::MediaSource &source);
+    void sourceChanged(const Phonon::MediaSource &);
     void metaStateChanged(Phonon::State newState, Phonon::State oldState);
     void aboutToFinish();
     void load(int index);
-//![1]
 
 private:
     bool notLoaded;
@@ -146,17 +138,14 @@ private:
     static SaagharPlayList hashDefaultPlayList;
     qint64 _newTime;
     void setupActions();
-    //void setupMenus();
     void setupUi();
 
-//![2]
     Phonon::SeekSlider* seekSlider;
     Phonon::MediaObject* mediaObject;
     Phonon::MediaObject* metaInformationResolver;
     Phonon::AudioOutput* audioOutput;
     Phonon::VolumeSlider* volumeSlider;
     QList<Phonon::MediaSource> sources;
-//![2]
 
     QAction* togglePlayPauseAction;
     QAction* stopAction;
@@ -168,17 +157,15 @@ private:
     QAction* autoPlayAction;
 
     QLCDNumber* timeLcd;
-    //QLabel *infoLabel;
     ScrollText* infoLabel;
     QString startDir;
-    //QTableWidget *musicTable;
 
 protected:
     virtual void resizeEvent(QResizeEvent* e);
 
 signals:
     void mediaChanged(const QString &, const QString &, int, bool); //fileName, title, id, removeRequest
-    void requestPageContainedMedia(/*const QString &,const QString &,*/int, bool); //fileName, title, id
+    void requestPageContainedMedia(int, bool); //pageId, newPage
 };
 
 class QTreeWidget;
@@ -202,12 +189,12 @@ private:
     Phonon::MediaObject* playListMediaObject;
 
 private slots:
-    void mediaObjectStateChanged(Phonon::State newState, Phonon::State oldState);
+    void mediaObjectStateChanged(Phonon::State newState, Phonon::State);
     void itemPlayRequested(QTreeWidgetItem*, int);
     void currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest = false);
 
 signals:
-    void mediaPlayRequested(int/*, const QString &, const QString &*/);//mediaID, fileName, title!
+    void mediaPlayRequested(int);//mediaID
 };
 
 /////////////////////////////////
