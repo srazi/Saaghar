@@ -111,6 +111,7 @@ public slots:
 private slots:
     void removeSource();
     void setSource();
+    void loadPlayListFile();
     void seekableChanged(bool seekable);
 
     void stateChanged(Phonon::State newState, Phonon::State oldState);
@@ -151,6 +152,7 @@ private:
     QAction* previousAction;
     QAction* setSourceAction;
     QAction* removeSourceAction;
+    QAction* loadPlayListAction;
     QAction* repeatAction;
     QAction* autoPlayAction;
 

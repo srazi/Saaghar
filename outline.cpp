@@ -58,7 +58,7 @@
 OutLineTree::OutLineTree(QWidget* parent)
     : QWidget(parent)
 {
-    pressedMouseButton == Qt::LeftButton;
+    pressedMouseButton = Qt::LeftButton;
 
     outlineWidget = new QTreeWidget(parent);
     outlineWidget->setObjectName("outlineTreeWidget");

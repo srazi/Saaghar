@@ -181,14 +181,29 @@ void QMusicPlayer::setSource()
                    ");;Video Files (Audio Stream) (" + QMusicPlayer::commonSupportedMedia("video").join(" ") +
                    ");;All Files (*.*)");
 
+    if (file.isEmpty()) {
+        return;
+    }
+
     QFileInfo selectedFile(file);
     startDir = selectedFile.path();
+
+    setSource(file, currentTitle, currentID);
+}
+
+void QMusicPlayer::loadPlayListFile()
+{
+    QString file = QFileDialog::getOpenFileName(this, tr("Select Saaghar Play List"), startDir,
+                   "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
 
     if (file.isEmpty()) {
         return;
     }
 
-    setSource(file, currentTitle, currentID);
+    QFileInfo selectedFile(file);
+    startDir = selectedFile.path();
+
+    loadPlayList(file);
 }
 
 void QMusicPlayer::removeSource()
@@ -368,11 +383,12 @@ void QMusicPlayer::setupActions()
     previousAction->setShortcut(tr("Ctrl+R"));
     setSourceAction = new QAction(tr("&Set Audio..."), this);
     removeSourceAction = new QAction(tr("&Remove Audio"), this);
-
+    loadPlayListAction = new QAction(tr("&Load Playlist..."), this);
     connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
     connect(stopAction, SIGNAL(triggered()), mediaObject, SLOT(stop()));
     connect(setSourceAction, SIGNAL(triggered()), this, SLOT(setSource()));
     connect(removeSourceAction, SIGNAL(triggered()), this, SLOT(removeSource()));
+    connect(loadPlayListAction, SIGNAL(triggered()), this, SLOT(loadPlayListFile()));
 }
 
 void QMusicPlayer::setupUi()
@@ -384,6 +400,8 @@ void QMusicPlayer::setupUi()
     QMenu* menu = new QMenu;
     menu->addAction(setSourceAction);
     menu->addAction(removeSourceAction);
+    menu->addSeparator();
+    menu->addAction(loadPlayListAction);
     menu->addSeparator();
     if (playListManagerDock()) {
         menu->addAction(playListManagerDock()->toggleViewAction());
@@ -575,12 +593,6 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &, const 
     pushPlayList(playList, playListName);
 
     playListManager->setPlayLists(hashPlayLists);
-//PATH=(\s[^#]+)
-//#SAAGHAR!TITLE!
-//#SAAGHAR!ID!
-//#SAAGHAR!RELATIVE!
-//#SAAGHAR!MD5SUM!
-//#SAAGHAR!(TITLE|ID|MD5SUM|RELATIVE)!(\s[^#]+)
 }
 
 void QMusicPlayer::savePlayList(const QString &fileName, const QString &playListName, const QString &)
@@ -812,6 +824,11 @@ void PlayListManager::setPlayLists(const QHash<QString, QMusicPlayer::SaagharPla
     }
     //if (justMediaList) //not implemented!
     itemsAsTopItem = playLists.size() == 1 ? true : false;
+    //temp simpler playlist management for v2.0
+    previousItem = 0;
+    mediaList->clear();
+    qDebug() << Q_FUNC_INFO;
+    itemsAsTopItem = true;
     QHash<QString, QMusicPlayer::SaagharPlayList*>::const_iterator playListIterator = playLists.constBegin();
     while (playListIterator != playLists.constEnd()) {
         QMusicPlayer::SaagharPlayList* playList = playListIterator.value();
