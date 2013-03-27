@@ -87,20 +87,23 @@ public:
     void savePlayerSettings(QSettings* settingsObject);
     qint64 currentTime();
     void setCurrentTime(qint64 time);
-    void loadPlayList(const QString &fileName, const QString &playListName = "default",
-                      const QString &format = "M3U8");
-    void savePlayList(const QString &fileName, const QString &playListName = "default",
-                      const QString &format = "M3U8");
+    void loadPlayList(const QString &fileName);
+    void savePlayList(const QString &fileName, const QString &playListName, const QString &format = "M3U8");
 
-    static void insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle = "",
-                                 int mediaCurrentTime = 0, const QString &playListName = "default");
-    static void removeFromPlayList(int mediaID, const QString &playListName = "default");
-    static bool playListContains(int mediaID, const QString &playListName = "default");
-    static void getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle = 0,
-                                int* mediaCurrentTime = 0, const QString &playListName = "default");
+    void loadAllPlayLists();
+    void saveAllPlayLists(const QString &format = "M3U8");
+
+    void insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle = "",
+                          int mediaCurrentTime = 0, QString playListName = QString());
+    void removeFromPlayList(int mediaID, QString playListName = QString());
+    static bool playListContains(int mediaID, QString* playListName);
+    void getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle = 0,
+                         int* mediaCurrentTime = 0, QString* playListName = 0);
 
     static QHash<QString, QVariant> listOfPlayList;
     static QStringList commonSupportedMedia(const QString &type = "");//"" or "audio" or "video"
+
+    inline static QHash<QString, SaagharPlayList*> playListsHash() { return hashPlayLists; }
 
     QDockWidget* playListManagerDock();
 
@@ -127,9 +130,7 @@ private:
     QString currentTitle;
     QDockWidget* dockList;
     PlayListManager* playListManager;
-    inline static SaagharPlayList* playListByName(const QString &playListName = "default")
-    {return hashPlayLists.value(playListName);}
-    inline static void pushPlayList(SaagharPlayList* playList, const QString &playListName = "default")
+    inline static void pushPlayList(SaagharPlayList* playList, const QString &playListName)
     {hashPlayLists.insert(playListName, playList);}
 
     static QHash<QString, QHash<int, SaagharMediaTag> > playLists;
@@ -181,12 +182,16 @@ public:
     void setPlayLists(const QHash<QString, QMusicPlayer::SaagharPlayList*> &playLists, bool justMediaList = false);
     void setMediaObject(Phonon::MediaObject* MediaObject);
 
+    inline QString currentPlayListName() { return m_currentPlayList; }
+    void setCurrentPlayList(const QString &playListName);
+    QMusicPlayer::SaagharPlayList* playListByName(QString playListName = QString());
+
 private:
     QTreeWidgetItem* previousItem;
     QVBoxLayout* hLayout;
     QTreeWidget* mediaList;
-    bool itemsAsTopItem;
     Phonon::MediaObject* playListMediaObject;
+    QString m_currentPlayList;
 
 private slots:
     void mediaObjectStateChanged(Phonon::State newState, Phonon::State);

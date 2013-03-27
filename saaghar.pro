@@ -16,7 +16,7 @@ INCLUDEPATH += $${SOURCE_DIR}/.
 
 # $$QMAKE_INCDIR_QT/QtSql/private
 
-CONFIG	+= qt 
+CONFIG	+= qt
 #warn_off
 
 ##un-comment the following two lines for skipping all warning and debug messages.
@@ -98,7 +98,7 @@ include($${SOURCE_DIR}/OSDaB-Zip/osdabzip.pri)
 	# sqlite-driver/qsqlcachedresult_p.h
 # SOURCES		+= sqlite-driver/qsql_sqlite.cpp \
 	# sqlite-driver/qsqlcachedresult.cpp
- 
+
 # DEFINES += SQLITE_OMIT_LOAD_EXTENSION SQLITE_OMIT_COMPLETE
 # DEFINES += SQLITE_ENABLE_FTS3 SQLITE_ENABLE_FTS3_PARENTHESIS
 
@@ -128,7 +128,7 @@ win32-g++{
 }
 
 RC_FILE = $${SOURCE_DIR}/win.rc
-	
+
 target.path = Saaghar-Win
 INSTALLS = target
 

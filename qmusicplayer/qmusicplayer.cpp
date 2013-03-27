@@ -65,6 +65,9 @@ QHash<QString, QVariant> QMusicPlayer::listOfPlayList = QHash<QString, QVariant>
 QMusicPlayer::SaagharPlayList QMusicPlayer::hashDefaultPlayList = QMusicPlayer::SaagharPlayList();
 QHash<QString, QMusicPlayer::SaagharPlayList*> QMusicPlayer::hashPlayLists = QHash<QString, QMusicPlayer::SaagharPlayList*>();
 
+
+const bool itemsAsTopItem = true;
+
 QMusicPlayer::QMusicPlayer(QWidget* parent) : QToolBar(parent)
 {
     setObjectName("QMusicPlayer");
@@ -153,6 +156,13 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
         sources.append(source);
         metaInformationResolver->setCurrentSource(source);
         load(0);
+        if (mediaID > 0) {
+            QString playListName;
+            playListContains(mediaID, &playListName);
+            if (!playListName.isEmpty()) {
+                playListManager->setCurrentPlayList(playListName);
+            }
+        }
     }
     else {
         notLoaded = true;
@@ -218,7 +228,7 @@ void QMusicPlayer::removeSource()
 
     emit mediaChanged("", "", currentID, true);
 
-    QMusicPlayer::removeFromPlayList(currentID);
+    removeFromPlayList(currentID);
 }
 
 void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldState */)
@@ -471,7 +481,7 @@ void QMusicPlayer::savePlayerSettings(QSettings* settingsObject)
     settingsObject->endGroup();
 }
 
-void QMusicPlayer::loadPlayList(const QString &fileName, const QString &, const QString &)
+void QMusicPlayer::loadPlayList(const QString &fileName)
 {
     /*******************************************************************************/
     //tags for Version-0.1 of Saaghar media playlist
@@ -494,7 +504,6 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &, const 
         return;
     }
 
-    QString playListName;
     QTextStream out(&file);
     out.setCodec("UTF-8");
     QString line = out.readLine();
@@ -504,16 +513,24 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &, const 
 
     line = out.readLine();
     while (!line.startsWith("#SAAGHAR!PLAYLIST!TITLE!")) {
+        if (out.atEnd()) {
+            return;
+        }
         line = out.readLine();
     }
 
-    playListName = line.remove("#SAAGHAR!PLAYLIST!TITLE!");
-
+    QString playListName = line.remove("#SAAGHAR!PLAYLIST!TITLE!");
+    if (playListName.isEmpty()) {
+        return;
+    }
     SaagharPlayList* playList = new SaagharPlayList;
     playList->PATH = fileName;
     listOfPlayList.insert(playListName, fileName);
 
     while (!line.startsWith("#SAAGHAR!ITEMS!")) { //start of items
+        if (out.atEnd()) {
+            return;
+        }
         line = out.readLine();
     }
 
@@ -592,12 +609,17 @@ void QMusicPlayer::loadPlayList(const QString &fileName, const QString &, const 
     qDebug() << "size=" << playList->mediaItems.size() << "name=" << playListName;
     pushPlayList(playList, playListName);
 
-    playListManager->setPlayLists(hashPlayLists);
+    //playListManager->setPlayLists(hashPlayLists);
+    playListManager->setCurrentPlayList(playListName);
 }
 
 void QMusicPlayer::savePlayList(const QString &fileName, const QString &playListName, const QString &)
 {
-    SaagharPlayList* playList = playListByName(playListName);
+    if (playListName.isEmpty()) {
+        return;
+    }
+
+    SaagharPlayList* playList = playListManager->playListByName(playListName);
 
     if (!playList) {
         return;
@@ -645,21 +667,50 @@ void QMusicPlayer::savePlayList(const QString &fileName, const QString &playList
     file.close();
 }
 
-/*static*/
-void QMusicPlayer::removeFromPlayList(int mediaID, const QString &playListName)
+void QMusicPlayer::loadAllPlayLists()
 {
-    SaagharPlayList* playList = QMusicPlayer::playListByName(playListName);
+    QHash<QString, QVariant>::const_iterator playListsIterator = listOfPlayList.constBegin();
+    while (playListsIterator != listOfPlayList.constEnd()) {
+        if (!playListsIterator.key().isEmpty()) {
+            loadPlayList(playListsIterator.value().toString());
+        }
+		++playListsIterator;
+    }
+}
+
+void QMusicPlayer::saveAllPlayLists(const QString &format)
+{
+    QHash<QString, QVariant>::const_iterator playListsIterator = listOfPlayList.constBegin();
+    while (playListsIterator != listOfPlayList.constEnd()) {
+        if (!playListsIterator.key().isEmpty()) {
+            savePlayList(playListsIterator.value().toString(), playListsIterator.key(), format);
+        }
+		++playListsIterator;
+    }
+}
+
+/*static*/
+void QMusicPlayer::removeFromPlayList(int mediaID, QString playListName)
+{
+    if (playListName.isEmpty() && !playListContains(mediaID, &playListName)) {
+        return;
+    }
+    SaagharPlayList* playList = playListManager->playListByName(playListName);
     if (playList) {
-        qDebug() << "insertToPlayList mediaID removed";
+        qDebug() << "removeFromPlayList" << mediaID << "removed";
         playList->mediaItems.remove(mediaID);
     }
 }
 
 /*static*/
 void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle,
-                                    int mediaCurrentTime, const QString &playListName)
+                                    int mediaCurrentTime, QString playListName)
 {
-    SaagharPlayList* playList = QMusicPlayer::playListByName(playListName);
+    if (playListName.isEmpty()) {
+        playListName = playListManager->currentPlayListName();
+    }
+
+    SaagharPlayList* playList = playListManager->playListByName(playListName);
 
     QFile file(mediaPath);
     if (!file.exists() || mediaID < 0) {
@@ -693,17 +744,30 @@ void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const
 
 /*static*/
 void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle,
-                                   int* mediaCurrentTime, const QString &playListName)
+                                   int* mediaCurrentTime, QString* playListName)
 {
+    QString temp;
+    bool playListNameIsNull = false;
+    if (!playListName) {
+        playListNameIsNull = true;
+        playListName = &temp;
+    }
+
     if (mediaID < 0 || !mediaPath || !playListContains(mediaID, playListName)) {
         return;
     }
 
-    SaagharMediaTag* mediaTag = playListByName(playListName)->mediaItems.value(mediaID);
+    SaagharMediaTag* mediaTag =  playListManager->playListByName(*playListName)->mediaItems.value(mediaID);
     if (!mediaTag) {
-        *mediaPath = "";
-        *mediaTitle = "";
+        mediaPath->clear();
+        mediaTitle->clear();
         *mediaCurrentTime = 0;
+        if (playListNameIsNull) {
+            playListName = 0;
+        }
+        else {
+            playListName->clear();
+        }
         return;
     }
 
@@ -714,20 +778,36 @@ void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* med
     if (mediaCurrentTime) {
         *mediaCurrentTime = mediaTag->time;
     }
+    if (playListNameIsNull) {
+        playListName = 0;
+    }
 }
 
 /*static*/
-bool QMusicPlayer::playListContains(int mediaID, const QString &playListName)
-{
-    SaagharPlayList* playList = playListByName(playListName);
+bool QMusicPlayer::playListContains(int mediaID, QString* playListName)
+{//playListName default can be NULL for test purposes we don't set it
+    QHash<QString, SaagharPlayList*>::const_iterator it = hashPlayLists.constBegin();
+    while (it != hashPlayLists.constEnd()) {
+        SaagharPlayList* playList = it.value();
 
-    qDebug() << "playListName=" << playListName << "playListContains:\nmediaID=" << mediaID << "PlayLists=" << hashPlayLists.values() << "IDs=" << hashPlayLists.keys();
-    if (!playList) {
-        return false;
+        qDebug() << "playListName=" << it.key() << "playListContains:\nmediaID=" << mediaID << "PlayLists=" << hashPlayLists.values() << "IDs=" << hashPlayLists.keys();
+        if (!playList) {
+			++it;
+			continue;
+        }
+        qDebug() << "mediaID=" << mediaID << "pointer=" << playList << "*po=" << playList->mediaItems.keys();
+        bool result = playList->mediaItems.contains(mediaID);
+        if (result) {
+            if (playListName) {
+                *playListName = it.key();
+            }
+            qDebug() << "::playListContains--TRUE";
+            return true;
+        }
+		++it;
     }
-    qDebug() << "mediaID=" << mediaID << "pointer=" << playList << "*po=" << playList->mediaItems.keys();
-    bool ret = playList->mediaItems.contains(mediaID);
-    return ret;
+
+    return false;
 }
 
 QDockWidget* QMusicPlayer::playListManagerDock()
@@ -823,12 +903,12 @@ void PlayListManager::setPlayLists(const QHash<QString, QMusicPlayer::SaagharPla
         return;
     }
     //if (justMediaList) //not implemented!
-    itemsAsTopItem = playLists.size() == 1 ? true : false;
+//    itemsAsTopItem = playLists.size() == 1 ? true : false;
     //temp simpler playlist management for v2.0
     previousItem = 0;
     mediaList->clear();
     qDebug() << Q_FUNC_INFO;
-    itemsAsTopItem = true;
+//    itemsAsTopItem = true;
     QHash<QString, QMusicPlayer::SaagharPlayList*>::const_iterator playListIterator = playLists.constBegin();
     while (playListIterator != playLists.constEnd()) {
         QMusicPlayer::SaagharPlayList* playList = playListIterator.value();
@@ -869,6 +949,50 @@ void PlayListManager::setPlayLists(const QHash<QString, QMusicPlayer::SaagharPla
         }
         ++playListIterator;
     }
+}
+
+void PlayListManager::setCurrentPlayList(const QString &playListName)
+{
+    if (playListName.isEmpty() || playListName == m_currentPlayList) {
+        return;
+    }
+
+    m_currentPlayList = playListName;
+
+    QMusicPlayer::SaagharPlayList* playList = playListByName(playListName);
+    if (!playList) {
+        return;
+    }
+
+    previousItem = 0;
+    mediaList->clear();
+    QHash<int, QMusicPlayer::SaagharMediaTag*> items = playList->mediaItems;
+    QHash<int, QMusicPlayer::SaagharMediaTag*>::const_iterator mediaIterator = items.constBegin();
+    while (mediaIterator != items.constEnd()) {
+        QMusicPlayer::SaagharMediaTag* mediaTag = mediaIterator.value();
+        if (!mediaTag) {
+            ++mediaIterator;
+            continue;
+        }
+
+        QTreeWidgetItem* mediaItem = new QTreeWidgetItem(mediaList);
+        mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
+        mediaItem->setText(0, mediaTag->TITLE);
+        //          mediaItem->setText(1, mediaTag->PATH);
+        mediaItem->setData(0, Qt::UserRole, mediaIterator.key());
+
+        mediaList->addTopLevelItem(mediaItem);
+        ++mediaIterator;
+    }
+}
+
+QMusicPlayer::SaagharPlayList* PlayListManager::playListByName(QString playListName)
+{
+    if (playListName.isEmpty()) {
+        playListName = m_currentPlayList;
+    }
+
+    return QMusicPlayer::playListsHash().value(playListName);
 }
 
 void PlayListManager::currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest)

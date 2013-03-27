@@ -161,10 +161,11 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen) :
 
     SaagharWidget::musicPlayer->readPlayerSettings(getSettingsObject());
 
-    if (QMusicPlayer::listOfPlayList.value("default").toString().isEmpty()) {
+    if (QMusicPlayer::listOfPlayList.isEmpty() ||
+            QMusicPlayer::listOfPlayList.value("default").toString().isEmpty()) {
         QMusicPlayer::listOfPlayList.insert("default", userHomePath + "/default.m3u8");
     }
-    SaagharWidget::musicPlayer->loadPlayList(QMusicPlayer::listOfPlayList.value("default").toString());
+    SaagharWidget::musicPlayer->loadAllPlayLists();
 #endif
 
     loadGlobalSettings();
@@ -734,12 +735,12 @@ void MainWindow::currentTabChanged(int tabIndex)
             if (old_saagharWidget) {
                 qDebug() << "old=" << old_saagharWidget->currentPoem << "new=" << saagharWidget->currentPoem;
                 //SaagharWidget::mediaInfoCash.insert(old_saagharWidget->currentPoem, QPair<QString, qint64>(SaagharWidget::mediaInfoCash.value(old_saagharWidget->currentPoem).first, SaagharWidget::musicPlayer->currentTime()));
-                QMusicPlayer::getFromPlayList(old_saagharWidget->currentPoem, &path, &title);
-                QMusicPlayer::insertToPlayList(old_saagharWidget->currentPoem, path, title, SaagharWidget::musicPlayer->currentTime());
+                SaagharWidget::musicPlayer->getFromPlayList(old_saagharWidget->currentPoem, &path, &title);
+                SaagharWidget::musicPlayer->insertToPlayList(old_saagharWidget->currentPoem, path, title, SaagharWidget::musicPlayer->currentTime());
             }
             path = "";
             title = "";
-            QMusicPlayer::getFromPlayList(saagharWidget->currentPoem, &path, &title);
+            SaagharWidget::musicPlayer->getFromPlayList(saagharWidget->currentPoem, &path, &title);
             if (SaagharWidget::musicPlayer->source() != path) {
                 SaagharWidget::musicPlayer->setSource(path, saagharWidget->currentLocationList.join(">") + ">" + saagharWidget->currentPoemTitle, saagharWidget->currentPoem);
                 //QApplication::processEvents();
@@ -2527,7 +2528,7 @@ void MainWindow::saveSettings()
 {
 #ifndef NO_PHONON_LIB
     if (SaagharWidget::musicPlayer) {
-        SaagharWidget::musicPlayer->savePlayList(QMusicPlayer::listOfPlayList.value("default").toString());
+        SaagharWidget::musicPlayer->saveAllPlayLists();
     }
 #endif
 
@@ -3814,7 +3815,9 @@ void MainWindow::mediaInfoChanged(const QString &fileName, const QString &title,
             qDebug() << "mediaTitle22=" << mediaTitle;
         }
     }
-    QMusicPlayer::insertToPlayList(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, time);
+    if (SaagharWidget::musicPlayer) {
+        SaagharWidget::musicPlayer->insertToPlayList(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, time);
+    }
     //SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
     //saagharWidget->pageMetaInfo.mediaFile = fileName;
 }

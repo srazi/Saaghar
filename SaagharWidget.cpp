@@ -1127,10 +1127,10 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
         pageMetaInfo.id = currentPoem;
         pageMetaInfo.type = SaagharWidget::PoemViewerPage;
 
-        if (QMusicPlayer::playListContains(currentPoem)) {
+        if (QMusicPlayer::playListContains(currentPoem, 0)) {
             QString path;
             QString title;
-            QMusicPlayer::getFromPlayList(currentPoem, &path, &title);
+            SaagharWidget::musicPlayer->getFromPlayList(currentPoem, &path, &title);
             //QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(currentPoem);
             if (SaagharWidget::musicPlayer->source() != path) {
                 SaagharWidget::musicPlayer->setSource(path, currentLocationList.join(">") + ">" + currentPoemTitle, currentPoem);

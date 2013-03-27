@@ -1,5 +1,5 @@
 ################
-# Example project file to build 
+# Example project file to build
 # the OSDaB Zip code as a shared library
 ################
 
