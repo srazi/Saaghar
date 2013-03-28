@@ -1,5 +1,5 @@
 <RCC>
-	<qresource>
-		<file>images/options.png</file>
-	</qresource>
+    <qresource prefix="/">
+        <file>images/options.png</file>
+    </qresource>
 </RCC>

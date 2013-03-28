@@ -10,8 +10,8 @@ INCLUDEPATH += $${PWD}/
 
 # Input
 HEADERS += $${PWD}/zipglobal.h\
-		$${PWD}/unzip.h\
-		$${PWD}/unzip_p.h\
-		$${PWD}/zipentry_p.h
+                $${PWD}/unzip.h\
+                $${PWD}/unzip_p.h\
+                $${PWD}/zipentry_p.h
 SOURCES += $${PWD}/zipglobal.cpp\
-		$${PWD}/unzip.cpp
+                $${PWD}/unzip.cpp
