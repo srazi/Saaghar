@@ -509,39 +509,39 @@ void SaagharWidget::showCategory(GanjoorCat category)
             descContainer->setTextInteractionFlags(Qt::NoTextInteraction);
             descContainer->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
             descContainer->setStyleSheet("\
-				QTextEdit{border: transparent;\
-					background: transparent;\
-				}\
-					QScrollBar:vertical {\
-					border: none;\
-					background: transparent;\
-					width: 13px;\
-				}\
-				QScrollBar::handle:vertical {\
-					border: none;\
-					background: #bebebe;\
-					min-height: 20px;\
-				}\
-				QScrollBar::add-line:vertical {\
-					height: 0px;\
-				}\
-				\
-				QScrollBar::sub-line:vertical {\
-					height: 0px;\
-				}\
-				\
-				QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {\
-					background: none;\
-				}\
-				\
-				QScrollBar:vertical:hover {\
-				border: 1px solid #bbb;\
-				background: transparent;\
-				}\
-				QScrollBar::handle:vertical:hover {\
-					background: #aaa;\
-				}\
-				");
+                                         QTextEdit{border: transparent;\
+                                                   background: transparent;\
+                                         }\
+                                         QScrollBar:vertical {\
+                                             border: none;\
+                                             background: transparent;\
+                                             width: 13px;\
+                                         }\
+                                         QScrollBar::handle:vertical {\
+                                             border: none;\
+                                             background: #bebebe;\
+                                             min-height: 20px;\
+                                         }\
+                                         QScrollBar::add-line:vertical {\
+                                             height: 0px;\
+                                         }\
+                                         \
+                                         QScrollBar::sub-line:vertical {\
+                                             height: 0px;\
+                                         }\
+                                         \
+                                         QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {\
+                                             background: none;\
+                                         }\
+                                         \
+                                         QScrollBar:vertical:hover {\
+                                             border: 1px solid #bbb;\
+                                             background: transparent;\
+                                         }\
+                                         QScrollBar::handle:vertical:hover {\
+                                             background: #aaa;\
+                                         }\
+                                         ");
             descContainer->setMaximumHeight(200);
             /*if (category._ID == 0 && !Settings::READ("Show Photo at Home").toBool())
             {
@@ -700,18 +700,18 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
         }
 
         QString styleSheetStr = QString("QPushButton {\
-				color: #606060;\
-				min-height: 22px;\
-				width: %1px;\
-				padding-left: 15px;\
-				border-image: url(%2) 0 15 0 15;\
-				border-top: 0px transparent;\
-				border-bottom: 0px transparent;\
-				border-right: 15px transparent;\
-				border-left: 15px transparent; }\
-				QPushButton:hover { font: bold; color: black; border-image: url(%3) 0 15 0 15; }\
-				QPushButton:pressed { color: grey; border-image: url(%4) 0 15 0 15; }\
-				").arg(minWidth).arg(buttonImage).arg(buttonHomeHovered).arg(buttonHomePressed);
+                color: #606060;\
+                min-height: 22px;\
+                width: %1px;\
+                padding-left: 15px;\
+                border-image: url(%2) 0 15 0 15;\
+                border-top: 0px transparent;\
+                border-bottom: 0px transparent;\
+                border-right: 15px transparent;\
+                border-left: 15px transparent; }\
+                QPushButton:hover { font: bold; color: black; border-image: url(%3) 0 15 0 15; }\
+                QPushButton:pressed { color: grey; border-image: url(%4) 0 15 0 15; }\
+                ").arg(minWidth).arg(buttonImage).arg(buttonHomeHovered).arg(buttonHomePressed);
 
         if (i == 0) {
             parentCatButton->setText("");
@@ -740,18 +740,18 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
         connect(parentCatButton, SIGNAL(clicked(bool)), this, SLOT(parentCatClicked()));
         int minWidth = parentCatButton->fontMetrics().width(category._Text) + 6;
         QString styleSheetStr = QString("QPushButton {\
-				color: #707070;\
-				min-height: 22px;\
-				min-width: %1px;\
-				padding-left: 15px;\
-				border-image: url(%2) 0 15 0 15;\
-				border-top: 0px transparent;\
-				border-bottom: 0px transparent;\
-				border-right: 15px transparent;\
-				border-left: 15px transparent; }\
-				QPushButton:hover { color: black; }\
-				QPushButton:pressed { color: grey; }\
-				").arg(minWidth).arg(":/resources/images/cats-buttons/button-last.png");
+                color: #707070;\
+                min-height: 22px;\
+                min-width: %1px;\
+                padding-left: 15px;\
+                border-image: url(%2) 0 15 0 15;\
+                border-top: 0px transparent;\
+                border-bottom: 0px transparent;\
+                border-right: 15px transparent;\
+                border-left: 15px transparent; }\
+                QPushButton:hover { color: black; }\
+                QPushButton:pressed { color: grey; }\
+                ").arg(minWidth).arg(":/resources/images/cats-buttons/button-last.png");
 
         parentCatButton->setStyleSheet(styleSheetStr);
         //QString("QPushButton{border: 2px solid #8f8f91; border-radius: 6px; background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #f6f7fa, stop: 1 #dadbde); min-width: %1px; min-height: %2px; text margin-left:1px; margin-right:1px } QPushButton:pressed { background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #dadbde, stop: 1 #f6f7fa); } QPushButton:flat { border: none; } QPushButton:default { border-color: red; }").arg(minWidth).arg(parentCatButton->fontMetrics().height()+2));
@@ -1122,12 +1122,12 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     currentPoem = poem._ID;
 
 #ifndef NO_PHONON_LIB
-    //if (pageMetaInfo.id != currentPoem /*|| pageMetaInfo.mediaFile.isEmpty()*/)
+    if (SaagharWidget::musicPlayer)
     {
         pageMetaInfo.id = currentPoem;
         pageMetaInfo.type = SaagharWidget::PoemViewerPage;
 
-        if (QMusicPlayer::playListContains(currentPoem, 0)) {
+        if (SaagharWidget::musicPlayer->playListContains(currentPoem, 0)) {
             QString path;
             QString title;
             SaagharWidget::musicPlayer->getFromPlayList(currentPoem, &path, &title);

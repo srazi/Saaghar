@@ -96,7 +96,7 @@ public:
     void insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle = "",
                           int mediaCurrentTime = 0, QString playListName = QString());
     void removeFromPlayList(int mediaID, QString playListName = QString());
-    static bool playListContains(int mediaID, QString* playListName);
+    bool playListContains(int mediaID, QString* playListName);
     void getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle = 0,
                          int* mediaCurrentTime = 0, QString* playListName = 0);
 

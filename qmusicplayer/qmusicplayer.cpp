@@ -674,7 +674,7 @@ void QMusicPlayer::loadAllPlayLists()
         if (!playListsIterator.key().isEmpty()) {
             loadPlayList(playListsIterator.value().toString());
         }
-		++playListsIterator;
+        ++playListsIterator;
     }
 }
 
@@ -685,20 +685,28 @@ void QMusicPlayer::saveAllPlayLists(const QString &format)
         if (!playListsIterator.key().isEmpty()) {
             savePlayList(playListsIterator.value().toString(), playListsIterator.key(), format);
         }
-		++playListsIterator;
+        ++playListsIterator;
     }
 }
 
 /*static*/
 void QMusicPlayer::removeFromPlayList(int mediaID, QString playListName)
 {
-    if (playListName.isEmpty() && !playListContains(mediaID, &playListName)) {
+    if (!playListName.isEmpty()) {
+        SaagharPlayList* playList = playListManager->playListByName(playListName);
+        if (playList) {
+            qDebug() << "removeFromPlayList" << mediaID << "removed";
+            playList->mediaItems.remove(mediaID);
+        }
         return;
     }
-    SaagharPlayList* playList = playListManager->playListByName(playListName);
-    if (playList) {
-        qDebug() << "removeFromPlayList" << mediaID << "removed";
-        playList->mediaItems.remove(mediaID);
+
+    while (playListContains(mediaID, &playListName)) {
+        SaagharPlayList* playList = playListManager->playListByName(playListName);
+        if (playList) {
+            qDebug() << "removeFromPlayList" << mediaID << "removed";
+            playList->mediaItems.remove(mediaID);
+        }
     }
 }
 
@@ -783,28 +791,29 @@ void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* med
     }
 }
 
-/*static*/
 bool QMusicPlayer::playListContains(int mediaID, QString* playListName)
 {//playListName default can be NULL for test purposes we don't set it
-    QHash<QString, SaagharPlayList*>::const_iterator it = hashPlayLists.constBegin();
-    while (it != hashPlayLists.constEnd()) {
-        SaagharPlayList* playList = it.value();
+    QStringList names = hashPlayLists.keys();
+    if (names.removeAll(playListManager->currentPlayListName()) > 0) {
+        names.prepend(playListManager->currentPlayListName());
+    }
 
-        qDebug() << "playListName=" << it.key() << "playListContains:\nmediaID=" << mediaID << "PlayLists=" << hashPlayLists.values() << "IDs=" << hashPlayLists.keys();
+    for (int i = 0; i < names.size(); ++i) {
+        SaagharPlayList* playList = playListManager->playListByName(names.at(i));
+
+        qDebug() << "playListName=" << names.at(i) << "playListContains:\nmediaID=" << mediaID << "PlayLists=" << hashPlayLists.values() << "IDs=" << hashPlayLists.keys();
         if (!playList) {
-			++it;
-			continue;
+            continue;
         }
         qDebug() << "mediaID=" << mediaID << "pointer=" << playList << "*po=" << playList->mediaItems.keys();
         bool result = playList->mediaItems.contains(mediaID);
         if (result) {
             if (playListName) {
-                *playListName = it.key();
+                *playListName = names.at(i);
             }
             qDebug() << "::playListContains--TRUE";
             return true;
         }
-		++it;
     }
 
     return false;
