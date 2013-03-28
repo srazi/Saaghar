@@ -160,6 +160,7 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
             QString playListName;
             playListContains(mediaID, &playListName);
             if (!playListName.isEmpty()) {
+                playListManager->setCurrentMedia(mediaID, fileName);
                 playListManager->setCurrentPlayList(playListName);
             }
         }
@@ -610,6 +611,7 @@ void QMusicPlayer::loadPlayList(const QString &fileName)
     pushPlayList(playList, playListName);
 
     //playListManager->setPlayLists(hashPlayLists);
+    //playListManager->setCurrentMedia(currentID, m_currentFile);
     playListManager->setCurrentPlayList(playListName);
 }
 
@@ -887,23 +889,42 @@ void QMusicPlayer::stop()
 // class PlayListManager
 ********************************/
 
+#include <QComboBox>
 #include <QTreeWidget>
 #include <QVBoxLayout>
 
-PlayListManager::PlayListManager(QWidget* parent) : QWidget(parent)
+PlayListManager::PlayListManager(QWidget* parent)
+    : QWidget(parent)
+    , previousItem(0)
+    , mediaList(new QTreeWidget(this))
+    , albumList(new QComboBox(this))
 {
     setObjectName("PlayListManager");
+    setupUi();
 
-    mediaList = new QTreeWidget;
+    connect(mediaList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(itemPlayRequested(QTreeWidgetItem*,int)));
+    connect(albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
+}
+
+void PlayListManager::setupUi()
+{
+    mediaList->setIndentation(5);
     mediaList->setLayoutDirection(Qt::RightToLeft);
     mediaList->headerItem()->setHidden(true);
-    previousItem = 0;
     mediaList->setColumnCount(1);
-    hLayout = new QVBoxLayout;
 
+    albumList->insertSeparator(0);
+    albumList->addItem(tr("Save this album..."), "SAVE_ALBUM");
+    albumList->addItem(tr("Load album..."), "LOAD_ALBUM");
+    albumList->addItem(tr("New album..."), "NEW_ALBUM");
+    albumList->insertSeparator(4);
+    albumList->addItem(tr("Rename this album..."), "RENAME_ALBUM");
+    albumList->addItem(tr("Remove this album..."), "REMOVE_ALBUM");
+    albumList->addItem(tr("Save as this album..."), "SAVE_AS_ALBUM");
+    hLayout = new QVBoxLayout;
+    hLayout->addWidget(albumList);
     hLayout->addWidget(mediaList);
     this->setLayout(hLayout);
-    connect(mediaList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(itemPlayRequested(QTreeWidgetItem*,int)));
 }
 
 void PlayListManager::setPlayLists(const QHash<QString, QMusicPlayer::SaagharPlayList*> &playLists, bool /*justMediaList*/)
@@ -968,6 +989,16 @@ void PlayListManager::setCurrentPlayList(const QString &playListName)
 
     m_currentPlayList = playListName;
 
+    int index = albumList->findText(playListName);
+    if (index != -1) {
+        disconnect(albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
+        albumList->setCurrentIndex(index);
+        connect(albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
+    }
+    else {
+        albumList->insertItem(0, playListName);
+    }
+
     QMusicPlayer::SaagharPlayList* playList = playListByName(playListName);
     if (!playList) {
         return;
@@ -985,10 +1016,28 @@ void PlayListManager::setCurrentPlayList(const QString &playListName)
         }
 
         QTreeWidgetItem* mediaItem = new QTreeWidgetItem(mediaList);
-        mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
+        int tagMediaID = mediaIterator.key();
+
+        bool isPaused = m_currentFile.isEmpty() ||
+                        m_currentID < 0 ||
+                        mediaTag->PATH != m_currentFile ||
+                        tagMediaID != m_currentID;
+        if (isPaused) {
+            mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
+        }
+        else {
+            if (playListMediaObject->state() != Phonon::PlayingState) {
+                mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
+            }
+            else {
+                mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
+            }
+            previousItem = mediaItem;
+        }
+
         mediaItem->setText(0, mediaTag->TITLE);
         //          mediaItem->setText(1, mediaTag->PATH);
-        mediaItem->setData(0, Qt::UserRole, mediaIterator.key());
+        mediaItem->setData(0, Qt::UserRole, tagMediaID);
 
         mediaList->addTopLevelItem(mediaItem);
         ++mediaIterator;
@@ -1004,12 +1053,19 @@ QMusicPlayer::SaagharPlayList* PlayListManager::playListByName(QString playListN
     return QMusicPlayer::playListsHash().value(playListName);
 }
 
+void PlayListManager::setCurrentMedia(int currentID, const QString &currentFile)
+{
+    m_currentID = currentID;
+    m_currentFile = currentFile;
+}
+
 void PlayListManager::currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest)
 {
     if (mediaID <= 0) { // fileName.isEmpty() for delete request!!
         return;
     }
 
+    setCurrentMedia(mediaID, fileName);
     for (int i = 0; i < mediaList->topLevelItemCount(); ++i) {
         QTreeWidgetItem* rootItem = mediaList->topLevelItem(i);
         if (!rootItem) {
@@ -1091,6 +1147,24 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
             mediaList->setCurrentItem(newChild, 0);
             previousItem = newChild;
         }
+    }
+}
+
+void PlayListManager::currentAlbumChanged(int index)
+{
+    QVariant v = albumList->itemData(index);
+    if (!v.isValid()) {
+        setCurrentPlayList(albumList->itemText(index));
+    }
+    else {
+        QString command = v.toString();
+        qDebug() << "PlayListManager::currentAlbumChanged=" << command;
+//        if (command == "SAVE_ALBUM") {}
+//        else if (command == "LOAD_ALBUM") {}
+//        else if (command == "NEW_ALBUM") {}
+//        else if (command == "RENAME_ALBUM") {}
+//        else if (command == "REMOVE_ALBUM") {}
+//        else if (command == "SAVE_AS_ALBUM") {}
     }
 }
 

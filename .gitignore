@@ -11,3 +11,5 @@ Saaghar-Win/*
 saaghar.pro.*
 sqlite-driver
 sqlite-driver/*
+*.autosave
+

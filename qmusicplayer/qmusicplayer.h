@@ -172,6 +172,7 @@ signals:
 class QTreeWidget;
 class QVBoxLayout;
 class QTreeWidgetItem;
+class QComboBox;
 
 class PlayListManager : public QWidget
 {
@@ -185,18 +186,24 @@ public:
     inline QString currentPlayListName() { return m_currentPlayList; }
     void setCurrentPlayList(const QString &playListName);
     QMusicPlayer::SaagharPlayList* playListByName(QString playListName = QString());
+    void setCurrentMedia(int currentID, const QString &currentFile);
 
 private:
+    void setupUi();
     QTreeWidgetItem* previousItem;
     QVBoxLayout* hLayout;
     QTreeWidget* mediaList;
+    QComboBox* albumList;
     Phonon::MediaObject* playListMediaObject;
     QString m_currentPlayList;
+    int m_currentID;
+    QString m_currentFile;
 
 private slots:
     void mediaObjectStateChanged(Phonon::State newState, Phonon::State);
     void itemPlayRequested(QTreeWidgetItem*, int);
     void currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest = false);
+    void currentAlbumChanged(int index);
 
 signals:
     void mediaPlayRequested(int);//mediaID
