@@ -70,9 +70,10 @@
 bool MainWindow::autoCheckForUpdatesState = true;
 bool MainWindow::isPortable = false;
 
-MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen) :
-    QMainWindow(parent),
-    ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+    , m_cornerMenu(0)
 {
     setObjectName("SaagharMainWindow");
 
@@ -238,28 +239,27 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen) :
     setupUi();
 
     //setup corner widget
-    QToolButton* cornerButton = new QToolButton(mainTabWidget);
-    cornerButton->setIcon(QIcon(":/resources/images/corner-button.png"));
-    cornerButton->setPopupMode(QToolButton::InstantPopup);
-    cornerButton->setStyleSheet("QToolButton::menu-indicator{image: none;}");
-    QMenu* cornerMenu = new QMenu(0);
-    QMenu* mainMenuAsSubMenu = new QMenu(tr("Main Menu"), cornerMenu);
-    mainMenuAsSubMenu->addMenu(menuFile);
-    mainMenuAsSubMenu->addMenu(menuNavigation);
-    mainMenuAsSubMenu->addMenu(menuView);
-    mainMenuAsSubMenu->addMenu(menuTools);
-    mainMenuAsSubMenu->addMenu(menuHelp);
+    QToolButton* cornerAddButton = new QToolButton(mainTabWidget);
+    cornerAddButton->setAutoRaise(true);
+    cornerAddButton->setIcon(QIcon(":/resources/images/add-tab.png"));
+    connect(cornerAddButton, SIGNAL(clicked()), this, SLOT(actionNewTabClicked()));
 
-    cornerMenu->addMenu(mainMenuAsSubMenu);
-    cornerMenu->addSeparator();
+    QToolButton* cornerMenuButton = new QToolButton(mainTabWidget);
+    cornerMenuButton->setStyleSheet("QToolButton::menu-indicator{image: none;}");
+    cornerMenuButton->setAutoRaise(true);
+    cornerMenuButton->setIcon(QIcon(":/resources/images/arrow-down.png"));
+    cornerMenuButton->setFixedWidth(cornerMenuButton->iconSize().width());
+    cornerMenuButton->setMenu(cornerMenu());
 
-    cornerMenu->addAction(actionInstance("actionNewTab"));
-    cornerMenu->addAction(actionInstance("actionNewWindow"));
-    cornerMenu->addSeparator();
-    cornerMenu->addMenu(menuOpenedTabs);
-    cornerMenu->addMenu(menuClosedTabs);
-    cornerButton->setMenu(cornerMenu);
-    mainTabWidget->setCornerWidget(cornerButton);
+    QWidget* cornerWidget = new QWidget(mainTabWidget);
+    QHBoxLayout* hLayout = new QHBoxLayout;
+    hLayout->setSpacing(0);
+    hLayout->setContentsMargins(0, 0, 0, 0);
+    hLayout->addWidget(cornerAddButton);
+    hLayout->addWidget(cornerMenuButton);
+    cornerWidget->setLayout(hLayout);
+    connect(cornerMenuButton, SIGNAL(clicked()), cornerMenuButton, SLOT(showMenu()));
+    mainTabWidget->setCornerWidget(cornerWidget);
 
     //searching database-path for database-file
     //following lines are for support old default data-base pathes.
@@ -311,8 +311,6 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen) :
     if (mainTabWidget->count() < 1) {
         insertNewTab();
     }
-
-    ui->centralWidget->setLayoutDirection(Qt::RightToLeft);
 
     connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
     connect(mainTabWidget, SIGNAL(tabCloseRequested(int)), this, SLOT(tabCloser(int)));
@@ -787,6 +785,8 @@ void MainWindow::currentTabChanged(int tabIndex)
             SaagharWidget::musicPlayer->stop();
         }
 #endif
+
+        updateTabsSubMenus();
     }
 }
 
@@ -982,7 +982,7 @@ void MainWindow::tabCloser(int tabIndex)
     connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
 }
 
-QWidget* MainWindow::insertNewTab(TabType tabType)
+QWidget* MainWindow::insertNewTab(TabType tabType, const QString &title)
 {
     QWidget* tabContent = new QWidget();
 
@@ -1049,7 +1049,7 @@ QWidget* MainWindow::insertNewTab(TabType tabType)
         //tabGridLayout->setContentsMargins(0,0,0,0);//3,4,3,3);
         tabGridLayout->addWidget(tabTableWidget, 0, 0, 1, 1);
         mainTabWidget->setUpdatesEnabled(false);
-        mainTabWidget->setCurrentIndex(mainTabWidget->addTab(tabContent, "")); //add and gets focus to it
+        mainTabWidget->setCurrentIndex(mainTabWidget->addTab(tabContent, title)); //add and gets focus to it
         mainTabWidget->setUpdatesEnabled(true);
     }
     else if (tabType == MainWindow::WidgetTab) {
@@ -1078,7 +1078,7 @@ QWidget* MainWindow::insertNewTab(TabType tabType)
         scrollArea->setWidget(tabContent);
         scrollArea->setAlignment(Qt::AlignCenter);
         mainTabWidget->setUpdatesEnabled(false);
-        mainTabWidget->setCurrentIndex(mainTabWidget->addTab(scrollArea, "")); //add and gets focus to it
+        mainTabWidget->setCurrentIndex(mainTabWidget->addTab(scrollArea, title)); //add and gets focus to it
         mainTabWidget->setUpdatesEnabled(true);
     }
     else {
@@ -2063,6 +2063,36 @@ void MainWindow::setupUi()
     //removing no more supported items
     QString temp = mainToolBarItems.join("|");
     mainToolBarItems = temp.split("|", QString::SkipEmptyParts);
+}
+
+QMenu* MainWindow::cornerMenu()
+{
+    if (!m_cornerMenu) {
+        m_cornerMenu = new QMenu(0);
+
+        m_cornerMenu->addAction(actionInstance("actionNewTab"));
+        m_cornerMenu->addAction(actionInstance("actionNewWindow"));
+        m_cornerMenu->addSeparator();
+        m_cornerMenu->addMenu(menuOpenedTabs);
+        m_cornerMenu->addMenu(menuClosedTabs);
+        m_cornerMenu->addSeparator();
+        m_cornerMenu->addMenu(menuView);
+        m_cornerMenu->addMenu(menuTools);
+        m_cornerMenu->addSeparator();
+        m_cornerMenu->addAction(actionInstance("actionFaal"));
+        m_cornerMenu->addAction(actionInstance("actionExportAsPDF"));
+        m_cornerMenu->addAction(actionInstance("actionPrint"));
+        m_cornerMenu->addSeparator();
+        m_cornerMenu->addAction(actionInstance("actionSettings"));
+        m_cornerMenu->addAction(actionInstance("DownloadRepositories"));
+        m_cornerMenu->addAction(actionInstance("actionCheckUpdates"));
+        m_cornerMenu->addAction(actionInstance("Registeration"));
+        m_cornerMenu->addAction(actionInstance("actionAboutSaaghar"));
+        m_cornerMenu->addSeparator();
+        m_cornerMenu->addAction(actionInstance("actionExit"));
+    }
+
+    return m_cornerMenu;
 }
 
 void MainWindow::showSearchOptionMenu()
@@ -3512,6 +3542,9 @@ void MainWindow::updateTabsSubMenus()
     for (int i = 0; i < numOfTabs; ++i) {
         tabAction = new QAction(mainTabWidget->tabText(i), menuOpenedTabs);
 
+        if (i == mainTabWidget->currentIndex()) {
+            tabAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        }
         QObject* obj = mainTabWidget->widget(i);
         QVariant data = QVariant::fromValue(obj);
         tabAction->setData(data);
@@ -3927,7 +3960,7 @@ void MainWindow::checkRegistration(bool forceShow)
         return;
     }
 
-    QWidget* formContainer = insertNewTab(MainWindow::WidgetTab);
+    QWidget* formContainer = insertNewTab(MainWindow::WidgetTab, tr("Registeration"));
     if (!formContainer) {
         RegisterationForm regForm(this);
         QtWin::easyBlurUnBlur(&regForm, Settings::READ("UseTransparecy").toBool());
@@ -3963,7 +3996,6 @@ void MainWindow::checkRegistration(bool forceShow)
         formContainer->setLayout(gridLayout);
         formContainer->adjustSize();
         mainTabWidget->currentWidget()->setObjectName("WidgetTab-Registeration");
-        mainTabWidget->setTabText(mainTabWidget->currentIndex(), tr("Registeration"));
         actionInstance("Registeration")->setData(QVariant::fromValue(mainTabWidget->currentWidget()));
     }
 }

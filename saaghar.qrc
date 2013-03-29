@@ -61,5 +61,7 @@
         <file>images/stepped-hemistich-line.png</file>
         <file>images/empty.png</file>
         <file>images/transp.png</file>
+        <file>images/add-tab.png</file>
+        <file>images/arrow-down.png</file>
     </qresource>
 </RCC>

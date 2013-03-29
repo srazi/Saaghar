@@ -57,6 +57,7 @@ public:
     static bool autoCheckForUpdatesState;
     static QSettings* getSettingsObject();
     void checkRegistration(bool forceShow = false);
+    QMenu* cornerMenu();
 
 //  public slots:
 //      void emitReSizeEvent();
@@ -100,7 +101,7 @@ private:
     QToolBar* parentCatsToolBar;
     SaagharWidget* getSaagharWidget(int tabIndex);
     Qt::MouseButtons pressedMouseButton;
-    QWidget* insertNewTab(TabType tabType = MainWindow::SaagharViewerTab);
+    QWidget* insertNewTab(TabType tabType = MainWindow::SaagharViewerTab, const QString &title = QString());
     Ui::MainWindow* ui;
     void createConnections();
     void setupUi();
@@ -114,6 +115,7 @@ private:
     QMenu* menuHelp;
     QMenu* menuView;
     QMenu* menuBookmarks;
+    QMenu* m_cornerMenu;
 
     //submenus
     QMenu* menuOpenedTabs, *menuClosedTabs;
