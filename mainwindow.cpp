@@ -152,21 +152,21 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen) :
 #ifndef NO_PHONON_LIB
     SaagharWidget::musicPlayer = new QMusicPlayer(this);
     SaagharWidget::musicPlayer->setWindowTitle(tr("Audio Player"));
-    addDockWidget(Qt::LeftDockWidgetArea, SaagharWidget::musicPlayer->playListManagerDock());
-    SaagharWidget::musicPlayer->playListManagerDock()->hide();
+    addDockWidget(Qt::LeftDockWidgetArea, SaagharWidget::musicPlayer->albumManagerDock());
+    SaagharWidget::musicPlayer->albumManagerDock()->hide();
     SaagharWidget::musicPlayer->hide();
-    allActionMap.insert("playlistDockAction", SaagharWidget::musicPlayer->playListManagerDock()->toggleViewAction());
-    actionInstance("playlistDockAction")->setObjectName(QString::fromUtf8("playlistDockAction"));
-    actionInstance("playlistDockAction")->setIcon(QIcon(currentIconThemePath() + "/playlist.png"));
+    allActionMap.insert("albumDockAction", SaagharWidget::musicPlayer->albumManagerDock()->toggleViewAction());
+    actionInstance("albumDockAction")->setObjectName(QString::fromUtf8("albumDockAction"));
+    actionInstance("albumDockAction")->setIcon(QIcon(currentIconThemePath() + "/album.png"));
 
     SaagharWidget::musicPlayer->readPlayerSettings(getSettingsObject());
 
-    if (QMusicPlayer::listOfPlayList.isEmpty() ||
-            (QMusicPlayer::listOfPlayList.contains("default") &&
-             QMusicPlayer::listOfPlayList.value("default").toString().isEmpty())) {
-        QMusicPlayer::listOfPlayList.insert("default", userHomePath + "/default.m3u8");
+    if (QMusicPlayer::albumsPathList.isEmpty() ||
+            (QMusicPlayer::albumsPathList.contains("default") &&
+             QMusicPlayer::albumsPathList.value("default").toString().isEmpty())) {
+        QMusicPlayer::albumsPathList.insert("default", userHomePath + "/default.m3u8");
     }
-    SaagharWidget::musicPlayer->loadAllPlayLists();
+    SaagharWidget::musicPlayer->loadAllAlbums();
 #endif
 
     loadGlobalSettings();
@@ -736,12 +736,12 @@ void MainWindow::currentTabChanged(int tabIndex)
             if (old_saagharWidget) {
                 qDebug() << "old=" << old_saagharWidget->currentPoem << "new=" << saagharWidget->currentPoem;
                 //SaagharWidget::mediaInfoCash.insert(old_saagharWidget->currentPoem, QPair<QString, qint64>(SaagharWidget::mediaInfoCash.value(old_saagharWidget->currentPoem).first, SaagharWidget::musicPlayer->currentTime()));
-                SaagharWidget::musicPlayer->getFromPlayList(old_saagharWidget->currentPoem, &path, &title);
-                SaagharWidget::musicPlayer->insertToPlayList(old_saagharWidget->currentPoem, path, title, SaagharWidget::musicPlayer->currentTime());
+                SaagharWidget::musicPlayer->getFromAlbum(old_saagharWidget->currentPoem, &path, &title);
+                SaagharWidget::musicPlayer->insertToAlbum(old_saagharWidget->currentPoem, path, title, SaagharWidget::musicPlayer->currentTime());
             }
             path = "";
             title = "";
-            SaagharWidget::musicPlayer->getFromPlayList(saagharWidget->currentPoem, &path, &title);
+            SaagharWidget::musicPlayer->getFromAlbum(saagharWidget->currentPoem, &path, &title);
             if (SaagharWidget::musicPlayer->source() != path) {
                 SaagharWidget::musicPlayer->setSource(path, saagharWidget->currentLocationList.join(">") + ">" + saagharWidget->currentPoemTitle, saagharWidget->currentPoem);
                 //QApplication::processEvents();
@@ -1992,7 +1992,7 @@ void MainWindow::setupUi()
     menuView->addAction(actionInstance("outlineDockAction"));
 
 #ifndef NO_PHONON_LIB
-    menuView->addAction(actionInstance("playlistDockAction"));
+    menuView->addAction(actionInstance("albumDockAction"));
 #endif
 
     menuView->addAction(actionInstance("Show Photo at Home"));
@@ -2529,7 +2529,7 @@ void MainWindow::saveSettings()
 {
 #ifndef NO_PHONON_LIB
     if (SaagharWidget::musicPlayer) {
-        SaagharWidget::musicPlayer->saveAllPlayLists();
+        SaagharWidget::musicPlayer->saveAllAlbums();
     }
 #endif
 
@@ -3817,7 +3817,7 @@ void MainWindow::mediaInfoChanged(const QString &fileName, const QString &title,
         }
     }
     if (SaagharWidget::musicPlayer) {
-        SaagharWidget::musicPlayer->insertToPlayList(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, time);
+        SaagharWidget::musicPlayer->insertToAlbum(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, time);
     }
     //SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
     //saagharWidget->pageMetaInfo.mediaFile = fileName;

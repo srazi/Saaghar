@@ -61,7 +61,7 @@ class QSettings;
 class QDockWidget;
 
 class ScrollText;
-class PlayListManager;
+class AlbumManager;
 
 class QMusicPlayer : public QToolBar
 {
@@ -75,7 +75,7 @@ public:
         QString MD5SUM;
     };
 
-    struct SaagharPlayList {
+    struct SaagharAlbum {
         QString PATH;
         QHash<int, SaagharMediaTag*> mediaItems;
     };
@@ -87,32 +87,32 @@ public:
     void savePlayerSettings(QSettings* settingsObject);
     qint64 currentTime();
     void setCurrentTime(qint64 time);
-    void loadPlayList(const QString &fileName);
-    void savePlayList(const QString &fileName, const QString &playListName, const QString &format = "M3U8");
+    void loadAlbum(const QString &fileName);
+    void saveAlbum(const QString &fileName, const QString &albumName, const QString &format = "M3U8");
 
-    void loadAllPlayLists();
-    void saveAllPlayLists(const QString &format = "M3U8");
+    void loadAllAlbums();
+    void saveAllAlbums(const QString &format = "M3U8");
 
-    void insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle = "",
-                          int mediaCurrentTime = 0, QString playListName = QString());
-    void removeFromPlayList(int mediaID, QString playListName = QString());
-    bool playListContains(int mediaID, QString* playListName);
-    void getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle = 0,
-                         int* mediaCurrentTime = 0, QString* playListName = 0);
+    void insertToAlbum(int mediaID, const QString &mediaPath, const QString &mediaTitle = "",
+                          int mediaCurrentTime = 0, QString albumName = QString());
+    void removeFromAlbum(int mediaID, QString albumName = QString());
+    bool albumContains(int mediaID, QString* albumName);
+    void getFromAlbum(int mediaID, QString* mediaPath, QString* mediaTitle = 0,
+                         int* mediaCurrentTime = 0, QString* albumName = 0);
 
-    static QHash<QString, QVariant> listOfPlayList;
+    static QHash<QString, QVariant> albumsPathList;
     static QStringList commonSupportedMedia(const QString &type = "");//"" or "audio" or "video"
 
-    inline static QHash<QString, SaagharPlayList*> playListsHash() { return hashPlayLists; }
+    inline static QHash<QString, SaagharAlbum*> albumsHash() { return albumsMediaHash; }
 
-    QDockWidget* playListManagerDock();
+    QDockWidget* albumManagerDock();
 
 public slots:
     void stop();
     void playMedia(int mediaID);
 
     void newAlbum();
-    void loadPlayListFile();
+    void loadAlbumFile();
     void renameAlbum(const QString &albumName);
     void removeAlbum(const QString &albumName);
     void saveAsAlbum(const QString &albumName, bool saveAs = true);
@@ -134,13 +134,12 @@ private:
     int currentID;
     QString currentTitle;
     QDockWidget* dockList;
-    PlayListManager* playListManager;
-    inline static void pushPlayList(SaagharPlayList* playList, const QString &playListName)
-    {hashPlayLists.insert(playListName, playList);}
+    AlbumManager* albumManager;
+    inline static void pushAlbum(SaagharAlbum* album, const QString &albumName)
+    {albumsMediaHash.insert(albumName, album);}
 
-    static QHash<QString, QHash<int, SaagharMediaTag> > playLists;
-    static QHash<QString, SaagharPlayList*> hashPlayLists;
-    static SaagharPlayList hashDefaultPlayList;
+    static QHash<QString, SaagharAlbum*> albumsMediaHash;
+
     qint64 _newTime;
     void setupActions();
     void setupUi();
@@ -158,7 +157,7 @@ private:
     QAction* previousAction;
     QAction* setSourceAction;
     QAction* removeSourceAction;
-    QAction* loadPlayListAction;
+    QAction* loadAlbumAction;
     QAction* repeatAction;
     QAction* autoPlayAction;
 
@@ -179,18 +178,18 @@ class QVBoxLayout;
 class QTreeWidgetItem;
 class QComboBox;
 
-class PlayListManager : public QWidget
+class AlbumManager : public QWidget
 {
     Q_OBJECT
 
 public:
-    PlayListManager(QMusicPlayer* musicPlayer = 0, QWidget* parent = 0);
-    void setPlayLists(const QHash<QString, QMusicPlayer::SaagharPlayList*> &playLists, bool justMediaList = false);
+    AlbumManager(QMusicPlayer* musicPlayer = 0, QWidget* parent = 0);
+    void setAlbums(const QHash<QString, QMusicPlayer::SaagharAlbum*> &albums, bool justMediaList = false);
     void setMediaObject(Phonon::MediaObject* MediaObject);
 
-    inline QString currentPlayListName() { return m_currentPlayList; }
-    void setCurrentPlayList(const QString &playListName);
-    QMusicPlayer::SaagharPlayList* playListByName(QString playListName = QString());
+    inline QString currentAlbumName() { return m_currentAlbum; }
+    void setCurrentAlbum(const QString &albumName);
+    QMusicPlayer::SaagharAlbum* albumByName(QString albumName = QString());
     void setCurrentMedia(int currentID, const QString &currentFile);
     inline QComboBox* albumList() { return m_albumList; }
 
@@ -201,8 +200,8 @@ private:
     QVBoxLayout* hLayout;
     QTreeWidget* mediaList;
     QComboBox* m_albumList;
-    Phonon::MediaObject* playListMediaObject;
-    QString m_currentPlayList;
+    Phonon::MediaObject* albumMediaObject;
+    QString m_currentAlbum;
     int m_currentID;
     QString m_currentFile;
     QMusicPlayer* m_musicPlayer;

@@ -65,16 +65,15 @@
 #include <QTreeWidget>
 
 
-QHash<QString, QVariant> QMusicPlayer::listOfPlayList = QHash<QString, QVariant>();
-QMusicPlayer::SaagharPlayList QMusicPlayer::hashDefaultPlayList = QMusicPlayer::SaagharPlayList();
-QHash<QString, QMusicPlayer::SaagharPlayList*> QMusicPlayer::hashPlayLists = QHash<QString, QMusicPlayer::SaagharPlayList*>();
+QHash<QString, QVariant> QMusicPlayer::albumsPathList = QHash<QString, QVariant>();
+QHash<QString, QMusicPlayer::SaagharAlbum*> QMusicPlayer::albumsMediaHash = QHash<QString, QMusicPlayer::SaagharAlbum*>();
 
 
 const bool itemsAsTopItem = true;
 
 QMusicPlayer::QMusicPlayer(QWidget* parent)
     : QToolBar(parent)
-    , playListManager(new PlayListManager(this, parent))
+    , albumManager(new AlbumManager(this, parent))
 {
     setObjectName("QMusicPlayer");
 
@@ -83,10 +82,8 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     notLoaded = true;
     dockList = 0;
 
-    connect(playListManager, SIGNAL(mediaPlayRequested(int)), this, SLOT(playMedia(int)));
-    connect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), playListManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
-
-    QMusicPlayer::hashDefaultPlayList.PATH = "";
+    connect(albumManager, SIGNAL(mediaPlayRequested(int)), this, SLOT(playMedia(int)));
+    connect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), albumManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
 
     _newTime = -1;
 
@@ -105,7 +102,7 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
 
     mediaObject->setTickInterval(1000);
 
-    playListManager->setMediaObject(mediaObject);
+    albumManager->setMediaObject(mediaObject);
 
     connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
     connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
@@ -162,11 +159,11 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
         metaInformationResolver->setCurrentSource(source);
         load(0);
         if (mediaID > 0) {
-            QString playListName;
-            playListContains(mediaID, &playListName);
-            if (!playListName.isEmpty() && !newSource) {
-                playListManager->setCurrentMedia(mediaID, fileName);
-                playListManager->setCurrentPlayList(playListName);
+            QString albumName;
+            albumContains(mediaID, &albumName);
+            if (!albumName.isEmpty() && !newSource) {
+                albumManager->setCurrentMedia(mediaID, fileName);
+                albumManager->setCurrentAlbum(albumName);
             }
         }
     }
@@ -212,7 +209,7 @@ void QMusicPlayer::newAlbum()
     QString file = QFileDialog::getSaveFileName(this->window(), tr("New Saaghar Play List"), startDir,
                    "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
 
-    bool alreadyLoaded = listOfPlayList.values().contains(file);
+    bool alreadyLoaded = albumsPathList.values().contains(file);
     if (file.isEmpty() || alreadyLoaded) {
         if (alreadyLoaded) {
             QMessageBox::information(this->window(), tr("Warning!"), tr("The album already loaded."));
@@ -225,14 +222,14 @@ void QMusicPlayer::newAlbum()
                                          tr("Enter name for this play list:"),
                                          QLineEdit::Normal, selectedFile.baseName());
 
-    SaagharPlayList* playList = new SaagharPlayList;
-    playList->PATH = file;
-    pushPlayList(playList, name);
-    savePlayList(file, name);
-    playListManager->setCurrentPlayList(name);
+    SaagharAlbum* album = new SaagharAlbum;
+    album->PATH = file;
+    pushAlbum(album, name);
+    saveAlbum(file, name);
+    albumManager->setCurrentAlbum(name);
 }
 
-void QMusicPlayer::loadPlayListFile()
+void QMusicPlayer::loadAlbumFile()
 {
     QString file = QFileDialog::getOpenFileName(this->window(), tr("Select Saaghar Play List"), startDir,
                    "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
@@ -244,53 +241,53 @@ void QMusicPlayer::loadPlayListFile()
     QFileInfo selectedFile(file);
     startDir = selectedFile.path();
 
-    loadPlayList(file);
+    loadAlbum(file);
 }
 
 void QMusicPlayer::renameAlbum(const QString &albumName)
 {
-    int index = playListManager->albumList()->findText(albumName);
-    if (index < 0 || playListManager->albumList()->itemData(index).isValid()) {
+    int index = albumManager->albumList()->findText(albumName);
+    if (index < 0 || albumManager->albumList()->itemData(index).isValid()) {
         return;
     }
 
-    QString oldName = playListManager->albumList()->itemText(index);
+    QString oldName = albumManager->albumList()->itemText(index);
     QString newName = QInputDialog::getText(window(), tr("Name Of Play List"),
                                             tr("Enter new name for this play list:"),
                                             QLineEdit::Normal, oldName);
     if (newName.isEmpty() || newName == oldName ||
-            listOfPlayList.contains(newName)) {
+            albumsPathList.contains(newName)) {
         return;
     }
 
-    listOfPlayList.insert(newName, listOfPlayList.value(oldName));
-    listOfPlayList.remove(oldName);
+    albumsPathList.insert(newName, albumsPathList.value(oldName));
+    albumsPathList.remove(oldName);
 
-    hashPlayLists.insert(newName, hashPlayLists.value(oldName));
-    hashPlayLists.remove(oldName);
+    albumsMediaHash.insert(newName, albumsMediaHash.value(oldName));
+    albumsMediaHash.remove(oldName);
 
     bool isCurrentIndex = false;
-    if (playListManager->currentPlayListName() == oldName) {
+    if (albumManager->currentAlbumName() == oldName) {
         isCurrentIndex = true;
-        playListManager->albumList()->setCurrentIndex(index);
+        albumManager->albumList()->setCurrentIndex(index);
     }
 
-    playListManager->albumList()->removeItem(index);
-    playListManager->albumList()->insertItem(index, newName);
+    albumManager->albumList()->removeItem(index);
+    albumManager->albumList()->insertItem(index, newName);
 
     if (isCurrentIndex) {
-        playListManager->albumList()->setCurrentIndex(index);
+        albumManager->albumList()->setCurrentIndex(index);
     }
 }
 
 void QMusicPlayer::removeAlbum(const QString &albumName)
 {
-    if (listOfPlayList.size() == 1) {
+    if (albumsPathList.size() == 1) {
         return;
     }
 
-    SaagharPlayList* playList = playListManager->playListByName(albumName);
-    if (!playList) {
+    SaagharAlbum* album = albumManager->albumByName(albumName);
+    if (!album) {
         return;
     }
 
@@ -300,28 +297,28 @@ void QMusicPlayer::removeAlbum(const QString &albumName)
         return;
     }
 
-    if (playList->mediaItems.contains(currentID)) {
+    if (album->mediaItems.contains(currentID)) {
         removeSource();
     }
 
-    delete playList;
-    listOfPlayList.remove(albumName);
-    hashPlayLists.remove(albumName);
+    delete album;
+    albumsPathList.remove(albumName);
+    albumsMediaHash.remove(albumName);
 
-    int index = playListManager->albumList()->findText(albumName);
-    playListManager->albumList()->removeItem(index);
+    int index = albumManager->albumList()->findText(albumName);
+    albumManager->albumList()->removeItem(index);
 }
 
 void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
 {
     if (!saveAs) {
-        savePlayList(listOfPlayList.value(albumName).toString(), albumName);
+        saveAlbum(albumsPathList.value(albumName).toString(), albumName);
     }
     else {
         QString file = QFileDialog::getSaveFileName(this->window(), tr("New Saaghar Play List"), startDir,
                                                     "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
 
-        bool alreadyLoaded = listOfPlayList.values().contains(file);
+        bool alreadyLoaded = albumsPathList.values().contains(file);
         if (file.isEmpty() || alreadyLoaded) {
             if (alreadyLoaded) {
                 QMessageBox::information(this->window(), tr("Warning!"), tr("The album already loaded."));
@@ -334,17 +331,17 @@ void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
                                              QLineEdit::Normal, albumName + tr("_Copy"));
 
         if (name.isEmpty() || name == albumName ||
-                listOfPlayList.contains(name)) {
+                albumsPathList.contains(name)) {
             return;
         }
 
-        SaagharPlayList* playList = playListManager->playListByName(albumName);
-        SaagharPlayList* copyPlayList = new SaagharPlayList;
-        copyPlayList->PATH = file;
-        copyPlayList->mediaItems = playList->mediaItems;
-        pushPlayList(copyPlayList, name);
-        savePlayList(file, name);
-        playListManager->setCurrentPlayList(name);
+        SaagharAlbum* album = albumManager->albumByName(albumName);
+        SaagharAlbum* copyAlbum = new SaagharAlbum;
+        copyAlbum->PATH = file;
+        copyAlbum->mediaItems = album->mediaItems;
+        pushAlbum(copyAlbum, name);
+        saveAlbum(file, name);
+        albumManager->setCurrentAlbum(name);
     }
 }
 
@@ -360,7 +357,7 @@ void QMusicPlayer::removeSource()
 
     emit mediaChanged("", "", currentID, true);
 
-    removeFromPlayList(currentID);
+    removeFromAlbum(currentID);
 }
 
 void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldState */)
@@ -525,12 +522,12 @@ void QMusicPlayer::setupActions()
     previousAction->setShortcut(tr("Ctrl+R"));
     setSourceAction = new QAction(tr("&Set Audio..."), this);
     removeSourceAction = new QAction(tr("&Remove Audio"), this);
-    loadPlayListAction = new QAction(tr("&Load Playlist..."), this);
+    loadAlbumAction = new QAction(tr("&Load Album..."), this);
     connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
     connect(stopAction, SIGNAL(triggered()), mediaObject, SLOT(stop()));
     connect(setSourceAction, SIGNAL(triggered()), this, SLOT(setSource()));
     connect(removeSourceAction, SIGNAL(triggered()), this, SLOT(removeSource()));
-    connect(loadPlayListAction, SIGNAL(triggered()), this, SLOT(loadPlayListFile()));
+    connect(loadAlbumAction, SIGNAL(triggered()), this, SLOT(loadAlbumFile()));
 }
 
 void QMusicPlayer::setupUi()
@@ -543,10 +540,10 @@ void QMusicPlayer::setupUi()
     menu->addAction(setSourceAction);
     menu->addAction(removeSourceAction);
     menu->addSeparator();
-    menu->addAction(loadPlayListAction);
+    menu->addAction(loadAlbumAction);
     menu->addSeparator();
-    if (playListManagerDock()) {
-        menu->addAction(playListManagerDock()->toggleViewAction());
+    if (albumManagerDock()) {
+        menu->addAction(albumManagerDock()->toggleViewAction());
     }
     options->setMenu(menu);
 
@@ -594,7 +591,7 @@ void QMusicPlayer::setupUi()
 void QMusicPlayer::readPlayerSettings(QSettings* settingsObject)
 {
     settingsObject->beginGroup("QMusicPlayer");
-    listOfPlayList = settingsObject->value("List Of PlayList").toHash();
+    albumsPathList = settingsObject->value("ListOfAlbum").toHash();
     if (audioOutput) {
         audioOutput->setMuted(settingsObject->value("muted", false).toBool());
         audioOutput->setVolume(settingsObject->value("volume", 0.4).toReal());
@@ -605,8 +602,8 @@ void QMusicPlayer::readPlayerSettings(QSettings* settingsObject)
 void QMusicPlayer::savePlayerSettings(QSettings* settingsObject)
 {
     settingsObject->beginGroup("QMusicPlayer");
-    qDebug() << "---::savePlayerSettings=" << listOfPlayList;
-    settingsObject->setValue("List Of PlayList", listOfPlayList);
+    qDebug() << "---::savePlayerSettings=" << albumsPathList;
+    settingsObject->setValue("ListOfAlbum", albumsPathList);
     if (audioOutput) {
         settingsObject->setValue("muted", audioOutput->isMuted());
         settingsObject->setValue("volume", audioOutput->volume());
@@ -614,18 +611,18 @@ void QMusicPlayer::savePlayerSettings(QSettings* settingsObject)
     settingsObject->endGroup();
 }
 
-void QMusicPlayer::loadPlayList(const QString &fileName)
+void QMusicPlayer::loadAlbum(const QString &fileName)
 {
     /*******************************************************************************/
-    //tags for Version-0.1 of Saaghar media playlist
-    //#SAAGHAR!PLAYLIST!            //start of playlist
-    //#SAAGHAR!PLAYLIST!TITLE!      //title tag
+    //tags for Version-0.1 of Saaghar media album
+    //#SAAGHAR!ALBUM!            //start of album
+    //#SAAGHAR!ALBUM!TITLE!      //title tag
     //#SAAGHAR!ITEMS!               //start of items
     //#SAAGHAR!TITLE!               //item's title tag
     //#SAAGHAR!ID!                  //item's id tag
     //#SAAGHAR!PATH!                //item's full path
     //#SAAGHAR!MD5SUM!              //item's MD5SUM hash
-    //<last property>               //item's path relative to playlist file
+    //<last property>               //item's path relative to album file
     /*******************************************************************************/
     QFile file(fileName);
     if (!file.exists()) {
@@ -633,32 +630,32 @@ void QMusicPlayer::loadPlayList(const QString &fileName)
     }
 
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::information(this->parentWidget(), tr("Read Error!"), tr("Can't load playlist!\nError: %1").arg(file.errorString()));
+        QMessageBox::information(this->parentWidget(), tr("Read Error!"), tr("Can't load album!\nError: %1").arg(file.errorString()));
         return;
     }
 
     QTextStream out(&file);
     out.setCodec("UTF-8");
     QString line = out.readLine();
-    if (!line.startsWith("#SAAGHAR!PLAYLIST!")) {
+    if (!line.startsWith("#SAAGHAR!ALBUM!")) {
         return;
     }
 
     line = out.readLine();
-    while (!line.startsWith("#SAAGHAR!PLAYLIST!TITLE!")) {
+    while (!line.startsWith("#SAAGHAR!ALBUM!TITLE!")) {
         if (out.atEnd()) {
             return;
         }
         line = out.readLine();
     }
 
-    QString playListName = line.remove("#SAAGHAR!PLAYLIST!TITLE!");
-    if (playListName.isEmpty()) {
+    QString albumName = line.remove("#SAAGHAR!ALBUM!TITLE!");
+    if (albumName.isEmpty()) {
         return;
     }
-    SaagharPlayList* playList = new SaagharPlayList;
-    playList->PATH = fileName;
-    listOfPlayList.insert(playListName, fileName);
+    SaagharAlbum* album = new SaagharAlbum;
+    album->PATH = fileName;
+    albumsPathList.insert(albumName, fileName);
 
     while (!line.startsWith("#SAAGHAR!ITEMS!")) { //start of items
         if (out.atEnd()) {
@@ -667,8 +664,8 @@ void QMusicPlayer::loadPlayList(const QString &fileName)
         line = out.readLine();
     }
 
-    QFileInfo playListFileInfo(fileName);
-    QDir playListDir(playListFileInfo.absolutePath());
+    QFileInfo albumFileInfo(fileName);
+    QDir albumDir(albumFileInfo.absolutePath());
 
     int ID;
     QString TITLE;
@@ -711,7 +708,7 @@ void QMusicPlayer::loadPlayList(const QString &fileName)
             line = line.trimmed();
             if (ID != -1 && (!line.isEmpty() || !FULL_PATH.isEmpty())) {
                 //at least one of path and id is necessary!!
-                QString absoluteMediaPath = playListDir.absoluteFilePath(line);
+                QString absoluteMediaPath = albumDir.absoluteFilePath(line);
                 bool mediaExists = false;
                 if (QFile::exists(absoluteMediaPath)) {
                     absoluteMediaPath = QDir::cleanPath(absoluteMediaPath);
@@ -728,7 +725,7 @@ void QMusicPlayer::loadPlayList(const QString &fileName)
                     mediaTag->PATH = absoluteMediaPath;
                     mediaTag->TITLE = TITLE;
                     mediaTag->MD5SUM = MD5SUM;
-                    playList->mediaItems.insert(ID, mediaTag);
+                    album->mediaItems.insert(ID, mediaTag);
                 }
                 FULL_PATH.clear();
                 TITLE.clear();
@@ -739,47 +736,47 @@ void QMusicPlayer::loadPlayList(const QString &fileName)
     }
 
     file.close();
-    qDebug() << "size=" << playList->mediaItems.size() << "name=" << playListName;
-    pushPlayList(playList, playListName);
+    qDebug() << "size=" << album->mediaItems.size() << "name=" << albumName;
+    pushAlbum(album, albumName);
 
-    //playListManager->setPlayLists(hashPlayLists);
-    //playListManager->setCurrentMedia(currentID, m_currentFile);
-    playListManager->setCurrentPlayList(playListName);
+    //albumManager->setAlbums(hashAlbums);
+    //albumManager->setCurrentMedia(currentID, m_currentFile);
+    albumManager->setCurrentAlbum(albumName);
 }
 
-void QMusicPlayer::savePlayList(const QString &fileName, const QString &playListName, const QString &)
+void QMusicPlayer::saveAlbum(const QString &fileName, const QString &albumName, const QString &)
 {
-    if (playListName.isEmpty()) {
+    if (albumName.isEmpty()) {
         return;
     }
 
-    SaagharPlayList* playList = playListManager->playListByName(playListName);
+    SaagharAlbum* album = albumManager->albumByName(albumName);
 
-    if (!playList) {
+    if (!album) {
         return;
     }
 
-    QString playListFileName = fileName;
-    if (playListFileName.isEmpty()) {
-        playListFileName = playList->PATH;
+    QString albumFileName = fileName;
+    if (albumFileName.isEmpty()) {
+        albumFileName = album->PATH;
     }
 
-    listOfPlayList.insert(playListName, playListFileName);
+    albumsPathList.insert(albumName, albumFileName);
 
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::information(this->parentWidget(), tr("Save Error!"), tr("Can't save playlist!\nError: %1").arg(file.errorString()));
+        QMessageBox::information(this->parentWidget(), tr("Save Error!"), tr("Can't save album!\nError: %1").arg(file.errorString()));
         return;
     }
 
-    QFileInfo playListFileInfo(fileName);
-    QDir playListInfo(playListFileInfo.absolutePath());
+    QFileInfo albumFileInfo(fileName);
+    QDir albumInfo(albumFileInfo.absolutePath());
     QTextStream out(&file);
     out.setCodec("UTF-8");
-    QString playListContent = QString("#SAAGHAR!PLAYLIST!V%1\n#SAAGHAR!PLAYLIST!TITLE!%2\n##################\n#SAAGHAR!ITEMS!\n").arg("0.1").arg(playListName);
-    QHash<int, SaagharMediaTag*>::const_iterator it = playList->mediaItems.constBegin();  //playList.constBegin();
-    while (it != playList->mediaItems.constEnd()) {
-        QString relativePath = playListInfo.relativeFilePath(it.value()->PATH);
+    QString albumContent = QString("#SAAGHAR!ALBUM!V%1\n#SAAGHAR!ALBUM!TITLE!%2\n##################\n#SAAGHAR!ITEMS!\n").arg("0.1").arg(albumName);
+    QHash<int, SaagharMediaTag*>::const_iterator it = album->mediaItems.constBegin();  //album.constBegin();
+    while (it != album->mediaItems.constEnd()) {
+        QString relativePath = albumInfo.relativeFilePath(it.value()->PATH);
         QString md5sumStr;
         if (!it.value()->MD5SUM.isEmpty()) {
             md5sumStr = QString("#SAAGHAR!MD5SUM!%1\n").arg(it.value()->MD5SUM);
@@ -791,68 +788,68 @@ void QMusicPlayer::savePlayList(const QString &fileName, const QString &playList
                               "#SAAGHAR!PATH!%4\n"
                               "%5\n")
                           .arg(it.value()->TITLE).arg(it.key()).arg(md5sumStr).arg(it.value()->PATH).arg(relativePath);
-        playListContent += itemStr;
+        albumContent += itemStr;
         ++it;
     }
     qDebug() << "======================================";
-    qDebug() << "playListContent=\n" << playListContent;
+    qDebug() << "albumContent=\n" << albumContent;
     qDebug() << "======================================";
-    out << playListContent;
+    out << albumContent;
     file.close();
 }
 
-void QMusicPlayer::loadAllPlayLists()
+void QMusicPlayer::loadAllAlbums()
 {
-    QHash<QString, QVariant>::const_iterator playListsIterator = listOfPlayList.constBegin();
-    while (playListsIterator != listOfPlayList.constEnd()) {
-        if (!playListsIterator.key().isEmpty()) {
-            loadPlayList(playListsIterator.value().toString());
+    QHash<QString, QVariant>::const_iterator albumsIterator = albumsPathList.constBegin();
+    while (albumsIterator != albumsPathList.constEnd()) {
+        if (!albumsIterator.key().isEmpty()) {
+            loadAlbum(albumsIterator.value().toString());
         }
-        ++playListsIterator;
+        ++albumsIterator;
     }
 }
 
-void QMusicPlayer::saveAllPlayLists(const QString &format)
+void QMusicPlayer::saveAllAlbums(const QString &format)
 {
-    QHash<QString, QVariant>::const_iterator playListsIterator = listOfPlayList.constBegin();
-    while (playListsIterator != listOfPlayList.constEnd()) {
-        if (!playListsIterator.key().isEmpty()) {
-            savePlayList(playListsIterator.value().toString(), playListsIterator.key(), format);
+    QHash<QString, QVariant>::const_iterator albumsIterator = albumsPathList.constBegin();
+    while (albumsIterator != albumsPathList.constEnd()) {
+        if (!albumsIterator.key().isEmpty()) {
+            saveAlbum(albumsIterator.value().toString(), albumsIterator.key(), format);
         }
-        ++playListsIterator;
+        ++albumsIterator;
     }
 }
 
 /*static*/
-void QMusicPlayer::removeFromPlayList(int mediaID, QString playListName)
+void QMusicPlayer::removeFromAlbum(int mediaID, QString albumName)
 {
-    if (!playListName.isEmpty()) {
-        SaagharPlayList* playList = playListManager->playListByName(playListName);
-        if (playList) {
-            qDebug() << "removeFromPlayList" << mediaID << "removed";
-            playList->mediaItems.remove(mediaID);
+    if (!albumName.isEmpty()) {
+        SaagharAlbum* album = albumManager->albumByName(albumName);
+        if (album) {
+            qDebug() << "removeFromAlbum" << mediaID << "removed";
+            album->mediaItems.remove(mediaID);
         }
         return;
     }
 
-    while (playListContains(mediaID, &playListName)) {
-        SaagharPlayList* playList = playListManager->playListByName(playListName);
-        if (playList) {
-            qDebug() << "removeFromPlayList" << mediaID << "removed";
-            playList->mediaItems.remove(mediaID);
+    while (albumContains(mediaID, &albumName)) {
+        SaagharAlbum* album = albumManager->albumByName(albumName);
+        if (album) {
+            qDebug() << "removeFromAlbum" << mediaID << "removed";
+            album->mediaItems.remove(mediaID);
         }
     }
 }
 
 /*static*/
-void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const QString &mediaTitle,
-                                    int mediaCurrentTime, QString playListName)
+void QMusicPlayer::insertToAlbum(int mediaID, const QString &mediaPath, const QString &mediaTitle,
+                                    int mediaCurrentTime, QString albumName)
 {
-    if (playListName.isEmpty()) {
-        playListName = playListManager->currentPlayListName();
+    if (albumName.isEmpty()) {
+        albumName = albumManager->currentAlbumName();
     }
 
-    SaagharPlayList* playList = playListManager->playListByName(playListName);
+    SaagharAlbum* album = albumManager->albumByName(albumName);
 
     QFile file(mediaPath);
     if (!file.exists() || mediaID < 0) {
@@ -873,42 +870,42 @@ void QMusicPlayer::insertToPlayList(int mediaID, const QString &mediaPath, const
 //      QCryptographicHash::Md5).toHex());
     /**********************************************************/
 
-    if (!playList) {
-        playList = new SaagharPlayList;
-        playList->PATH = listOfPlayList.value(playListName).toString();
-        playList->mediaItems.insert(mediaID, mediaTag);
-        pushPlayList(playList, playListName);
+    if (!album) {
+        album = new SaagharAlbum;
+        album->PATH = albumsPathList.value(albumName).toString();
+        album->mediaItems.insert(mediaID, mediaTag);
+        pushAlbum(album, albumName);
     }
     else {
-        playList->mediaItems.insert(mediaID, mediaTag);
+        album->mediaItems.insert(mediaID, mediaTag);
     }
 }
 
 /*static*/
-void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* mediaTitle,
-                                   int* mediaCurrentTime, QString* playListName)
+void QMusicPlayer::getFromAlbum(int mediaID, QString* mediaPath, QString* mediaTitle,
+                                   int* mediaCurrentTime, QString* albumName)
 {
     QString temp;
-    bool playListNameIsNull = false;
-    if (!playListName) {
-        playListNameIsNull = true;
-        playListName = &temp;
+    bool albumNameIsNull = false;
+    if (!albumName) {
+        albumNameIsNull = true;
+        albumName = &temp;
     }
 
-    if (mediaID < 0 || !mediaPath || !playListContains(mediaID, playListName)) {
+    if (mediaID < 0 || !mediaPath || !albumContains(mediaID, albumName)) {
         return;
     }
 
-    SaagharMediaTag* mediaTag =  playListManager->playListByName(*playListName)->mediaItems.value(mediaID);
+    SaagharMediaTag* mediaTag =  albumManager->albumByName(*albumName)->mediaItems.value(mediaID);
     if (!mediaTag) {
         mediaPath->clear();
         mediaTitle->clear();
         *mediaCurrentTime = 0;
-        if (playListNameIsNull) {
-            playListName = 0;
+        if (albumNameIsNull) {
+            albumName = 0;
         }
         else {
-            playListName->clear();
+            albumName->clear();
         }
         return;
     }
@@ -920,32 +917,32 @@ void QMusicPlayer::getFromPlayList(int mediaID, QString* mediaPath, QString* med
     if (mediaCurrentTime) {
         *mediaCurrentTime = mediaTag->time;
     }
-    if (playListNameIsNull) {
-        playListName = 0;
+    if (albumNameIsNull) {
+        albumName = 0;
     }
 }
 
-bool QMusicPlayer::playListContains(int mediaID, QString* playListName)
-{//playListName default can be NULL for test purposes we don't set it
-    QStringList names = hashPlayLists.keys();
-    if (names.removeAll(playListManager->currentPlayListName()) > 0) {
-        names.prepend(playListManager->currentPlayListName());
+bool QMusicPlayer::albumContains(int mediaID, QString* albumName)
+{//albumName default can be NULL for test purposes we don't set it
+    QStringList names = albumsMediaHash.keys();
+    if (names.removeAll(albumManager->currentAlbumName()) > 0) {
+        names.prepend(albumManager->currentAlbumName());
     }
 
     for (int i = 0; i < names.size(); ++i) {
-        SaagharPlayList* playList = playListManager->playListByName(names.at(i));
+        SaagharAlbum* album = albumManager->albumByName(names.at(i));
 
-        qDebug() << "playListName=" << names.at(i) << "playListContains:\nmediaID=" << mediaID << "PlayLists=" << hashPlayLists.values() << "IDs=" << hashPlayLists.keys();
-        if (!playList) {
+        qDebug() << "albumName=" << names.at(i) << "albumContains:\nmediaID=" << mediaID << "Albums=" << albumsMediaHash.values() << "IDs=" << albumsMediaHash.keys();
+        if (!album) {
             continue;
         }
-        qDebug() << "mediaID=" << mediaID << "pointer=" << playList << "*po=" << playList->mediaItems.keys();
-        bool result = playList->mediaItems.contains(mediaID);
+        qDebug() << "mediaID=" << mediaID << "pointer=" << album << "*po=" << album->mediaItems.keys();
+        bool result = album->mediaItems.contains(mediaID);
         if (result) {
-            if (playListName) {
-                *playListName = names.at(i);
+            if (albumName) {
+                *albumName = names.at(i);
             }
-            qDebug() << "::playListContains--TRUE";
+            qDebug() << "::albumContains--TRUE";
             return true;
         }
     }
@@ -953,29 +950,29 @@ bool QMusicPlayer::playListContains(int mediaID, QString* playListName)
     return false;
 }
 
-QDockWidget* QMusicPlayer::playListManagerDock()
+QDockWidget* QMusicPlayer::albumManagerDock()
 {
-    if (!playListManager) {
+    if (!albumManager) {
         return 0;
     }
     if (dockList) {
         return dockList;
     }
     dockList = new QDockWidget;
-    dockList->setObjectName("PlayListManagerDock");
+    dockList->setObjectName("AlbumManagerDock");
     dockList->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
                             "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
-    dockList->setWindowTitle(tr("PlayList"));
-    dockList->setWidget(playListManager);
+    dockList->setWindowTitle(tr("Albums"));
+    dockList->setWidget(albumManager);
     return dockList;
 }
 
 void QMusicPlayer::playMedia(int mediaID)
 {
-    disconnect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), playListManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
+    disconnect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), albumManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
     emit requestPageContainedMedia(mediaID, true);
     mediaObject->play();
-    connect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), playListManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
+    connect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), albumManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
 }
 
 void QMusicPlayer::resizeEvent(QResizeEvent* e)
@@ -1018,24 +1015,24 @@ void QMusicPlayer::stop()
 }
 
 /*******************************
-// class PlayListManager
+// class AlbumManager
 ********************************/
 
-PlayListManager::PlayListManager(QMusicPlayer* musicPlayer, QWidget* parent)
+AlbumManager::AlbumManager(QMusicPlayer* musicPlayer, QWidget* parent)
     : QWidget(parent)
     , previousItem(0)
     , mediaList(new QTreeWidget(this))
     , m_albumList(new QComboBox(this))
     , m_musicPlayer(musicPlayer)
 {
-    setObjectName("PlayListManager");
+    setObjectName("AlbumManager");
     setupUi();
 
     connect(mediaList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(itemPlayRequested(QTreeWidgetItem*,int)));
     connect(m_albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
 }
 
-void PlayListManager::setupUi()
+void AlbumManager::setupUi()
 {
     mediaList->setIndentation(5);
     mediaList->setLayoutDirection(Qt::RightToLeft);
@@ -1044,8 +1041,8 @@ void PlayListManager::setupUi()
 
     m_albumList->insertSeparator(0);
     m_albumList->addItem(tr("Save this album"), "SAVE_ALBUM");
-    m_albumList->addItem(tr("Load album..."), "LOAD_ALBUM");
-    m_albumList->addItem(tr("New album..."), "NEW_ALBUM");
+    m_albumList->addItem(tr("Load Album..."), "LOAD_ALBUM");
+    m_albumList->addItem(tr("New Album..."), "NEW_ALBUM");
     m_albumList->insertSeparator(4);
     m_albumList->addItem(tr("Rename this album..."), "RENAME_ALBUM");
     m_albumList->addItem(tr("Remove this album..."), "REMOVE_ALBUM");
@@ -1056,34 +1053,34 @@ void PlayListManager::setupUi()
     this->setLayout(hLayout);
 }
 
-void PlayListManager::setPlayLists(const QHash<QString, QMusicPlayer::SaagharPlayList*> &playLists, bool /*justMediaList*/)
+void AlbumManager::setAlbums(const QHash<QString, QMusicPlayer::SaagharAlbum*> &albums, bool /*justMediaList*/)
 {
-    if (playLists.isEmpty()) {
+    if (albums.isEmpty()) {
         return;
     }
     //if (justMediaList) //not implemented!
-//    itemsAsTopItem = playLists.size() == 1 ? true : false;
-    //temp simpler playlist management for v2.0
+//    itemsAsTopItem = albums.size() == 1 ? true : false;
+    //temp simpler album management for v2.0
     previousItem = 0;
     mediaList->clear();
     qDebug() << Q_FUNC_INFO;
 //    itemsAsTopItem = true;
-    QHash<QString, QMusicPlayer::SaagharPlayList*>::const_iterator playListIterator = playLists.constBegin();
-    while (playListIterator != playLists.constEnd()) {
-        QMusicPlayer::SaagharPlayList* playList = playListIterator.value();
-        if (!playList) {
-            ++playListIterator;
+    QHash<QString, QMusicPlayer::SaagharAlbum*>::const_iterator albumIterator = albums.constBegin();
+    while (albumIterator != albums.constEnd()) {
+        QMusicPlayer::SaagharAlbum* album = albumIterator.value();
+        if (!album) {
+            ++albumIterator;
             continue;
         }
 
-        QTreeWidgetItem* playListRoot = 0;
+        QTreeWidgetItem* albumRoot = 0;
         if (!itemsAsTopItem) {
-            playListRoot = new QTreeWidgetItem();
-            mediaList->addTopLevelItem(playListRoot);
-            playListRoot->setText(0, playListIterator.key());
+            albumRoot = new QTreeWidgetItem();
+            mediaList->addTopLevelItem(albumRoot);
+            albumRoot->setText(0, albumIterator.key());
         }
 
-        QHash<int, QMusicPlayer::SaagharMediaTag*> items = playList->mediaItems;
+        QHash<int, QMusicPlayer::SaagharMediaTag*> items = album->mediaItems;
         QHash<int, QMusicPlayer::SaagharMediaTag*>::const_iterator mediaIterator = items.constBegin();
         while (mediaIterator != items.constEnd()) {
             QMusicPlayer::SaagharMediaTag* mediaTag = mediaIterator.value();
@@ -1099,44 +1096,44 @@ void PlayListManager::setPlayLists(const QHash<QString, QMusicPlayer::SaagharPla
             mediaItem->setData(0, Qt::UserRole, mediaIterator.key());
 
             if (!itemsAsTopItem) {
-                playListRoot->addChild(mediaItem);
+                albumRoot->addChild(mediaItem);
             }
             else {
                 mediaList->addTopLevelItem(mediaItem);
             }
             ++mediaIterator;
         }
-        ++playListIterator;
+        ++albumIterator;
     }
 }
 
-void PlayListManager::setCurrentPlayList(const QString &playListName)
+void AlbumManager::setCurrentAlbum(const QString &albumName)
 {
-    if (playListName.isEmpty() || playListName == m_currentPlayList) {
+    if (albumName.isEmpty() || albumName == m_currentAlbum) {
         return;
     }
 
-    m_currentPlayList = playListName;
+    m_currentAlbum = albumName;
 
-    int index = m_albumList->findText(playListName);
+    int index = m_albumList->findText(albumName);
     disconnect(m_albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
     if (index != -1) {
         m_albumList->setCurrentIndex(index);
     }
     else {
-        m_albumList->insertItem(0, playListName);
+        m_albumList->insertItem(0, albumName);
         m_albumList->setCurrentIndex(0);
     }
     connect(m_albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
 
-    QMusicPlayer::SaagharPlayList* playList = playListByName(playListName);
-    if (!playList) {
+    QMusicPlayer::SaagharAlbum* album = albumByName(albumName);
+    if (!album) {
         return;
     }
 
     previousItem = 0;
     mediaList->clear();
-    QHash<int, QMusicPlayer::SaagharMediaTag*> items = playList->mediaItems;
+    QHash<int, QMusicPlayer::SaagharMediaTag*> items = album->mediaItems;
     QHash<int, QMusicPlayer::SaagharMediaTag*>::const_iterator mediaIterator = items.constBegin();
     while (mediaIterator != items.constEnd()) {
         QMusicPlayer::SaagharMediaTag* mediaTag = mediaIterator.value();
@@ -1156,7 +1153,7 @@ void PlayListManager::setCurrentPlayList(const QString &playListName)
             mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
         }
         else {
-            if (playListMediaObject->state() != Phonon::PlayingState) {
+            if (albumMediaObject->state() != Phonon::PlayingState) {
                 mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
             }
             else {
@@ -1174,22 +1171,22 @@ void PlayListManager::setCurrentPlayList(const QString &playListName)
     }
 }
 
-QMusicPlayer::SaagharPlayList* PlayListManager::playListByName(QString playListName)
+QMusicPlayer::SaagharAlbum* AlbumManager::albumByName(QString albumName)
 {
-    if (playListName.isEmpty()) {
-        playListName = m_currentPlayList;
+    if (albumName.isEmpty()) {
+        albumName = m_currentAlbum;
     }
 
-    return QMusicPlayer::playListsHash().value(playListName);
+    return QMusicPlayer::albumsHash().value(albumName);
 }
 
-void PlayListManager::setCurrentMedia(int currentID, const QString &currentFile)
+void AlbumManager::setCurrentMedia(int currentID, const QString &currentFile)
 {
     m_currentID = currentID;
     m_currentFile = currentFile;
 }
 
-void PlayListManager::currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest)
+void AlbumManager::currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest)
 {
     if (mediaID <= 0) { // fileName.isEmpty() for delete request!!
         return;
@@ -1235,7 +1232,7 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
                         childItem->setText(0, title);
                     }
 //                  childItem->setText(1, fileName);
-                    if (playListMediaObject && playListMediaObject->state() == Phonon::PlayingState) {
+                    if (albumMediaObject && albumMediaObject->state() == Phonon::PlayingState) {
                         childItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
                     }
                     if (mediaList->currentItem()) {
@@ -1260,7 +1257,7 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
             newChild->setText(0, title);
 //          newChild->setText(1, fileName);
             newChild->setData(0, Qt::UserRole, mediaID);
-            if (playListMediaObject && playListMediaObject->state() == Phonon::PlayingState) {
+            if (albumMediaObject && albumMediaObject->state() == Phonon::PlayingState) {
                 newChild->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
             }
 
@@ -1280,41 +1277,41 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
     }
 }
 
-void PlayListManager::currentAlbumChanged(int index)
+void AlbumManager::currentAlbumChanged(int index)
 {
     QVariant v = m_albumList->itemData(index);
     if (!v.isValid()) {
-        setCurrentPlayList(m_albumList->itemText(index));
+        setCurrentAlbum(m_albumList->itemText(index));
     }
     else {
         disconnect(m_albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
-        m_albumList->setCurrentIndex(m_albumList->findText(m_currentPlayList));
+        m_albumList->setCurrentIndex(m_albumList->findText(m_currentAlbum));
         connect(m_albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
 
         QString command = v.toString();
-        qDebug() << "PlayListManager::currentAlbumChanged=" << command;
+        qDebug() << "AlbumManager::currentAlbumChanged=" << command;
         if (command == "SAVE_ALBUM") {
-            m_musicPlayer->saveAsAlbum(m_currentPlayList, false);
+            m_musicPlayer->saveAsAlbum(m_currentAlbum, false);
         }
         else if (command == "LOAD_ALBUM") {
-            m_musicPlayer->loadPlayListFile();
+            m_musicPlayer->loadAlbumFile();
         }
         else if (command == "NEW_ALBUM") {
             m_musicPlayer->newAlbum();
         }
         else if (command == "RENAME_ALBUM") {
-            m_musicPlayer->renameAlbum(m_currentPlayList);
+            m_musicPlayer->renameAlbum(m_currentAlbum);
         }
         else if (command == "REMOVE_ALBUM") {
-            m_musicPlayer->removeAlbum(m_currentPlayList);
+            m_musicPlayer->removeAlbum(m_currentAlbum);
         }
         else if (command == "SAVE_AS_ALBUM") {
-            m_musicPlayer->saveAsAlbum(m_currentPlayList);
+            m_musicPlayer->saveAsAlbum(m_currentAlbum);
         }
     }
 }
 
-void PlayListManager::itemPlayRequested(QTreeWidgetItem* item, int /*col*/)
+void AlbumManager::itemPlayRequested(QTreeWidgetItem* item, int /*col*/)
 {
     if (!item) {
         return;
@@ -1334,14 +1331,14 @@ void PlayListManager::itemPlayRequested(QTreeWidgetItem* item, int /*col*/)
     emit mediaPlayRequested(id);
 }
 
-void PlayListManager::setMediaObject(Phonon::MediaObject* MediaObject)
+void AlbumManager::setMediaObject(Phonon::MediaObject* MediaObject)
 {
-    playListMediaObject = MediaObject;
-    connect(playListMediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
+    albumMediaObject = MediaObject;
+    connect(albumMediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
             this, SLOT(mediaObjectStateChanged(Phonon::State,Phonon::State)));
 }
 
-void PlayListManager::mediaObjectStateChanged(Phonon::State newState, Phonon::State)
+void AlbumManager::mediaObjectStateChanged(Phonon::State newState, Phonon::State)
 {
     if (previousItem) {
         if (newState == Phonon::PlayingState) {
