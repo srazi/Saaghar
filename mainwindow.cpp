@@ -162,7 +162,8 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen) :
     SaagharWidget::musicPlayer->readPlayerSettings(getSettingsObject());
 
     if (QMusicPlayer::listOfPlayList.isEmpty() ||
-            QMusicPlayer::listOfPlayList.value("default").toString().isEmpty()) {
+            (QMusicPlayer::listOfPlayList.contains("default") &&
+             QMusicPlayer::listOfPlayList.value("default").toString().isEmpty())) {
         QMusicPlayer::listOfPlayList.insert("default", userHomePath + "/default.m3u8");
     }
     SaagharWidget::musicPlayer->loadAllPlayLists();

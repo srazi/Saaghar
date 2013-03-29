@@ -82,7 +82,7 @@ public:
 
     QMusicPlayer(QWidget* parent = 0);
     QString source();
-    void setSource(const QString &fileName, const QString &title = "", int mediaID = -1);
+    void setSource(const QString &fileName, const QString &title = "", int mediaID = -1, bool newSource = false);
     void readPlayerSettings(QSettings* settingsObject);
     void savePlayerSettings(QSettings* settingsObject);
     qint64 currentTime();
@@ -111,10 +111,15 @@ public slots:
     void stop();
     void playMedia(int mediaID);
 
+    void newAlbum();
+    void loadPlayListFile();
+    void renameAlbum(const QString &albumName);
+    void removeAlbum(const QString &albumName);
+    void saveAsAlbum(const QString &albumName, bool saveAs = true);
+
 private slots:
     void removeSource();
     void setSource();
-    void loadPlayListFile();
     void seekableChanged(bool seekable);
 
     void stateChanged(Phonon::State newState, Phonon::State oldState);
@@ -179,7 +184,7 @@ class PlayListManager : public QWidget
     Q_OBJECT
 
 public:
-    PlayListManager(QWidget* parent = 0);
+    PlayListManager(QMusicPlayer* musicPlayer = 0, QWidget* parent = 0);
     void setPlayLists(const QHash<QString, QMusicPlayer::SaagharPlayList*> &playLists, bool justMediaList = false);
     void setMediaObject(Phonon::MediaObject* MediaObject);
 
@@ -187,17 +192,20 @@ public:
     void setCurrentPlayList(const QString &playListName);
     QMusicPlayer::SaagharPlayList* playListByName(QString playListName = QString());
     void setCurrentMedia(int currentID, const QString &currentFile);
+    inline QComboBox* albumList() { return m_albumList; }
 
 private:
     void setupUi();
+
     QTreeWidgetItem* previousItem;
     QVBoxLayout* hLayout;
     QTreeWidget* mediaList;
-    QComboBox* albumList;
+    QComboBox* m_albumList;
     Phonon::MediaObject* playListMediaObject;
     QString m_currentPlayList;
     int m_currentID;
     QString m_currentFile;
+    QMusicPlayer* m_musicPlayer;
 
 private slots:
     void mediaObjectStateChanged(Phonon::State newState, Phonon::State);

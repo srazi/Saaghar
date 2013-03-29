@@ -60,6 +60,10 @@
 #include <QToolButton>
 #include <QMenu>
 #include <QDockWidget>
+#include <QInputDialog>
+#include <QComboBox>
+#include <QTreeWidget>
+
 
 QHash<QString, QVariant> QMusicPlayer::listOfPlayList = QHash<QString, QVariant>();
 QMusicPlayer::SaagharPlayList QMusicPlayer::hashDefaultPlayList = QMusicPlayer::SaagharPlayList();
@@ -68,7 +72,9 @@ QHash<QString, QMusicPlayer::SaagharPlayList*> QMusicPlayer::hashPlayLists = QHa
 
 const bool itemsAsTopItem = true;
 
-QMusicPlayer::QMusicPlayer(QWidget* parent) : QToolBar(parent)
+QMusicPlayer::QMusicPlayer(QWidget* parent)
+    : QToolBar(parent)
+    , playListManager(new PlayListManager(this, parent))
 {
     setObjectName("QMusicPlayer");
 
@@ -77,7 +83,6 @@ QMusicPlayer::QMusicPlayer(QWidget* parent) : QToolBar(parent)
     notLoaded = true;
     dockList = 0;
 
-    playListManager = new PlayListManager;
     connect(playListManager, SIGNAL(mediaPlayRequested(int)), this, SLOT(playMedia(int)));
     connect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), playListManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
 
@@ -144,7 +149,7 @@ QString QMusicPlayer::source()
     return metaInformationResolver->currentSource().fileName();
 }
 
-void QMusicPlayer::setSource(const QString &fileName, const QString &title, int mediaID)
+void QMusicPlayer::setSource(const QString &fileName, const QString &title, int mediaID, bool newSource)
 {
     _newTime = -1;
     Phonon::MediaSource source(fileName);
@@ -159,7 +164,7 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
         if (mediaID > 0) {
             QString playListName;
             playListContains(mediaID, &playListName);
-            if (!playListName.isEmpty()) {
+            if (!playListName.isEmpty() && !newSource) {
                 playListManager->setCurrentMedia(mediaID, fileName);
                 playListManager->setCurrentPlayList(playListName);
             }
@@ -199,12 +204,37 @@ void QMusicPlayer::setSource()
     QFileInfo selectedFile(file);
     startDir = selectedFile.path();
 
-    setSource(file, currentTitle, currentID);
+    setSource(file, currentTitle, currentID, true);
+}
+
+void QMusicPlayer::newAlbum()
+{
+    QString file = QFileDialog::getSaveFileName(this->window(), tr("New Saaghar Play List"), startDir,
+                   "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
+
+    bool alreadyLoaded = listOfPlayList.values().contains(file);
+    if (file.isEmpty() || alreadyLoaded) {
+        if (alreadyLoaded) {
+            QMessageBox::information(this->window(), tr("Warning!"), tr("The album already loaded."));
+        }
+        return;
+    }
+
+    QFileInfo selectedFile(file);
+    QString name = QInputDialog::getText(this->window(), tr("Name Of Play List"),
+                                         tr("Enter name for this play list:"),
+                                         QLineEdit::Normal, selectedFile.baseName());
+
+    SaagharPlayList* playList = new SaagharPlayList;
+    playList->PATH = file;
+    pushPlayList(playList, name);
+    savePlayList(file, name);
+    playListManager->setCurrentPlayList(name);
 }
 
 void QMusicPlayer::loadPlayListFile()
 {
-    QString file = QFileDialog::getOpenFileName(this, tr("Select Saaghar Play List"), startDir,
+    QString file = QFileDialog::getOpenFileName(this->window(), tr("Select Saaghar Play List"), startDir,
                    "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
 
     if (file.isEmpty()) {
@@ -215,6 +245,107 @@ void QMusicPlayer::loadPlayListFile()
     startDir = selectedFile.path();
 
     loadPlayList(file);
+}
+
+void QMusicPlayer::renameAlbum(const QString &albumName)
+{
+    int index = playListManager->albumList()->findText(albumName);
+    if (index < 0 || playListManager->albumList()->itemData(index).isValid()) {
+        return;
+    }
+
+    QString oldName = playListManager->albumList()->itemText(index);
+    QString newName = QInputDialog::getText(window(), tr("Name Of Play List"),
+                                            tr("Enter new name for this play list:"),
+                                            QLineEdit::Normal, oldName);
+    if (newName.isEmpty() || newName == oldName ||
+            listOfPlayList.contains(newName)) {
+        return;
+    }
+
+    listOfPlayList.insert(newName, listOfPlayList.value(oldName));
+    listOfPlayList.remove(oldName);
+
+    hashPlayLists.insert(newName, hashPlayLists.value(oldName));
+    hashPlayLists.remove(oldName);
+
+    bool isCurrentIndex = false;
+    if (playListManager->currentPlayListName() == oldName) {
+        isCurrentIndex = true;
+        playListManager->albumList()->setCurrentIndex(index);
+    }
+
+    playListManager->albumList()->removeItem(index);
+    playListManager->albumList()->insertItem(index, newName);
+
+    if (isCurrentIndex) {
+        playListManager->albumList()->setCurrentIndex(index);
+    }
+}
+
+void QMusicPlayer::removeAlbum(const QString &albumName)
+{
+    if (listOfPlayList.size() == 1) {
+        return;
+    }
+
+    SaagharPlayList* playList = playListManager->playListByName(albumName);
+    if (!playList) {
+        return;
+    }
+
+    if (QMessageBox::information(window(), tr("Warning!"),
+                                 tr("Are you sure to remove \"%1\" from album list?").arg(albumName),
+                                 QMessageBox::Yes, QMessageBox::No) == QMessageBox::No) {
+        return;
+    }
+
+    if (playList->mediaItems.contains(currentID)) {
+        removeSource();
+    }
+
+    delete playList;
+    listOfPlayList.remove(albumName);
+    hashPlayLists.remove(albumName);
+
+    int index = playListManager->albumList()->findText(albumName);
+    playListManager->albumList()->removeItem(index);
+}
+
+void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
+{
+    if (!saveAs) {
+        savePlayList(listOfPlayList.value(albumName).toString(), albumName);
+    }
+    else {
+        QString file = QFileDialog::getSaveFileName(this->window(), tr("New Saaghar Play List"), startDir,
+                                                    "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
+
+        bool alreadyLoaded = listOfPlayList.values().contains(file);
+        if (file.isEmpty() || alreadyLoaded) {
+            if (alreadyLoaded) {
+                QMessageBox::information(this->window(), tr("Warning!"), tr("The album already loaded."));
+            }
+            return;
+        }
+
+        QString name = QInputDialog::getText(this->window(), tr("Name Of Play List"),
+                                             tr("Enter name for this play list:"),
+                                             QLineEdit::Normal, albumName + tr("_Copy"));
+
+        if (name.isEmpty() || name == albumName ||
+                listOfPlayList.contains(name)) {
+            return;
+        }
+
+        SaagharPlayList* playList = playListManager->playListByName(albumName);
+        SaagharPlayList* copyPlayList = new SaagharPlayList;
+        copyPlayList->PATH = file;
+        copyPlayList->mediaItems = playList->mediaItems;
+        pushPlayList(copyPlayList, name);
+        savePlayList(file, name);
+        playListManager->setCurrentPlayList(name);
+    }
 }
 
 void QMusicPlayer::removeSource()
@@ -474,6 +605,7 @@ void QMusicPlayer::readPlayerSettings(QSettings* settingsObject)
 void QMusicPlayer::savePlayerSettings(QSettings* settingsObject)
 {
     settingsObject->beginGroup("QMusicPlayer");
+    qDebug() << "---::savePlayerSettings=" << listOfPlayList;
     settingsObject->setValue("List Of PlayList", listOfPlayList);
     if (audioOutput) {
         settingsObject->setValue("muted", audioOutput->isMuted());
@@ -889,21 +1021,18 @@ void QMusicPlayer::stop()
 // class PlayListManager
 ********************************/
 
-#include <QComboBox>
-#include <QTreeWidget>
-#include <QVBoxLayout>
-
-PlayListManager::PlayListManager(QWidget* parent)
+PlayListManager::PlayListManager(QMusicPlayer* musicPlayer, QWidget* parent)
     : QWidget(parent)
     , previousItem(0)
     , mediaList(new QTreeWidget(this))
-    , albumList(new QComboBox(this))
+    , m_albumList(new QComboBox(this))
+    , m_musicPlayer(musicPlayer)
 {
     setObjectName("PlayListManager");
     setupUi();
 
     connect(mediaList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(itemPlayRequested(QTreeWidgetItem*,int)));
-    connect(albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
+    connect(m_albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
 }
 
 void PlayListManager::setupUi()
@@ -913,16 +1042,16 @@ void PlayListManager::setupUi()
     mediaList->headerItem()->setHidden(true);
     mediaList->setColumnCount(1);
 
-    albumList->insertSeparator(0);
-    albumList->addItem(tr("Save this album..."), "SAVE_ALBUM");
-    albumList->addItem(tr("Load album..."), "LOAD_ALBUM");
-    albumList->addItem(tr("New album..."), "NEW_ALBUM");
-    albumList->insertSeparator(4);
-    albumList->addItem(tr("Rename this album..."), "RENAME_ALBUM");
-    albumList->addItem(tr("Remove this album..."), "REMOVE_ALBUM");
-    albumList->addItem(tr("Save as this album..."), "SAVE_AS_ALBUM");
+    m_albumList->insertSeparator(0);
+    m_albumList->addItem(tr("Save this album"), "SAVE_ALBUM");
+    m_albumList->addItem(tr("Load album..."), "LOAD_ALBUM");
+    m_albumList->addItem(tr("New album..."), "NEW_ALBUM");
+    m_albumList->insertSeparator(4);
+    m_albumList->addItem(tr("Rename this album..."), "RENAME_ALBUM");
+    m_albumList->addItem(tr("Remove this album..."), "REMOVE_ALBUM");
+    m_albumList->addItem(tr("Save as this album..."), "SAVE_AS_ALBUM");
     hLayout = new QVBoxLayout;
-    hLayout->addWidget(albumList);
+    hLayout->addWidget(m_albumList);
     hLayout->addWidget(mediaList);
     this->setLayout(hLayout);
 }
@@ -989,15 +1118,16 @@ void PlayListManager::setCurrentPlayList(const QString &playListName)
 
     m_currentPlayList = playListName;
 
-    int index = albumList->findText(playListName);
+    int index = m_albumList->findText(playListName);
+    disconnect(m_albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
     if (index != -1) {
-        disconnect(albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
-        albumList->setCurrentIndex(index);
-        connect(albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
+        m_albumList->setCurrentIndex(index);
     }
     else {
-        albumList->insertItem(0, playListName);
+        m_albumList->insertItem(0, playListName);
+        m_albumList->setCurrentIndex(0);
     }
+    connect(m_albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
 
     QMusicPlayer::SaagharPlayList* playList = playListByName(playListName);
     if (!playList) {
@@ -1152,19 +1282,35 @@ void PlayListManager::currentMediaChanged(const QString &fileName, const QString
 
 void PlayListManager::currentAlbumChanged(int index)
 {
-    QVariant v = albumList->itemData(index);
+    QVariant v = m_albumList->itemData(index);
     if (!v.isValid()) {
-        setCurrentPlayList(albumList->itemText(index));
+        setCurrentPlayList(m_albumList->itemText(index));
     }
     else {
+        disconnect(m_albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
+        m_albumList->setCurrentIndex(m_albumList->findText(m_currentPlayList));
+        connect(m_albumList, SIGNAL(currentIndexChanged(int)), this, SLOT(currentAlbumChanged(int)));
+
         QString command = v.toString();
         qDebug() << "PlayListManager::currentAlbumChanged=" << command;
-//        if (command == "SAVE_ALBUM") {}
-//        else if (command == "LOAD_ALBUM") {}
-//        else if (command == "NEW_ALBUM") {}
-//        else if (command == "RENAME_ALBUM") {}
-//        else if (command == "REMOVE_ALBUM") {}
-//        else if (command == "SAVE_AS_ALBUM") {}
+        if (command == "SAVE_ALBUM") {
+            m_musicPlayer->saveAsAlbum(m_currentPlayList, false);
+        }
+        else if (command == "LOAD_ALBUM") {
+            m_musicPlayer->loadPlayListFile();
+        }
+        else if (command == "NEW_ALBUM") {
+            m_musicPlayer->newAlbum();
+        }
+        else if (command == "RENAME_ALBUM") {
+            m_musicPlayer->renameAlbum(m_currentPlayList);
+        }
+        else if (command == "REMOVE_ALBUM") {
+            m_musicPlayer->removeAlbum(m_currentPlayList);
+        }
+        else if (command == "SAVE_AS_ALBUM") {
+            m_musicPlayer->saveAsAlbum(m_currentPlayList);
+        }
     }
 }
 
