@@ -59,7 +59,7 @@ public:
         _PoemID = PoemID;
         _Order = Order;
         _Position = Position;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         _Text = qStringMacHelper(Text);
 #else
         _Text = Text;
@@ -89,7 +89,7 @@ public:
     inline void init(int ID = -1, int CatID = -1, QString Title = QString(), QString Url = QString(), bool Faved = false, QString HighlightText = QString()) {
         _ID = ID;
         _CatID = CatID;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         _Title = qStringMacHelper(Title);
 #else
         _Title = Title;
@@ -127,7 +127,7 @@ public:
     inline void init(int ID = -1, QString Name = QString(), int CatID = -1, QString description = QString()) {
         _ID = ID;
         _CatID = CatID;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         _Name = qStringMacHelper(Name);
         _Description = qStringMacHelper(description);
 #else
@@ -167,7 +167,7 @@ public:
     inline void init(int ID = -1, int PoetID = -1, QString Text = "", int ParentID = -1, QString Url = "") {
         _ID = ID;
         _PoetID = PoetID;
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         _Text = qStringMacHelper(Text);
 #else
         _Text = Text;

@@ -32,13 +32,13 @@ RegisterationForm::RegisterationForm(QWidget* parent) :
     ui->checkBoxMaemoOS->hide();
     ui->checkBoxSymbianOS->hide();
     ui->checkBoxAndroidOS->hide();
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     ui->checkBoxWinOS->setChecked(true);
 #endif
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
     ui->checkBoxLinuxOS->setChecked(true);
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     ui->checkBoxMacOS->setChecked(true);
 #endif
 

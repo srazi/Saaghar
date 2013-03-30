@@ -173,7 +173,7 @@ void Downloader::requestFinished()
             _progressBar->hide();
         }
         emit downloadStopped();
-//#ifndef Q_WS_MAEMO_5
+//#ifndef Q_OS_MAEMO_5
 //      progressDialog->hide();
 //#endif
         return;
@@ -182,7 +182,7 @@ void Downloader::requestFinished()
     if (_progressBar) {
         _progressBar->hide();
     }
-//#ifndef Q_WS_MAEMO_5
+//#ifndef Q_OS_MAEMO_5
 //  progressDialog->hide();
 //#endif
     file->flush();

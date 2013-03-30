@@ -83,7 +83,7 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen)
 
     setWindowIcon(QIcon(":/resources/images/saaghar.png"));
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     QFileInfo portableSettings(QCoreApplication::applicationDirPath() + "/../Resources/settings.ini");
 #else
     QFileInfo portableSettings(QCoreApplication::applicationDirPath() + "/settings.ini");
@@ -100,7 +100,7 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen)
     QString dataBaseCompleteName = "/ganjoor.s3db";
 
     if (isPortable) {
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         dataBaseCompleteName = QCoreApplication::applicationDirPath() + "/../Resources/" + dataBaseCompleteName;
         resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
 #else
@@ -110,17 +110,17 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen)
         userHomePath = resourcesPath;
     }
     else {
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
         //dataBaseCompleteName = QDir::homePath()+"/Pojh/Saaghar/"+dataBaseCompleteName;
         resourcesPath = QCoreApplication::applicationDirPath();
         userHomePath = QDir::homePath() + "/Pozh/Saaghar/";
 #endif
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
         //dataBaseCompleteName = "/usr/share/saaghar/"+dataBaseCompleteName;
         resourcesPath = PREFIX"/share/saaghar/";
         userHomePath = QDir::homePath() + "/.Pozh/Saaghar/";
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         //dataBaseCompleteName = QDir::homePath()+"/Library/Saaghar/"+dataBaseCompleteName;
         resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
         userHomePath = QDir::homePath() + "/Library/Saaghar/";
@@ -893,13 +893,13 @@ void MainWindow::checkForUpdates()
         updateIsAvailable.setDefaultButton(QMessageBox::Ok);
         QString downloadLinkKey = "OTHERS";
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
         downloadLinkKey = "WINDOWS";
 #endif
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
         downloadLinkKey = "LINUX";
 #endif
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         downloadLinkKey = "MACOSX";
 #endif
         int ret = updateIsAvailable.exec();
@@ -1715,7 +1715,7 @@ void MainWindow::setupUi()
         ui->menuToolBar = 0;
     }
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     delete ui->menuToolBar;
     ui->menuToolBar = 0;
 #endif
@@ -2388,7 +2388,7 @@ void MainWindow::globalSettings()
                 //  saagharWidget->tableViewWidget->resizeRowsToContents();
             }
         }
-#ifndef Q_WS_MAC //This doesn't work on MACX and moved to "SaagharWidget::loadSettings()"
+#ifndef Q_OS_MAC //This doesn't work on MACX and moved to "SaagharWidget::loadSettings()"
         //apply new text and background color, and also background picture
         loadTabWidgetSettings();
 #endif
@@ -2504,7 +2504,7 @@ void MainWindow::loadGlobalSettings()
     randomOpenInNewTab = config->value("Random Open New Tab", false).toBool();
 
     //initialize default value for "UseTransparecy"
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     Settings::READ("UseTransparecy", true);
 #else
     Settings::READ("UseTransparecy", false);

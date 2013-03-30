@@ -113,7 +113,7 @@ void SaagharWidget::loadSettings()
     //tableViewWidget->setSelectionMode(QAbstractItemView::ContiguousSelection);
     QPalette p(tableViewWidget->palette());
 
-#if defined(Q_WS_MAC) || defined(Q_WS_X11)
+#if defined(Q_OS_MAC) || defined(Q_OS_X11)
     if (SaagharWidget::backgroundImageState && !SaagharWidget::backgroundImagePath.isEmpty()) {
         p.setBrush(QPalette::Base, QBrush(QPixmap(SaagharWidget::backgroundImagePath)));
     }
@@ -137,7 +137,7 @@ void SaagharWidget::loadSettings()
     QHeaderView* header = tableViewWidget->verticalHeader();
     header->hide();
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     int bookmarkIconHeight = 25;//35
 #else
     int bookmarkIconHeight = 22;
@@ -840,7 +840,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
         emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)));
     }
 
-//#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
+//#ifndef Q_OS_MAC //Qt Bug when inserting TATWEEl character
     const bool justified = true;//temp
     int maxWidth = -1;
     if (longestHemistiches.contains(poem._ID)) {
@@ -896,7 +896,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 step = step + 100;
             }
         }
-//#ifndef Q_WS_MAC //Qt Bug when inserting TATWEEl character
+//#ifndef Q_OS_MAC //Qt Bug when inserting TATWEEl character
         if (justified) {
             currentVerseText = QGanjoorDbBrowser::justifiedText(currentVerseText, poemFontMetric, maxWidth);
         }
@@ -1218,7 +1218,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
         //****************************//
         QFontMetrics poemFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor));
 
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
         int iconWidth = 35;
 #else
         int iconWidth = 22;

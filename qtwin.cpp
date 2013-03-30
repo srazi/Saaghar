@@ -15,7 +15,7 @@
 #include <QPointer>
 #include <QHash>
 #include <QDebug>
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 
 #include <qt_windows.h>
 
@@ -108,7 +108,7 @@ static bool resolveLibs()
   */
 bool QtWin::isCompositionEnabled()
 {
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     if (resolveLibs()) {
         HRESULT hr = S_OK;
         BOOL isEnabled = false;
@@ -130,7 +130,7 @@ bool QtWin::enableBlurBehindWindow(QWidget* widget, bool enable)
 {
     Q_ASSERT(widget);
     bool result = false;
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     if (resolveLibs()) {
         DWM_BLURBEHIND bb = {0};
         HRESULT hr = S_OK;
@@ -175,7 +175,7 @@ bool QtWin::extendFrameIntoClientArea(QWidget* widget, int left, int top, int ri
     Q_UNUSED(bottom);
 
     bool result = false;
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     if (resolveLibs()) {
         //QLibrary dwmLib(QString::fromAscii("dwmapi"));
         HRESULT hr = S_OK;
@@ -201,7 +201,7 @@ bool QtWin::easyBlurUnBlur(QWidget* widget, bool enable)
     Q_ASSERT(widget);
     bool result = false;
     if (enable) {
-#ifndef Q_WS_WIN //X11
+#ifndef Q_OS_WIN //X11
         widget->setAttribute(Qt::WA_TranslucentBackground);
         widget->setAttribute(Qt::WA_NoSystemBackground, false);
         QPalette pal = widget->palette();
@@ -223,7 +223,7 @@ bool QtWin::easyBlurUnBlur(QWidget* widget, bool enable)
 #endif
     }
     else {
-#ifndef Q_WS_WIN //X11
+#ifndef Q_OS_WIN //X11
         widget->setAttribute(Qt::WA_TranslucentBackground, false);
         QPalette pal = widget->palette();
         QColor bg = pal.window().color();
@@ -255,7 +255,7 @@ QColor QtWin::colorizatinColor()
 {
     QColor resultColor = QApplication::palette().window().color();
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
     if (resolveLibs()) {
         DWORD color = 0;
         BOOL opaque = FALSE;
@@ -271,7 +271,7 @@ QColor QtWin::colorizatinColor()
 }
 
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 //void QtWin::blurAll()
 //{
 //  windowNotifier()->applyToAll(true);

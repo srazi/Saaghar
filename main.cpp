@@ -25,7 +25,7 @@
 #include <QExtendedSplashScreen>
 #include "mainwindow.h"
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #ifdef STATIC
 #include <QtPlugin>
 Q_IMPORT_PLUGIN(qsqlite)

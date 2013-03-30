@@ -1470,7 +1470,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
             }
 
             if (excludeCurrentVerse) {
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
                 QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
 #endif
                 continue;
@@ -1481,7 +1481,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
             idList.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + getPoetForCat(gPoem._CatID)._Name);
             //QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
             //emit searchStatusChanged(labelText);
-#ifdef Q_WS_X11
+#ifdef Q_OS_X11
             QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
 #endif
 
@@ -1512,7 +1512,7 @@ QString QGanjoorDbBrowser::justifiedText(const QString &text, const QFontMetrics
     }
 
 //force justification by space on MacOSX
-#ifdef Q_WS_MAC
+#ifdef Q_OS_MAC
     tatweel = QChar(QChar::Null);
     tatweelWidth = 0;
 #endif
@@ -2073,7 +2073,7 @@ bool QGanjoorDbBrowser::createEmptyDataBase(const QString &connectionID)
     return false;
 }
 
-#ifdef Q_WS_WIN
+#ifdef Q_OS_WIN
 #define BUFSIZE 4096
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
@@ -2082,7 +2082,7 @@ bool QGanjoorDbBrowser::createEmptyDataBase(const QString &connectionID)
 /*static*/
 QString QGanjoorDbBrowser::getLongPathName(const QString &fileName)
 {
-#ifndef Q_WS_WIN
+#ifndef Q_OS_WIN
     QFileInfo file(fileName);
     if (!file.exists()) {
         return fileName;
