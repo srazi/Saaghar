@@ -1810,8 +1810,12 @@ void MainWindow::setupUi()
 
     actionInstance("actionRemovePoet", iconThemePath + "/remove-poet.png", tr("&Remove Poet..."));
 
-    actionInstance("actionFullScreen", iconThemePath + "/fullscreen.png", tr("&Full Screen"))->setShortcut(Qt::Key_F11);
-    actionInstance("actionFullScreen")->setCheckable(true);
+    actionInstance("actionFullScreen", iconThemePath + "/fullscreen.png", tr("&Full Screen"))->setCheckable(true);
+#ifndef Q_OS_MAC
+    actionInstance("actionFullScreen")->setShortcut(Qt::Key_F11);
+#else
+    actionInstance("actionFullScreen")->setShortcut(Qt::CTRL + Qt::Key_F11);
+#endif
 
     actionInstance("actionCheckUpdates", iconThemePath + "/check-updates.png", tr("Check for &Updates"));
 
@@ -2497,7 +2501,7 @@ void MainWindow::loadGlobalSettings()
     selectedRandomRange = config->value("Selected Random Range", "").toStringList();
     selectedSearchRange = config->value("Selected Search Range", "").toStringList();
 
-    randomOpenInNewTab = config->value("Random Open New Tab", true).toBool();
+    randomOpenInNewTab = config->value("Random Open New Tab", false).toBool();
 
     //initialize default value for "UseTransparecy"
 #ifdef Q_WS_WIN
@@ -3816,7 +3820,8 @@ void MainWindow::ensureVisibleBookmarkedItem(const QString &type, const QString 
         }
 
         if (ensureVisible) {
-            newTabForItem(poemID, "PoemID", true);
+            //newTabForItem(poemID, "PoemID", true);
+            saagharWidget->processClickedItem("PoemID", poemID, true);
             saagharWidget->scrollToFirstItemContains(itemText, false, true);
         }
     }

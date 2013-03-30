@@ -970,7 +970,7 @@ QDockWidget* QMusicPlayer::albumManagerDock()
 void QMusicPlayer::playMedia(int mediaID)
 {
     disconnect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), albumManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
-    emit requestPageContainedMedia(mediaID, true);
+    emit requestPageContainedMedia(mediaID, false);
     mediaObject->play();
     connect(this, SIGNAL(mediaChanged(QString,QString,int,bool)), albumManager, SLOT(currentMediaChanged(QString,QString,int,bool)));
 }
