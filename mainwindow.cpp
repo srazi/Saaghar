@@ -1989,18 +1989,8 @@ void MainWindow::setupUi()
     menuNavigation->addAction(actionInstance("actionFaal"));
     menuNavigation->addAction(actionInstance("actionRandom"));
 
-    menuView->addAction(actionInstance("outlineDockAction"));
 
-#ifndef NO_PHONON_LIB
-    menuView->addAction(actionInstance("albumDockAction"));
-#endif
 
-    menuView->addAction(actionInstance("Show Photo at Home"));
-
-    menuView->addSeparator();
-    menuView->addMenu(poemViewStylesMenu);
-
-    menuView->addSeparator();
     QMenu* toolbarsView = new QMenu(tr("ToolBars"), menuView);
     if (ui->menuToolBar) {
         toolbarsView->addAction(ui->menuToolBar->toggleViewAction());
@@ -2017,12 +2007,25 @@ void MainWindow::setupUi()
     toolbarsView->addAction(actionInstance("Lock ToolBars"));
     menuView->addMenu(toolbarsView);
 
-    toolBarViewActions(ui->mainToolBar, menuView, true);
+    QMenu* panelsView = new QMenu(tr("Panels"), menuView);
+    panelsView->addAction(actionInstance("outlineDockAction"));
+#ifndef NO_PHONON_LIB
+    panelsView->addAction(actionInstance("albumDockAction"));
+#endif
+    panelsView->addAction(actionInstance("bookmarkManagerDockAction"));
+    menuView->addMenu(panelsView);
+
     menuView->addSeparator();
+    toolBarViewActions(ui->mainToolBar, menuView, true);
     //checked actions, must be after above line
     toolbarViewChanges(actionInstance(Settings::READ("MainToolBar Style").toString()));
     toolbarViewChanges(actionInstance(Settings::READ("MainToolBar Size").toString()));
 
+    menuView->addMenu(poemViewStylesMenu);
+    menuView->addAction(actionInstance("Show Photo at Home"));
+    menuView->addSeparator();
+
+    menuView->addSeparator();
     menuView->addAction(actionInstance("actionFullScreen"));
 
     menuBookmarks->addAction(actionInstance("bookmarkManagerDockAction"));
