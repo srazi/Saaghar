@@ -3981,7 +3981,7 @@ void MainWindow::checkRegistration(bool forceShow)
         gridLayout->setContentsMargins(0, 0, 0, 0);
         formContainer->setObjectName(QString::fromUtf8("WidgetTab-RegFormContainer"));
 
-        RegisterationForm* regForm = new RegisterationForm(formContainer);
+        RegisterationForm* regForm = new RegisterationForm(formContainer, mainTabWidget);
         regForm->setStyleSheet(regForm->styleSheet() + "QGroupBox {border: 1px solid lightgray; border-radius: 5px; margin-top: 7px; margin-bottom: 7px; padding: 0px;}QGroupBox::title {top: -7 ex;left: 10px; subcontrol-origin: border;}");
         regForm->setAutoFillBackground(true);
         QPalette p(regForm->palette());

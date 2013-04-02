@@ -11,6 +11,7 @@
 #include <QMessageBox>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QTabWidget>
 
 #include <QDebug>
 
@@ -20,11 +21,12 @@ const QString EMAIL_PAGE = HOST + "/actions/email.php";
 const QString INFO_PAGE = HOST + "/actions/get_info.php";
 const QString RESET_PAGE = HOST + "/actions/reset.php";
 
-RegisterationForm::RegisterationForm(QWidget* parent) :
-    QWidget(parent),
-    ui(new Ui::RegisterationForm)
+RegisterationForm::RegisterationForm(QWidget* parent, QTabWidget* tabWidget)
+    : QWidget(parent)
+    , m_isRegisteredUser(false)
+    , ui(new Ui::RegisterationForm)
+    , m_tabWidget(tabWidget)
 {
-    _isRegisteredUser = false;
     ui->setupUi(this);
 
     ui->checkBoxIOS->hide();
@@ -98,6 +100,10 @@ RegisterationForm::RegisterationForm(QWidget* parent) :
     ui->labelForgotPass->setDisabled(true);
     connect(ui->lineEditEmailRegistered, SIGNAL(textChanged(QString)), this, SLOT(registeredButtonState()));
     connect(ui->lineEditPasswordRegistered, SIGNAL(textChanged(QString)), this, SLOT(registeredButtonState()));
+
+    if (m_tabWidget) {
+        connect(this, SIGNAL(requestCloseRegisterationTab(int)), m_tabWidget, SIGNAL(tabCloseRequested(int)));
+    }
 }
 
 RegisterationForm::~RegisterationForm()
@@ -165,7 +171,7 @@ void RegisterationForm::tryToSubmit()
 {
     QUrl regUrl(REGISTER_PAGE);
 
-    if (_isRegisteredUser) {
+    if (m_isRegisteredUser) {
         regUrl.addQueryItem("action", "renew");
         QString old_email = Settings::READ("RegisteredEmail").toString();
         regUrl.addQueryItem("old_email", QString::fromLocal8Bit(old_email.toLocal8Bit().toBase64().data()));
@@ -289,7 +295,7 @@ void RegisterationForm::tryToSubmit()
     else if (result.contains("Registeration Successful!")) {
         //write info to settings
         QString emailNote = "";
-        if (!_isRegisteredUser || Settings::READ("RegisteredEmail").toString() != ui->lineEditEmail->text()) {
+        if (!m_isRegisteredUser || Settings::READ("RegisteredEmail").toString() != ui->lineEditEmail->text()) {
             Settings::WRITE("EmailIsVerified", false);
             int i = 0;
             //send email
@@ -300,7 +306,7 @@ void RegisterationForm::tryToSubmit()
         QMessageBox::information(this, tr("Registered!"), tr("Successfully registered!%1").arg(emailNote));
         Settings::WRITE("RegisteredUser", true);
         Settings::WRITE("RegisteredEmail", ui->lineEditEmail->text());
-        close();
+        closeForm();
     }
 }
 
@@ -409,7 +415,7 @@ void RegisterationForm::updateAskRegisterState()
                         << QString::number(firstTime)
                         << QString::number(currentTime)
                         << QString::number(numOfRun));
-        close();
+        closeForm();
     }
     else if (sender() == ui->pushButtonNeverAsk) {
         if (QMessageBox::information(this, tr("Warning"),
@@ -418,7 +424,7 @@ void RegisterationForm::updateAskRegisterState()
                                      QMessageBox::Ok | QMessageBox::Cancel)
                 == QMessageBox::Ok) {
             Settings::WRITE("RegisterationState", QStringList() << "NeverASk");
-            close();
+            closeForm();
         }
     }
 }
@@ -458,6 +464,21 @@ bool RegisterationForm::showRegisterForm()
                         << QString::number(currentTime)
                         << QString::number(numOfRun));
         return false;
+    }
+}
+
+void RegisterationForm::closeForm()
+{
+    if (m_tabWidget) {
+        for (int i = 0; i < m_tabWidget->count(); ++i) {
+            if (m_tabWidget->widget(i) && m_tabWidget->widget(i)->objectName() == "WidgetTab-Registeration") {
+                emit requestCloseRegisterationTab(i);
+                return;
+            }
+        }
+    }
+    else {
+        close();
     }
 }
 
@@ -634,7 +655,7 @@ QHash<QString, QString> RegisterationForm::getInfo(const QString &email, const Q
             QMessageBox::information(this, tr("Error"), error);
             return registeredUserData;
         }
-        _isRegisteredUser = true;
+        m_isRegisteredUser = true;
     }
     QStringList rawList = rawInfo.split("<br />", QString::SkipEmptyParts);
 //  QHash<QString, QString> registeredUserData;

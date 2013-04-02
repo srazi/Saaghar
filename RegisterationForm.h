@@ -4,6 +4,7 @@
 #include <QDialog>
 
 class QUrl;
+class QTabWidget;
 
 namespace Ui
 {
@@ -15,18 +16,23 @@ class RegisterationForm : public QWidget
     Q_OBJECT
 
 public:
-    explicit RegisterationForm(QWidget* parent = 0);
+    explicit RegisterationForm(QWidget* parent = 0, QTabWidget* tabWidget = 0);
     ~RegisterationForm();
     static bool showRegisterForm();
+
+public slots:
+    void closeForm();
 
 private:
     QHash<QString, QString> getInfo(const QString &email, const QString &pass, bool showProgress = true);
     bool sendEmail(const QString &email, const QString &key1, const QString &action, const QString &key2 = "0");
-    bool _isRegisteredUser;
     void fillForm(const QHash<QString, QString> &dataHash);
     QString getHashedPassword(const QString &pass);
     QString getRemoteData(const QUrl &url, bool showProgress = true);
+
+    bool m_isRegisteredUser;
     Ui::RegisterationForm* ui;
+    QTabWidget* m_tabWidget;
 
 private slots:
     void updateAskRegisterState();
@@ -36,6 +42,9 @@ private slots:
     void requiredChanged();
     void registeredButtonState();
     void tryToSubmit();
+
+signals:
+    void requestCloseRegisterationTab(int);
 };
 
 #endif // REGISTERATIONFORM_H
