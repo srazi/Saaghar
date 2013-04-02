@@ -93,6 +93,10 @@ public:
     void showParentCategory(GanjoorCat category);
     void processClickedItem(QString type, int id, bool error, bool pushToStack = true);
     void navigateToPage(QString type, int id, bool error);
+
+    int currentVerticalPosition();
+    void setVerticalPosition(int vPosition);
+
     int minMesraWidth;
 
     //STATIC Variables
@@ -138,6 +142,8 @@ public:
     QStringList identifier();
     void refresh();
 
+    inline void setMVPosition(int value) { m_vPosition = value; }
+
     //Undo FrameWork
     QUndoStack* undoStack;
 
@@ -151,12 +157,15 @@ private:
     void showPoem(GanjoorPoem poem);
     QPoint pressedPosition;
     bool dirty;
+    int m_vPosition;
 
 private slots:
     void createCustomContextMenu(const QPoint &pos);
     void parentCatClicked();
     void clickedOnItem(int row, int col);
     void pressedOnItem(int row, int col);
+
+    void setFromMVPosition();
 
 public slots:
     QTableWidgetItem* scrollToFirstItemContains(const QString &phrase, bool pharseIsList = true, bool scroll = true);

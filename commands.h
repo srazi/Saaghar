@@ -37,6 +37,7 @@ private:
     QString previousText, newText;
     QString previousType, newType;
     int previousId, newId;
+    int previousRow, newRow;
     SaagharWidget* m_saagharWidget;
 };
 #endif

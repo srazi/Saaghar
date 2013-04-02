@@ -55,7 +55,7 @@ Bookmarks::Bookmarks(QWidget* parent)
     : QTreeWidget(parent)
 {
     setLayoutDirection(Qt::RightToLeft);
-    setIndentation(5);
+    setIndentation(10);
     QStringList labels;
     labels << tr("Title") << tr("Comments");
 

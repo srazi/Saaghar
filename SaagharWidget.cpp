@@ -76,7 +76,10 @@ QMusicPlayer* SaagharWidget::musicPlayer = NULL;
 #endif
 
 SaagharWidget::SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidget* tableWidget)
-    : QWidget(parent), tableViewWidget(tableWidget), parentCatsToolBar(catsToolBar)
+    : QWidget(parent)
+    , tableViewWidget(tableWidget)
+    , parentCatsToolBar(catsToolBar)
+    , m_vPosition(-1)
 {
     pageMetaInfo.id = 0;
     pageMetaInfo.type = SaagharWidget::CategoryViewerPage;
@@ -201,6 +204,44 @@ void SaagharWidget::navigateToPage(QString type, int id, bool noError)
         }
     }
 #endif
+}
+
+int SaagharWidget::currentVerticalPosition()
+{
+    return tableViewWidget->verticalScrollBar()->value();
+//    int centerY = tableViewWidget->viewport()->rect().center().y();
+//    while (centerY >= 0 && tableViewWidget->rowAt(centerY) < 0) {
+//        --centerY;
+//    }
+
+//    if (centerY >= 0 && tableViewWidget->rowAt(centerY) >= 0) {
+//        return tableViewWidget->rowAt(centerY);
+//    }
+//    else {
+//        return -1;
+//    }
+}
+
+void SaagharWidget::setVerticalPosition(int vPosition)
+{
+    tableViewWidget->verticalScrollBar()->setValue(vPosition);
+//    if (row <= 0) {
+//        tableViewWidget->verticalScrollBar()->setValue(0);
+//    }
+//    else if (row >= tableViewWidget->rowCount() - 1) {
+//        tableViewWidget->verticalScrollBar()->setValue(tableViewWidget->verticalScrollBar()->maximum());
+//    }
+
+//    int columnCount = tableViewWidget->columnCount();
+//    for (int i = row; i > 0; --i) {
+//        for (int col = 0; col < columnCount; ++col) {
+//            QTableWidgetItem* item = tableViewWidget->item(i, col);
+//            if (item) {
+//                tableViewWidget->scrollToItem(item, QAbstractItemView::PositionAtCenter);
+//                return;
+//            }
+//        }
+//    }
 }
 
 void SaagharWidget::parentCatClicked()
@@ -1455,6 +1496,14 @@ void SaagharWidget::pressedOnItem(int row, int /*col*/)
     pressedPosition = QCursor::pos();
     //if (QApplication::mouseButtons()!=Qt::RightButton)
     clickedOnItem(row, -1);
+}
+
+void SaagharWidget::setFromMVPosition()
+{
+    if (m_vPosition > 0) {
+        setVerticalPosition(m_vPosition);
+        m_vPosition = -1;
+    }
 }
 
 void SaagharWidget::clickedOnItem(int row, int column)

@@ -23,8 +23,11 @@
 
 #include "SaagharWidget.h"
 
+#include <QTimer>
+
 NavigateToPage::NavigateToPage(SaagharWidget* saagharWidget, const QString &type, int pageId, QUndoCommand* parent)
-    : QUndoCommand(parent), m_saagharWidget(saagharWidget)
+    : QUndoCommand(parent)
+    , m_saagharWidget(saagharWidget)
 {
     if (m_saagharWidget) {
         previousType = m_saagharWidget->identifier().at(0);
@@ -44,6 +47,10 @@ NavigateToPage::NavigateToPage(SaagharWidget* saagharWidget, const QString &type
 //      else
 //          m_saagharWidget->navigateToPage(type, pageId, true);
 
+
+        previousRow = m_saagharWidget->currentVerticalPosition();
+        newRow = 0;
+
         newType = type;//m_saagharWidget->identifier().at(0);
         newId = pageId;//m_saagharWidget->identifier().at(1).toInt();
 
@@ -62,6 +69,8 @@ NavigateToPage::NavigateToPage(SaagharWidget* saagharWidget, const QString &type
         previousId = 0;
         newType = "CatID";
         newId = 0;
+        previousRow = 0;
+        newRow = 0;
     }
 }
 
@@ -71,11 +80,17 @@ void NavigateToPage::undo()
         return;
     }
 
+    newRow = m_saagharWidget->currentVerticalPosition();
+
     if ((previousType != "PoemID" && previousType != "CatID") || previousId < 0) {
         m_saagharWidget->navigateToPage(previousType, previousId, false);
+        m_saagharWidget->setMVPosition(previousRow);
+        QTimer::singleShot(0, m_saagharWidget, SLOT(setFromMVPosition()));
     }
     else {
         m_saagharWidget->navigateToPage(previousType, previousId, true);
+        m_saagharWidget->setMVPosition(previousRow);
+        QTimer::singleShot(0, m_saagharWidget, SLOT(setFromMVPosition()));
     }
 
 //  QString text = m_saagharWidget->currentLocationList.join("-");
@@ -108,11 +123,17 @@ void NavigateToPage::redo()
         return;
     }
 
+    previousRow = m_saagharWidget->currentVerticalPosition();
+
     if ((newType != "PoemID" && newType != "CatID") || newId < 0) {
         m_saagharWidget->navigateToPage(newType, newId, false);
+        m_saagharWidget->setMVPosition(newRow);
+        QTimer::singleShot(0, m_saagharWidget, SLOT(setFromMVPosition()));
     }
     else {
         m_saagharWidget->navigateToPage(newType, newId, true);
+        m_saagharWidget->setMVPosition(newRow);
+        QTimer::singleShot(0, m_saagharWidget, SLOT(setFromMVPosition()));
     }
 
 //  QString text = m_saagharWidget->currentLocationList.join("-");
