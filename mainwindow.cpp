@@ -941,6 +941,10 @@ void MainWindow::tabCloser(int tabIndex)
         if (mainTabWidget->count() == 1) { //there is just one tab present.
             mainTabWidget->setTabsClosable(false);
         }
+        else if (mainTabWidget->count() < 1) {
+            // because we close registeration tab programmatically
+            insertNewTab();
+        }
 
         return;
     }
@@ -1085,9 +1089,7 @@ QWidget* MainWindow::insertNewTab(TabType tabType, const QString &title)
         return 0;
     }
 
-    if (mainTabWidget->count() > 1) {
-        mainTabWidget->setTabsClosable(true);    //there are two or more tabs opened
-    }
+    mainTabWidget->setTabsClosable(mainTabWidget->count() > 1);
 
     return tabContent;
 }

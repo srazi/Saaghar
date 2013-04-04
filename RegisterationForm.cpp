@@ -391,30 +391,18 @@ void RegisterationForm::updateAskRegisterState()
     if (sender() == ui->pushButtonAskLater) {
         QStringList tmpList = Settings::READ("RegisterationState").toStringList();
         int numOfRun = 0;
-        uint lastTime = 0;
-        uint firstTime = 0;
         if (tmpList.size() == 4 && tmpList.at(0) == "AskLater") {
-            firstTime = tmpList.at(1).toUInt();
-            lastTime = tmpList.at(2).toUInt();
             numOfRun = tmpList.at(3).toInt();
         }
+
         uint currentTime = QDateTime::currentDateTimeUtc().toTime_t();
-        if (lastTime >= currentTime) {
-            currentTime = lastTime + 1200;
-        }
-        else if (lastTime == 0) {
-            lastTime = currentTime;
-        }
-        if (firstTime == 0) {
-            firstTime = currentTime;
-        }
 
         Settings::WRITE("RegisterationState",
                         QStringList()
                         << "AskLater"
-                        << QString::number(firstTime)
                         << QString::number(currentTime)
-                        << QString::number(numOfRun));
+                        << QString::number(currentTime)
+                        << QString::number(qMax(numOfRun, 1))); // just update numOfRun if it's first run!
         closeForm();
     }
     else if (sender() == ui->pushButtonNeverAsk) {
@@ -436,8 +424,8 @@ bool RegisterationForm::showRegisterForm()
         return false;
     }
 
-    const int NUM_LAUNCH = 500;
-    const uint NUM_DAYS_SEC = 7 * (24 * 60 * 60);
+    const int LAUNCH_COUNT = 500;
+    const uint NUM_OF_DAYS = 14;
     QStringList tmpList = Settings::READ("RegisterationState").toStringList();
     if (tmpList.isEmpty()) {
         return true;
@@ -451,8 +439,11 @@ bool RegisterationForm::showRegisterForm()
     uint firstTime = tmpList.at(1).toUInt();
     uint lastTime = tmpList.at(2).toUInt();
     int numOfRun = tmpList.at(3).toInt() + 1;
+
     uint currentTime = QDateTime::currentDateTimeUtc().toTime_t();
-    if (currentTime - firstTime >= NUM_DAYS_SEC || numOfRun >= NUM_LAUNCH) {
+
+    if ((lastTime < currentTime && currentTime - firstTime >= (NUM_OF_DAYS * 24 * 60 * 60)) ||
+            (lastTime >= currentTime && numOfRun >= LAUNCH_COUNT)) { // system clock is/was wrong
         Settings::WRITE("RegisterationState", QStringList());
         return true;
     }
