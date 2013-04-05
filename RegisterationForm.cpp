@@ -136,7 +136,7 @@ void RegisterationForm::requiredChanged()
 
     submitDisabled |= !osIsSetted;
 
-    if (ui->lineEditPassword->text() != ui->lineEditReTypePassword->text()) {
+    if (ui->lineEditPassword->text() != ui->lineEditReTypePassword->text() || ui->lineEditPassword->text().size() < 4) {
         ui->labelPassword->setText("<html><head/><body><p><span style=\" color:#ff0000;\">*Password:</span></p></body></html>");
         ui->labelReTypePassword->setText("<html><head/><body><p><span style=\" color:#ff0000;\">*ReType Pass.:</span></p></body></html>");
     }
