@@ -3972,9 +3972,11 @@ void MainWindow::checkRegistration(bool forceShow)
 
     QWidget* formContainer = insertNewTab(MainWindow::WidgetTab, tr("Registeration"));
     if (!formContainer) {
-        RegisterationForm regForm(this);
-        QtWin::easyBlurUnBlur(&regForm, Settings::READ("UseTransparecy").toBool());
-        regForm.show();
+        RegisterationForm* regForm = new RegisterationForm;
+        regForm->setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
+        regForm->setAttribute(Qt::WA_DeleteOnClose, true);
+        QtWin::easyBlurUnBlur(regForm, Settings::READ("UseTransparecy").toBool());
+        regForm->show();
     }
     else {
         qDebug() << "formContainer=" << formContainer->objectName();

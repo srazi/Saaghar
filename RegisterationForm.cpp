@@ -15,11 +15,7 @@
 
 #include <QDebug>
 
-const QString HOST = "http://pozh.org";
-const QString REGISTER_PAGE = HOST + "/actions/register.php";
-const QString EMAIL_PAGE = HOST + "/actions/email.php";
-const QString INFO_PAGE = HOST + "/actions/get_info.php";
-const QString RESET_PAGE = HOST + "/actions/reset.php";
+const QString ACTION_URL = "http://pozh.org/reg/action.php";
 
 RegisterationForm::RegisterationForm(QWidget* parent, QTabWidget* tabWidget)
     : QWidget(parent)
@@ -169,7 +165,8 @@ void RegisterationForm::registeredButtonState()
 
 void RegisterationForm::tryToSubmit()
 {
-    QUrl regUrl(REGISTER_PAGE);
+    QUrl regUrl(ACTION_URL);
+    regUrl.addQueryItem("mainact", "register");
 
     if (m_isRegisteredUser) {
         regUrl.addQueryItem("action", "renew");
@@ -297,7 +294,7 @@ void RegisterationForm::tryToSubmit()
         QString emailNote = "";
         if (!m_isRegisteredUser || Settings::READ("RegisteredEmail").toString() != ui->lineEditEmail->text()) {
             Settings::WRITE("EmailIsVerified", false);
-            int i = 0;
+
             //send email
             if (sendEmail(emailB64, key, "activation")) {
                 emailNote = tr("\nPlease check your email for verification link!");
@@ -327,6 +324,9 @@ void RegisterationForm::getInfo()
         ui->pushButtonSubmit->show();
         ui->pushButtonSubmit->setText(tr("Re-Submit"));
         adjustSize();
+        if (parentWidget()) {
+            parentWidget()->resize(size());
+        }
     }
 //  setFixedSize(size());
 }
@@ -580,7 +580,9 @@ void RegisterationForm::fillForm(const QHash<QString, QString> &dataHash)
 
 bool RegisterationForm::sendEmail(const QString &email, const QString &key1, const QString &action, const QString &key2)
 {
-    QUrl sendEmailUrl(EMAIL_PAGE);
+    QUrl sendEmailUrl(ACTION_URL);
+    sendEmailUrl.addQueryItem("mainact", "email");
+
     sendEmailUrl.addQueryItem("a", action);
     sendEmailUrl.addQueryItem("e", email);
     sendEmailUrl.addQueryItem("key1", key1);
@@ -616,7 +618,8 @@ QHash<QString, QString> RegisterationForm::getInfo(const QString &email, const Q
         return registeredUserData;
     }
 
-    QUrl getInfoUrl(INFO_PAGE);
+    QUrl getInfoUrl(ACTION_URL);
+    getInfoUrl.addQueryItem("mainact", "info");
 
 
     QByteArray emailArrayB64 = email.toLocal8Bit().toBase64();
@@ -674,7 +677,10 @@ void RegisterationForm::forgotPass()
 //  return;
     QString email = ui->lineEditEmailRegistered->text();
     QString emailB64 = QString::fromLocal8Bit(email.toLocal8Bit().toBase64().data());
-    QUrl resetUrl(RESET_PAGE);
+
+    QUrl resetUrl(ACTION_URL);
+    resetUrl.addQueryItem("mainact", "reset");
+
     QString key = QString::number(qrand()) + QString::number(qrand()) + QString::number(qrand()) + QString::number(qrand());
     key = QCryptographicHash::hash(key.toLocal8Bit(), QCryptographicHash::Sha1).toHex();
     //QString::fromLocal8Bit(key.toLocal8Bit().toBase64().toHex().data());
