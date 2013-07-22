@@ -128,10 +128,7 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen)
         dataBaseCompleteName = resourcesPath + dataBaseCompleteName;
     }
 
-    bool fresh = false;
-    if (QCoreApplication::arguments().contains("-fresh", Qt::CaseInsensitive)) {
-        fresh = true;
-    }
+    bool fresh = QCoreApplication::arguments().contains("-fresh", Qt::CaseInsensitive);
 
     QString uiLanguage = getSettingsObject()->value("UI Language", "fa").toString();
 
@@ -172,7 +169,7 @@ MainWindow::MainWindow(QWidget* parent, QWidget* splashScreen)
 
     loadGlobalSettings();
 
-    if (splashScreen) {
+    if (splashScreen && !fresh) {
         if (Settings::READ("Display Splash Screen", true).toBool()) {
             connect(this, SIGNAL(loadingStatusText(QString)), splashScreen, SLOT(showMessage(QString)));
             emit loadingStatusText("!QTransparentSplashInternalCommands:SHOW");
@@ -850,7 +847,10 @@ void MainWindow::checkForUpdates()
         QMessageBox criticalError(QMessageBox::Critical, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
         criticalError.exec();
         //QMessageBox::critical(this, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()));
-        emit loadingStatusText("!QTransparentSplashInternalCommands:SHOW");
+        if (!action && Settings::READ("Display Splash Screen", true).toBool())
+        {
+            emit loadingStatusText("!QTransparentSplashInternalCommands:SHOW");
+        }
         return;
     }
     QStringList data = QString::fromUtf8(reply->readAll()).split("|", QString::SkipEmptyParts);
@@ -2181,7 +2181,11 @@ QAction* MainWindow::actionInstance(const QString actionObjectName, QString icon
         action->setObjectName(actionObjectName);
         allActionMap.insert(actionObjectName, action);
     }
-    connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
+
+    if (action) {
+     connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
+    }
+
     return action;
 }
 

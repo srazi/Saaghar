@@ -53,6 +53,8 @@ QExtendedSplashScreen::~QExtendedSplashScreen()
 
 void QExtendedSplashScreen::init(const QPixmap &pixmap)
 {
+    m_isFinished = false;
+
     setAttribute(Qt::WA_TranslucentBackground);
     mainLayout = new QVBoxLayout;
     mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -75,6 +77,7 @@ void QExtendedSplashScreen::finish(QWidget* mainWin)
 #endif
     }
     close();
+    m_isFinished = true;
 }
 
 void QExtendedSplashScreen::repaint()
@@ -82,6 +85,13 @@ void QExtendedSplashScreen::repaint()
     drawContents();
     QWidget::repaint();
     QApplication::flush();
+}
+
+void QExtendedSplashScreen::show()
+{
+    if (!m_isFinished) {
+        QWidget::show();
+    }
 }
 
 void QExtendedSplashScreen::forceRepaint()

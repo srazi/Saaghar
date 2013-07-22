@@ -41,6 +41,8 @@ public:
     void setPixmap(const QPixmap &pixmap);
     void finish(QWidget* mainWin);
     void repaint();
+    void show();
+
     void forceRepaint();//after repaint calls 'processEvent()'
 
 public slots:
@@ -59,6 +61,7 @@ private:
     QColor textColor;
     int textAlign;
     QRect textRect;
+    bool m_isFinished;
     Q_DISABLE_COPY(QExtendedSplashScreen)
 
 protected:
