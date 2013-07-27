@@ -436,25 +436,36 @@ bool SaagharWidget::initializeCustomizedHome()
 
 void SaagharWidget::homeResizeColsRows()
 {
-    if (Settings::READ("Show Photo at Home").toBool()) {
-        int numOfCols = tableViewWidget->columnCount();
-        int numOfRows = tableViewWidget->rowCount();
-        int startIndex = 0;
-        if (numOfCols > 1 && SaagharWidget::maxPoetsPerGroup != 1) {
-            startIndex = 1;
-        }
-        for (int col = 0; col < numOfCols; ++col) {
-            for (int row = 0; row < numOfRows; ++row) {
-                if (row >= startIndex) {
-                    tableViewWidget->setRowHeight(row, 105);
+    int numOfCols = tableViewWidget->columnCount();
+    int numOfRows = tableViewWidget->rowCount();
+    int startIndex = 0;
+    if (numOfCols > 1 && SaagharWidget::maxPoetsPerGroup != 1) {
+        startIndex = 1;
+    }
+
+    bool showPhoto = Settings::READ("Show Photo at Home").toBool();
+    QFontMetrics sectionFontMetric = QFontMetrics(Settings::getFromFonts(Settings::SectionNameFontColor));
+
+    int height = SaagharWidget::computeRowHeight(sectionFontMetric, -1, -1);
+    height = showPhoto ? qMax(height, 105) : height;
+
+    for (int col = 0; col < numOfCols; ++col) {
+        int colWidth = 0;
+        for (int row = startIndex; row < numOfRows; ++row) {
+            if (col == 0) {
+                tableViewWidget->setRowHeight(row, height);
+            }
+
+            if (tableViewWidget->item(row, col)) {
+                int w = sectionFontMetric.width(tableViewWidget->item(row, col)->text());
+                if (w > colWidth) {
+                    colWidth = w;
                 }
             }
         }
+        colWidth += showPhoto ? 82 : 0;
+        tableViewWidget->setColumnWidth(col, colWidth + sectionFontMetric.width("888"));
     }
-    else {
-        tableViewWidget->resizeRowsToContents();
-    }
-    tableViewWidget->resizeColumnsToContents();
 }
 
 void SaagharWidget::showCategory(GanjoorCat category)
