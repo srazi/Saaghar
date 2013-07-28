@@ -82,6 +82,7 @@ public:
     QString currentCaption;
     QPushButton* parentCatButton;
     QTableWidget* tableViewWidget;
+    void applyDefaultSectionsHeight();
     void resizeTable(QTableWidget* table);
     bool nextPoem();
     bool previousPoem();

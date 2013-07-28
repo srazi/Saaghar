@@ -80,6 +80,8 @@ SaagharWidget::SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidge
     , tableViewWidget(tableWidget)
     , parentCatsToolBar(catsToolBar)
     , m_vPosition(-1)
+    , currentPoem(0)
+    , currentCat(0)
 {
     pageMetaInfo.id = 0;
     pageMetaInfo.type = SaagharWidget::CategoryViewerPage;
@@ -108,6 +110,30 @@ SaagharWidget::SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidge
 
 SaagharWidget::~SaagharWidget()
 {
+}
+
+void SaagharWidget::applyDefaultSectionsHeight()
+{
+    QHeaderView* header = tableViewWidget->verticalHeader();
+#ifdef Q_OS_MAC
+    int bookmarkIconHeight = 25;//35
+#else
+    int bookmarkIconHeight = 22;
+#endif
+
+    int height;
+    if (currentPoem == 0) {
+        height = SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::SectionNameFontColor)), -1, -1);
+    }
+    else {
+        height = qMax(SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor)), -1, -1), bookmarkIconHeight * 5 / 4);
+        if (SaagharWidget::showBeytNumbers) {
+            height = qMax(height, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)), -1, -1));
+        }
+    }
+
+    header->setDefaultSectionSize(height);
+    tableViewWidget->setVerticalHeader(header);
 }
 
 void SaagharWidget::loadSettings()
@@ -140,17 +166,7 @@ void SaagharWidget::loadSettings()
     QHeaderView* header = tableViewWidget->verticalHeader();
     header->hide();
 
-#ifdef Q_OS_MAC
-    int bookmarkIconHeight = 25;//35
-#else
-    int bookmarkIconHeight = 22;
-#endif
-
-    int height = qMax(QFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor)).height(), QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)).height());
-    height = qMax(height, bookmarkIconHeight);
-    qDebug() << "height=====" << height << (height * 5) / 4;
-    header->setDefaultSectionSize((height * 5) / 4);
-    tableViewWidget->setVerticalHeader(header);
+    applyDefaultSectionsHeight();
 }
 
 void SaagharWidget::processClickedItem(QString type, int id, bool noError, bool pushToStack)
@@ -389,6 +405,9 @@ bool SaagharWidget::initializeCustomizedHome()
                     groupLabelItem->setFlags(Qt::NoItemFlags);
                     groupLabelItem->setTextAlignment(Qt::AlignCenter);
                     tableViewWidget->setItem(0, col, groupLabelItem);
+                    if (col == 0) {
+                        tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::TitlesFontColor)), -1, -1));
+                    }
                 }
             }
             QTableWidgetItem* catItem = new QTableWidgetItem(poets.at(poetIndex)->_Name + "       ");
@@ -659,6 +678,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
             }
         }
         tableViewWidget->setItem(i + startRow, 0, catItem);
+        tableViewWidget->setRowHeight(i + startRow, SaagharWidget::computeRowHeight(QFontMetrics(sectionFont), -1, -1));
 
         //freeing resuorce
         delete subcats[i];
@@ -690,6 +710,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
         poems[i] = 0;
 
         tableViewWidget->setItem(subcatsSize + i + startRow, 0, poemItem);
+        tableViewWidget->setRowHeight(subcatsSize + i + startRow, SaagharWidget::computeRowHeight(QFontMetrics(sectionFont), -1, -1));
     }
 
     //support LTR contents
@@ -699,6 +720,8 @@ void SaagharWidget::showCategory(GanjoorCat category)
     else {
         tableViewWidget->setLayoutDirection(Qt::LeftToRight);
     }
+
+    applyDefaultSectionsHeight();
 
     if (!poems.isEmpty() || !subcats.isEmpty()) {
         resizeTable(tableViewWidget);
@@ -1167,11 +1190,12 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
         }
     }
 
+    currentPoem = poem._ID;
+
+    applyDefaultSectionsHeight();
     resizeTable(tableViewWidget);
 
     QApplication::restoreOverrideCursor();
-
-    currentPoem = poem._ID;
 
 #ifndef NO_PHONON_LIB
     if (SaagharWidget::musicPlayer)
@@ -1401,7 +1425,11 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                     table->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::TitlesFontColor)), it.value(), totalWidth /*, table->rowHeight(i.key())*/));
                 }
                 else {
-                    table->setRowHeight(it.key(), SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor)), it.value(), totalWidth /*, table->rowHeight(i.key())*/));
+                    int height = qMax(SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor)), it.value(), totalWidth), iconWidth * 5 / 4);
+                    if (SaagharWidget::showBeytNumbers) {
+                        height = qMax(height, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)), -1, -1));
+                    }
+                    table->setRowHeight(it.key(), height);
                 }
                 //table->setRowHeight(i.key(), i.value());
                 ++it;

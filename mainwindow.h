@@ -101,7 +101,9 @@ private:
     QToolBar* parentCatsToolBar;
     SaagharWidget* getSaagharWidget(int tabIndex);
     Qt::MouseButtons pressedMouseButton;
-    QWidget* insertNewTab(TabType tabType = MainWindow::SaagharViewerTab, const QString &title = QString());
+    QWidget* insertNewTab(TabType tabType = MainWindow::SaagharViewerTab, const QString &title = QString(),
+                          int id = -1, const QString &type = "CatID", bool noError = true,
+                          bool pushToStack = true);
     Ui::MainWindow* ui;
     void createConnections();
     void setupUi();

@@ -713,6 +713,16 @@ void MainWindow::currentTabChanged(int tabIndex)
                 }
             }
         }
+        else if (SaagharWidget::maxPoetsPerGroup != 0 &&
+                  saagharWidget->currentCat == 0 && saagharWidget->currentPoem == 0) {
+            QList<GanjoorPoet*> poets = SaagharWidget::ganjoorDataBase->getPoets();
+            int numOfPoets = poets.size();
+            if (numOfPoets > SaagharWidget::maxPoetsPerGroup) {
+                if (SaagharWidget::maxPoetsPerGroup != 1) {
+                    saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::TitlesFontColor)), -1, -1));
+                }
+            }
+        }
 
         undoGroup->setActiveStack(saagharWidget->undoStack);
         updateCaption();
@@ -986,7 +996,9 @@ void MainWindow::tabCloser(int tabIndex)
     connect(mainTabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged(int)));
 }
 
-QWidget* MainWindow::insertNewTab(TabType tabType, const QString &title)
+QWidget* MainWindow::insertNewTab(TabType tabType, const QString &title, int id,
+                                  const QString &type, bool noError,
+                                  bool pushToStack)
 {
     QWidget* tabContent = new QWidget();
 
@@ -1051,6 +1063,9 @@ QWidget* MainWindow::insertNewTab(TabType tabType, const QString &title)
         //Updating table on changing of selection
         connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
         //tabGridLayout->setContentsMargins(0,0,0,0);//3,4,3,3);
+        if (id != -1) {
+            saagharWidget->processClickedItem(type, id, noError, pushToStack);
+        }
         tabGridLayout->addWidget(tabTableWidget, 0, 0, 1, 1);
         mainTabWidget->setUpdatesEnabled(false);
         mainTabWidget->setCurrentIndex(mainTabWidget->addTab(tabContent, title)); //add and gets focus to it
@@ -1096,8 +1111,8 @@ QWidget* MainWindow::insertNewTab(TabType tabType, const QString &title)
 
 void MainWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack)
 {
-    insertNewTab();
-    saagharWidget->processClickedItem(type, id, noError, pushToStack);
+    insertNewTab(MainWindow::SaagharViewerTab, QString(), id, type, noError, pushToStack);
+//    saagharWidget->processClickedItem(type, id, noError, pushToStack);
     emit loadingStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":") + 1), "", 0, 6, false, Qt::ElideRight)));
     //qDebug() << "emit updateTabsSubMenus()--848";
     //resolved by signal SaagharWidget::captionChanged()
@@ -3015,9 +3030,11 @@ void MainWindow::tableItemClick(QTableWidgetItem* item)
             saagharWidget->pageMetaInfo.id != idData ||
             saagharWidget->pageMetaInfo.type != pageType) {
         if (!saagharWidget) {
-            insertNewTab();
+            insertNewTab(MainWindow::SaagharViewerTab, QString(), idData, itemData.at(0), noError);
         }
-        saagharWidget->processClickedItem(itemData.at(0), idData, noError);
+        else {
+            saagharWidget->processClickedItem(itemData.at(0), idData, noError);
+        }
     }
 
     saagharWidget->scrollToFirstItemContains(searchVerseData, false);
@@ -3960,12 +3977,13 @@ void MainWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
         }
     }
 
-    if (!saagharWidget || newPage) {
-        insertNewTab();
-    }
-
     QString typeSTR = (type == SaagharWidget::CategoryViewerPage ? "CatID" : "PoemID");
-    saagharWidget->processClickedItem(typeSTR, id, true);
+    if (!saagharWidget || newPage) {
+        insertNewTab(MainWindow::SaagharViewerTab, QString(), id, typeSTR);
+    }
+    else {
+        saagharWidget->processClickedItem(typeSTR, id, true);
+    }
 }
 
 void MainWindow::checkRegistration(bool forceShow)
