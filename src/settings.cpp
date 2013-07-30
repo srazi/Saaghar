@@ -20,6 +20,7 @@
  ***************************************************************************/
 
 #include "settings.h"
+#include "saagharwindow.h"
 
 #include <QColorDialog>
 #include <QFileDialog>
@@ -29,7 +30,7 @@ QHash<QString, QVariant> Settings::VariablesHash = QHash<QString, QVariant>();
 QHash<QString, QVariant> Settings::hashFonts = QHash<QString, QVariant>();
 QHash<QString, QVariant> Settings::hashColors = QHash<QString, QVariant>();
 
-Settings::Settings(QWidget* parent) :   QDialog(parent), ui(new Ui::Settings)
+Settings::Settings(SaagharWindow* parent) :   QDialog(parent), ui(new Ui::Settings)
 {
     ui->setupUi(this);
 
@@ -99,6 +100,8 @@ Settings::Settings(QWidget* parent) :   QDialog(parent), ui(new Ui::Settings)
             ui->advancedFontColorGroupBox);
     proseTextFontColor->setObjectName(QString::fromUtf8("proseTextFontColor"));
     ui->gridLayout_9->addWidget(proseTextFontColor, 4, 1, 1, 1);
+
+    connect(ui->pushButtonApply, SIGNAL(clicked()), parent, SLOT(applySettings()));
 }
 
 Settings::~Settings()

@@ -75,6 +75,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QWidget* splashScreen)
     , ui(new Ui::SaagharWindow)
     , m_cornerMenu(0)
     , menuBookmarks(0)
+    , m_settingsDialog(0)
 {
     setObjectName("SaagharMainWindow");
 
@@ -2240,7 +2241,7 @@ void SaagharWindow::createConnections()
     //Tools
     connect(actionInstance("actionViewInGanjoorSite")   ,   SIGNAL(triggered())     ,   this, SLOT(actionGanjoorSiteClicked()));
     connect(actionInstance("actionCopy")                ,   SIGNAL(triggered())     ,   this, SLOT(copySelectedItems()));
-    connect(actionInstance("actionSettings")            ,   SIGNAL(triggered())     ,   this, SLOT(globalSettings()));
+    connect(actionInstance("actionSettings")            ,   SIGNAL(triggered())     ,   this, SLOT(showSettingsDialog()));
     connect(actionInstance("actionRemovePoet")          ,   SIGNAL(triggered())     ,   this, SLOT(actionRemovePoet()));
     connect(actionInstance("actionImportNewSet")        ,   SIGNAL(triggered())     ,   this, SLOT(actionImportNewSet()));
 
@@ -2256,154 +2257,167 @@ void SaagharWindow::createConnections()
 }
 
 //Settings Dialog
-void SaagharWindow::globalSettings()
+void SaagharWindow::showSettingsDialog()
 {
-    Settings* settingsDlg = new Settings(this);
+    m_settingsDialog = new Settings(this);
+  //  m_settingsDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
     //if (Settings::READ("UseTransparecy").toBool())
     ////settingsDlg->setStyleSheet("QGroupBox{border: 1px solid lightgray;\nborder-radius: 5px;\n}");
     //settingsDlg->setStyleSheet("QGroupBox {\n     border: 1px solid lightgray;\n     border-radius: 5px;\n\n     margin-top: 1ex; /* leave space at the top for the title */\n }\n ");
-    QtWin::easyBlurUnBlur(settingsDlg, Settings::READ("UseTransparecy").toBool());
+    QtWin::easyBlurUnBlur(m_settingsDialog, Settings::READ("UseTransparecy").toBool());
 
-    connect(settingsDlg->ui->pushButtonRandomOptions, SIGNAL(clicked()), this, SLOT(customizeRandomDialog()));
+    connect(m_settingsDialog->ui->pushButtonRandomOptions, SIGNAL(clicked()), this, SLOT(customizeRandomDialog()));
 
     /************initializing saved state of Settings dialog object!************/
-    settingsDlg->ui->uiLanguageComboBox->addItems(QStringList() << "fa" << "en");
-    int langIndex = settingsDlg->ui->uiLanguageComboBox->findText(Settings::READ("UI Language", "fa").toString(), Qt::MatchExactly);
-    settingsDlg->ui->uiLanguageComboBox->setCurrentIndex(langIndex);
+    m_settingsDialog->ui->uiLanguageComboBox->addItems(QStringList() << "fa" << "en");
+    int langIndex = m_settingsDialog->ui->uiLanguageComboBox->findText(Settings::READ("UI Language", "fa").toString(), Qt::MatchExactly);
+    m_settingsDialog->ui->uiLanguageComboBox->setCurrentIndex(langIndex);
 
-    settingsDlg->ui->pushButtonActionBottom->setIcon(QIcon(currentIconThemePath() + "/down.png"));
-    settingsDlg->ui->pushButtonActionTop->setIcon(QIcon(currentIconThemePath() + "/up.png"));
+    m_settingsDialog->ui->pushButtonActionBottom->setIcon(QIcon(currentIconThemePath() + "/down.png"));
+    m_settingsDialog->ui->pushButtonActionTop->setIcon(QIcon(currentIconThemePath() + "/up.png"));
 
     if (QApplication::layoutDirection() == Qt::RightToLeft) {
-        settingsDlg->ui->pushButtonActionAdd->setIcon(QIcon(currentIconThemePath() + "/left.png"));
-        settingsDlg->ui->pushButtonActionRemove->setIcon(QIcon(currentIconThemePath() + "/right.png"));
+        m_settingsDialog->ui->pushButtonActionAdd->setIcon(QIcon(currentIconThemePath() + "/left.png"));
+        m_settingsDialog->ui->pushButtonActionRemove->setIcon(QIcon(currentIconThemePath() + "/right.png"));
     }
     else {
-        settingsDlg->ui->pushButtonActionAdd->setIcon(QIcon(currentIconThemePath() + "/right.png"));
-        settingsDlg->ui->pushButtonActionRemove->setIcon(QIcon(currentIconThemePath() + "/left.png"));
+        m_settingsDialog->ui->pushButtonActionAdd->setIcon(QIcon(currentIconThemePath() + "/right.png"));
+        m_settingsDialog->ui->pushButtonActionRemove->setIcon(QIcon(currentIconThemePath() + "/left.png"));
     }
 
-    settingsDlg->ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
+    m_settingsDialog->ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
 
-    settingsDlg->ui->checkBoxAutoUpdates->setChecked(SaagharWindow::autoCheckForUpdatesState);
+    m_settingsDialog->ui->checkBoxAutoUpdates->setChecked(SaagharWindow::autoCheckForUpdatesState);
 
     //database
-    settingsDlg->ui->lineEditDataBasePath->setText(QGanjoorDbBrowser::dataBasePath.join(";"));
-    connect(settingsDlg->ui->pushButtonDataBasePath, SIGNAL(clicked()), settingsDlg, SLOT(browseForDataBasePath()));
+    m_settingsDialog->ui->lineEditDataBasePath->setText(QGanjoorDbBrowser::dataBasePath.join(";"));
+    connect(m_settingsDialog->ui->pushButtonDataBasePath, SIGNAL(clicked()), m_settingsDialog, SLOT(browseForDataBasePath()));
 
-    settingsDlg->ui->checkBoxBeytNumbers->setChecked(SaagharWidget::showBeytNumbers);
+    m_settingsDialog->ui->checkBoxBeytNumbers->setChecked(SaagharWidget::showBeytNumbers);
 
-    settingsDlg->ui->checkBoxBackground->setChecked(SaagharWidget::backgroundImageState);
-    settingsDlg->ui->lineEditBackground->setText(SaagharWidget::backgroundImagePath);
-    settingsDlg->ui->lineEditBackground->setEnabled(SaagharWidget::backgroundImageState);
-    settingsDlg->ui->pushButtonBackground->setEnabled(SaagharWidget::backgroundImageState);
-    connect(settingsDlg->ui->pushButtonBackground, SIGNAL(clicked()), settingsDlg, SLOT(browseForBackground()));
+    m_settingsDialog->ui->checkBoxBackground->setChecked(SaagharWidget::backgroundImageState);
+    m_settingsDialog->ui->lineEditBackground->setText(SaagharWidget::backgroundImagePath);
+    m_settingsDialog->ui->lineEditBackground->setEnabled(SaagharWidget::backgroundImageState);
+    m_settingsDialog->ui->pushButtonBackground->setEnabled(SaagharWidget::backgroundImageState);
+    connect(m_settingsDialog->ui->pushButtonBackground, SIGNAL(clicked()), m_settingsDialog, SLOT(browseForBackground()));
 
-    settingsDlg->ui->checkBoxIconTheme->setChecked(settingsIconThemeState);
-    settingsDlg->ui->lineEditIconTheme->setText(settingsIconThemePath);
-    settingsDlg->ui->lineEditIconTheme->setEnabled(settingsIconThemeState);
-    settingsDlg->ui->pushButtonIconTheme->setEnabled(settingsIconThemeState);
-    connect(settingsDlg->ui->pushButtonIconTheme, SIGNAL(clicked()), settingsDlg, SLOT(browseForIconTheme()));
+    m_settingsDialog->ui->checkBoxIconTheme->setChecked(settingsIconThemeState);
+    m_settingsDialog->ui->lineEditIconTheme->setText(settingsIconThemePath);
+    m_settingsDialog->ui->lineEditIconTheme->setEnabled(settingsIconThemeState);
+    m_settingsDialog->ui->pushButtonIconTheme->setEnabled(settingsIconThemeState);
+    connect(m_settingsDialog->ui->pushButtonIconTheme, SIGNAL(clicked()), m_settingsDialog, SLOT(browseForIconTheme()));
 
     //colors
-    connect(settingsDlg->ui->pushButtonBackgroundColor, SIGNAL(clicked()), settingsDlg, SLOT(getColorForPushButton()));
-    connect(settingsDlg->ui->pushButtonMatchedTextColor, SIGNAL(clicked()), settingsDlg, SLOT(getColorForPushButton()));
-    settingsDlg->ui->pushButtonBackgroundColor->setPalette(QPalette(SaagharWidget::backgroundColor));
-    settingsDlg->ui->pushButtonBackgroundColor->setAutoFillBackground(true);
-    settingsDlg->ui->pushButtonMatchedTextColor->setPalette(QPalette(SaagharWidget::matchedTextColor));
-    settingsDlg->ui->pushButtonMatchedTextColor->setAutoFillBackground(true);
+    connect(m_settingsDialog->ui->pushButtonBackgroundColor, SIGNAL(clicked()), m_settingsDialog, SLOT(getColorForPushButton()));
+    connect(m_settingsDialog->ui->pushButtonMatchedTextColor, SIGNAL(clicked()), m_settingsDialog, SLOT(getColorForPushButton()));
+    m_settingsDialog->ui->pushButtonBackgroundColor->setPalette(QPalette(SaagharWidget::backgroundColor));
+    m_settingsDialog->ui->pushButtonBackgroundColor->setAutoFillBackground(true);
+    m_settingsDialog->ui->pushButtonMatchedTextColor->setPalette(QPalette(SaagharWidget::matchedTextColor));
+    m_settingsDialog->ui->pushButtonMatchedTextColor->setAutoFillBackground(true);
 
     //splash screen
-    settingsDlg->ui->checkBoxSplashScreen->setChecked(Settings::READ("Display Splash Screen", true).toBool());
+    m_settingsDialog->ui->checkBoxSplashScreen->setChecked(Settings::READ("Display Splash Screen", true).toBool());
 
     //initialize Action's Tables
-    settingsDlg->initializeActionTables(allActionMap, mainToolBarItems);
+    m_settingsDialog->initializeActionTables(allActionMap, mainToolBarItems);
 
-    connect(settingsDlg->ui->pushButtonActionBottom, SIGNAL(clicked()), settingsDlg, SLOT(bottomAction()));
-    connect(settingsDlg->ui->pushButtonActionTop, SIGNAL(clicked()), settingsDlg, SLOT(topAction()));
-    connect(settingsDlg->ui->pushButtonActionAdd, SIGNAL(clicked()), settingsDlg, SLOT(addActionToToolbarTable()));
-    connect(settingsDlg->ui->pushButtonActionRemove, SIGNAL(clicked()), settingsDlg, SLOT(removeActionFromToolbarTable()));
+    connect(m_settingsDialog->ui->pushButtonActionBottom, SIGNAL(clicked()), m_settingsDialog, SLOT(bottomAction()));
+    connect(m_settingsDialog->ui->pushButtonActionTop, SIGNAL(clicked()), m_settingsDialog, SLOT(topAction()));
+    connect(m_settingsDialog->ui->pushButtonActionAdd, SIGNAL(clicked()), m_settingsDialog, SLOT(addActionToToolbarTable()));
+    connect(m_settingsDialog->ui->pushButtonActionRemove, SIGNAL(clicked()), m_settingsDialog, SLOT(removeActionFromToolbarTable()));
 
-    settingsDlg->ui->checkBoxTransparent->setChecked(Settings::READ("UseTransparecy").toBool());
+    m_settingsDialog->ui->checkBoxTransparent->setChecked(Settings::READ("UseTransparecy").toBool());
     /************end of initialization************/
 
-    if (settingsDlg->exec()) {
-        /************setup new settings************/
-        if (Settings::READ("UI Language", "fa").toString() != settingsDlg->ui->uiLanguageComboBox->currentText()) {
-            Settings::WRITE("UI Language", settingsDlg->ui->uiLanguageComboBox->currentText());
-            QMessageBox::information(this, tr("Interface Language Changed!"), tr("The interface language changes after relunching application!"));
+    if (m_settingsDialog->exec()) {
+        applySettings();
+    }
+    m_settingsDialog->deleteLater();
+    m_settingsDialog = 0;
+}
+
+void SaagharWindow::applySettings()
+{
+    if (!m_settingsDialog) {
+        return;
+    }
+
+    setUpdatesEnabled(false);
+
+    if (Settings::READ("UI Language", "fa").toString() != m_settingsDialog->ui->uiLanguageComboBox->currentText()) {
+        Settings::WRITE("UI Language", m_settingsDialog->ui->uiLanguageComboBox->currentText());
+        QMessageBox::information(this, tr("Interface Language Changed!"), tr("The interface language changes after relunching application!"));
+    }
+
+    SaagharWidget::maxPoetsPerGroup = m_settingsDialog->ui->spinBoxPoetsPerGroup->value();
+
+    SaagharWindow::autoCheckForUpdatesState = m_settingsDialog->ui->checkBoxAutoUpdates->isChecked();
+
+    //database path
+    QGanjoorDbBrowser::dataBasePath = m_settingsDialog->ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
+
+    SaagharWidget::showBeytNumbers = m_settingsDialog->ui->checkBoxBeytNumbers->isChecked();
+
+    SaagharWidget::backgroundImageState = m_settingsDialog->ui->checkBoxBackground->isChecked();
+    SaagharWidget::backgroundImagePath = m_settingsDialog->ui->lineEditBackground->text();
+
+    settingsIconThemeState = m_settingsDialog->ui->checkBoxIconTheme->isChecked();
+    settingsIconThemePath = m_settingsDialog->ui->lineEditIconTheme->text();
+
+    //colors
+    SaagharWidget::backgroundColor = m_settingsDialog->ui->pushButtonBackgroundColor->palette().background().color();
+    //if (settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color() != SaagharWidget::textColor)//they must be different.
+    SaagharWidget::matchedTextColor = m_settingsDialog->ui->pushButtonMatchedTextColor->palette().background().color();
+
+    //splash screen
+    Settings::WRITE("Display Splash Screen", m_settingsDialog->ui->checkBoxSplashScreen->isChecked());
+
+    //toolbar items
+    mainToolBarItems.clear();
+    for (int i = 0; i < m_settingsDialog->ui->tableWidgetToolBarActions->rowCount(); ++i) {
+        QTableWidgetItem* item = m_settingsDialog->ui->tableWidgetToolBarActions->item(i, 0);
+        if (item) {
+            mainToolBarItems.append(item->data(Qt::UserRole + 1).toString());
         }
+    }
 
-        SaagharWidget::maxPoetsPerGroup = settingsDlg->ui->spinBoxPoetsPerGroup->value();
+    Settings::WRITE("Main ToolBar Items", mainToolBarItems.join("|"));
 
-        SaagharWindow::autoCheckForUpdatesState = settingsDlg->ui->checkBoxAutoUpdates->isChecked();
+    Settings::WRITE("Global Font", m_settingsDialog->ui->globalFontColorGroupBox->isChecked());
+    //QFont fnt;
+    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->outlineFontColor->sampleFont(), Settings::OutLineFontColor);
+    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->globalTextFontColor->sampleFont(), Settings::DefaultFontColor);
+    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->poemTextFontColor->sampleFont(), Settings::PoemTextFontColor);
+    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->proseTextFontColor->sampleFont(), Settings::ProseTextFontColor);
+    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->sectionNameFontColor->sampleFont(), Settings::SectionNameFontColor);
+    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->titlesFontColor->sampleFont(), Settings::TitlesFontColor);
+    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->numbersFontColor->sampleFont(), Settings::NumbersFontColor);
 
-        //database path
-        QGanjoorDbBrowser::dataBasePath = settingsDlg->ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
+    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->outlineFontColor->color(), Settings::OutLineFontColor);
+    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->globalTextFontColor->color(), Settings::DefaultFontColor);
+    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->poemTextFontColor->color(), Settings::PoemTextFontColor);
+    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->proseTextFontColor->color(), Settings::ProseTextFontColor);
+    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->sectionNameFontColor->color(), Settings::SectionNameFontColor);
+    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->titlesFontColor->color(), Settings::TitlesFontColor);
+    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->numbersFontColor->color(), Settings::NumbersFontColor);
 
-        SaagharWidget::showBeytNumbers = settingsDlg->ui->checkBoxBeytNumbers->isChecked();
+    Settings::WRITE("UseTransparecy", m_settingsDialog->ui->checkBoxTransparent->isChecked());
+    QtWin::easyBlurUnBlur(this, Settings::READ("UseTransparecy").toBool());
+    QtWin::easyBlurUnBlur(m_settingsDialog, Settings::READ("UseTransparecy").toBool());
 
-        SaagharWidget::backgroundImageState = settingsDlg->ui->checkBoxBackground->isChecked();
-        SaagharWidget::backgroundImagePath = settingsDlg->ui->lineEditBackground->text();
+    ui->mainToolBar->clear();
+    //Inserting main toolbar Items
+    for (int i = 0; i < mainToolBarItems.size(); ++i) {
+        ui->mainToolBar->addAction(actionInstance(mainToolBarItems.at(i)));
+    }
 
-        settingsIconThemeState = settingsDlg->ui->checkBoxIconTheme->isChecked();
-        settingsIconThemePath = settingsDlg->ui->lineEditIconTheme->text();
+    if (saagharWidget) {
+        saagharWidget->loadSettings();
 
-        //colors
-        SaagharWidget::backgroundColor = settingsDlg->ui->pushButtonBackgroundColor->palette().background().color();
-        //if (settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color() != SaagharWidget::textColor)//they must be different.
-        SaagharWidget::matchedTextColor = settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color();
-
-        //splash screen
-        Settings::WRITE("Display Splash Screen", settingsDlg->ui->checkBoxSplashScreen->isChecked());
-
-        //toolbar items
-        mainToolBarItems.clear();
-        for (int i = 0; i < settingsDlg->ui->tableWidgetToolBarActions->rowCount(); ++i) {
-            QTableWidgetItem* item = settingsDlg->ui->tableWidgetToolBarActions->item(i, 0);
-            if (item) {
-                mainToolBarItems.append(item->data(Qt::UserRole + 1).toString());
-            }
-        }
-
-        Settings::WRITE("Main ToolBar Items", mainToolBarItems.join("|"));
-
-        Settings::WRITE("Global Font", settingsDlg->ui->globalFontColorGroupBox->isChecked());
-        //QFont fnt;
-        Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->outlineFontColor->sampleFont(), Settings::OutLineFontColor);
-        Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->globalTextFontColor->sampleFont(), Settings::DefaultFontColor);
-        Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->poemTextFontColor->sampleFont(), Settings::PoemTextFontColor);
-        Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->proseTextFontColor->sampleFont(), Settings::ProseTextFontColor);
-        Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->sectionNameFontColor->sampleFont(), Settings::SectionNameFontColor);
-        Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->titlesFontColor->sampleFont(), Settings::TitlesFontColor);
-        Settings::insertToFontColorHash(&Settings::hashFonts, settingsDlg->numbersFontColor->sampleFont(), Settings::NumbersFontColor);
-
-        Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->outlineFontColor->color(), Settings::OutLineFontColor);
-        Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->globalTextFontColor->color(), Settings::DefaultFontColor);
-        Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->poemTextFontColor->color(), Settings::PoemTextFontColor);
-        Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->proseTextFontColor->color(), Settings::ProseTextFontColor);
-        Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->sectionNameFontColor->color(), Settings::SectionNameFontColor);
-        Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->titlesFontColor->color(), Settings::TitlesFontColor);
-        Settings::insertToFontColorHash(&Settings::hashColors, settingsDlg->numbersFontColor->color(), Settings::NumbersFontColor);
-
-        Settings::WRITE("UseTransparecy", settingsDlg->ui->checkBoxTransparent->isChecked());
-        QtWin::easyBlurUnBlur(this, Settings::READ("UseTransparecy").toBool());
-
-        /************end of setup new settings************/
-
-        ui->mainToolBar->clear();
-        //Inserting main toolbar Items
-        for (int i = 0; i < mainToolBarItems.size(); ++i) {
-            ui->mainToolBar->addAction(actionInstance(mainToolBarItems.at(i)));
-        }
-
-        if (saagharWidget) {
-            saagharWidget->loadSettings();
-
-            if (saagharWidget->tableViewWidget->columnCount() == 1 && saagharWidget->tableViewWidget->rowCount() > 0 && saagharWidget->currentCat != 0) {
-                QTableWidgetItem* item = saagharWidget->tableViewWidget->item(0, 0);
-                //it seems after using QTextEdit this is not needed!
+        if (saagharWidget->tableViewWidget->columnCount() == 1 && saagharWidget->tableViewWidget->rowCount() > 0 && saagharWidget->currentCat != 0) {
+            QTableWidgetItem* item = saagharWidget->tableViewWidget->item(0, 0);
+            //it seems after using QTextEdit this is not needed!
 //              if (item)
 //              {
 //                  QString text = item->text();
@@ -2412,23 +2426,24 @@ void SaagharWindow::globalSettings()
 //                  int totalWidth = saagharWidget->tableViewWidget->columnWidth(0);
 //                  saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth));
 //              }
-            }
-            else if (saagharWidget->currentCat == 0 && saagharWidget->currentPoem == 0) { //it's Home.
-                saagharWidget->homeResizeColsRows();
-                //  saagharWidget->tableViewWidget->resizeRowsToContents();
-            }
         }
-#ifndef Q_OS_MAC //This doesn't work on MACX and moved to "SaagharWidget::loadSettings()"
-        //apply new text and background color, and also background picture
-        loadTabWidgetSettings();
-#endif
-        saveSettings();//save new settings to disk
-
-        //////////////////////////////////////////////////////
-        //set for refreshed all pages
-        setAllAsDirty();
-        //////////////////////////////////////////////////////
+        else if (saagharWidget->currentCat == 0 && saagharWidget->currentPoem == 0) { //it's Home.
+            saagharWidget->homeResizeColsRows();
+            //  saagharWidget->tableViewWidget->resizeRowsToContents();
+        }
     }
+#ifndef Q_OS_MAC //This doesn't work on MACX and moved to "SaagharWidget::loadSettings()"
+    //apply new text and background color, and also background picture
+    loadTabWidgetSettings();
+#endif
+    saveSettings();//save new settings to disk
+
+    //////////////////////////////////////////////////////
+    //set for refreshed all pages
+    setAllAsDirty();
+    //////////////////////////////////////////////////////
+
+    setUpdatesEnabled(true);
 }
 
 /*static*/

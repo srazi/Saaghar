@@ -23,8 +23,8 @@
 #define SETTINGS_H
 
 #include "ui_settings.h"
-#include <QMultiSelectWidget>
 
+#include <QMultiSelectWidget>
 #include <QDialog>
 
 namespace Ui
@@ -32,6 +32,7 @@ namespace Ui
 class Settings;
 }
 
+class SaagharWindow;
 class FontColorSelector;
 
 class Settings : public QDialog
@@ -39,7 +40,7 @@ class Settings : public QDialog
     Q_OBJECT
 
 public:
-    explicit Settings(QWidget* parent = 0);
+    explicit Settings(SaagharWindow* parent = 0);
     ~Settings();
 
     FontColorSelector* outlineFontColor;

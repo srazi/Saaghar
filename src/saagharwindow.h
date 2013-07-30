@@ -33,6 +33,7 @@
 
 class QMultiSelectWidget;
 class OutLineTree;
+class Settings;
 
 namespace Ui
 {
@@ -137,6 +138,7 @@ private:
     QUndoGroup* undoGroup;
     QAction* globalRedoAction;
     QAction* globalUndoAction;
+    Settings* m_settingsDialog;
 
     static bool isPortable;
 
@@ -187,7 +189,8 @@ private slots:
     void actionNewWindowClicked();
     void currentTabChanged(int tabIndex);
     void tabCloser(int tabIndex);
-    void globalSettings();
+    void showSettingsDialog();
+    void applySettings();
     void newTabForItem(int id, const QString &type = "CatID", bool noError = true, bool pushToStack = true);
     void updateCaption();
     void searchStart();
