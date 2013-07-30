@@ -1036,6 +1036,7 @@ void AlbumManager::setupUi()
 {
     mediaList->setIndentation(5);
     mediaList->setLayoutDirection(Qt::RightToLeft);
+    mediaList->setTextElideMode(Qt::ElideMiddle);
     mediaList->headerItem()->setHidden(true);
     mediaList->setColumnCount(1);
 

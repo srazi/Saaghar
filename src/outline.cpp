@@ -63,6 +63,7 @@ OutLineTree::OutLineTree(QWidget* parent)
     outlineWidget = new QTreeWidget(parent);
     outlineWidget->setObjectName("outlineTreeWidget");
     outlineWidget->setLayoutDirection(Qt::RightToLeft);
+    outlineWidget->setTextElideMode(Qt::ElideMiddle);
     outlineWidget->setIndentation(10);
     outlineWidget->header()->hide();
     outlineWidget->setContextMenuPolicy(Qt::CustomContextMenu);

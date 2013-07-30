@@ -92,6 +92,7 @@ QMultiSelectWidget::QMultiSelectWidget(QWidget* parent, QMultiSelectWidget::Widg
     //listWidget = new QListWidget(parent);
     if (type == QMultiSelectWidget::ComboBoxView) {
         comboWidget = new CustomComboBox(parent, this/*qobject_cast<QListWidget *>(this)*/, this);
+        comboWidget->view()->setTextElideMode(Qt::ElideMiddle);
         //comboWidget->view()->setMaximumHeight(200);
         comboWidget->view()->window()->setMaximumHeight(300);
         //comboWidget->view()->viewport()->setMaximumHeight(200);

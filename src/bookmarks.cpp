@@ -56,6 +56,7 @@ Bookmarks::Bookmarks(QWidget* parent)
     : QTreeWidget(parent)
 {
     setLayoutDirection(Qt::RightToLeft);
+    setTextElideMode(Qt::ElideMiddle);
     setIndentation(10);
     QStringList labels;
     labels << tr("Title") << tr("Comments");
@@ -181,6 +182,7 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
 
     item->setIcon(0, m_folderIcon);
     item->setText(0, title);
+    item->setToolTip(0, title);
 
     bool folded = (parentElement.attribute("folded") != "no");
     setItemExpanded(item, !folded);
@@ -234,7 +236,9 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
             childItem->setData(1, Qt::UserRole, child.attribute("href", "http://saaghar.pozh.org"));
             childItem->setIcon(0, m_bookmarkIcon);
             childItem->setText(0, title);
+            childItem->setToolTip(0, title);
             childItem->setText(1, child.firstChildElement("desc").text());
+            childItem->setToolTip(1, child.firstChildElement("desc").text());
         }
         else if (child.tagName() == "separator") {
             QTreeWidgetItem* childItem = createItem(child, item);
@@ -370,10 +374,12 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
 
         QString title = data.toStringList().at(2);
         item->setText(0, title);
+        item->setToolTip(0, title);
         item->setData(0, Qt::UserRole, data.toStringList().at(0) + "|" + data.toStringList().at(1));
         item->setData(1, Qt::UserRole, data.toStringList().at(3));
         if (data.toStringList().size() == 5) {
             item->setText(1, data.toStringList().at(4));
+            item->setToolTip(1, data.toStringList().at(4));
         }
 
         return true;

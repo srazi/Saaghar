@@ -160,6 +160,7 @@ void DataBaseUpdater::parseElement(const QDomElement &element)
     }
 
     QTreeWidgetItem* item = new QTreeWidgetItem(isNew ? newRootItem : oldRootItem , visibleInfo);
+    item->setToolTip(0, CatName);
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     item->setCheckState(0, Qt::Unchecked);
     item->setData(0, PoetID_DATA, PoetID);
@@ -216,6 +217,7 @@ void DataBaseUpdater::setupUi()
 //  repoSelectTree->setObjectName("repoSelectTree");
 //  repoSelectTree->setColumnCount(5);
     ui->repoSelectTree->setLayoutDirection(Qt::RightToLeft);
+    ui->repoSelectTree->setTextElideMode(Qt::ElideMiddle);
     //setupTreeRootItems();
 }
 

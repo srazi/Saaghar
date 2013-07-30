@@ -2028,6 +2028,7 @@ QList<QTreeWidgetItem*> QGanjoorDbBrowser::loadOutlineFromDataBase(int parentID)
     }
     for (int i = 0; i < parents.size(); ++i) {
         QTreeWidgetItem* item = new QTreeWidgetItem(QStringList() << parents.at(i)->_Text);
+        item->setToolTip(0, parents.at(i)->_Text);
         item->setData(0, Qt::UserRole, parents.at(i)->_ID);
         QList<QTreeWidgetItem*> children = loadOutlineFromDataBase(parents.at(i)->_ID);
         if (!children.isEmpty()) {
