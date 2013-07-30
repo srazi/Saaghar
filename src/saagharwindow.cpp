@@ -2576,7 +2576,7 @@ void SaagharWindow::loadGlobalSettings()
 void SaagharWindow::loadTabWidgetSettings()
 {
     QPalette p(mainTabWidget->palette());
-    if (SaagharWidget::backgroundImageState && !SaagharWidget::backgroundImagePath.isEmpty()) {
+    if (SaagharWidget::backgroundImageState && QFile::exists(SaagharWidget::backgroundImagePath)) {
         p.setBrush(QPalette::Base, QBrush(QPixmap(SaagharWidget::backgroundImagePath)));
     }
     else {
