@@ -204,29 +204,33 @@ void QMusicPlayer::setSource()
     setSource(file, currentTitle, currentID, true);
 }
 
-void QMusicPlayer::newAlbum()
+void QMusicPlayer::newAlbum(QString fileName, QString albumName)
 {
-    QString file = QFileDialog::getSaveFileName(this->window(), tr("New Saaghar Play List"), startDir,
-                   "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
+    if (fileName.isEmpty()) {
+        fileName = QFileDialog::getSaveFileName(this->window(), tr("New Saaghar Play List"), startDir,
+                                                "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
+    }
 
-    bool alreadyLoaded = albumsPathList.values().contains(file);
-    if (file.isEmpty() || alreadyLoaded) {
+    bool alreadyLoaded = albumsPathList.values().contains(fileName);
+    if (fileName.isEmpty() || alreadyLoaded) {
         if (alreadyLoaded) {
             QMessageBox::information(this->window(), tr("Warning!"), tr("The album already loaded."));
         }
         return;
     }
 
-    QFileInfo selectedFile(file);
-    QString name = QInputDialog::getText(this->window(), tr("Name Of Play List"),
-                                         tr("Enter name for this play list:"),
-                                         QLineEdit::Normal, selectedFile.baseName());
+    QFileInfo selectedFile(fileName);
+    if (albumName.isEmpty()) {
+        albumName = QInputDialog::getText(this->window(), tr("Name Of Play List"),
+                                          tr("Enter name for this play list:"),
+                                          QLineEdit::Normal, selectedFile.baseName());
+    }
 
     SaagharAlbum* album = new SaagharAlbum;
-    album->PATH = file;
-    pushAlbum(album, name);
-    saveAlbum(file, name);
-    albumManager->setCurrentAlbum(name);
+    album->PATH = fileName;
+    pushAlbum(album, albumName);
+    saveAlbum(fileName, albumName);
+    albumManager->setCurrentAlbum(albumName);
 }
 
 void QMusicPlayer::loadAlbumFile()

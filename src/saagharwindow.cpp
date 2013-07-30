@@ -163,8 +163,8 @@ SaagharWindow::SaagharWindow(QWidget* parent, QWidget* splashScreen)
 
     if (QMusicPlayer::albumsPathList.isEmpty() ||
             (QMusicPlayer::albumsPathList.contains("default") &&
-             QMusicPlayer::albumsPathList.value("default").toString().isEmpty())) {
-        QMusicPlayer::albumsPathList.insert("default", userHomePath + "/default.m3u8");
+             !QFile::exists(QMusicPlayer::albumsPathList.value("default").toString()))) {
+            SaagharWidget::musicPlayer->newAlbum(userHomePath + "/default.m3u8", "default");
     }
     SaagharWidget::musicPlayer->loadAllAlbums();
 #endif

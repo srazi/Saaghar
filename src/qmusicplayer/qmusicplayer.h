@@ -111,7 +111,7 @@ public slots:
     void stop();
     void playMedia(int mediaID);
 
-    void newAlbum();
+    void newAlbum(QString fileName = QString(), QString albumName = QString());
     void loadAlbumFile();
     void renameAlbum(const QString &albumName);
     void removeAlbum(const QString &albumName);
