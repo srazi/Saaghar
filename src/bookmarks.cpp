@@ -45,6 +45,7 @@
 
 #include <QMessageBox>
 #include <QHeaderView>
+#include <QDebug>
 
 #include "bookmarks.h"
 #include "qganjoordbbrowser.h"
@@ -62,12 +63,12 @@ Bookmarks::Bookmarks(QWidget* parent)
     header()->setResizeMode(QHeaderView::Interactive/*QHeaderView::Stretch*/);
     setHeaderLabels(labels);
 
-    folderIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirClosedIcon),
+    m_folderIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirClosedIcon),
                          QIcon::Normal, QIcon::Off);
-    folderIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirOpenIcon),
+    m_folderIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirOpenIcon),
                          QIcon::Normal, QIcon::On);
 
-    bookmarkIcon.addPixmap(QPixmap(":/resources/images/bookmark-on.png"));
+    m_bookmarkIcon.addPixmap(QPixmap(":/resources/images/bookmark-on.png"));
 
     setAlternatingRowColors(true);
 
@@ -80,18 +81,18 @@ bool Bookmarks::read(QIODevice* device)
     int errorLine;
     int errorColumn;
 
-    if (!domDocument.setContent(device, true, &errorStr, &errorLine, &errorColumn)) {
-        //QMessageBox::information(window(), tr("DOM Bookmarks"), tr("Parse error at line %1, column %2:\n%3").arg(errorLine).arg(errorColumn).arg(errorStr));
+    if (!m_domDocument.setContent(device, true, &errorStr, &errorLine, &errorColumn)) {
+        qDebug() << QString("Parse error at line %1, column %2:\n%3").arg(errorLine).arg(errorColumn).arg(errorStr);
         return false;
     }
 
-    QDomElement root = domDocument.documentElement();
+    QDomElement root = m_domDocument.documentElement();
     if (root.tagName() != "xbel") {
-        //QMessageBox::information(window(), tr("DOM Bookmarks"), tr("The file is not an XBEL file."));
+        qDebug() << "The file is not an XBEL file.";
         return false;
     }
     else if (root.hasAttribute("version") && root.attribute("version") != "1.0") {
-        //QMessageBox::information(window(), tr("DOM Bookmarks"), tr("The file is not an XBEL version 1.0 file."));
+        qDebug() << "The file is not an XBEL version 1.0 file.";
         return false;
     }
 
@@ -102,22 +103,6 @@ bool Bookmarks::read(QIODevice* device)
 
     QDomElement child = root.firstChildElement("folder");
     while (!child.isNull()) {
-//TODO: we can save labguage within a 'metadata' tag of this 'folder'
-//      //update node title by new loaded translation
-//      QString title = child.firstChildElement("title").text();
-//      qDebug() <<"TIIIITLE="<< title << title.toStdString().data() << title.toLocal8Bit().data() << title.toUtf8().data();
-//      if ( title != tr(title.toLocal8Bit().data()) )
-//      {
-//          qDebug() << "DIFREEEEEENT TRANSLATIOOOOON" << title << tr(title.toLocal8Bit().data());
-
-//          title = tr(title.toLocal8Bit().data());
-//          QDomElement oldTitleElement = child.firstChildElement("title");
-//          QDomElement newTitleElement = domDocument.createElement("title");
-//          QDomText newTitleText = domDocument.createTextNode(title);
-//          newTitleElement.appendChild(newTitleText);
-
-//          child.replaceChild(newTitleElement, oldTitleElement);
-//      }
         parseFolderElement(child);
         child = child.nextSiblingElement("folder");
     }
@@ -137,9 +122,7 @@ bool Bookmarks::write(QIODevice* device)
 
     QTextStream out(device);
     out.setCodec("utf-8");
-    //domDocument.save(out, IndentSize);
-    QString domString = domDocument.toString(IndentSize);
-    //domString = domString.replace("\n", "//");
+    QString domString = m_domDocument.toString(IndentSize);
     domString = domString.replace("&#xd;", "");
     out << domString;
     return true;
@@ -147,14 +130,13 @@ bool Bookmarks::write(QIODevice* device)
 
 void Bookmarks::updateDomElement(QTreeWidgetItem* item, int column)
 {
-    //qDebug() << "itemChangedddddddd";
-    QDomElement element = domElementForItem.value(item);
+    QDomElement element = m_domElementForItem.value(item);
     if (!element.isNull()) {
         if (column == 0) {
             QDomElement oldTitleElement = element.firstChildElement("title");
-            QDomElement newTitleElement = domDocument.createElement("title");
+            QDomElement newTitleElement = m_domDocument.createElement("title");
 
-            QDomText newTitleText = domDocument.createTextNode(item->text(0));
+            QDomText newTitleText = m_domDocument.createTextNode(item->text(0));
             newTitleElement.appendChild(newTitleText);
 
             element.replaceChild(newTitleElement, oldTitleElement);
@@ -162,15 +144,13 @@ void Bookmarks::updateDomElement(QTreeWidgetItem* item, int column)
         else {
             if (element.tagName() == "bookmark") {
                 QDomElement oldDescElement = element.firstChildElement("desc");
-                QDomElement newDescElement = domDocument.createElement("desc");
-                QDomText newDesc = domDocument.createTextNode(item->text(1));//setAttribute("href", item->text(1));
+                QDomElement newDescElement = m_domDocument.createElement("desc");
+                QDomText newDesc = m_domDocument.createTextNode(item->text(1));//setAttribute("href", item->text(1));
                 newDescElement.appendChild(newDesc);
                 element.replaceChild(newDescElement, oldDescElement);
                 element.setAttribute("href", item->data(1, Qt::UserRole).toString());
             }
         }
-        //sortItems(0, Qt::AscendingOrder);
-        //closePersistentEditor(item, 1);
     }
 }
 
@@ -199,8 +179,7 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
         title = QObject::tr("Folder");
     }
 
-    //item->setFlags(item->flags() | Qt::ItemIsEditable);
-    item->setIcon(0, folderIcon);
+    item->setIcon(0, m_folderIcon);
     item->setText(0, title);
 
     bool folded = (parentElement.attribute("folded") != "no");
@@ -212,18 +191,15 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
 //TODO: we can save labguage within a 'metadata' tag of this 'folder'
 //          //update node title by new loaded translation
             QString id = child.attribute("id");
-            qDebug() << "child.tagName()=folder--id=" << id;
             QString title = child.firstChildElement("title").text();
-            //if (title != tr(title.toLocal8Bit().data()))
+
             if (id.isEmpty()) {
                 //old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
                 id = "Verses";
-                qDebug() << "DIFREEEEEENT TRANSLATIOOOOON" << title << tr(title.toLocal8Bit().data());
-
                 title = tr(title.toLocal8Bit().data());
                 QDomElement oldTitleElement = child.firstChildElement("title");
-                QDomElement newTitleElement = domDocument.createElement("title");
-                QDomText newTitleText = domDocument.createTextNode(tr("Verses"));
+                QDomElement newTitleElement = m_domDocument.createElement("title");
+                QDomText newTitleText = m_domDocument.createTextNode(tr("Verses"));
                 newTitleElement.appendChild(newTitleText);
 
                 child.replaceChild(newTitleElement, oldTitleElement);
@@ -238,7 +214,7 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
             if (title.isEmpty()) {
                 title = QObject::tr("Folder");
             }
-////////////////////////////////////////////////////////////////////////////////
+
             QDomElement infoChild = child.firstChildElement("info");
             QDomElement metaData = infoChild.firstChildElement("metadata");
             while (!metaData.isNull()) {
@@ -256,11 +232,9 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
             }
             //href data URL data
             childItem->setData(1, Qt::UserRole, child.attribute("href", "http://saaghar.pozh.org"));
-////////////////////////////////////////////////////////////////////////////////
-            //childItem->setFlags(item->flags() | Qt::ItemIsEditable);
-            childItem->setIcon(0, bookmarkIcon);
+            childItem->setIcon(0, m_bookmarkIcon);
             childItem->setText(0, title);
-            childItem->setText(1, child.firstChildElement("desc").text()/* attribute("href")*/);
+            childItem->setText(1, child.firstChildElement("desc").text());
         }
         else if (child.tagName() == "separator") {
             QTreeWidgetItem* childItem = createItem(child, item);
@@ -285,27 +259,21 @@ QTreeWidgetItem* Bookmarks::createItem(const QDomElement &element,
     if (!elementID.isEmpty()) {
         item->setData(0, ID_DATA, elementID);
     }
-    domElementForItem.insert(item, element);
+    m_domElementForItem.insert(item, element);
     return item;
 }
 
 QDomElement Bookmarks::findChildNode(const QString &tagName, const QString &type)
 {
-    //QDomNodeList nodeList = domDocument.elementsByTagName("folder");
-    QDomElement n = domDocument.documentElement().firstChildElement(tagName);
+    QDomElement n = m_domDocument.documentElement().firstChildElement(tagName);
     while (!n.isNull()) {
-        QString id = n.attribute("id", "Verses");//old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
+        //old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
+        QString id = n.attribute("id", "Verses");
         if (id == type) {
             break;
         }
-//      if (n.firstChildElement("title").text() == type || n.firstChildElement("title").text() == tr(type.toUtf8().data()))
-//      {
-//          //qDebug() << type.toUtf8().data()<<"IIIIFFF BREAK" << "localName=" << n.localName() << "nodName=" << n.nodeName() << "title="<< n.firstChildElement("title").text();
-//          break;
-//      }
+
         QDomElement e = n.toElement();
-        //qDebug() << "Element name: " << e.tagName();
-        //qDebug() << "localName=" << n.localName() << "nodName=" << n.nodeName() << "title="<< n.firstChildElement("title").text();
         n = n.nextSiblingElement(tagName);
     }
     return n;
@@ -316,23 +284,20 @@ QStringList Bookmarks::bookmarkList(const QString &type)
     QStringList bookmarkedItemList;
     if (type == "Verses" || type == tr("Verses")) {
         QDomElement verseNode = findChildNode("folder", "Verses");
-        //qDebug() << "bookmarkList VERSE-NODE" << "localName=" << verseNode.localName() << "nodName=" << verseNode.nodeName() << "title="<< verseNode.firstChildElement("title").text();
         if (!verseNode.isNull()) {
-            QTreeWidgetItem* versesParentItem = domElementForItem.key(verseNode);
+            QTreeWidgetItem* versesParentItem = m_domElementForItem.key(verseNode);
             if (versesParentItem) {
                 int countOfChildren = versesParentItem->childCount();
                 for (int i = 0; i < countOfChildren; ++i) {
                     QTreeWidgetItem* child = versesParentItem->child(i);
                     if (child) {
-                        //qDebug()<<"bookmarkList"<< countOfChildren << versesParentItem->child(i)->text(0);
                         bookmarkedItemList << versesParentItem->child(i)->data(0, Qt::UserRole).toString();
                     }
-                    //QList<QTreeWidgetItem *> verseBookmarks = versesParentItem->takeChildren();
                 }
             }
         }
     }
-    //return bookmarkHash.values(type);
+
     return bookmarkedItemList;
 }
 
@@ -341,56 +306,34 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
     if (type == "Verses" || type == tr("Verses")) {
         QDomElement verseNode = findChildNode("folder", "Verses");
         if (verseNode.isNull()) {
-            qDebug() << "NOOOOO VERSE" << "localName=" << verseNode.localName() << "nodName=" << verseNode.nodeName() << "title=" << verseNode.firstChildElement("title").text();
-            QDomElement root = domDocument.createElement("folder");
-            QDomElement child = domDocument.createElement("title");
-            QDomText newTitleText = domDocument.createTextNode(tr("Verses"));
+            QDomElement root = m_domDocument.createElement("folder");
+            QDomElement child = m_domDocument.createElement("title");
+            QDomText newTitleText = m_domDocument.createTextNode(tr("Verses"));
             root.setAttribute("folded", "no");
             child.appendChild(newTitleText);
             root.appendChild(child);
-            domDocument.documentElement().appendChild(root);
+            m_domDocument.documentElement().appendChild(root);
             verseNode = root;
             parseFolderElement(root);
         }
 
-        QTreeWidgetItem* parentItem = domElementForItem.key(verseNode);
-//REMOVE OPERATION
+        QTreeWidgetItem* parentItem = m_domElementForItem.key(verseNode);
+        //REMOVE OPERATION
         if (!state) {
-//          QList<QTreeWidgetItem *> items = findItems(data.toStringList().at(2), /*Qt::MatchContains|*/Qt::MatchFixedString|Qt::MatchRecursive/*|Qt::MatchWrap*/, 0);
-//          qDebug() << "REMOVE----OPERATION" << "size=" << items.size() << data.toStringList().at(2);
-//          for (int i=0; i< items.size(); ++i)
-//          {
-//              qDebug() << "REMOVE OPERATION" << "size=" << items.size() << items.at(i)->text(0)<<items.at(i)->data(0, Qt::UserRole).toString();
-//              if (items.at(i)->data(0, Qt::UserRole).toString() == data.toStringList().at(0)+"|"+data.toStringList().at(1))
-//              {
-//                  QDomElement elementForRemoving = domElementForItem.value(items.at(i));
-//                  if (!elementForRemoving.isNull())
-//                      verseNode.removeChild(elementForRemoving);
-//                  //delete
-//                  items.at(i)->setBackgroundColor(1, QColor(Qt::red));
-//              }
-//          }
-//////////////////////////////////////////////
             int countOfChildren = parentItem->childCount();
-            //QList<QTreeWidgetItem *> items = findItems(data.toStringList().at(2), /*Qt::MatchContains|*/Qt::MatchFixedString|Qt::MatchRecursive/*|Qt::MatchWrap*/, 0);
-            //qDebug() << "REMOVE----OPERATION" << "size=" << items.size() << data.toStringList().at(2);
             int numOfDel = 0;
-            //QList<int> deleteList;
             bool allMatchedRemoved = true;
             for (int i = 0; i < countOfChildren; ++i) {
                 QTreeWidgetItem* childItem = parentItem->child(i);
                 if (!childItem) {
                     continue;
                 }
-                //qDebug() << "REMOVE OPERATION" << "size=" << countOfChildren << "tex="<<childItem->text(0)<<"\nfor="<<data.toStringList().at(2)<<"\n"<<childItem->data(0, Qt::UserRole).toString()<<data.toStringList().at(0)+"|"+data.toStringList().at(1);
+
                 if (childItem->data(0, Qt::UserRole).toString() == data.toStringList().at(0) + "|" + data.toStringList().at(1)) {
                     ++numOfDel;
-                    //QDomElement elementForRemoving = domElementForItem.value(childItem);
-                    if (unBookmarkItem(childItem)) {
-//                      if (!elementForRemoving.isNull())
-//                          verseNode.removeChild(elementForRemoving);
 
-                        --i;//because one of children was deleted
+                    if (unBookmarkItem(childItem)) {
+                        --i; //because one of children was deleted
                         --countOfChildren;
                     }
                     else {
@@ -398,30 +341,20 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
                     }
                 }
             }
-            qDebug() << "NUM OF DELETE-->REMOVE OPERATION=" << numOfDel;
-/////////////////////////////////////////////////
-            return allMatchedRemoved;//allMatchedRemoved is false when at least one of matched items are not deleted!!
+
+            //allMatchedRemoved is false when at least one of
+            // matched items are not deleted!!
+            return allMatchedRemoved;
         }
 
-        QString tmpT = "Parent ZERO";
-        if (parentItem) {
-            tmpT = parentItem->text(0) + "|" + parentItem->text(1);
-        }
-        qDebug() << "THERE IS VERSE" << "tmpT=" << tmpT << "localName=" << verseNode.localName() << "nodName=" << verseNode.nodeName() << "title=" << verseNode.firstChildElement("title").text();
-//      for (int i=0; i<nodeList.size(); ++i)
-//      {
-
-//          qDebug() << "size=" << nodeList.size() << "i=" << i << "localName=" << nodeList.at(i).localName() << "nodName=" << nodeList.at(i).nodeName() << "title="<< nodeList.at(i).firstChildElement("title").text();
-//      }
-
-        QDomElement bookmark = domDocument.createElement("bookmark");
-        QDomElement bookmarkTitle = domDocument.createElement("title");
-        QDomElement bookmarkDescription = domDocument.createElement("desc");
-        QDomElement bookmarkInfo = domDocument.createElement("info");
-        QDomElement infoMetaData = domDocument.createElement("metadata");
+        QDomElement bookmark = m_domDocument.createElement("bookmark");
+        QDomElement bookmarkTitle = m_domDocument.createElement("title");
+        QDomElement bookmarkDescription = m_domDocument.createElement("desc");
+        QDomElement bookmarkInfo = m_domDocument.createElement("info");
+        QDomElement infoMetaData = m_domDocument.createElement("metadata");
 
         infoMetaData.setAttribute("owner", "http://saaghar.pozh.org");
-        QDomText bookmarkSaagharMetadata = domDocument.createTextNode(data.toStringList().at(0) + "|" + data.toStringList().at(1));
+        QDomText bookmarkSaagharMetadata = m_domDocument.createTextNode(data.toStringList().at(0) + "|" + data.toStringList().at(1));
         infoMetaData.appendChild(bookmarkSaagharMetadata);
         bookmarkInfo.appendChild(infoMetaData);
         bookmark.appendChild(bookmarkTitle);
@@ -430,21 +363,19 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
         verseNode.appendChild(bookmark);
 
         qDebug() << data << state;
-        QDomElement firstChild = domDocument.documentElement().firstChildElement("folder");
+        QDomElement firstChild = m_domDocument.documentElement().firstChildElement("folder");
         firstChild.text();
-        QTreeWidgetItem* item = createItem(bookmark, parentItem /*firstChild*/);  //new QTreeWidgetItem(SaagharWidget::bookmarks);
-        item->setIcon(0, bookmarkIcon);
-        //item->setFlags(item->flags() | Qt::ItemIsEditable);
+        QTreeWidgetItem* item = createItem(bookmark, parentItem);
+        item->setIcon(0, m_bookmarkIcon);
+
         QString title = data.toStringList().at(2);
-        //title = title.replace("//","\n");
         item->setText(0, title);
-        //item->setText(1, data.toStringList().at(3));//"="+data.toStringList().at(0)+"|"+data.toStringList().at(1)
         item->setData(0, Qt::UserRole, data.toStringList().at(0) + "|" + data.toStringList().at(1));
         item->setData(1, Qt::UserRole, data.toStringList().at(3));
         if (data.toStringList().size() == 5) {
             item->setText(1, data.toStringList().at(4));
         }
-        //bookmarkHash.insert("Verses", data.toStringList().at(0)+"|"+data.toStringList().at(1));
+
         return true;
     }
 
@@ -464,21 +395,22 @@ void Bookmarks::doubleClicked(QTreeWidgetItem* item, int column)
     else if (column == 1 && item->parent()) {
         item->setFlags(item->flags() | Qt::ItemIsEditable);
     }
-    connect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)),
-            this, SLOT(updateDomElement(QTreeWidgetItem*,int)));
+    connect(this, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(updateDomElement(QTreeWidgetItem*,int)));
     if (item->parent()) {
         if (column == 0) {
             QString text = item->text(0);
             int newLineIndex = text.indexOf("\n") + 1;
             int secondNewLineIndex = text.indexOf("\n", newLineIndex);
             int length = secondNewLineIndex > 0 ? secondNewLineIndex - newLineIndex : text.size() - newLineIndex;
-            text = text.mid(newLineIndex, length);//text.left(text.indexOf("\n"));
-            qDebug() << "text-after=" << text << "newLineIndex=" << newLineIndex << "secondNewLineIndex=" << secondNewLineIndex << "length=" << length;
+            text = text.mid(newLineIndex, length);
+
             QString type = item->data(0, ID_DATA).toString();
-            if (type.isEmpty()) { //old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
+            if (type.isEmpty()) {
+                //old files that their 'folder' tags don't use 'id' attribute
+                // just contain 'folder' tags of type 'Verses'!
                 type = "Verses";
             }
-            emit showBookmarkedItem(type/*item->parent()->text(0)*/, text, item->data(0, Qt::UserRole).toString(), true, true);
+            emit showBookmarkedItem(type, text, item->data(0, Qt::UserRole).toString(), true, true);
         }
     }
 }
@@ -512,39 +444,42 @@ bool Bookmarks::unBookmarkItem(QTreeWidgetItem* item)
         return false;
     }
 
-    qDebug() << "REMOVED!!";
-    QDomElement elementForRemoving = domElementForItem.value(item);
+    QDomElement elementForRemoving = m_domElementForItem.value(item);
     bool deleteItem = true;
     QString itemComment = elementForRemoving.firstChildElement("desc").text();
     if (!itemComment.isEmpty()) {
-        QMessageBox bookmarkCommentWarning(QMessageBox::Warning, tr("Bookmark"), tr("This bookmark has comment if you remove it, the comment will be deleted, too.\nThis operation can not be undoed!\nBookmark's' Title:\n%1\n\nBookmark's Comment:\n%2").arg(item->text(0)).arg(itemComment), QMessageBox::Ok | QMessageBox::Cancel,  parentWidget());
+        QMessageBox bookmarkCommentWarning(QMessageBox::Warning, tr("Bookmark"),
+                                           tr("This bookmark has comment if you remove it, the comment will be deleted, too."
+                                              "\nThis operation can not be undoed!"
+                                              "\nBookmark's' Title:\n%1\n\nBookmark's Comment:\n%2")
+                                           .arg(item->text(0)).arg(itemComment),
+                                           QMessageBox::Ok | QMessageBox::Cancel, parentWidget());
 
         if (bookmarkCommentWarning.exec() == QMessageBox::Cancel) {
             deleteItem = false;
-            //allMatchedRemoved = false;
         }
     }
     if (deleteItem) {
         if (!elementForRemoving.isNull()) {
             elementForRemoving.parentNode().removeChild(elementForRemoving);
         }
-        //deleteList << i;
+
         QString text = item->text(0);
-        qDebug() << "text-before=" << text;
+
         int newLineIndex = text.indexOf("\n") + 1;
         int secondNewLineIndex = text.indexOf("\n", newLineIndex);
         int length = secondNewLineIndex > 0 ? secondNewLineIndex - newLineIndex : text.size() - newLineIndex;
         text = text.mid(newLineIndex, length);
-        qDebug() << "text-after=" << text << "newLineIndex=" << newLineIndex << "secondNewLineIndex=" << secondNewLineIndex << "length=" << length;
+
         QString type = item->data(0, ID_DATA).toString();
-        if (type.isEmpty()) { //old files that their 'folder' tags don't use 'id' attribute just contain 'folder' tags of type 'Verses'!
+        if (type.isEmpty()) {
+            //old files that their 'folder' tags don't use 'id' attribute
+            // just contain 'folder' tags of type 'Verses'!
             type = "Verses";
         }
-        emit showBookmarkedItem(type/*item->parent()->text(0)*/, text, item->data(0, Qt::UserRole).toString(), false, true);
+        emit showBookmarkedItem(type, text, item->data(0, Qt::UserRole).toString(), false, true);
         delete item;
         item = 0;
-        //--i;//because one of children was deleted
-        //--countOfChildren;
     }
     return deleteItem;
 }

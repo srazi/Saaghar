@@ -23,6 +23,7 @@
 #define COMMANDS_H
 
 #include <QUndoCommand>
+
 class SaagharWidget;
 
 class NavigateToPage : public QUndoCommand
@@ -34,10 +35,10 @@ public:
     void redo();
 
 private:
-    QString previousText, newText;
-    QString previousType, newType;
-    int previousId, newId;
-    int previousRow, newRow;
+    QString m_previousText, m_newText;
+    QString m_previousType, m_newType;
+    int m_previousId, m_newId;
+    int m_previousRow, m_newRow;
     SaagharWidget* m_saagharWidget;
 };
 #endif
