@@ -82,6 +82,7 @@ void CustomComboBox::hidePopup()
 
 QMultiSelectWidget::QMultiSelectWidget(QWidget* parent, QMultiSelectWidget::WidgetType type)
     : QListWidget(parent)
+    , comboWidget(0)
 {
     separator = " - ";
     //setMaximumHeight(180);

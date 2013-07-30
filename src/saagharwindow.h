@@ -81,7 +81,8 @@ private:
     int previousTabIndex;
 //      void importDataBase(const QString fileName);
     QStringList mainToolBarItems;
-    QAction* actionInstance(const QString actionObjectName = "", QString iconPath = "", QString displayName = "");
+    QAction* actionInstance(const QString &actionObjectName = "", QString iconPath = "", QString displayName = "");
+    void deleteActionInstance(const QString &actionObjectName);
     void multiSelectObjectInitialize(QMultiSelectWidget* multiSelectWidget, const QStringList &selectedData = QStringList(), int insertIndex = 0);
     QString convertToTeX(SaagharWidget* saagharObject);
     QPrinter* defaultPrinter;

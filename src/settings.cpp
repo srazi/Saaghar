@@ -196,7 +196,7 @@ void Settings::initializeActionTables(const QMap<QString, QAction*> &actionsMap,
         QMap<QString, QAction*>::const_iterator it = actionsMap.constBegin();
         int index = 1;
         while (it != actionsMap.constEnd()) {
-            if (toolBarItems.contains(it.key(), Qt::CaseInsensitive)) {
+            if (toolBarItems.contains(it.key(), Qt::CaseInsensitive) || !it.value()) {
                 ++it;
                 continue;
             }

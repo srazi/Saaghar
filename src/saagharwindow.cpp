@@ -74,6 +74,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QWidget* splashScreen)
     : QMainWindow(parent)
     , ui(new Ui::SaagharWindow)
     , m_cornerMenu(0)
+    , menuBookmarks(0)
 {
     setObjectName("SaagharMainWindow");
 
@@ -1760,8 +1761,7 @@ void SaagharWindow::setupUi()
     menuNavigation->setObjectName(QString::fromUtf8("menuNavigation"));
     menuView = new QMenu(tr("&View"), ui->menuBar);
     menuView->setObjectName(QString::fromUtf8("menuView"));
-    menuBookmarks = new QMenu(tr("&Bookmarks"), ui->menuBar);
-    menuBookmarks->setObjectName(QString::fromUtf8("menuBookmarks"));
+    // menuBookmarks is initialized in setupBookmarkManagerUi()
     menuTools = new QMenu(tr("&Tools"), ui->menuBar);
     menuTools->setObjectName(QString::fromUtf8("menuTools"));
     menuHelp = new QMenu(tr("&Help"), ui->menuBar);
@@ -1877,7 +1877,7 @@ void SaagharWindow::setupUi()
     actionInstance("fixedNameRedoAction")->setEnabled(globalRedoAction->isEnabled());
     actionInstance("fixedNameUndoAction")->setEnabled(globalUndoAction->isEnabled());
 
-    actionInstance("ImportGanjoorBookmarks", iconThemePath + "/bookmarks-import.png", tr("&Import Ganjoor's Bookmarks"));
+    // ImportGanjoorBookmarks is initialized in setupBookmarkManagerUi()
 
     //Poem View Styles
     QMenu* poemViewStylesMenu = new QMenu(tr("Poem View Styles"));
@@ -1952,7 +1952,9 @@ void SaagharWindow::setupUi()
     ui->menuBar->addMenu(menuFile);
     ui->menuBar->addMenu(menuNavigation);
     ui->menuBar->addMenu(menuView);
-    ui->menuBar->addMenu(menuBookmarks);
+    if (menuBookmarks) {
+        ui->menuBar->addMenu(menuBookmarks);
+    }
     ui->menuBar->addMenu(menuTools);
     ui->menuBar->addMenu(menuHelp);
 
@@ -2049,9 +2051,7 @@ void SaagharWindow::setupUi()
     menuView->addSeparator();
     menuView->addAction(actionInstance("actionFullScreen"));
 
-    menuBookmarks->addAction(actionInstance("bookmarkManagerDockAction"));
-    menuBookmarks->addSeparator();
-    menuBookmarks->addAction(actionInstance("ImportGanjoorBookmarks"));
+    // menuBookmarks is initialized in setupBookmarkManagerUi()
 
     menuTools->addAction(actionInstance("searchToolbarAction"));
     menuTools->addAction(actionInstance("actionCopy"));
@@ -2161,17 +2161,18 @@ void SaagharWindow::showSearchTips()
 //  SaagharWidget::newSearchSkipNonAlphabet = checked;
 //}
 
-QAction* SaagharWindow::actionInstance(const QString actionObjectName, QString iconPath, QString displayName)
+QAction* SaagharWindow::actionInstance(const QString &actionObjectName, QString iconPath, QString displayName)
 {
-    QAction* action;
+    QAction* action = 0;
 
     if (actionObjectName.isEmpty() || actionObjectName.contains("separator", Qt::CaseInsensitive)) {
         action = new QAction(this);
         action->setSeparator(true);
         return action;
     }
-    action = allActionMap.value(actionObjectName);
-    if (!action) {
+
+    action = allActionMap.value(actionObjectName, 0);
+    if (!allActionMap.contains(actionObjectName)) {
         if (displayName.isEmpty()) {
             displayName = actionObjectName;
             displayName.remove("action");
@@ -2198,10 +2199,18 @@ QAction* SaagharWindow::actionInstance(const QString actionObjectName, QString i
     }
 
     if (action) {
-     connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
+        connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
     }
 
     return action;
+}
+
+void SaagharWindow::deleteActionInstance(const QString &actionObjectName)
+{
+    if (allActionMap.contains(actionObjectName)) {
+        delete allActionMap.value(actionObjectName);
+        allActionMap.insert(actionObjectName, 0);
+    }
 }
 
 void SaagharWindow::createConnections()
@@ -2591,14 +2600,14 @@ void SaagharWindow::saveSettings()
     }
 #endif
 
-    QFile bookmarkFile(userHomePath + "/bookmarks.xbel");
-    if (!bookmarkFile.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::warning(this, tr("Bookmarks"), tr("Can not write the bookmark file %1:\n%2.")
-                             .arg(bookmarkFile.fileName())
-                             .arg(bookmarkFile.errorString()));
-    }
-    else {
-        if (SaagharWidget::bookmarks) {
+    if (SaagharWidget::bookmarks) {
+        QFile bookmarkFile(userHomePath + "/bookmarks.xbel");
+        if (!bookmarkFile.open(QFile::WriteOnly | QFile::Text)) {
+            QMessageBox::warning(this, tr("Bookmarks"), tr("Can not write the bookmark file %1:\n%2.")
+                                 .arg(bookmarkFile.fileName())
+                                 .arg(bookmarkFile.errorString()));
+        }
+        else {
             SaagharWidget::bookmarks->write(&bookmarkFile);
         }
     }
@@ -3744,16 +3753,12 @@ void SaagharWindow::setupBookmarkManagerUi()
     bookmarkMainLayout->addLayout(bookmarkToolsLayout);//move to bottom of layout! just we want looks similar other dock widgets!
     bookmarkContainer->setLayout(bookmarkMainLayout);
 
-    QFile bookmarkFile(userHomePath + "/bookmarks.xbel");
+    QString bookmarkFileName = userHomePath + "/bookmarks.xbel";
+    QFile bookmarkFile(bookmarkFileName);
 
     bool readBookmarkFile = true;
 
-    if (bookmarkFile.open(QFile::ReadOnly | QFile::Text)) {
-        if (!SaagharWidget::bookmarks->read(&bookmarkFile)) {
-            readBookmarkFile = false;
-        }
-    }
-    else {
+    if (!bookmarkFile.open(QFile::ReadOnly | QFile::Text) || !SaagharWidget::bookmarks->read(&bookmarkFile)) {
         readBookmarkFile = false;
     }
 
@@ -3781,17 +3786,38 @@ void SaagharWindow::setupBookmarkManagerUi()
         addDockWidget(Qt::LeftDockWidgetArea, bookmarkManagerWidget);
         allActionMap.insert("bookmarkManagerDockAction", bookmarkManagerWidget->toggleViewAction());
         actionInstance("bookmarkManagerDockAction")->setIcon(QIcon(currentIconThemePath() + "/bookmark-folder.png"));
-        actionInstance("bookmarkManagerDockAction")->setObjectName(QString::fromUtf8("bookmarkManagerDockAction"));
+        actionInstance("bookmarkManagerDockAction")->setObjectName(QString::fromUtf8("bookmarkManagerDockAction"));;
+
+        menuBookmarks = new QMenu(tr("&Bookmarks"), ui->menuBar);
+        menuBookmarks->setObjectName(QString::fromUtf8("menuBookmarks"));
+
+        menuBookmarks->addAction(actionInstance("bookmarkManagerDockAction"));
+        menuBookmarks->addSeparator();
+        menuBookmarks->addAction(actionInstance("ImportGanjoorBookmarks", currentIconThemePath() + "/bookmarks-import.png", tr("&Import Ganjoor's Bookmarks")));
     }
     else {
         //bookmark not loaded!
-        delete actionInstance("bookmarkManagerDockAction");
+        mainToolBarItems.removeAll("bookmarkManagerDockAction");
+        mainToolBarItems.removeAll("ImportGanjoorBookmarks");
+        deleteActionInstance("bookmarkManagerDockAction");
+        deleteActionInstance("ImportGanjoorBookmarks");
+        allActionMap.insert("bookmarkManagerDockAction", 0);
+        allActionMap.insert("ImportGanjoorBookmarks", 0);
         delete SaagharWidget::bookmarks;
         delete bookmarkContainer;
         bookmarkContainer = 0;
         SaagharWidget::bookmarks = 0;
         delete bookmarkManagerWidget;
         bookmarkManagerWidget = 0;
+        menuBookmarks = 0;
+        emit loadingStatusText("!QTransparentSplashInternalCommands:HIDE");
+        QMessageBox::information(this, tr("Warning!"), tr("Bookmarking system was disabled, something going wrong with "
+                                                          "writing or reading from bookmarks file:\n%1")
+                                 .arg(bookmarkFileName));
+        if (Settings::READ("Display Splash Screen", true).toBool())
+        {
+            emit loadingStatusText("!QTransparentSplashInternalCommands:SHOW");
+        }
     }
 }
 
@@ -3815,7 +3841,7 @@ void SaagharWindow::ensureVisibleBookmarkedItem(const QString &type, const QStri
                         //un-bookmarking operation!!
                         if (item) {
                             QTableWidgetItem* numItem = tmp->tableViewWidget->item(item->row(), 0);
-                            if (numItem) {
+                            if (SaagharWidget::bookmarks && numItem) {
                                 QPixmap star(":/resources/images/bookmark-on.png");
                                 QPixmap starOff(":/resources/images/bookmark-off.png");
                                 star = star.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row()) - 1, 22), Qt::SmoothTransformation);

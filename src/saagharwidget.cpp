@@ -114,11 +114,15 @@ SaagharWidget::~SaagharWidget()
 void SaagharWidget::applyDefaultSectionsHeight()
 {
     QHeaderView* header = tableViewWidget->verticalHeader();
+
+    int bookmarkIconHeight = 0;
+    if (SaagharWidget::bookmarks) {
 #ifdef Q_OS_MAC
-    int bookmarkIconHeight = 25;//35
+    bookmarkIconHeight = 25;//35
 #else
-    int bookmarkIconHeight = 22;
+    bookmarkIconHeight = 22;
 #endif
+    }
 
     int height;
     if (currentPoem == 0) {
@@ -1097,21 +1101,23 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                     }
                 }
                 numItem->setFlags(numItemFlags);
-                QPixmap star(":/resources/images/bookmark-on.png");
-                QPixmap starOff(":/resources/images/bookmark-off.png");
-                star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
-                starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
-                QIcon bookmarkIcon;
-                bookmarkIcon.addPixmap(star, QIcon::Active, QIcon::On);
-                bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
-                numItem->setData(ITEM_BOOKMARKED_STATE, verseIsBookmarked);
-                if (verseIsBookmarked) {
-                    bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Active, QIcon::On);
+                if (SaagharWidget::bookmarks) {
+                    QPixmap star(":/resources/images/bookmark-on.png");
+                    QPixmap starOff(":/resources/images/bookmark-off.png");
+                    star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
+                    starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
+                    QIcon bookmarkIcon;
+                    bookmarkIcon.addPixmap(star, QIcon::Active, QIcon::On);
+                    bookmarkIcon.addPixmap(starOff, QIcon::Disabled, QIcon::Off);
+                    numItem->setData(ITEM_BOOKMARKED_STATE, verseIsBookmarked);
+                    if (verseIsBookmarked) {
+                        bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Active, QIcon::On);
+                    }
+                    else {
+                        bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
+                    }
+                    numItem->setIcon(bookmarkIcon);
                 }
-                else {
-                    bookmarkIcon = bookmarkIcon.pixmap(star.size(), QIcon::Disabled, QIcon::Off);
-                }
-                numItem->setIcon(bookmarkIcon);
                 tableViewWidget->setItem(row, 0, numItem);
             }
         }
@@ -1125,7 +1131,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
             if (!numItem) {
                 numItem = new QTableWidgetItem("");
                 numItem->setFlags(numItemFlags);
-                if (verses.at(i)->_Position == Paragraph) {
+                if (SaagharWidget::bookmarks && verses.at(i)->_Position == Paragraph) {
                     QPixmap star(":/resources/images/bookmark-on.png");
                     QPixmap starOff(":/resources/images/bookmark-off.png");
                     star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
@@ -1293,11 +1299,14 @@ void SaagharWidget::resizeTable(QTableWidget* table)
         //****************************//
         QFontMetrics poemFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor));
 
+        int iconWidth = 0;
+        if (SaagharWidget::bookmarks) {
 #ifdef Q_OS_MAC
-        int iconWidth = 35;
+        iconWidth = 35;
 #else
-        int iconWidth = 22;
+        iconWidth = 22;
 #endif
+        }
         int test = 0;
         switch (table->columnCount()) {
         case 1:
