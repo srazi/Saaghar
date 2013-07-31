@@ -1,9 +1,13 @@
 Saaghar, a Persian poetry software
 ----------------------------------------------------------------------------------------
 **Copyright (C) 2010-2013, Razi Alavizadeh**
+
 Homepage (in Persian): [http://saaghar.pozh.org](http://saaghar.pozh.org)
+
 My Blog (in Persian): [http://pozh.org](http://pozh.org)
+
 Sourceforge: [http://sourceforge.net/projects/saaghar](http://sourceforge.net/projects/saaghar)
+
 Facebook Page: [https://www.facebook.com/saaghar.p](https://www.facebook.com/saaghar.p)
 
 About Saaghar
@@ -55,5 +59,9 @@ and the sources from: [Saaghar's download page](http://pozh.org/saaghar/download
 Development Version
 ----------------------------------------------------------------------------------------
 You can always use the lastest development snapshot of Saaghar from the GIT repository.
-**Clone:**  $ git clone https://github.com/srazi/Saaghar.git
+
+**Clone:**
+
+    $ git clone https://github.com/srazi/Saaghar.git
+
 **Download as archive:** [ZIP Archive, Master Branch](https://github.com/srazi/Saaghar/archive/master.zip) 
