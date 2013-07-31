@@ -1123,12 +1123,14 @@ void SaagharWindow::newTabForItem(int id, const QString &type, bool noError, boo
 
 void SaagharWindow::updateCaption()
 {
-    if (!saagharWidget) {
+    if (mainTabWidget->currentIndex() == -1 || !getSaagharWidget(mainTabWidget->currentIndex())) {
         return;
     }
-    QString newTabCaption = QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption, "", 0, 6, true, Qt::ElideRight) + QString(QChar(0x200F));
+    SaagharWidget* sw = getSaagharWidget(mainTabWidget->currentIndex());
+
+    QString newTabCaption = QGanjoorDbBrowser::snippedText(sw->currentCaption, "", 0, 6, true, Qt::ElideRight) + QString(QChar(0x200F));
     mainTabWidget->setTabText(mainTabWidget->currentIndex(), newTabCaption);
-    setWindowTitle(QString(QChar(0x202B)) + tr("Saaghar: ") + saagharWidget->currentCaption + QString(QChar(0x202C)));
+    setWindowTitle(QString(QChar(0x202B)) + tr("Saaghar: ") + sw->currentCaption + QString(QChar(0x202C)));
 }
 
 void SaagharWindow::tableSelectChanged()
