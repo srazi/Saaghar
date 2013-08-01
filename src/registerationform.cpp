@@ -204,13 +204,13 @@ void RegisterationForm::tryToSubmit()
     if (ui->comboBoxEducation->currentText() == tr("Student")) {
         education = "Student";
     }
-    else if (ui->comboBoxEducation->currentText() == tr("BSc (student or graduated)")) {
+    else if (ui->comboBoxEducation->currentText() == tr("BSc")) {
         education = "BSc";
     }
-    else if (ui->comboBoxEducation->currentText() == tr("MSc (student or graduated)")) {
+    else if (ui->comboBoxEducation->currentText() == tr("MSc")) {
         education = "MSc";
     }
-    else if (ui->comboBoxEducation->currentText() == tr("PhD (student or graduated)")) {
+    else if (ui->comboBoxEducation->currentText() == tr("PhD")) {
         education = "PhD";
     }
     else if (ui->comboBoxEducation->currentText() == tr("Other")) {
@@ -220,26 +220,20 @@ void RegisterationForm::tryToSubmit()
     regUrl.addQueryItem("education", education);
 
     QString field = "";
-    if (ui->comboBoxFieldOfStudy->currentText() == tr("Mathematics")) {
+    if (ui->comboBoxFieldOfStudy->currentText() == tr("Related to Mathematics")) {
         field = "Mathematics";
     }
-    else if (ui->comboBoxFieldOfStudy->currentText() == tr("Computer")) {
+    else if (ui->comboBoxFieldOfStudy->currentText() == tr("Related to Computer")) {
         field = "Computer";
     }
-    else if (ui->comboBoxFieldOfStudy->currentText() == tr("Literature")) {
+    else if (ui->comboBoxFieldOfStudy->currentText() == tr("Related to Literature")) {
         field = "Literature";
     }
-    else if (ui->comboBoxFieldOfStudy->currentText() == tr("Art")) {
+    else if (ui->comboBoxFieldOfStudy->currentText() == tr("Related to Linguistics")) {
+        field = "Linguistics";
+    }
+    else if (ui->comboBoxFieldOfStudy->currentText() == tr("Related to Art")) {
         field = "Art";
-    }
-    else if (ui->comboBoxFieldOfStudy->currentText() == tr("Human Sciences")) {
-        field = "Human Sciences";
-    }
-    else if (ui->comboBoxFieldOfStudy->currentText() == tr("Engineering")) {
-        field = "Engineering";
-    }
-    else if (ui->comboBoxFieldOfStudy->currentText() == tr("Basic Sciences")) {
-        field = "Basic Sciences";
     }
     else if (ui->comboBoxFieldOfStudy->currentText() == tr("Other")) {
         field = "Other";
@@ -279,7 +273,7 @@ void RegisterationForm::tryToSubmit()
     QString result = getRemoteData(regUrl);
     if (result.contains("Error")) {
         QString error = result.remove("Error!");
-        if (error.isEmpty()) {
+        if (error.contains("ALREADY_REGISTERED")) {
             error = tr("This email is present on database, if you want to modify your registeration information please use fields on the top of this form!");
         }
         else {
@@ -299,7 +293,13 @@ void RegisterationForm::tryToSubmit()
                 emailNote = tr("\nPlease check your email for verification link!");
             }
         }
-        QMessageBox::information(this, tr("Registered!"), tr("Successfully registered!%1").arg(emailNote));
+
+        if (!m_isRegisteredUser) {
+            QMessageBox::information(this, tr("Registered!"), tr("Successfully registered!%1").arg(emailNote));
+        }
+        else {
+            QMessageBox::information(this, tr("Updated!"), tr("Successfully updated!%1").arg(emailNote));
+        }
         Settings::WRITE("RegisteredUser", true);
         Settings::WRITE("RegisteredEmail", ui->lineEditEmail->text());
         closeForm();
@@ -475,7 +475,7 @@ void RegisterationForm::closeForm()
 QString RegisterationForm::getHashedPassword(const QString &pass)
 {
     qDebug() << "pass1=" << pass;
-    QByteArray pass_array = QString(pass + "~Saaghar!Pozh").toLocal8Bit();
+    QByteArray pass_array = QString(pass + "~Saaghar!Pozh").toUtf8();
     pass_array = QCryptographicHash::hash(pass_array, QCryptographicHash::Sha1);
     qDebug() << "pass2=" << pass_array.toHex() << "--\nSubStr=" << pass_array.toHex().left(10);
     //qDebug() << "pass_length="<<pass_array.toHex();
@@ -484,7 +484,7 @@ QString RegisterationForm::getHashedPassword(const QString &pass)
     qDebug() << "pass4=" << pass_array.toHex();
     pass_array = pass_array.toHex();
     qDebug() << "pass_length=" << pass_array.size() << "pass=" << QString::fromLocal8Bit(pass_array.data());
-    return QString::fromLocal8Bit(pass_array.data());
+    return QString::fromUtf8(pass_array.data());
 }
 
 void RegisterationForm::fillForm(const QHash<QString, QString> &dataHash)
@@ -514,13 +514,13 @@ void RegisterationForm::fillForm(const QHash<QString, QString> &dataHash)
         education = tr("Student");
     }
     else if (education == "BSc") {
-        education = tr("BSc (student or graduated)");
+        education = tr("BSc");
     }
     else if (education == "MSc") {
-        education = tr("MSc (student or graduated)");
+        education = tr("MSc");
     }
     else if (education == "PhD") {
-        education = tr("PhD (student or graduated)");
+        education = tr("PhD");
     }
     else if (education == "Other") {
         education = tr("Other");
@@ -529,25 +529,19 @@ void RegisterationForm::fillForm(const QHash<QString, QString> &dataHash)
     ui->comboBoxEducation->setCurrentIndex(ui->comboBoxEducation->findText(education));
     qDebug() << "field111=" << field << "index=" << ui->comboBoxFieldOfStudy->findText(field);
     if (field == "Mathematics") {
-        field = tr("Mathematics");
+        field = tr("Related to Mathematics");
     }
     else if (field == "Computer") {
-        field = tr("Computer");
+        field = tr("Related to Computer");
     }
     else if (field == "Literature") {
-        field = tr("Literature");
+        field = tr("Related to Literature");
+    }
+    else if (field == "Linguistics") {
+        field = tr("Related to Linguistics");
     }
     else if (field == "Art") {
-        field = tr("Art");
-    }
-    else if (field == "Human Sciences") {
-        field = tr("Human Sciences");
-    }
-    else if (field == "Engineering") {
-        field = tr("Engineering");
-    }
-    else if (field == "Basic Sciences") {
-        field = tr("Basic Sciences");
+        field = tr("Related to Art");
     }
     else if (field == "Other") {
         field = tr("Other");
@@ -639,8 +633,11 @@ QHash<QString, QString> RegisterationForm::getInfo(const QString &email, const Q
     if (!pass.isEmpty()) {
         if (rawInfo.contains("Error") || !rawInfo.contains("first_name")) {
             QString error = rawInfo.remove("Error!");
-            if (error.isEmpty()) {
-                error = tr("Username or password is mistake or this email is not registered, yet.");
+            if (error.contains("WRONG_PASSWORD")) {
+                error = tr("Wrong password.");
+            }
+            else if (error.contains("NO_DATA-FETCH_ERROR")) {
+                error = tr("There was some errors, maybe you entered wrong email.");
             }
             else {
                 error = tr("There was some errors!");
@@ -696,17 +693,18 @@ void RegisterationForm::forgotPass()
                 Settings::WRITE("EmailIsVerified", false);
                 Settings::READ("RegisteredUser", false);
                 Settings::READ("RegisteredEmail", "");
-                QMessageBox::information(this, tr("Error"), tr("You are not registered!"));
-                ui->groupBoxUserInfo->show();
-                ui->groupBoxUserType->show();
-                ui->groupBoxOSesType->show();
-                ui->groupBoxContribute->show();
-                ui->labelRequiredNote->show();
-                ui->pushButtonSubmit->show();
-                ui->pushButtonSubmit->setText(tr("Submit"));
-                adjustSize();
-                return;
             }
+
+            QMessageBox::information(this, tr("Error"), tr("You are not registered!"));
+            ui->groupBoxUserInfo->show();
+            ui->groupBoxUserType->show();
+            ui->groupBoxOSesType->show();
+            ui->groupBoxContribute->show();
+            ui->labelRequiredNote->show();
+            ui->pushButtonSubmit->show();
+            ui->pushButtonSubmit->setText(tr("Submit"));
+            adjustSize();
+            return;
         }
 
         QMessageBox::information(this, tr("Error"), tr("There was an error!"));
