@@ -163,10 +163,14 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
 
     SaagharWidget::musicPlayer->readPlayerSettings(getSettingsObject());
 
-    if (QMusicPlayer::albumsPathList.isEmpty() ||
-            (QMusicPlayer::albumsPathList.contains("default") &&
-             !QFile::exists(QMusicPlayer::albumsPathList.value("default").toString()))) {
-            SaagharWidget::musicPlayer->newAlbum(userHomePath + "/default.m3u8", "default");
+    if (QMusicPlayer::albumsPathList.isEmpty()) {
+        const QString &defaultFile = userHomePath + "/default.sal";
+        if (!QFile::exists(defaultFile)) {
+            SaagharWidget::musicPlayer->newAlbum(defaultFile, "default");
+        }
+        else {
+            QMusicPlayer::albumsPathList.insert("default", defaultFile);
+        }
     }
     SaagharWidget::musicPlayer->loadAllAlbums();
 #endif
@@ -3787,14 +3791,9 @@ void SaagharWindow::setupBookmarkManagerUi()
 
     bool readBookmarkFile = true;
 
-    if (!bookmarkFile.open(QFile::ReadOnly | QFile::Text) || !SaagharWidget::bookmarks->read(&bookmarkFile)) {
-        readBookmarkFile = false;
-    }
-
-    if (!readBookmarkFile) {
-        bookmarkFile.close();
+    if (!bookmarkFile.exists()) {
+        //create an empty XBEL file.
         if (bookmarkFile.open(QFile::WriteOnly | QFile::Text)) {
-            //create an empty XBEL file.
             QTextStream out(&bookmarkFile);
             out.setCodec("utf-8");
             out << "<?xml version='1.0' encoding='UTF-8'?>\n"
@@ -3802,12 +3801,11 @@ void SaagharWindow::setupBookmarkManagerUi()
                 <<  "<xbel version=\"1.0\">\n"
                 <<  "</xbel>";
             bookmarkFile.close();
-            if (bookmarkFile.open(QFile::ReadOnly | QFile::Text)) {
-                if (SaagharWidget::bookmarks->read(&bookmarkFile)) {
-                    readBookmarkFile = true;
-                }
-            }
         }
+    }
+
+    if (!bookmarkFile.open(QFile::ReadOnly | QFile::Text) || !SaagharWidget::bookmarks->read(&bookmarkFile)) {
+        readBookmarkFile = false;
     }
 
     if (readBookmarkFile) {

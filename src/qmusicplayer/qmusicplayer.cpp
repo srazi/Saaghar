@@ -207,22 +207,22 @@ void QMusicPlayer::setSource()
 void QMusicPlayer::newAlbum(QString fileName, QString albumName)
 {
     if (fileName.isEmpty()) {
-        fileName = QFileDialog::getSaveFileName(this->window(), tr("New Saaghar Play List"), startDir,
-                                                "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
+        fileName = QFileDialog::getSaveFileName(window(), tr("New Saaghar Album"), startDir,
+                                                "Saaghar Album (*.sal *.m3u8 *.m3u);;All Files (*.*)");
     }
 
     bool alreadyLoaded = albumsPathList.values().contains(fileName);
     if (fileName.isEmpty() || alreadyLoaded) {
         if (alreadyLoaded) {
-            QMessageBox::information(this->window(), tr("Warning!"), tr("The album already loaded."));
+            QMessageBox::information(window(), tr("Warning!"), tr("The album already loaded."));
         }
         return;
     }
 
     QFileInfo selectedFile(fileName);
     if (albumName.isEmpty()) {
-        albumName = QInputDialog::getText(this->window(), tr("Name Of Play List"),
-                                          tr("Enter name for this play list:"),
+        albumName = QInputDialog::getText(window(), tr("Name Of Album"),
+                                          tr("Enter name for this Album:"),
                                           QLineEdit::Normal, selectedFile.baseName());
     }
 
@@ -235,8 +235,8 @@ void QMusicPlayer::newAlbum(QString fileName, QString albumName)
 
 void QMusicPlayer::loadAlbumFile()
 {
-    QString file = QFileDialog::getOpenFileName(this->window(), tr("Select Saaghar Play List"), startDir,
-                   "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
+    QString file = QFileDialog::getOpenFileName(window(), tr("Select Saaghar Album"), startDir,
+                   "Saaghar Album (*.sal *.m3u8 *.m3u);;All Files (*.*)");
 
     if (file.isEmpty()) {
         return;
@@ -256,8 +256,8 @@ void QMusicPlayer::renameAlbum(const QString &albumName)
     }
 
     QString oldName = albumManager->albumList()->itemText(index);
-    QString newName = QInputDialog::getText(window(), tr("Name Of Play List"),
-                                            tr("Enter new name for this play list:"),
+    QString newName = QInputDialog::getText(window(), tr("Name Of Album"),
+                                            tr("Enter new name for this Album:"),
                                             QLineEdit::Normal, oldName);
     if (newName.isEmpty() || newName == oldName ||
             albumsPathList.contains(newName)) {
@@ -319,19 +319,19 @@ void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
         saveAlbum(albumsPathList.value(albumName).toString(), albumName);
     }
     else {
-        QString file = QFileDialog::getSaveFileName(this->window(), tr("New Saaghar Play List"), startDir,
-                                                    "Saaghar Play List (*.spl *.m3u8 *.m3u);;All Files (*.*)");
+        QString file = QFileDialog::getSaveFileName(window(), tr("New Saaghar Album"), startDir,
+                                                    "Saaghar Album (*.sal *.m3u8 *.m3u);;All Files (*.*)");
 
         bool alreadyLoaded = albumsPathList.values().contains(file);
         if (file.isEmpty() || alreadyLoaded) {
             if (alreadyLoaded) {
-                QMessageBox::information(this->window(), tr("Warning!"), tr("The album already loaded."));
+                QMessageBox::information(window(), tr("Warning!"), tr("The album already loaded."));
             }
             return;
         }
 
-        QString name = QInputDialog::getText(this->window(), tr("Name Of Play List"),
-                                             tr("Enter name for this play list:"),
+        QString name = QInputDialog::getText(window(), tr("Name Of Album"),
+                                             tr("Enter name for this Album:"),
                                              QLineEdit::Normal, albumName + tr("_Copy"));
 
         if (name.isEmpty() || name == albumName ||
@@ -596,6 +596,14 @@ void QMusicPlayer::readPlayerSettings(QSettings* settingsObject)
 {
     settingsObject->beginGroup("QMusicPlayer");
     albumsPathList = settingsObject->value("ListOfAlbum").toHash();
+
+    QStringList keys = albumsPathList.uniqueKeys();
+    for (int i = 0; i < keys.size(); ++i) {
+        if (!QFile::exists(albumsPathList.value(keys.at(i)).toString())) {
+            albumsPathList.remove(keys.at(i));
+        }
+    }
+
     if (audioOutput) {
         audioOutput->setMuted(settingsObject->value("muted", false).toBool());
         audioOutput->setVolume(settingsObject->value("volume", 0.4).toReal());
