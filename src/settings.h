@@ -22,6 +22,10 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+#if defined(Q_WS_X11) && !defined(Q_OS_X11)
+#define Q_OS_X11
+#endif
+
 #include "ui_settings.h"
 
 #include <QMultiSelectWidget>

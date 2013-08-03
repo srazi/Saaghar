@@ -28,6 +28,10 @@
 class QVBoxLayout;
 class QLabel;
 
+#if defined(Q_WS_X11) && !defined(Q_OS_X11)
+#define Q_OS_X11
+#endif
+
 class QExtendedSplashScreen : public QWidget
 {
     Q_OBJECT

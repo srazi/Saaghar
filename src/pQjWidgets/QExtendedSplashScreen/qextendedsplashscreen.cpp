@@ -27,11 +27,12 @@
 #include <QVBoxLayout>
 #include <QLabel>
 #include <QDesktopWidget>
-#include<QPainter>
-#include<QTextDocument>
-#include<QTextCursor>
-#include<QTextBlock>
-#include<QAbstractTextDocumentLayout>
+#include <QPainter>
+#include <QTextDocument>
+#include <QTextCursor>
+#include <QTextBlock>
+#include <QAbstractTextDocumentLayout>
+#include <QProgressBar>
 
 //#include <QDebug>
 

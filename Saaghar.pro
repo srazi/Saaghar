@@ -73,6 +73,8 @@ mac {
 
     target.path = /Applications
     RESOURCES_PATH = Contents/Resources
+
+    DEFINES += NO_PHONON_LIB
 }
 
 
@@ -83,6 +85,8 @@ unix:!macx {
 isEmpty( PREFIX ) {
     PREFIX = /usr
 }
+
+DEFINES += PREFIX=\\\"$${PREFIX}\\\"
 
     DESKTOPDIR = $${PREFIX}/share/applications
     ICONDIR = $${PREFIX}/share/pixmaps
