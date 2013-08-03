@@ -57,7 +57,9 @@ Bookmarks::Bookmarks(QWidget* parent)
 {
     setLayoutDirection(Qt::RightToLeft);
     setTextElideMode(Qt::ElideMiddle);
+#ifdef Q_OS_WIN
     setIndentation(10);
+#endif
     QStringList labels;
     labels << tr("Title") << tr("Comments");
 

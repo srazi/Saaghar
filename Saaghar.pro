@@ -41,11 +41,12 @@ win32-g++{
 !static {
     ##shared libs
     depFiles.path = Saaghar-Win
-    depFiles.files = $$[QT_INSTALL_LIBS]/QtCore4.dll \
-        $$[QT_INSTALL_LIBS]/QtGui4.dll \
-        $$[QT_INSTALL_LIBS]/QtSql4.dll \
-        $$[QT_INSTALL_LIBS]/QtNetwork4.dll \
-        $$[QT_INSTALL_LIBS]/QtXml4.dll \
+    depFiles.files = $$[QT_INSTALL_BINS]/QtCore4.dll \
+        $$[QT_INSTALL_BINS]/QtGui4.dll \
+        $$[QT_INSTALL_BINS]/QtSql4.dll \
+        $$[QT_INSTALL_BINS]/QtNetwork4.dll \
+        $$[QT_INSTALL_BINS]/QtXml4.dll \
+        $$[QT_INSTALL_BINS]/phonon4.dll \
         $$[QT_INSTALL_BINS]/mingwm10.dll \
         $$[QT_INSTALL_BINS]/libgcc_s_dw2-1.dll
 
@@ -75,6 +76,7 @@ mac {
     RESOURCES_PATH = Contents/Resources
 
     DEFINES += NO_PHONON_LIB
+    LIBS += -L/usr/lib -lz
 }
 
 
@@ -85,6 +87,8 @@ unix:!macx {
 isEmpty( PREFIX ) {
     PREFIX = /usr
 }
+
+    LIBS += -L/usr/lib -lz
 
 DEFINES += PREFIX=\\\"$${PREFIX}\\\"
 
@@ -104,7 +108,7 @@ utilities.files += \
     $$PWD/AUTHORS \
     $$PWD/CHANGELOG \
     $$PWD/GPLv2Fa-GPLv3En \
-    $$PWD/README \
+    $$PWD/README.md \
     $$PWD/TODO \
     $$PWD/LICENSE
 
