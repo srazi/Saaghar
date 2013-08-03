@@ -175,7 +175,7 @@ signals:
     void captionChanged();
     void navNextActionState(bool);
     void navPreviousActionState(bool);
-    void loadingStatusText(const QString &);
+    void loadingStatusText(const QString &,int num = 0);
     void createContextMenuRequested(const QPoint &);
 };
 #endif // SAAGHARWIDGET_H

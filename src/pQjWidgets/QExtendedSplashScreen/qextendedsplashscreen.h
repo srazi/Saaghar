@@ -27,6 +27,7 @@
 #include <QWidget>
 class QVBoxLayout;
 class QLabel;
+class QProgressBar;
 
 #if defined(Q_WS_X11) && !defined(Q_OS_X11)
 #define Q_OS_X11
@@ -47,7 +48,11 @@ public:
     void repaint();
     void show();
 
+    inline bool isFinished() { return m_isFinished; }
     void forceRepaint();//after repaint calls 'processEvent()'
+
+    void setProgressBar(const QPixmap &maskPixmap, int minimum = 0, int maximum = 0, Qt::Orientation o = Qt::Horizontal);
+    void addToMaximum(int number, bool forceUpdate = true);
 
 public slots:
     void showMessage(const QString &message, int alignment, const QColor &color = Qt::black);
@@ -66,6 +71,8 @@ private:
     int textAlign;
     QRect textRect;
     bool m_isFinished;
+    QProgressBar* m_progressBar;
+
     Q_DISABLE_COPY(QExtendedSplashScreen)
 
 protected:

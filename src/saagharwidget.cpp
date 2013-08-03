@@ -650,6 +650,9 @@ void SaagharWidget::showCategory(GanjoorCat category)
     QColor sectionColor(Settings::getFromColors(Settings::SectionNameFontColor));
 
     int betterRightToLeft = 0, betterLeftToRight = 0;
+    int step = 99;
+
+    emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(currentCaption), (poems.size() + subcatsSize) / (step + 1) );
 
     for (int i = 0; i < subcatsSize; ++i) {
         QString catText = QGanjoorDbBrowser::simpleCleanString(subcats.at(i)->_Text);
@@ -686,6 +689,11 @@ void SaagharWidget::showCategory(GanjoorCat category)
         //freeing resuorce
         delete subcats[i];
         subcats[i] = 0;
+
+        if (i >= step) {
+            emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(currentCaption));
+            step = step + 100;
+        }
     }
 
     for (int i = 0; i < poems.size(); i++) {
@@ -714,6 +722,11 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
         tableViewWidget->setItem(subcatsSize + i + startRow, 0, poemItem);
         tableViewWidget->setRowHeight(subcatsSize + i + startRow, SaagharWidget::computeRowHeight(QFontMetrics(sectionFont), -1, -1));
+
+        if (subcatsSize + i > step) {
+            emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(currentCaption));
+            step = step + 100;
+        }
     }
 
     //support LTR contents
@@ -914,10 +927,6 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
     tableViewWidget->setLayoutDirection(Qt::RightToLeft);
 
-    if (this->isHidden()) {
-        emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)));
-    }
-
 //#ifndef Q_OS_MAC //Qt Bug when inserting TATWEEl character
     const bool justified = true;//temp
     int maxWidth = -1;
@@ -952,7 +961,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
     //temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
     bool rightVerseFlag = false;
-    int step = 100;
+    int step = 99;
+    emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)), numberOfVerses / (step + 1));
 
     QStringList bookmarkedVerses("");
     if (SaagharWidget::bookmarks) {
@@ -968,11 +978,9 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
             currentVerseText = currentVerseText.simplified();
         }
 
-        if (this->isHidden()) {
-            if (i > step) {
-                emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)));
-                step = step + 100;
-            }
+        if (i >= step) {
+            emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)));
+            step = step + 100;
         }
 //#ifndef Q_OS_MAC //Qt Bug when inserting TATWEEl character
         if (justified) {

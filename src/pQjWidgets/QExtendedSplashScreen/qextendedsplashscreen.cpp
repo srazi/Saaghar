@@ -33,6 +33,8 @@
 #include <QTextBlock>
 #include <QAbstractTextDocumentLayout>
 #include <QProgressBar>
+#include <QBitmap>
+#include <QStyle>
 
 //#include <QDebug>
 
@@ -55,6 +57,7 @@ QExtendedSplashScreen::~QExtendedSplashScreen()
 void QExtendedSplashScreen::init(const QPixmap &pixmap)
 {
     m_isFinished = false;
+    m_progressBar = 0;
 
     setAttribute(Qt::WA_TranslucentBackground);
     mainLayout = new QVBoxLayout;
@@ -101,6 +104,52 @@ void QExtendedSplashScreen::forceRepaint()
     QCoreApplication::processEvents();
 }
 
+void QExtendedSplashScreen::setProgressBar(const QPixmap &maskPixmap, int minimum, int maximum, Qt::Orientation o)
+{
+    if (!m_progressBar) {
+        m_progressBar = new QProgressBar(this);
+        m_progressBar->setAttribute(Qt::WA_TranslucentBackground);
+        m_progressBar->setTextVisible(false);
+
+        bool badProgressBar = style()->objectName() == "cde" || style()->objectName() == "motif" ||
+                              style()->objectName().startsWith("macintosh") || style()->objectName() == "windows" ||
+                              style()->objectName() == "windowsxp";
+        if (badProgressBar) {
+            m_progressBar->setStyleSheet("QProgressBar{border: none; background: transparent; width: 100px; height: 100px;}"
+                                         "QProgressBar::chunk {width: 15px; height: 15px; margin: -5px;"
+                                         "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #9F9, stop: 0.4 #4F4, stop: 0.5 #4F4, stop: 1.0 #3E3);}");
+        }
+        else {
+            m_progressBar->setStyleSheet("QProgressBar{ background: transparent; border:none;}");
+        }
+    }
+    m_progressBar->setMinimum(minimum);
+    m_progressBar->setMaximum(maximum);
+    m_progressBar->setFixedSize(maskPixmap.size());
+    m_progressBar->setOrientation(o);
+    m_progressBar->setMask(maskPixmap.mask());
+
+    forceRepaint();
+}
+
+void QExtendedSplashScreen::addToMaximum(int number, bool forceUpdate)
+{
+    if (!m_progressBar || m_progressBar->value() == m_progressBar->maximum()) {
+        return;
+    }
+
+    if (number > 0) {
+        m_progressBar->setMaximum(m_progressBar->maximum() + number);
+    }
+    else if (number == -1) {
+        m_progressBar->setValue(m_progressBar->maximum());
+    }
+
+    if (forceUpdate && (number > 0 || number == -1)) {
+        forceRepaint();
+    }
+}
+
 void QExtendedSplashScreen::showMessage(const QString &message, int alignment, const QColor &color)
 {
     textColor = color;
@@ -110,9 +159,9 @@ void QExtendedSplashScreen::showMessage(const QString &message, int alignment, c
 
 void QExtendedSplashScreen::showMessage(const QString &message)
 {
-    if (message.startsWith("!QTransparentSplashInternalCommands:")) {
+    if (message.startsWith("!QExtendedSplashScreenCommands:")) {
         QString command = message;
-        command.remove("!QTransparentSplashInternalCommands:");
+        command.remove("!QExtendedSplashScreenCommands:");
         if (command == "CLOSE") {
             close();
         }
@@ -124,6 +173,11 @@ void QExtendedSplashScreen::showMessage(const QString &message)
         }
 
         return;
+    }
+    if (m_progressBar) {
+        if (m_progressBar->value() < m_progressBar->maximum()) {
+            m_progressBar->setValue(m_progressBar->value() + 1);
+        }
     }
     currentStatus = message;
     forceRepaint();

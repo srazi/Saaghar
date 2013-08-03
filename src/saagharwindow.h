@@ -31,6 +31,7 @@
 #include <QUndoGroup>
 #include <QComboBox>
 
+class QExtendedSplashScreen;
 class QMultiSelectWidget;
 class OutLineTree;
 class Settings;
@@ -45,7 +46,7 @@ class SaagharWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit SaagharWindow(QWidget* parent = 0, QWidget* splashScreen = 0);
+    explicit SaagharWindow(QWidget* parent = 0, QExtendedSplashScreen* splashScreen = 0);
     ~SaagharWindow();
 
     enum TabType {
@@ -139,6 +140,7 @@ private:
     QAction* globalRedoAction;
     QAction* globalUndoAction;
     Settings* m_settingsDialog;
+    QExtendedSplashScreen* m_splash;
 
     static bool isPortable;
 
@@ -206,6 +208,7 @@ private slots:
     void showSearchOptionsDialog();
     void showSearchOptionMenu();
     void showSearchTips();
+    void showStatusText(const QString &message, int newLevelsCount = 0);
 
 protected:
 //      void resizeEvent( QResizeEvent * event );

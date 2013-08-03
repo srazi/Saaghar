@@ -33,6 +33,7 @@
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
 #include <QMultiSelectWidget>
+#include <QExtendedSplashScreen>
 
 #include <QMessageBox>
 #include <QDesktopServices>
@@ -70,12 +71,13 @@
 bool SaagharWindow::autoCheckForUpdatesState = true;
 bool SaagharWindow::isPortable = false;
 
-SaagharWindow::SaagharWindow(QWidget* parent, QWidget* splashScreen)
+SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScreen)
     : QMainWindow(parent)
     , ui(new Ui::SaagharWindow)
     , m_cornerMenu(0)
     , menuBookmarks(0)
     , m_settingsDialog(0)
+    , m_splash(splashScreen)
 {
     setObjectName("SaagharMainWindow");
 
@@ -171,11 +173,13 @@ SaagharWindow::SaagharWindow(QWidget* parent, QWidget* splashScreen)
 
     loadGlobalSettings();
 
-    if (splashScreen && !fresh) {
+    if (m_splash && !fresh) {
         if (Settings::READ("Display Splash Screen", true).toBool()) {
-            connect(this, SIGNAL(loadingStatusText(QString)), splashScreen, SLOT(showMessage(QString)));
-            emit loadingStatusText("!QTransparentSplashInternalCommands:SHOW");
-            emit loadingStatusText(QObject::tr("<i><b>Loading...</b></i>"));
+            m_splash->show();
+            showStatusText(QObject::tr("<i><b>Loading...</b></i>"));
+        }
+        else {
+            m_splash->finish(this);
         }
     }
 
@@ -226,11 +230,8 @@ SaagharWindow::SaagharWindow(QWidget* parent, QWidget* splashScreen)
 //  mainTabWidget->setUsesScrollButtons(true);
 //  mainTabWidget->setMovable(true);
 
-    //emit loadingStatusText(tr("<i><b>Loading settings...</b></i>"));
-    //loadGlobalSettings();
-
     if (autoCheckForUpdatesState && !fresh) {
-        emit loadingStatusText(tr("<i><b>Checking for update...</b></i>"));
+        showStatusText(tr("<i><b>Checking for update...</b></i>"));
         QCoreApplication::processEvents();
         checkForUpdates();
     }
@@ -295,6 +296,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QWidget* splashScreen)
 
     if (!fresh) {
         QStringList openedTabs = Settings::READ("Opened tabs from last session").toStringList();
+        showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), openedTabs.size());
         for (int i = 0; i < openedTabs.size(); ++i) {
             QStringList tabViewData = openedTabs.at(i).split("=", QString::SkipEmptyParts);
             if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID")) {
@@ -360,7 +362,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QWidget* splashScreen)
         QtWin::easyBlurUnBlur(this, Settings::READ("UseTransparecy").toBool());
     }
 
-    emit loadingStatusText(tr("<i><b>Saaghar is starting...</b></i>"));
+    showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), -1);
 }
 
 SaagharWindow::~SaagharWindow()
@@ -855,13 +857,13 @@ void SaagharWindow::checkForUpdates()
     }
 
     if (reply->error()) {
-        emit loadingStatusText("!QTransparentSplashInternalCommands:HIDE");
+        showStatusText("!QExtendedSplashScreenCommands:HIDE");
         QMessageBox criticalError(QMessageBox::Critical, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
         criticalError.exec();
         //QMessageBox::critical(this, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()));
-        if (!action && Settings::READ("Display Splash Screen", true).toBool())
+        if (!action)
         {
-            emit loadingStatusText("!QTransparentSplashInternalCommands:SHOW");
+            showStatusText("!QExtendedSplashScreenCommands:SHOW");
         }
         return;
     }
@@ -886,7 +888,7 @@ void SaagharWindow::checkForUpdates()
     int serverAppVerion = serverAppVerionStr.toInt();
 
     if (serverAppVerion > runningAppVersion) {
-        emit loadingStatusText("!QTransparentSplashInternalCommands:CLOSE");
+        showStatusText("!QExtendedSplashScreenCommands:CLOSE");
         QMessageBox updateIsAvailable(this);
         updateIsAvailable.setWindowFlags(updateIsAvailable.windowFlags() | Qt::WindowStaysOnTopHint);
         updateIsAvailable.setTextFormat(Qt::RichText);
@@ -1042,7 +1044,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
 
         undoGroup->addStack(saagharWidget->undoStack);
 
-        connect(saagharWidget, SIGNAL(loadingStatusText(QString)), this, SIGNAL(loadingStatusText(QString)));
+        connect(saagharWidget, SIGNAL(loadingStatusText(QString,int)), this, SLOT(showStatusText(QString,int)));
 
         connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateCaption()));
         //temp
@@ -1115,7 +1117,7 @@ void SaagharWindow::newTabForItem(int id, const QString &type, bool noError, boo
 {
     insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, type, noError, pushToStack);
 //    saagharWidget->processClickedItem(type, id, noError, pushToStack);
-    emit loadingStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":") + 1), "", 0, 6, false, Qt::ElideRight)));
+    showStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":") + 1), "", 0, 6, false, Qt::ElideRight)));
     //qDebug() << "emit updateTabsSubMenus()--848";
     //resolved by signal SaagharWidget::captionChanged()
     //updateTabsSubMenus();
@@ -2157,6 +2159,16 @@ void SaagharWindow::showSearchTips()
                  .arg(tr("<TD  ALIGN=Left>:</TD>"));
     QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(currentIconThemePath() + "/search.png").scaledToHeight(64, Qt::SmoothTransformation));
     searchTipsDialog.exec();
+}
+
+void SaagharWindow::showStatusText(const QString &message, int newLevelsCount)
+{
+    if (!m_splash || m_splash->isFinished()) {
+        return;
+    }
+
+    m_splash->addToMaximum(newLevelsCount, false);
+    m_splash->showMessage(message);
 }
 
 //void MainWindow::newSearchNonAlphabetChanged(bool checked)
@@ -3827,14 +3839,12 @@ void SaagharWindow::setupBookmarkManagerUi()
         delete bookmarkManagerWidget;
         bookmarkManagerWidget = 0;
         menuBookmarks = 0;
-        emit loadingStatusText("!QTransparentSplashInternalCommands:HIDE");
-        QMessageBox::information(this, tr("Warning!"), tr("Bookmarking system was disabled, something going wrong with "
-                                                          "writing or reading from bookmarks file:\n%1")
-                                 .arg(bookmarkFileName));
-        if (Settings::READ("Display Splash Screen", true).toBool())
-        {
-            emit loadingStatusText("!QTransparentSplashInternalCommands:SHOW");
-        }
+        showStatusText("!QExtendedSplashScreenCommands:HIDE");
+        QMessageBox warning(QMessageBox::Warning, tr("Warning!"), tr("Bookmarking system was disabled, something going wrong with "
+                                                                     "writing or reading from bookmarks file:\n%1")
+                            .arg(bookmarkFileName), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+        warning.exec();
+        showStatusText("!QExtendedSplashScreenCommands:SHOW");
     }
 }
 
