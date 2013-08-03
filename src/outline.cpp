@@ -1,9 +1,8 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2012 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
- *                                                                         *
  *                                                                         *
  * Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).       *
  * All rights reserved.                                                    *

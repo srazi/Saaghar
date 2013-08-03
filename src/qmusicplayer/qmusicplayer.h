@@ -1,15 +1,14 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
- *  It's based on "qmusicplayer" example of Qt ToolKit                     *
+ *                                                                         *
+ *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
+ *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  * Copyright (C) 2011 Nokia Corporation and/or its subsidiary(-ies).       *
  * All rights reserved.                                                    *
  * Contact: Nokia Corporation (qt-info@nokia.com)                          *
  *                                                                         *
  * This file is part of the examples of the Qt Toolkit.                    *
- *                                                                         *
- *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
- *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  * $QT_BEGIN_LICENSE:BSD$                                                  *
  * You may use this file under the terms of the BSD license as follows:    *
