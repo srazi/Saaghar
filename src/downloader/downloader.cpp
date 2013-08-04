@@ -50,7 +50,9 @@
 #include "downloader.h"
 #include "ui_authenticationdialog.h"
 
-Downloader::Downloader(QObject* parent, QProgressBar* progressBar, QLabel* statusLabel) : QObject(parent)
+Downloader::Downloader(QObject* parent, QProgressBar* progressBar, QLabel* statusLabel)
+    : QObject(parent)
+    , m_hasError(false)
 {
     downloadTitle = "";
     loop = new QEventLoop(parent);
@@ -95,6 +97,7 @@ void Downloader::startRequest(QUrl url)
         }
     }
 
+    m_hasError = false;
     loop->exec();
 }
 
@@ -172,9 +175,8 @@ void Downloader::requestFinished()
             _progressBar->hide();
         }
         emit downloadStopped();
-//#ifndef Q_OS_MAEMO_5
-//      progressDialog->hide();
-//#endif
+
+        m_hasError = true;
         return;
     }
 
@@ -194,6 +196,7 @@ void Downloader::requestFinished()
         QMessageBox::information(0, tr("Downloader"),
                                  tr("Download failed: %1.")
                                  .arg(reply->errorString()));
+        m_hasError = true;
         //downloadButton->setEnabled(true);
     }
     else if (!redirectionTarget.isNull()) {

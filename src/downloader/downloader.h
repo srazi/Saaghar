@@ -70,6 +70,7 @@ public:
     Downloader(QObject* parent = 0, QProgressBar* progressBar = 0, QLabel* statusLabel = 0);
 
     void startRequest(QUrl url);
+    inline bool hasError() { return m_hasError; }
     //QProgressBar *downloadProgressBar(QWidget *parent = 0);
     QEventLoop* loop;
 
@@ -100,6 +101,8 @@ private:
     QFile* file;
     int httpGetId;
     bool requestAborted;
+    bool m_hasError;
+
 signals:
     void downloadStopped();
 };

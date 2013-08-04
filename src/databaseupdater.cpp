@@ -258,7 +258,7 @@ void DataBaseUpdater::readRepository(const QString &url)
         disconnect(ui->comboBoxRepoList, SIGNAL(currentIndexChanged(QString)), this, SLOT(readRepository(QString)));
         addRemoveRepository();
         connect(ui->comboBoxRepoList, SIGNAL(currentIndexChanged(QString)), this, SLOT(readRepository(QString)));
-        ui->comboBoxRepoList->setCurrentIndex(-1);//maybe a bug in Qt, set to '0' does not work!
+        ui->comboBoxRepoList->setCurrentIndex(-1);//maybe a bug in older Qt, set to '0' does not work!
         ui->comboBoxRepoList->setCurrentIndex(0);
         return;
     }
@@ -358,7 +358,13 @@ void DataBaseUpdater::readRepository(const QString &url)
             downloaderObject->downloadFile(repoUrl, tmpPath, urlInfo.fileName());
             downloadAboutToStart = downloadStarted = false;
             ui->comboBoxRepoList->setEnabled(true);
-            ui->refreshPushButton->setEnabled(true);
+            if (!downloaderObject->hasError()) {
+                ui->refreshPushButton->setEnabled(true);
+            }
+            else {
+                ui->comboBoxRepoList->setCurrentIndex(-1);//maybe a bug in older Qt, set to '0' does not work!
+                ui->comboBoxRepoList->setCurrentIndex(0);
+            }
             ui->labelDownloadStatus->hide();
             QString filepath = tmpPath + "/" + urlInfo.fileName();
             QFile file(filepath);
