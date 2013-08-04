@@ -34,6 +34,7 @@ namespace Ui
 class DataBaseUpdater;
 }
 
+class SaagharWindow;
 class Downloader;
 
 class DataBaseUpdater : public QDialog
@@ -50,8 +51,8 @@ public:
     bool read(QIODevice* device);
     bool read(const QByteArray &data);
     static QString downloadLocation;
-    inline static void setInstallerObject(QObject* reciver = 0)
-    {DataBaseUpdater::installerObject = reciver;}
+    static bool keepDownloadedFiles;
+    inline static void setSaagharWindow(SaagharWindow* saagharWindow = 0) { DataBaseUpdater::s_saagharWindow = saagharWindow; }
 
 public slots:
     void readRepository(const QString &url = "");
@@ -65,7 +66,7 @@ private slots:
     void itemDataChanged(QTreeWidgetItem* item, int column);
 
 private:
-    static QObject* installerObject;
+    static SaagharWindow* s_saagharWindow;
     static QStringList defaultRepositories;
     static QStringList repositoriesUrls;
     void addRemoveRepository();
@@ -92,9 +93,6 @@ private:
 
 protected:
     void closeEvent(QCloseEvent*);
-
-signals:
-    void installRequest(const QString &, bool*);
 };
 
 #endif

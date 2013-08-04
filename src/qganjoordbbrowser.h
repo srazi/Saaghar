@@ -50,7 +50,7 @@ class QGanjoorDbBrowser : public QObject
 {
     Q_OBJECT
 public:
-    QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db", QGanjoorDbBrowser** self = 0, QWidget* splashScreen = 0);
+    QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db", QWidget* splashScreen = 0);
     ~QGanjoorDbBrowser();
 //      static QString qStringMacHelper(const QString &str);
     static QString getLongPathName(const QString &fileName);
@@ -62,6 +62,7 @@ public:
     static int getRandomNumber(int minBound, int maxBound);
 
     bool isConnected(const QString &connectionID = "");
+    bool isValid(QString connectionID = "");
 
     bool isRhyme(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder = -1);
     bool isRadif(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder = -1);
@@ -118,6 +119,9 @@ public:
     static QStringList AE_Variant;
     static QStringList He_Variant;
 
+public slots:
+    void addDataSets();
+
 private:
     bool createEmptyDataBase(const QString &connectionID = "");
     bool poetHasSubCats(int poetID, const QString &connectionID = "");
@@ -131,6 +135,7 @@ private:
     QSqlDatabase dBConnection;
     static bool comparePoetsByName(GanjoorPoet* poet1, GanjoorPoet* poet2);
     static bool compareCategoriesByName(GanjoorCat* cat1, GanjoorCat* cat2);
+    bool m_addRemoteDataSet;
 
 signals:
     void searchStatusChanged(const QString &);

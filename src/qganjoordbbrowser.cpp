@@ -30,6 +30,7 @@
 #include <QFileDialog>
 #include <QTime>
 #include <QPushButton>
+#include <QTimer>
 
 DataBaseUpdater* QGanjoorDbBrowser::dbUpdater = 0;
 QString QGanjoorDbBrowser::dBName = QString();
@@ -99,10 +100,8 @@ const QRegExp SomeSymbol_EXP = QRegExp("[" +
                                        + "]+");
 /***************************/
 
-QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QGanjoorDbBrowser** self, QWidget* splashScreen)
+QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* splashScreen)
 {
-    *self = this;//an ugly trick! //we need pointer to this class before end of its initialization
-
     bool flagSelectNewPath = false;
     QString newPath = "";
 
@@ -231,27 +230,8 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QGanjoorDbBro
                     QFile::remove(dir + "/ganjoor.s3db");
                     exit(1);
                 }
-
-                if (!QGanjoorDbBrowser::dbUpdater) {
-                    QGanjoorDbBrowser::dbUpdater = new DataBaseUpdater(0, Qt::WindowStaysOnTopHint);
-                }
-
-                if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromLocal) {
-                    //select data sets existing
-                    QStringList fileList = QFileDialog::getOpenFileNames(0, tr("Select data sets to install"), QDir::homePath(), "Supported Files (*.gdb *.s3db *.zip);;Ganjoor DataBase (*.gdb *.s3db);;Compressed Data Sets (*.zip);;All Files (*.*)");
-                    if (!fileList.isEmpty()) {
-                        foreach (const QString &file, fileList) {
-                            //connect(QGanjoorDbBrowser::dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
-                            QGanjoorDbBrowser::dbUpdater->installItemToDB(file);
-                            QApplication::processEvents();
-                        }
-                    }
-                }
-                else if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromRemote) {
-                    //download dialog
-                    QtWin::easyBlurUnBlur(QGanjoorDbBrowser::dbUpdater, Settings::READ("UseTransparecy").toBool());
-                    QGanjoorDbBrowser::dbUpdater->exec();
-                }
+                m_addRemoteDataSet = noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromRemote;
+                QTimer::singleShot(0, this, SLOT(addDataSets()));
                 flagSelectNewPath = true;
                 newPath = dir;
             }
@@ -288,6 +268,19 @@ bool QGanjoorDbBrowser::isConnected(const QString &connectionID)
     }
     dBConnection = QSqlDatabase::database(connectionName, true);//dBName
     return dBConnection.isOpen();
+}
+
+bool QGanjoorDbBrowser::isValid(QString connectionID)
+{
+    if (connectionID.isEmpty()) {
+        connectionID = dBName;
+    }
+    QSqlDatabase db = QSqlDatabase::database(connectionID);
+    if (db.open()) {
+        return db.tables().contains("cat");
+    }
+
+    return false;
 }
 
 QList<GanjoorPoet*> QGanjoorDbBrowser::getPoets(const QString &connectionID, bool sort)
@@ -942,7 +935,7 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
     QString connectionID = getIdForDataBase(fileName);
     {
         QSqlDatabase dataBaseObject = QSqlDatabase::database(connectionID);
-        if (!dataBaseObject.open()) {
+        if (!dataBaseObject.open() || !isValid(connectionID)) {
             QSqlDatabase::removeDatabase(connectionID);
             return false;
         }
@@ -2037,6 +2030,29 @@ QList<QTreeWidgetItem*> QGanjoorDbBrowser::loadOutlineFromDataBase(int parentID)
         items << item;
     }
     return items;
+}
+
+void QGanjoorDbBrowser::addDataSets()
+{
+    if (!QGanjoorDbBrowser::dbUpdater) {
+        QGanjoorDbBrowser::dbUpdater = new DataBaseUpdater(0, Qt::WindowStaysOnTopHint);
+    }
+
+    if (!m_addRemoteDataSet) {
+        //select data sets existing
+        QStringList fileList = QFileDialog::getOpenFileNames(0, tr("Select data sets to install"), QDir::homePath(), "Supported Files (*.gdb *.s3db *.zip);;Ganjoor DataBase (*.gdb *.s3db);;Compressed Data Sets (*.zip);;All Files (*.*)");
+        if (!fileList.isEmpty()) {
+            foreach (const QString &file, fileList) {
+                QGanjoorDbBrowser::dbUpdater->installItemToDB(file);
+                QApplication::processEvents();
+            }
+        }
+    }
+    else if (m_addRemoteDataSet) {
+        //download dialog
+        QtWin::easyBlurUnBlur(QGanjoorDbBrowser::dbUpdater, Settings::READ("UseTransparecy").toBool());
+        QGanjoorDbBrowser::dbUpdater->exec();
+    }
 }
 
 QString QGanjoorDbBrowser::simpleCleanString(const QString &text)

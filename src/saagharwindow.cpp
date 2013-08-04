@@ -278,7 +278,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
         }
     }
     //create ganjoor DataBase browser
-    SaagharWidget::ganjoorDataBase = new QGanjoorDbBrowser(dataBaseCompleteName, &SaagharWidget::ganjoorDataBase, splashScreen);
+    SaagharWidget::ganjoorDataBase = new QGanjoorDbBrowser(dataBaseCompleteName, splashScreen);
     qDebug() << "QGanjoorDbBrowser2222=" << SaagharWidget::ganjoorDataBase;
     SaagharWidget::ganjoorDataBase->setObjectName(QString::fromUtf8("ganjoorDataBaseBrowser"));
 
@@ -2556,8 +2556,9 @@ void SaagharWindow::loadGlobalSettings()
     Settings::hashColors = Settings::READ("Colors Hash", QVariant(defaultColors)).toHash();
 
     DataBaseUpdater::setRepositories(Settings::READ("Repositories List").toStringList());
+    DataBaseUpdater::keepDownloadedFiles = Settings::READ("Keep Downloaded File", false).toBool();
     DataBaseUpdater::downloadLocation = Settings::READ("Download Location", "").toString();
-    DataBaseUpdater::setInstallerObject(this);
+    DataBaseUpdater::setSaagharWindow(this);
 
     autoCheckForUpdatesState = config->value("Auto Check For Updates", true).toBool();
 
@@ -2732,6 +2733,7 @@ void SaagharWindow::saveSettings()
     Settings::WRITE("Colors Hash", Settings::hashColors);
 
     Settings::WRITE("Repositories List", DataBaseUpdater::repositories());
+    Settings::WRITE("Keep Downloaded File", QVariant(DataBaseUpdater::keepDownloadedFiles));
     Settings::WRITE("Download Location", DataBaseUpdater::downloadLocation);
 
 //  QHash<int, QPair<QString, qint64> >::const_iterator it = SaagharWidget::mediaInfoCash.constBegin();
@@ -3171,7 +3173,9 @@ void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
         }
         //SaagharWidget::ganjoorDataBase->dBConnection.rollback();
         dataBaseObject.rollback();
-        QMessageBox::warning(this, tr("Error!"), tr("There are some errors, the import procedure was not completed"));
+        QMessageBox warning(QMessageBox::Warning, tr("Error!"), tr("There are some errors, the import procedure was not completed"), QMessageBox::Ok
+                            , QGanjoorDbBrowser::dbUpdater, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+        warning.exec();
     }
     qDebug() << "end of=" << Q_FUNC_INFO;
     //QApplication::restoreOverrideCursor();

@@ -146,9 +146,9 @@ private:
 
 public slots:
     void updateTabsSubMenus();
+    void importDataBase(const QString &fileName, bool* ok = 0);
 
 private slots:
-    void importDataBase(const QString &fileName, bool* ok = 0);
     void openParentPage(int parentID, bool newPage = false);
     void openChildPage(int childID, bool newPage = false);
     void openPage(int id, SaagharWidget::PageType type, bool newPage = false);

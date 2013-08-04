@@ -33,15 +33,17 @@
 #include "downloader.h"
 #include "databaseupdater.h"
 #include "saagharwidget.h"
+#include "saagharwindow.h"
 
-QString DataBaseUpdater::downloadLocation = QString();
+QString DataBaseUpdater::downloadLocation;
+bool DataBaseUpdater::keepDownloadedFiles = false;
 QStringList DataBaseUpdater::repositoriesUrls = QStringList();
 QStringList DataBaseUpdater::defaultRepositories = QStringList()
         << "http://ganjoor.sourceforge.net/newgdbs.xml"
         << "http://ganjoor.sourceforge.net/programgdbs.xml"
         << "http://ganjoor.sourceforge.net/sitegdbs.xml";
 
-QObject* DataBaseUpdater::installerObject = 0;
+SaagharWindow* DataBaseUpdater::s_saagharWindow = 0;
 
 int PoetID_DATA = Qt::UserRole + 1;
 int CatID_DATA = Qt::UserRole + 2;
@@ -68,13 +70,6 @@ DataBaseUpdater::DataBaseUpdater(QWidget* parent, Qt::WindowFlags f)
     connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
     connect(ui->pushButtonBrowse, SIGNAL(clicked()), this, SLOT(getDownloadLocation()));
     connect(downloaderObject, SIGNAL(downloadStopped()), this, SLOT(forceStopDownload()));
-
-    if (installerObject) {
-        connect(this, SIGNAL(installRequest(QString,bool*)), installerObject, SLOT(importDataBase(QString,bool*)));
-    }
-    else {
-        qWarning() << "You have to call DataBaseUpdater::setInstallerObject()' with appropriate reciver object before initializing 'DataBaseUpdater'";
-    }
 }
 
 bool DataBaseUpdater::read(QIODevice* device)
@@ -208,6 +203,8 @@ void DataBaseUpdater::setupUi()
     ui->refreshPushButton->setEnabled(false);
 
     ui->lineEditDownloadLocation->setText(DataBaseUpdater::downloadLocation);
+    keepDownloadedFiles = keepDownloadedFiles && !downloadLocation.isEmpty();
+    ui->groupBoxKeepDownload->setChecked(keepDownloadedFiles);
     ui->downloadProgressBar->hide();
     ui->labelDownloadStatus->hide();
     //ui->hButtonsLayout->addWidget(downloaderObject->downloadProgressBar(this));
@@ -480,7 +477,6 @@ void DataBaseUpdater::initDownload()
         downloadItem(child, true);
 
         if (installCompleted) {
-            //after install we change the parent
             child->setCheckState(0, Qt::Unchecked);
             child->setFlags(Qt::NoItemFlags);
         }
@@ -526,6 +522,7 @@ bool DataBaseUpdater::doStopDownload()
 void DataBaseUpdater::closeEvent(QCloseEvent* e)
 {
     DataBaseUpdater::downloadLocation = ui->lineEditDownloadLocation->text();
+    keepDownloadedFiles = !downloadLocation.isEmpty() && ui->groupBoxKeepDownload->isChecked();
     if (!doStopDownload()) {
         e->ignore();    //download in progress
     }
@@ -637,6 +634,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
         if (!QFile::exists(file)) {
             qDebug() << "File does not exist.";
             QApplication::restoreOverrideCursor();
+            installCompleted = false;
             return;
         }
 
@@ -647,6 +645,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
         if (ec != UnZip::Ok) {
             qDebug() << "Unable to open archive: " << uz.formatError(ec);
             uz.closeArchive();
+            installCompleted = false;
             installItemToDB(fileName, path, "s3db");//try open it as SQLite database!
             QApplication::restoreOverrideCursor();
             return;
@@ -656,6 +655,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
             QList<UnZip::ZipEntry> list = uz.entryList();
             if (list.isEmpty()) {
                 qDebug() << "Empty archive.";
+                installCompleted = false;
                 QApplication::restoreOverrideCursor();
                 return;
             }
@@ -685,7 +685,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 
                 if (entryFileName.endsWith(".gdb") || entryFileName.endsWith(".s3db")) {
                     qDebug() << "emit installRequest=" << extractPath + "/" + entryFileName;
-                    emit installRequest(extractPath + "/" + entryFileName, &installCompleted);
+                    s_saagharWindow->importDataBase(extractPath + "/" + entryFileName, &installCompleted);
                     qDebug() << "remove Extract File--" << QFile::remove(extractPath + "/" + entryFileName);
                     QDir extractDir(extractPath);
                     qDebug() << "remove Extract Dir--" << extractDir.rmdir(extractPath);
@@ -702,7 +702,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
     } // end "zip" type
     else if (type == "s3db") {
         qDebug() << "FILE TYPE IS S3DB! [SQLite 3 Data Base]";
-        emit installRequest(file, &installCompleted);
+        s_saagharWindow->importDataBase(file, &installCompleted);
     }
 
     QApplication::restoreOverrideCursor();
