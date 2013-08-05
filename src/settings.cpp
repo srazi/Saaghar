@@ -29,8 +29,11 @@
 QHash<QString, QVariant> Settings::VariablesHash = QHash<QString, QVariant>();
 QHash<QString, QVariant> Settings::hashFonts = QHash<QString, QVariant>();
 QHash<QString, QVariant> Settings::hashColors = QHash<QString, QVariant>();
+QString Settings::s_currentIconPath;
 
-Settings::Settings(SaagharWindow* parent) :   QDialog(parent), ui(new Ui::Settings)
+Settings::Settings(SaagharWindow* parent)
+    : QDialog(parent)
+    , ui(new Ui::Settings)
 {
     ui->setupUi(this);
 
@@ -102,6 +105,14 @@ Settings::Settings(SaagharWindow* parent) :   QDialog(parent), ui(new Ui::Settin
     ui->gridLayout_9->addWidget(proseTextFontColor, 4, 1, 1, 1);
 
     connect(ui->pushButtonApply, SIGNAL(clicked()), parent, SLOT(applySettings()));
+    connect(ui->pushButtonApply, SIGNAL(clicked()), this, SLOT(applySettings()));
+
+    ui->checkBoxIconTheme->setChecked(Settings::READ("Icon Theme State", false).toBool());
+    ui->lineEditIconTheme->setEnabled(Settings::READ("Icon Theme State", false).toBool());
+    ui->pushButtonIconTheme->setEnabled(Settings::READ("Icon Theme State", false).toBool());
+    ui->lineEditIconTheme->setText(Settings::READ("Icon Theme Path", SaagharWindow::resourcesPath +
+                                                  "/themes/iconsets/light-gray/").toString());
+    connect(ui->pushButtonIconTheme, SIGNAL(clicked()), this, SLOT(browseForIconTheme()));
 }
 
 Settings::~Settings()
@@ -393,6 +404,37 @@ void Settings::insertToFontColorHash(QHash<QString, QVariant>* hash, const QVari
     }
     //if (Settings::READ("Global Font", false).toBool() && type != DefaultFontColor) return;
     hash->insert(QString::number(int(type)), variant);
+}
+
+QString Settings::currentIconThemePath()
+{
+    if (s_currentIconPath.isEmpty()) {
+        if (Settings::READ("Icon Theme State", false).toBool() &&
+                !Settings::READ("Icon Theme Path", SaagharWindow::resourcesPath +
+                                "/themes/iconsets/light-gray/").toString().isEmpty()) {
+            s_currentIconPath = Settings::READ("Icon Theme Path", SaagharWindow::resourcesPath +
+                                               "/themes/iconsets/light-gray/").toString();
+        }
+        else {
+            s_currentIconPath = ":/resources/iconsets/default/";
+        }
+    }
+
+    return s_currentIconPath;
+}
+
+void Settings::accept()
+{
+    applySettings();
+
+    QDialog::accept();
+}
+
+void Settings::applySettings()
+{
+    Settings::WRITE("Icon Theme State", ui->checkBoxIconTheme->isChecked());
+    Settings::WRITE("Icon Theme Path", ui->lineEditIconTheme->text());
+    s_currentIconPath.clear();
 }
 
 

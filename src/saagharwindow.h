@@ -64,12 +64,14 @@ public:
 //  public slots:
 //      void emitReSizeEvent();
 
+    static QString resourcesPath;//not-writable
+    static QString userHomePath;//writable
+
 private:
     QSplitter* splitter;
     OutLineTree* outlineTree;
     bool skipContextMenu;
     void setupBookmarkManagerUi();
-    QString currentIconThemePath();
     QBoxLayout* searchToolBarBoxLayout;
     bool skipSearchToolBarResize;
     void setupSearchToolBarUi();
@@ -78,8 +80,6 @@ private:
     QStringList selectedRandomRange;
     QStringList selectedSearchRange;
     bool randomOpenInNewTab;
-    QString resourcesPath;//not-writable
-    QString userHomePath;//writable
     int previousTabIndex;
 //      void importDataBase(const QString fileName);
     QStringList mainToolBarItems;
@@ -96,8 +96,7 @@ private:
     void scrollToFirstFoundedItem(QString phrase, int PoemID, int vorder);
     QTabWidget* mainTabWidget;
     void loadTabWidgetSettings();
-    bool settingsIconThemeState;
-    QString settingsIconThemePath;
+
     void loadGlobalSettings();
     void saveSettings();
     bool processTextChanged;

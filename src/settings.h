@@ -26,6 +26,7 @@
 #define Q_OS_X11
 #endif
 
+#define ICON_PATH Settings::currentIconThemePath()
 #include "ui_settings.h"
 
 #include <QMultiSelectWidget>
@@ -94,6 +95,12 @@ public:
         return QVariant(Settings::VariablesHash);
     }
 
+    static QString currentIconThemePath();
+
+public slots:
+    void accept();
+    void applySettings();
+
 private slots:
     void setUnCheckedOtherFontColorGroupBox(bool unChecked);
     void removeActionFromToolbarTable();
@@ -111,6 +118,7 @@ private:
     void replaceWithNeighbor(int neighbor);
 
     static QHash<QString, QVariant> VariablesHash;
+    static QString s_currentIconPath;
 };
 
 class CustomizeRandomDialog : public QDialog
