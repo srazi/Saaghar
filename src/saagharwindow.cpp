@@ -159,9 +159,6 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
     addDockWidget(Qt::LeftDockWidgetArea, SaagharWidget::musicPlayer->albumManagerDock());
     SaagharWidget::musicPlayer->albumManagerDock()->hide();
     SaagharWidget::musicPlayer->hide();
-    allActionMap.insert("albumDockAction", SaagharWidget::musicPlayer->albumManagerDock()->toggleViewAction());
-    actionInstance("albumDockAction")->setObjectName(QString::fromUtf8("albumDockAction"));
-    actionInstance("albumDockAction")->setIcon(QIcon(ICON_PATH + "/album.png"));
 
     SaagharWidget::musicPlayer->readPlayerSettings(getSettingsObject());
 
@@ -1712,10 +1709,16 @@ void SaagharWindow::actionImportNewSet()
 void SaagharWindow::setupUi()
 {
 #ifndef NO_PHONON_LIB
-    connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(QString,QString,int,bool)), this, SLOT(mediaInfoChanged(QString,QString,int)));
-    connect(SaagharWidget::musicPlayer, SIGNAL(requestPageContainedMedia(int,bool)), this, SLOT(openChildPage(int,bool)));
+    if (SaagharWidget::musicPlayer) {
+        allActionMap.insert("albumDockAction", SaagharWidget::musicPlayer->albumManagerDock()->toggleViewAction());
+        actionInstance("albumDockAction")->setObjectName(QString::fromUtf8("albumDockAction"));
+        actionInstance("albumDockAction")->setIcon(QIcon(ICON_PATH + "/album.png"));
 
-    addToolBar(Qt::BottomToolBarArea, SaagharWidget::musicPlayer);
+        connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(QString,QString,int,bool)), this, SLOT(mediaInfoChanged(QString,QString,int)));
+        connect(SaagharWidget::musicPlayer, SIGNAL(requestPageContainedMedia(int,bool)), this, SLOT(openChildPage(int,bool)));
+
+        addToolBar(Qt::BottomToolBarArea, SaagharWidget::musicPlayer);
+    }
 #endif
 
     if (Settings::READ("MainWindowState").isNull()) {
@@ -3850,7 +3853,7 @@ void SaagharWindow::ensureVisibleBookmarkedItem(const QString &type, const QStri
                         if (item) {
                             QTableWidgetItem* numItem = tmp->tableViewWidget->item(item->row(), 0);
                             if (SaagharWidget::bookmarks && numItem) {
-                                QPixmap star(":/resources/images/bookmark-on.png");
+                                QPixmap star(ICON_PATH + "/bookmark-on.png");
                                 QPixmap starOff(":/resources/images/bookmark-off.png");
                                 star = star.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row()) - 1, 22), Qt::SmoothTransformation);
                                 starOff = starOff.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row()) - 1, 22), Qt::SmoothTransformation);

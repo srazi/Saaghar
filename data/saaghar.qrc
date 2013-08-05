@@ -3,8 +3,6 @@
         <file>images/add-tab.png</file>
         <file>images/arrow-down.png</file>
         <file>images/bookmark-off.png</file>
-        <file>images/bookmark-on.png</file>
-        <file>images/bookmarks-import.png</file>
         <file>images/corner-button.png</file>
         <file>images/empty.png</file>
         <file>images/no-photo.png</file>
@@ -17,6 +15,8 @@
         <file>images/two-hemistich-line.png</file>
         <file>iconsets/default/album.png</file>
         <file>iconsets/default/bookmark-folder.png</file>
+        <file>iconsets/default/bookmarks-import.png</file>
+        <file>iconsets/default/bookmark-on.png</file>
         <file>iconsets/default/outline.png</file>
         <file>iconsets/default/redo.png</file>
         <file>iconsets/default/un-bookmark.png</file>

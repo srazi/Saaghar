@@ -1110,7 +1110,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 }
                 numItem->setFlags(numItemFlags);
                 if (SaagharWidget::bookmarks) {
-                    QPixmap star(":/resources/images/bookmark-on.png");
+                    QPixmap star(ICON_PATH + "/bookmark-on.png");
                     QPixmap starOff(":/resources/images/bookmark-off.png");
                     star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
                     starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
@@ -1140,7 +1140,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 numItem = new QTableWidgetItem("");
                 numItem->setFlags(numItemFlags);
                 if (SaagharWidget::bookmarks && verses.at(i)->_Position == Paragraph) {
-                    QPixmap star(":/resources/images/bookmark-on.png");
+                    QPixmap star(ICON_PATH + "/bookmark-on.png");
                     QPixmap starOff(":/resources/images/bookmark-off.png");
                     star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
                     starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
@@ -1589,7 +1589,7 @@ void SaagharWidget::clickedOnItem(int row, int column)
                 return;
             }
 
-            QPixmap star(":/resources/images/bookmark-on.png");
+            QPixmap star(ICON_PATH + "/bookmark-on.png");
             QPixmap starOff(":/resources/images/bookmark-off.png");
             star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
             starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);

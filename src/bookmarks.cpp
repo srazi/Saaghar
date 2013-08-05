@@ -70,7 +70,7 @@ Bookmarks::Bookmarks(QWidget* parent)
     m_folderIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirOpenIcon),
                          QIcon::Normal, QIcon::On);
 
-    m_bookmarkIcon.addPixmap(QPixmap(":/resources/images/bookmark-on.png"));
+    m_bookmarkIcon.addPixmap(QPixmap(ICON_PATH + "/bookmark-on.png"));
 
     setAlternatingRowColors(true);
 
