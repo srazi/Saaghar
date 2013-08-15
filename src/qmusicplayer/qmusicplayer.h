@@ -196,7 +196,6 @@ private:
     void setupUi();
 
     QTreeWidgetItem* previousItem;
-    QVBoxLayout* hLayout;
     QTreeWidget* mediaList;
     QComboBox* m_albumList;
     Phonon::MediaObject* albumMediaObject;

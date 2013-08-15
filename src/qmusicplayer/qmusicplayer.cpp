@@ -62,6 +62,7 @@
 #include <QInputDialog>
 #include <QComboBox>
 #include <QTreeWidget>
+#include <QHBoxLayout>
 
 
 QHash<QString, QVariant> QMusicPlayer::albumsPathList = QHash<QString, QVariant>();
@@ -1059,10 +1060,20 @@ void AlbumManager::setupUi()
     m_albumList->addItem(tr("Rename this album..."), "RENAME_ALBUM");
     m_albumList->addItem(tr("Remove this album..."), "REMOVE_ALBUM");
     m_albumList->addItem(tr("Save as this album..."), "SAVE_AS_ALBUM");
-    hLayout = new QVBoxLayout;
+
+    QToolButton* toggleMusicPlayer = new QToolButton(this);
+    toggleMusicPlayer->setAutoRaise(true);
+    toggleMusicPlayer->setCheckable(true);
+    toggleMusicPlayer->setDefaultAction(m_musicPlayer->toggleViewAction());
+
+    QVBoxLayout* mainLayout = new QVBoxLayout;
+    QHBoxLayout* hLayout = new QHBoxLayout;
     hLayout->addWidget(m_albumList);
-    hLayout->addWidget(mediaList);
-    this->setLayout(hLayout);
+    hLayout->addWidget(toggleMusicPlayer);
+
+    mainLayout->addItem(hLayout);
+    mainLayout->addWidget(mediaList);
+    this->setLayout(mainLayout);
 }
 
 void AlbumManager::setAlbums(const QHash<QString, QMusicPlayer::SaagharAlbum*> &albums, bool /*justMediaList*/)
