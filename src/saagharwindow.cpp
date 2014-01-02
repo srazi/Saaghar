@@ -948,9 +948,11 @@ void SaagharWindow::tabCloser(int tabIndex)
         mainTabWidget->removeTab(tabIndex);
         mainTabWidget->setUpdatesEnabled(true);
 
+#if 0
         if (closedTabContent->objectName() == "WidgetTab-Registeration") {
             actionInstance("Registeration")->setData(0);
         }
+#endif
 
         delete closedTabContent;
         closedTabContent = 0;
@@ -1962,7 +1964,9 @@ void SaagharWindow::setupUi()
     }
 
     actionInstance("DownloadRepositories", ICON_PATH + "/download-sets-repositories.png", QObject::tr("&Download From Repositories..."));
+#if 0
     actionInstance("Registeration", ICON_PATH + "/registeration.png", QObject::tr("&Registeration..."));
+#endif
 
     //Inserting main menu items
     ui->menuBar->addMenu(menuFile);
@@ -2084,8 +2088,10 @@ void SaagharWindow::setupUi()
     menuHelp->addAction(actionInstance("actionHelpContents"));
     menuHelp->addSeparator();
     menuHelp->addAction(actionInstance("actionCheckUpdates"));
+#if 0
     menuHelp->addSeparator();
     menuHelp->addAction(actionInstance("Registeration"));
+#endif
     menuHelp->addSeparator();
     menuHelp->addAction(actionInstance("actionAboutSaaghar"));
     menuHelp->addAction(actionInstance("actionAboutQt"));
@@ -2126,7 +2132,9 @@ QMenu* SaagharWindow::cornerMenu()
         m_cornerMenu->addAction(actionInstance("actionSettings"));
         m_cornerMenu->addAction(actionInstance("DownloadRepositories"));
         m_cornerMenu->addAction(actionInstance("actionCheckUpdates"));
+#if 0
         m_cornerMenu->addAction(actionInstance("Registeration"));
+#endif
         m_cornerMenu->addAction(actionInstance("actionAboutSaaghar"));
         m_cornerMenu->addSeparator();
         m_cornerMenu->addAction(actionInstance("actionExit"));
@@ -3590,6 +3598,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
         openRandomPoem(id, randomOpenInNewTab);
     }
     else if (actionName == "Registeration") {
+#if 0
         QWidget* regForm = qvariant_cast<QWidget*>(actionInstance("Registeration")->data());
         if (!regForm) {
             checkRegistration(true);
@@ -3597,6 +3606,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
         else {
             mainTabWidget->setCurrentWidget(regForm);
         }
+#endif
     }
 
     connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
@@ -4028,6 +4038,7 @@ void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
 
 void SaagharWindow::checkRegistration(bool forceShow)
 {
+#if 0
     if (!forceShow && !RegisterationForm::showRegisterForm()) {
         return;
     }
@@ -4072,4 +4083,5 @@ void SaagharWindow::checkRegistration(bool forceShow)
         mainTabWidget->currentWidget()->setObjectName("WidgetTab-Registeration");
         actionInstance("Registeration")->setData(QVariant::fromValue(mainTabWidget->currentWidget()));
     }
+#endif
 }
