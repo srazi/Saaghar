@@ -244,13 +244,13 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
     //setup corner widget
     QToolButton* cornerAddButton = new QToolButton(mainTabWidget);
     cornerAddButton->setAutoRaise(true);
-    cornerAddButton->setIcon(QIcon(":/resources/images/add-tab.png"));
+    cornerAddButton->setIcon(QIcon(ICON_PATH + "/add-tab.png"));
     connect(cornerAddButton, SIGNAL(clicked()), this, SLOT(actionNewTabClicked()));
 
     QToolButton* cornerMenuButton = new QToolButton(mainTabWidget);
     cornerMenuButton->setStyleSheet("QToolButton::menu-indicator{image: none;}");
     cornerMenuButton->setAutoRaise(true);
-    cornerMenuButton->setIcon(QIcon(":/resources/images/arrow-down.png"));
+    cornerMenuButton->setIcon(QIcon(ICON_PATH + "/arrow-down.png"));
     cornerMenuButton->setFixedWidth(cornerMenuButton->iconSize().width());
     cornerMenuButton->setMenu(cornerMenu());
 
@@ -1714,6 +1714,10 @@ void SaagharWindow::setupUi()
         actionInstance("albumDockAction")->setObjectName(QString::fromUtf8("albumDockAction"));
         actionInstance("albumDockAction")->setIcon(QIcon(ICON_PATH + "/album.png"));
 
+        allActionMap.insert("toggleMusicPlayer", SaagharWidget::musicPlayer->toggleViewAction());
+        actionInstance("toggleMusicPlayer")->setObjectName(QString::fromUtf8("ToggleMusicPlayerAction"));
+        actionInstance("toggleMusicPlayer")->setIcon(QIcon(ICON_PATH + "/music-player.png"));
+
         connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(QString,QString,int,bool)), this, SLOT(mediaInfoChanged(QString,QString,int)));
         connect(SaagharWidget::musicPlayer, SIGNAL(requestPageContainedMedia(int,bool)), this, SLOT(openChildPage(int,bool)));
 
@@ -1828,7 +1832,7 @@ void SaagharWindow::setupUi()
 
     actionInstance("actionExportAsPDF", ICON_PATH + "/export-pdf.png", tr("Exp&ort As PDF..."));
 
-    actionInstance("actionHelpContents", ":/resources/images/saaghar.png", tr("&Help Contents..."))->setShortcuts(QKeySequence::HelpContents);
+    actionInstance("actionHelpContents", ICON_PATH + "/help-contents.png", tr("&Help Contents..."))->setShortcuts(QKeySequence::HelpContents);
 
     actionInstance("actionCloseTab", ICON_PATH + "/close-tab.png", tr("&Close Tab"))->setShortcuts(QKeySequence::Close);
 
@@ -1895,7 +1899,7 @@ void SaagharWindow::setupUi()
     QMenu* poemViewStylesMenu = new QMenu(tr("Poem View Styles"));
     QActionGroup* poemViewStylesGroup = new QActionGroup(this);
 
-    poemViewStylesMenu->addAction(actionInstance("TwoHemistichPoemViewStyle", ":/resources/images/two-hemistich-line.png", QObject::tr("&Two Hemistich Line")));
+    poemViewStylesMenu->addAction(actionInstance("TwoHemistichPoemViewStyle", ICON_PATH + "/two-hemistich-line.png", QObject::tr("&Two Hemistich Line")));
     actionInstance("TwoHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
     actionInstance("TwoHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
     actionInstance("TwoHemistichPoemViewStyle")->setCheckable(true);
@@ -1907,13 +1911,13 @@ void SaagharWindow::setupUi()
 //  actionInstance("LastBeytCenteredPoemViewStyle")->setCheckable(true);
 //  actionInstance("LastBeytCenteredPoemViewStyle")->setData(SaagharWidget::LastBeytCentered);
 
-    poemViewStylesMenu->addAction(actionInstance("OneHemistichPoemViewStyle", ":/resources/images/one-hemistich-line.png", QObject::tr("&One Hemistich Line")));
+    poemViewStylesMenu->addAction(actionInstance("OneHemistichPoemViewStyle", ICON_PATH + "/one-hemistich-line.png", QObject::tr("&One Hemistich Line")));
     actionInstance("OneHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
     actionInstance("OneHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
     actionInstance("OneHemistichPoemViewStyle")->setCheckable(true);
     actionInstance("OneHemistichPoemViewStyle")->setData(SaagharWidget::OneHemistichLine);
 
-    poemViewStylesMenu->addAction(actionInstance("SteppedHemistichPoemViewStyle", ":/resources/images/stepped-hemistich-line.png", QObject::tr("&Stepped Hemistich Line")));
+    poemViewStylesMenu->addAction(actionInstance("SteppedHemistichPoemViewStyle", ICON_PATH + "/stepped-hemistich-line.png", QObject::tr("&Stepped Hemistich Line")));
     actionInstance("SteppedHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
     actionInstance("SteppedHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
     actionInstance("SteppedHemistichPoemViewStyle")->setCheckable(true);
@@ -2035,7 +2039,7 @@ void SaagharWindow::setupUi()
     toolbarsView->addAction(parentCatsToolBar->toggleViewAction());
 
 #ifndef NO_PHONON_LIB
-    toolbarsView->addAction(SaagharWidget::musicPlayer->toggleViewAction());
+    toolbarsView->addAction(actionInstance("toggleMusicPlayer"));
 #endif
 
     toolbarsView->addSeparator();
@@ -3608,7 +3612,7 @@ void SaagharWindow::updateTabsSubMenus()
         tabAction = new QAction(mainTabWidget->tabText(i), menuOpenedTabs);
 
         if (i == mainTabWidget->currentIndex()) {
-            tabAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+            tabAction->setIcon(QIcon(ICON_PATH + "/right.png"));
         }
         QObject* obj = mainTabWidget->widget(i);
         QVariant data = QVariant::fromValue(obj);
@@ -3854,7 +3858,7 @@ void SaagharWindow::ensureVisibleBookmarkedItem(const QString &type, const QStri
                             QTableWidgetItem* numItem = tmp->tableViewWidget->item(item->row(), 0);
                             if (SaagharWidget::bookmarks && numItem) {
                                 QPixmap star(ICON_PATH + "/bookmark-on.png");
-                                QPixmap starOff(":/resources/images/bookmark-off.png");
+                                QPixmap starOff(ICON_PATH + "/bookmark-off.png");
                                 star = star.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row()) - 1, 22), Qt::SmoothTransformation);
                                 starOff = starOff.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row()) - 1, 22), Qt::SmoothTransformation);
                                 QIcon bookmarkIcon;

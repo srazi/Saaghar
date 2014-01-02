@@ -50,10 +50,6 @@
          <property name="text">
           <string/>
          </property>
-         <property name="icon">
-          <iconset resource="../data/saaghar.qrc">
-           <normaloff>:/resources/images/refresh.png</normaloff>:/resources/images/refresh.png</iconset>
-         </property>
          <property name="checkable">
           <bool>false</bool>
          </property>
@@ -188,9 +184,7 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../data/saaghar.qrc"/>
- </resources>
+ <resources/>
  <connections>
   <connection>
    <sender>pushButtonCancel</sender>

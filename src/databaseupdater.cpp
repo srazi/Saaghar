@@ -28,6 +28,7 @@
 #include <QCloseEvent>
 #include <QTextEdit>
 #include <QDialogButtonBox>
+#include <QPushButton>
 
 #include "unzip.h"
 #include "downloader.h"
@@ -59,6 +60,7 @@ DataBaseUpdater::DataBaseUpdater(QWidget* parent, Qt::WindowFlags f)
     downloadStarted = downloadAboutToStart = false;
 
     ui->setupUi(this);
+    ui->refreshPushButton->setIcon(QIcon(ICON_PATH + "/refresh.png"));
     downloaderObject = new Downloader(this, ui->downloadProgressBar, ui->labelDownloadStatus);
     setupUi();
     //readRepository("");

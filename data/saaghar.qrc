@@ -1,21 +1,15 @@
 <RCC>
     <qresource prefix="/resources">
-        <file>images/add-tab.png</file>
-        <file>images/arrow-down.png</file>
-        <file>images/bookmark-off.png</file>
-        <file>images/corner-button.png</file>
         <file>images/empty.png</file>
-        <file>images/no-photo.png</file>
-        <file>images/one-hemistich-line.png</file>
-        <file>images/refresh.png</file>
         <file>images/saaghar-splash.png</file>
         <file>images/saaghar.png</file>
-        <file>images/stepped-hemistich-line.png</file>
         <file>images/transp.png</file>
-        <file>images/two-hemistich-line.png</file>
+        <file>iconsets/default/add-tab.png</file>
+        <file>iconsets/default/arrow-down.png</file>
         <file>iconsets/default/album.png</file>
         <file>iconsets/default/bookmark-folder.png</file>
         <file>iconsets/default/bookmarks-import.png</file>
+        <file>iconsets/default/bookmark-off.png</file>
         <file>iconsets/default/bookmark-on.png</file>
         <file>iconsets/default/outline.png</file>
         <file>iconsets/default/redo.png</file>
@@ -42,18 +36,23 @@
         <file>iconsets/default/new_window.png</file>
         <file>iconsets/default/next.png</file>
         <file>iconsets/default/no-fullscreen.png</file>
+        <file>iconsets/default/no-photo.png</file>
         <file>iconsets/default/ocr-verification.png</file>
+        <file>iconsets/default/one-hemistich-line.png</file>
         <file>iconsets/default/previous.png</file>
         <file>iconsets/default/print-preview.png</file>
         <file>iconsets/default/print.png</file>
         <file>iconsets/default/qt-logo.png</file>
         <file>iconsets/default/random.png</file>
+        <file>iconsets/default/refresh.png</file>
         <file>iconsets/default/remove-poet.png</file>
         <file>iconsets/default/right.png</file>
         <file>iconsets/default/search-options.png</file>
         <file>iconsets/default/search.png</file>
         <file>iconsets/default/select-mask.png</file>
         <file>iconsets/default/settings.png</file>
+        <file>iconsets/default/stepped-hemistich-line.png</file>
+        <file>iconsets/default/two-hemistich-line.png</file>
         <file>iconsets/default/up.png</file>
         <file>cats-buttons/button-home-single.png</file>
         <file>cats-buttons/button-home-single_hovered.png</file>
