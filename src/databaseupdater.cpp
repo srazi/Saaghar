@@ -467,6 +467,7 @@ void DataBaseUpdater::initDownload()
             oldRootItem->addChild(child);
             child->setCheckState(0, Qt::Unchecked);
             child->setFlags(Qt::NoItemFlags);
+            --i;
         }
     }
 
