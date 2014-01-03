@@ -40,9 +40,10 @@ QString DataBaseUpdater::downloadLocation;
 bool DataBaseUpdater::keepDownloadedFiles = false;
 QStringList DataBaseUpdater::repositoriesUrls = QStringList();
 QStringList DataBaseUpdater::defaultRepositories = QStringList()
-        << "http://ganjoor.sourceforge.net/newgdbs.xml"
-        << "http://ganjoor.sourceforge.net/programgdbs.xml"
-        << "http://ganjoor.sourceforge.net/sitegdbs.xml";
+        << "http://i.ganjoor.net/android/androidgdbs.xml";
+//        << "http://ganjoor.sourceforge.net/newgdbs.xml"
+//        << "http://ganjoor.sourceforge.net/programgdbs.xml"
+//        << "http://ganjoor.sourceforge.net/sitegdbs.xml";
 
 SaagharWindow* DataBaseUpdater::s_saagharWindow = 0;
 
@@ -202,6 +203,9 @@ void DataBaseUpdater::setupUi()
 #endif
 
     ui->comboBoxRepoList->addItems(QStringList() << repositoriesUrls << tr("Click To Add/Remove..."));
+    ui->comboBoxRepoList->insertSeparator(1);
+    ui->comboBoxRepoList->insertSeparator(ui->comboBoxRepoList->count() - 1);
+
     ui->refreshPushButton->setEnabled(false);
 
     ui->lineEditDownloadLocation->setText(DataBaseUpdater::downloadLocation);
