@@ -123,13 +123,17 @@ mac {
     QMAKE_BUNDLE_DATA += utilities \
         poetsImage \
         backgrounds \
-        lightGrayIcons
+        classicIcons \
+        lightGrayIcons \
+        iconicCyanIcons
 }
 else {
     INSTALLS += utilities \
         poetsImage \
         backgrounds \
-        lightGrayIcons
+        classicIcons \
+        lightGrayIcons \
+        iconicCyanIcons
 }
 
 !build_pass:message("'make install' doesn't overwrite existing 'database file', do that manually!")

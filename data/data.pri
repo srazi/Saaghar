@@ -125,14 +125,122 @@ lightGrayIcons.files = \
     $$PWD/iconsets/light-gray/print-preview.png \
     $$PWD/iconsets/light-gray/qt-logo.png \
     $$PWD/iconsets/light-gray/random.png \
-    $$PWD/iconsets/light-gray/README \
     $$PWD/iconsets/light-gray/remove-poet.png \
     $$PWD/iconsets/light-gray/right.png \
     $$PWD/iconsets/light-gray/search.png \
     $$PWD/iconsets/light-gray/search-options.png \
     $$PWD/iconsets/light-gray/select-mask.png \
     $$PWD/iconsets/light-gray/settings.png \
-    $$PWD/iconsets/light-gray/up.png
+    $$PWD/iconsets/light-gray/up.png \
+    $$PWD/iconsets/light-gray/README
+
+classicIcons.path = $${RESOURCES_PATH}/themes/iconsets/classic
+classicIcons.files = \
+    $$PWD/iconsets/classic/add-tab.png \
+    $$PWD/iconsets/classic/album.png \
+    $$PWD/iconsets/classic/arrow-down.png \
+    $$PWD/iconsets/classic/bookmark-folder.png \
+    $$PWD/iconsets/classic/bookmark-off.png \
+    $$PWD/iconsets/classic/bookmark-on.png \
+    $$PWD/iconsets/classic/bookmarks-import.png \
+    $$PWD/iconsets/classic/browse_net.png \
+    $$PWD/iconsets/classic/cancel.png \
+    $$PWD/iconsets/classic/check-updates.png \
+    $$PWD/iconsets/classic/clear-left.png \
+    $$PWD/iconsets/classic/clear-right.png \
+    $$PWD/iconsets/classic/close-tab.png \
+    $$PWD/iconsets/classic/copy.png \
+    $$PWD/iconsets/classic/down.png \
+    $$PWD/iconsets/classic/exit.png \
+    $$PWD/iconsets/classic/export-pdf.png \
+    $$PWD/iconsets/classic/export.png \
+    $$PWD/iconsets/classic/faal.png \
+    $$PWD/iconsets/classic/filter.png \
+    $$PWD/iconsets/classic/fullscreen.png \
+    $$PWD/iconsets/classic/home.png \
+    $$PWD/iconsets/classic/import-to-database.png \
+    $$PWD/iconsets/classic/left.png \
+    $$PWD/iconsets/classic/music-player.png \
+    $$PWD/iconsets/classic/new_tab.png \
+    $$PWD/iconsets/classic/new_window.png \
+    $$PWD/iconsets/classic/next.png \
+    $$PWD/iconsets/classic/no-fullscreen.png \
+    $$PWD/iconsets/classic/no-photo.png \
+    $$PWD/iconsets/classic/ocr-verification.png \
+    $$PWD/iconsets/classic/one-hemistich-line.png \
+    $$PWD/iconsets/classic/outline.png \
+    $$PWD/iconsets/classic/previous.png \
+    $$PWD/iconsets/classic/print-preview.png \
+    $$PWD/iconsets/classic/print.png \
+    $$PWD/iconsets/classic/qt-logo.png \
+    $$PWD/iconsets/classic/random.png \
+    $$PWD/iconsets/classic/redo.png \
+    $$PWD/iconsets/classic/refresh.png \
+    $$PWD/iconsets/classic/remove-poet.png \
+    $$PWD/iconsets/classic/right.png \
+    $$PWD/iconsets/classic/search-options.png \
+    $$PWD/iconsets/classic/search.png \
+    $$PWD/iconsets/classic/select-mask.png \
+    $$PWD/iconsets/classic/settings.png \
+    $$PWD/iconsets/classic/stepped-hemistich-line.png \
+    $$PWD/iconsets/classic/two-hemistich-line.png \
+    $$PWD/iconsets/classic/un-bookmark.png \
+    $$PWD/iconsets/classic/undo.png \
+    $$PWD/iconsets/classic/up.png \
+    $$PWD/iconsets/classic/README
+
+iconicCyanIcons.path = $${RESOURCES_PATH}/themes/iconsets/iconic-cyan
+iconicCyanIcons.files = \
+    $$PWD/iconsets/iconic-cyan/add-tab.png \
+    $$PWD/iconsets/iconic-cyan/album.png \
+    $$PWD/iconsets/iconic-cyan/arrow-down.png \
+    $$PWD/iconsets/iconic-cyan/bookmark-folder.png \
+    $$PWD/iconsets/iconic-cyan/bookmark-off.png \
+    $$PWD/iconsets/iconic-cyan/bookmark-off1.png \
+    $$PWD/iconsets/iconic-cyan/bookmark-on-0.png \
+    $$PWD/iconsets/iconic-cyan/bookmark-on.png \
+    $$PWD/iconsets/iconic-cyan/cancel.png \
+    $$PWD/iconsets/iconic-cyan/check-updates.png \
+    $$PWD/iconsets/iconic-cyan/clear-left.png \
+    $$PWD/iconsets/iconic-cyan/clear-right.png \
+    $$PWD/iconsets/iconic-cyan/close-tab.png \
+    $$PWD/iconsets/iconic-cyan/copy.png \
+    $$PWD/iconsets/iconic-cyan/down.png \
+    $$PWD/iconsets/iconic-cyan/download-sets-repositories.png \
+    $$PWD/iconsets/iconic-cyan/exit.png \
+    $$PWD/iconsets/iconic-cyan/export-pdf.png \
+    $$PWD/iconsets/iconic-cyan/faal.png \
+    $$PWD/iconsets/iconic-cyan/fullscreen.png \
+    $$PWD/iconsets/iconic-cyan/help-contents.png \
+    $$PWD/iconsets/iconic-cyan/home.png \
+    $$PWD/iconsets/iconic-cyan/left.png \
+    $$PWD/iconsets/iconic-cyan/lock-toolbars.png \
+    $$PWD/iconsets/iconic-cyan/music-player.png \
+    $$PWD/iconsets/iconic-cyan/new_tab.png \
+    $$PWD/iconsets/iconic-cyan/new_window.png \
+    $$PWD/iconsets/iconic-cyan/next.png \
+    $$PWD/iconsets/iconic-cyan/next1.png \
+    $$PWD/iconsets/iconic-cyan/no-fullscreen.png \
+    $$PWD/iconsets/iconic-cyan/no-photo.png \
+    $$PWD/iconsets/iconic-cyan/ocr-verification.png \
+    $$PWD/iconsets/iconic-cyan/one-hemistich-line.png \
+    $$PWD/iconsets/iconic-cyan/outline.png \
+    $$PWD/iconsets/iconic-cyan/previous.png \
+    $$PWD/iconsets/iconic-cyan/previous1.png \
+    $$PWD/iconsets/iconic-cyan/qt-logo.png \
+    $$PWD/iconsets/iconic-cyan/random.png \
+    $$PWD/iconsets/iconic-cyan/redo.png \
+    $$PWD/iconsets/iconic-cyan/refresh.png \
+    $$PWD/iconsets/iconic-cyan/right.png \
+    $$PWD/iconsets/iconic-cyan/search-options.png \
+    $$PWD/iconsets/iconic-cyan/search.png \
+    $$PWD/iconsets/iconic-cyan/select-mask.png \
+    $$PWD/iconsets/iconic-cyan/settings.png \
+    $$PWD/iconsets/iconic-cyan/stepped-hemistich-line.png \
+    $$PWD/iconsets/iconic-cyan/two-hemistich-line.png \
+    $$PWD/iconsets/iconic-cyan/undo.png \
+    $$PWD/iconsets/iconic-cyan/up.png \
+    $$PWD/iconsets/iconic-cyan/README
 
 
 exists( $$PWD/fonts/*.ttf ) {
