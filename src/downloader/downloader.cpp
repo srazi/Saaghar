@@ -74,17 +74,14 @@ void Downloader::startRequest(QUrl url)
     //request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7 (.NET CLR 3.5.30729)");
     reply = qnam.get(request);
 
-    connect(reply, SIGNAL(finished()),
-            this, SLOT(requestFinished()));
-    connect(reply, SIGNAL(readyRead()),
-            this, SLOT(replyReadyRead()));
-    connect(reply, SIGNAL(downloadProgress(qint64,qint64)),
-            this, SLOT(updateDataReadProgress(qint64,qint64)));
-    connect(reply, SIGNAL(finished()),
-            loop, SLOT(quit()));
+    connect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+    connect(reply, SIGNAL(readyRead()), this, SLOT(replyReadyRead()));
+    connect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(updateDataReadProgress(qint64,qint64)));
+    connect(reply, SIGNAL(finished()), loop, SLOT(quit()));
     qDebug() << "looooooooooop started";
 
     if (_progressBar) {
+        _progressBar->setValue(0);
         _progressBar->show();
     }
     if (_statusLabel) {
@@ -307,6 +304,9 @@ void Downloader::redirectTo(const QUrl &newUrl)
 {
     url = newUrl;
     disconnect(reply, SIGNAL(finished()), loop, SLOT(quit()));
+    disconnect(reply, SIGNAL(finished()), this, SLOT(requestFinished()));
+    disconnect(reply, SIGNAL(readyRead()), this, SLOT(replyReadyRead()));
+    disconnect(reply, SIGNAL(downloadProgress(qint64,qint64)), this, SLOT(updateDataReadProgress(qint64,qint64)));
     if (reply) {
         reply->deleteLater();
     }
