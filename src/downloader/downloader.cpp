@@ -69,6 +69,7 @@ Downloader::Downloader(QObject* parent, QProgressBar* progressBar, QLabel* statu
 
 void Downloader::startRequest(QUrl url)
 {
+    m_hasError = false;
     //loop->quit();
     QNetworkRequest request(url);//QNetworkRequest(url)
     //request.setRawHeader("User-Agent", "Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.7) Gecko/20091221 Firefox/3.5.7 (.NET CLR 3.5.30729)");
@@ -198,7 +199,6 @@ void Downloader::requestFinished()
                                  tr("Download failed: %1.")
                                  .arg(reply->errorString()));
         m_hasError = true;
-        //downloadButton->setEnabled(true);
     }
     else if (!redirectionTarget.isNull()) {
         QUrl newUrl = url.resolved(redirectionTarget.toUrl());
@@ -315,7 +315,6 @@ void Downloader::redirectTo(const QUrl &newUrl)
         file->resize(0);
     }
 
-    m_hasError = false;
     //we can save file with new name by calling downloadFile()
     startRequest(url);
 }
