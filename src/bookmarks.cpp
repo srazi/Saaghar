@@ -383,6 +383,11 @@ bool Bookmarks::updateBookmarkState(const QString &type, const QVariant &data, b
             item->setToolTip(1, data.toStringList().at(4));
         }
 
+        if (parentItem->childCount() == 1) {
+            resizeColumnToContents(0);
+            resizeColumnToContents(1);
+        }
+
         return true;
     }
 
