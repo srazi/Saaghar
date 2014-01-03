@@ -57,7 +57,7 @@ const QString sqlDriver = "QSQLITE";
 //  "؟" cell= 31 row= 6
 //  "،" cell= 12 row= 6
 //  "؛" cell= 27 row= 6
-QStringList QGanjoorDbBrowser::someSymbols = QStringList()
+const QStringList QGanjoorDbBrowser::someSymbols = QStringList()
         << QChar(31, 6) << QChar(12, 6) << QChar(27, 6)
         << QChar(187, 0) << QChar(171, 0) << QChar(46, 0)
         << ")" << "(" << "[" << "]" << ":" << "!" << "-" << "." << "?";
@@ -65,27 +65,27 @@ QStringList QGanjoorDbBrowser::someSymbols = QStringList()
 //the zero index of following stringlists is equipped by expected variant!
 //  "ؤ" cell= 36 row= 6
 //  "و" cell= 72 row= 6
-QStringList QGanjoorDbBrowser::Ve_Variant = QStringList()
+const QStringList QGanjoorDbBrowser::Ve_Variant = QStringList()
         << QChar(72, 6) << QChar(36, 6);
 
 //  "ى" cell= 73 row= 6 //ALEF MAKSURA
 //  "ي" cell= 74 row= 6 //Arabic Ye
 //  "ئ" cell= 38 row= 6
 //  "ی" cell= 204 row= 6 //Persian Ye
-QStringList QGanjoorDbBrowser::Ye_Variant = QStringList()
+const QStringList QGanjoorDbBrowser::Ye_Variant = QStringList()
         << QChar(204, 6) << QChar(38, 6) << QChar(74, 6) << QChar(73, 6);
 
 //  "آ" cell= 34 row= 6
 //  "أ" cell= 35 row= 6
 //  "إ" cell= 37 row= 6
 //  "ا" cell= 39 row= 6
-QStringList QGanjoorDbBrowser::AE_Variant = QStringList()
+const QStringList QGanjoorDbBrowser::AE_Variant = QStringList()
         << QChar(39, 6) << QChar(37, 6) << QChar(35, 6) << QChar(34, 6);
 
 //  "ة" cell= 41 row= 6
 //  "ۀ" cell=192 row= 6
 //  "ه" cell= 71 row= 6
-QStringList QGanjoorDbBrowser::He_Variant = QStringList()
+const QStringList QGanjoorDbBrowser::He_Variant = QStringList()
         << QChar(71, 6) << QChar(41, 6) << QChar(192, 6);
 ////////////////////////////
 const QRegExp Ve_EXP = QRegExp("[" +

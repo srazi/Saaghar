@@ -113,11 +113,11 @@ public:
     static QString dBName;
     static DataBaseUpdater* dbUpdater;
     static QStringList dataBasePath;
-    static QStringList someSymbols;
-    static QStringList Ve_Variant;
-    static QStringList Ye_Variant;
-    static QStringList AE_Variant;
-    static QStringList He_Variant;
+    static const QStringList someSymbols;
+    static const QStringList Ve_Variant;
+    static const QStringList Ye_Variant;
+    static const QStringList AE_Variant;
+    static const QStringList He_Variant;
 
 public slots:
     void addDataSets();

@@ -376,7 +376,13 @@ SaagharWindow::~SaagharWindow()
 
 void SaagharWindow::searchStart()
 {
-    if (!SaagharWidget::lineEditSearchText->searchWasCanceled()) {
+    bool byPressEnter = sender() == SaagharWidget::lineEditSearchText;
+    if (byPressEnter) {
+        SaagharWidget::lineEditSearchText->resetNotFound();
+        SaagharWidget::lineEditSearchText->searchStop();
+    }
+
+    if (!SaagharWidget::lineEditSearchText->searchWasCanceled() && !byPressEnter) {
         return;
     }
 

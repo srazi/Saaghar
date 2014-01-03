@@ -44,13 +44,14 @@ public:
     QToolButton* optionsButton();
     void notFound();
 
+public slots:
+    void resetNotFound();
 
 protected:
     void resizeEvent(QResizeEvent*);
 
 private slots:
     void updateCloseButton(const QString &text);
-    void resetNotFound();
 
 private:
     void moveToRight(QToolButton* button);
