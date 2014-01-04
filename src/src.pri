@@ -21,7 +21,8 @@ HEADERS += \
     $$PWD/nodatabasedialog.h \
     $$PWD/qtwin.h \
     $$PWD/registerationform.h \
-    $$PWD/searchoptionsdialog.h
+    $$PWD/searchoptionsdialog.h \
+    $$PWD/tabwidget.h
 
 FORMS += \
     $$PWD/saagharwindow.ui \
@@ -47,7 +48,8 @@ SOURCES += \
     $$PWD/nodatabasedialog.cpp \
     $$PWD/qtwin.cpp \
     $$PWD/registerationform.cpp \
-    $$PWD/searchoptionsdialog.cpp
+    $$PWD/searchoptionsdialog.cpp \
+    $$PWD/tabwidget.cpp
 
 include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)
