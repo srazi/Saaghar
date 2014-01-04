@@ -21,6 +21,8 @@
 
 #include "tabwidget.h"
 
+#include <QToolButton>
+
 TabWidget::TabWidget(QWidget *parent)
     : QTabWidget(parent)
     , m_tabBar(new TabBar(this))
@@ -36,7 +38,15 @@ TabBar *TabWidget::getTabBar()
 
 TabBar::TabBar(QWidget *parent)
     : QTabBar(parent)
+    , m_addTabButton(new QToolButton(this))
 {
+    m_addTabButton->setAutoRaise(true);
+    setDrawBase(true);
+}
+
+QToolButton *TabBar::addTabButton()
+{
+    return m_addTabButton;
 }
 
 QSize TabBar::tabSizeHint(int index) const
@@ -49,15 +59,20 @@ QSize TabBar::tabSizeHint(int index) const
     const int minWidth = 100;
     const int minHeight = 27;
 
+    TabBar* tabBar = const_cast<TabBar*>(this);
+
     QSize size = QTabBar::tabSizeHint(index);
     size.setHeight(qMax(size.height(), minHeight));
 
-    int availableWidth = width();
+    int availableWidth = width() - (m_addTabButton->isVisible() ? m_addTabButton->width() : 0);
     int tabCount = count();
+    int boundedWidthForTab = maxWidth;
+    int activeTabWidth = boundedWidthForTab;
+
     if (tabCount > 0) {
-        int boundedWidthForTab = qBound(minWidth, availableWidth / tabCount, maxWidth);
+        boundedWidthForTab = qBound(minWidth, availableWidth / tabCount, maxWidth);
         if (index == currentIndex()) {
-            int activeTabWidth = qBound(boundedWidthForTab, availableWidth - (tabCount -1) * boundedWidthForTab, maxWidth);
+            activeTabWidth = qBound(boundedWidthForTab, availableWidth - (tabCount -1) * boundedWidthForTab, maxWidth);
             size.setWidth(activeTabWidth);
         }
         else {
@@ -65,5 +80,33 @@ QSize TabBar::tabSizeHint(int index) const
         }
     }
 
+    if (index == tabCount - 1) {
+        if (tabCount * boundedWidthForTab > availableWidth) {
+            m_addTabButton->hide();
+        }
+        else {
+            int addTabButtonX = (tabCount - 1) * boundedWidthForTab + activeTabWidth;
+
+            if (isRightToLeft()) {
+                addTabButtonX = width() - addTabButtonX;
+            }
+
+            tabBar->moveAddTabButton(addTabButtonX);
+            m_addTabButton->show();
+        }
+    }
     return size;
+}
+
+void TabBar::moveAddTabButton(int posX)
+{
+    int posY = (height() - m_addTabButton->height()) / 2;
+
+    if (isRightToLeft()) {
+        posX = qMax(posX - m_addTabButton->width(), 0);
+    }
+    else {
+        posX = qMin(posX, width() - m_addTabButton->width());
+    }
+    m_addTabButton->move(posX, posY);
 }

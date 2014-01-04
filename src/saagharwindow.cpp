@@ -242,10 +242,8 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
     setupUi();
 
     //setup corner widget
-    QToolButton* cornerAddButton = new QToolButton(mainTabWidget);
-    cornerAddButton->setAutoRaise(true);
-    cornerAddButton->setIcon(QIcon(ICON_PATH + "/add-tab.png"));
-    connect(cornerAddButton, SIGNAL(clicked()), this, SLOT(actionNewTabClicked()));
+    mainTabWidget->getTabBar()->addTabButton()->setIcon(QIcon(ICON_PATH + "/add-tab.png"));
+    connect(mainTabWidget->getTabBar()->addTabButton(), SIGNAL(clicked()), this, SLOT(actionNewTabClicked()));
 
     QToolButton* cornerMenuButton = new QToolButton(mainTabWidget);
     cornerMenuButton->setStyleSheet("QToolButton::menu-indicator{image: none;}");
@@ -258,7 +256,6 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
     QHBoxLayout* hLayout = new QHBoxLayout;
     hLayout->setSpacing(0);
     hLayout->setContentsMargins(0, 0, 0, 0);
-    hLayout->addWidget(cornerAddButton);
     hLayout->addWidget(cornerMenuButton);
     cornerWidget->setLayout(hLayout);
     connect(cornerMenuButton, SIGNAL(clicked()), cornerMenuButton, SLOT(showMenu()));

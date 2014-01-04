@@ -25,6 +25,7 @@
 #include <QTabBar>
 #include <QTabWidget>
 
+class QToolButton;
 
 class TabBar : public QTabBar
 {
@@ -32,9 +33,13 @@ class TabBar : public QTabBar
 
 public:
     TabBar(QWidget* parent = 0);
+    QToolButton* addTabButton();
 
 private:
     QSize tabSizeHint(int index) const;
+    void moveAddTabButton(int posX);
+
+    QToolButton* m_addTabButton;
 };
 
 class TabWidget : public QTabWidget

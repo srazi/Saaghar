@@ -35,6 +35,7 @@ class QExtendedSplashScreen;
 class QMultiSelectWidget;
 class OutLineTree;
 class Settings;
+class TabWidget;
 
 namespace Ui
 {
@@ -94,7 +95,7 @@ private:
     QString convertToHtml(SaagharWidget* saagharObject);
     //QStringList openedTabs;
     void scrollToFirstFoundedItem(QString phrase, int PoemID, int vorder);
-    QTabWidget* mainTabWidget;
+    TabWidget* mainTabWidget;
     void loadTabWidgetSettings();
 
     void loadGlobalSettings();
