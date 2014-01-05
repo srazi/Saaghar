@@ -40,8 +40,11 @@ int main(int argc, char* argv[])
     //QMessageBox::information(0, QObject::tr("At Development Stage"), QObject::tr("This is an experimental version! Don\'t release it!\nWWW: http://saaghar.pozh.org"));
 
     QPixmap pixmap(":/resources/images/saaghar-splash.png");
+    QPixmap mask(":/resources/images/saaghar-splash-mask.png");
     QExtendedSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
-    splash.setMessageOptions(QRect(pixmap.rect().topLeft() + QPoint(30, 400), pixmap.rect().bottomRight() + QPoint(-300, 0)), Qt::AlignLeft | Qt::AlignBottom, Qt::blue);
+    splash.setMessageOptions(QRect(QPoint(120, 525), QSize(310, qMin(splash.fontMetrics().height() + 2, 18))),
+                             Qt::AlignLeft | Qt::AlignVCenter, QColor(7, 12, 150));
+    splash.setProgressBar(mask, 0, 10, Qt::Vertical);
 
     SaagharWindow w(0, &splash);
     w.show();

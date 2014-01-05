@@ -2,6 +2,7 @@
     <qresource prefix="/resources">
         <file>images/empty.png</file>
         <file>images/saaghar-splash.png</file>
+        <file>images/saaghar-splash-mask.png</file>
         <file>images/saaghar.png</file>
         <file>images/transp.png</file>
         <file>iconsets/default/add-tab.png</file>
