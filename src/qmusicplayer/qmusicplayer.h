@@ -86,7 +86,7 @@ public:
     void savePlayerSettings(QSettings* settingsObject);
     qint64 currentTime();
     void setCurrentTime(qint64 time);
-    void loadAlbum(const QString &fileName);
+    void loadAlbum(const QString &fileName, bool inserToPathList = true);
     void saveAlbum(const QString &fileName, const QString &albumName, const QString &format = "M3U8");
 
     void loadAllAlbums();

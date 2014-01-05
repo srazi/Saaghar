@@ -623,7 +623,7 @@ void QMusicPlayer::savePlayerSettings(QSettings* settingsObject)
     settingsObject->endGroup();
 }
 
-void QMusicPlayer::loadAlbum(const QString &fileName)
+void QMusicPlayer::loadAlbum(const QString &fileName, bool inserToPathList)
 {
     /*******************************************************************************/
     //tags for Version-0.1 of Saaghar media album
@@ -667,7 +667,9 @@ void QMusicPlayer::loadAlbum(const QString &fileName)
     }
     SaagharAlbum* album = new SaagharAlbum;
     album->PATH = fileName;
-    albumsPathList.insert(albumName, fileName);
+    if (inserToPathList) {
+        albumsPathList.insert(albumName, fileName);
+    }
 
     while (!line.startsWith("#SAAGHAR!ITEMS!")) { //start of items
         if (out.atEnd()) {
@@ -815,7 +817,7 @@ void QMusicPlayer::loadAllAlbums()
     QHash<QString, QVariant>::const_iterator albumsIterator = albumsPathList.constBegin();
     while (albumsIterator != albumsPathList.constEnd()) {
         if (!albumsIterator.key().isEmpty()) {
-            loadAlbum(albumsIterator.value().toString());
+            loadAlbum(albumsIterator.value().toString(), false);
         }
         ++albumsIterator;
     }
