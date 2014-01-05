@@ -127,6 +127,7 @@ private slots:
     void metaStateChanged(Phonon::State newState, Phonon::State oldState);
     void aboutToFinish();
     void load(int index);
+    void playRequestedByUser();
 
 private:
     bool notLoaded;
@@ -156,6 +157,7 @@ private:
     QAction* previousAction;
     QAction* setSourceAction;
     QAction* removeSourceAction;
+    QAction* m_removeAllSourceAction;
     QAction* loadAlbumAction;
     QAction* repeatAction;
     QAction* autoPlayAction;

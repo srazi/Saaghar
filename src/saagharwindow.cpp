@@ -741,43 +741,8 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         actionInstance("actionPreviousPoem")->setEnabled(!SaagharWidget::ganjoorDataBase->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
         actionInstance("actionNextPoem")->setEnabled(!SaagharWidget::ganjoorDataBase->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
 
-#ifndef NO_PHONON_LIB
-        if (SaagharWidget::musicPlayer) {
-            //QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(saagharWidget->currentPoem);
-            //qDebug()<<"CTABmediaFile="<<currentMediaInfo;
-            qDebug() << "CTABinternalName=" << SaagharWidget::musicPlayer->source();
-            QString path;
-            QString title;
-            if (old_saagharWidget) {
-                qDebug() << "old=" << old_saagharWidget->currentPoem << "new=" << saagharWidget->currentPoem;
-                //SaagharWidget::mediaInfoCash.insert(old_saagharWidget->currentPoem, QPair<QString, qint64>(SaagharWidget::mediaInfoCash.value(old_saagharWidget->currentPoem).first, SaagharWidget::musicPlayer->currentTime()));
-                SaagharWidget::musicPlayer->getFromAlbum(old_saagharWidget->currentPoem, &path, &title);
-                SaagharWidget::musicPlayer->insertToAlbum(old_saagharWidget->currentPoem, path, title, SaagharWidget::musicPlayer->currentTime());
-            }
-            path = "";
-            title = "";
-            SaagharWidget::musicPlayer->getFromAlbum(saagharWidget->currentPoem, &path, &title);
-            if (SaagharWidget::musicPlayer->source() != path) {
-                SaagharWidget::musicPlayer->setSource(path, saagharWidget->currentLocationList.join(">") + ">" + saagharWidget->currentPoemTitle, saagharWidget->currentPoem);
-                //QApplication::processEvents();
-                //SaagharWidget::musicPlayer->setCurrentTime(currentMediaInfo.second);
-            }
-//          if (!saagharWidget->pageMetaInfo.mediaFile.isEmpty())
-//          {
-//              //qDebug()<<"mediaFile="<<saagharWidget->pageMetaInfo.mediaFile;
-//              //qDebug()<<"internalName="<<SaagharWidget::musicPlayer->source();
-//              SaagharWidget::musicPlayer->setSource(saagharWidget->pageMetaInfo.mediaFile);
-//          }
-//          else
-//              SaagharWidget::musicPlayer->setSource("");
+        loadAudioForCurrentTab(old_saagharWidget);
 
-            bool isEnabled = (saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage);
-            SaagharWidget::musicPlayer->setEnabled(isEnabled);
-            if (!isEnabled) {
-                SaagharWidget::musicPlayer->stop();
-            }
-        }
-#endif //NO_PHONON_LIB
         parentCatsToolBar->setEnabled(true);
         globalRedoAction->setEnabled(saagharWidget->undoStack->canRedo());
         globalUndoAction->setEnabled(saagharWidget->undoStack->canUndo());
@@ -2143,6 +2108,34 @@ QMenu* SaagharWindow::cornerMenu()
     }
 
     return m_cornerMenu;
+}
+
+void SaagharWindow::loadAudioForCurrentTab(SaagharWidget *old_saagharWidget)
+{
+#ifndef NO_PHONON_LIB
+    if (!SaagharWidget::musicPlayer) {
+        return;
+    }
+    QString path;
+    QString title;
+    QString album;
+    if (old_saagharWidget) {
+        SaagharWidget::musicPlayer->getFromAlbum(old_saagharWidget->currentPoem, &path, &title, 0, &album);
+        SaagharWidget::musicPlayer->insertToAlbum(old_saagharWidget->currentPoem, path, title, SaagharWidget::musicPlayer->currentTime(), album);
+    }
+    path = "";
+    title = "";
+    SaagharWidget::musicPlayer->getFromAlbum(saagharWidget->currentPoem, &path, &title);
+    if (SaagharWidget::musicPlayer->source() != path) {
+        SaagharWidget::musicPlayer->setSource(path, saagharWidget->currentLocationList.join(">") + ">" + saagharWidget->currentPoemTitle, saagharWidget->currentPoem);
+    }
+
+    bool isEnabled = (saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage);
+    SaagharWidget::musicPlayer->setEnabled(isEnabled);
+    if (!isEnabled) {
+        SaagharWidget::musicPlayer->stop();
+    }
+#endif //NO_PHONON_LIB
 }
 
 void SaagharWindow::showSearchOptionMenu()
@@ -4023,6 +4016,7 @@ void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
             if (tmp && tmp->pageMetaInfo.type == type && tmp->pageMetaInfo.id == id) {
                 qDebug() << "mainTabWidget->setCurrentWidget--Bef";
                 mainTabWidget->setCurrentWidget(tmp->parentWidget());
+                loadAudioForCurrentTab();
                 qDebug() << "mainTabWidget->setCurrentWidget--Aft";
                 return;
             }

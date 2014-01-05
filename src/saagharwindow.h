@@ -69,6 +69,8 @@ public:
     static QString userHomePath;//writable
 
 private:
+    void loadAudioForCurrentTab(SaagharWidget* old_saagharWidget = 0);
+
     QSplitter* splitter;
     OutLineTree* outlineTree;
     bool skipContextMenu;

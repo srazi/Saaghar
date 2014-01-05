@@ -361,7 +361,12 @@ void QMusicPlayer::removeSource()
 
     emit mediaChanged("", "", currentID, true);
 
-    removeFromAlbum(currentID);
+    if (m_removeAllSourceAction == sender()) {
+        removeFromAlbum(currentID);
+    }
+    else {
+        removeFromAlbum(currentID, albumManager->currentAlbumName());
+    }
 }
 
 void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldState */)
@@ -376,7 +381,7 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
         togglePlayPauseAction->setEnabled(true);
         togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
         togglePlayPauseAction->setText(tr("Pause"));
-        disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
+        disconnect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
         connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
         break;
     case Phonon::StoppedState:
@@ -384,7 +389,7 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
         togglePlayPauseAction->setEnabled(true);
         togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
         togglePlayPauseAction->setText(tr("Play"));
-        connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
+        connect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
         disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
         timeLcd->display("00:00");
         break;
@@ -393,7 +398,7 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
         togglePlayPauseAction->setEnabled(true);
         togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
         togglePlayPauseAction->setText(tr("Play"));
-        connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
+        connect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
         disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
         break;
 
@@ -409,7 +414,7 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
         togglePlayPauseAction->setEnabled(false);
         togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
         togglePlayPauseAction->setText(tr("Play"));
-        disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
+        disconnect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
         disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
         timeLcd->display("00:00");
     }
@@ -448,6 +453,18 @@ void QMusicPlayer::load(int index)
     else {
         mediaObject->stop();
     }
+}
+
+void QMusicPlayer::playRequestedByUser()
+{
+    if (!mediaObject) {
+        return;
+    }
+
+    QString album;
+    albumContains(currentID, &album);
+    albumManager->albumList()->setCurrentIndex(albumManager->albumList()->findText(album));
+    mediaObject->play();
 }
 
 void QMusicPlayer::sourceChanged(const Phonon::MediaSource &)
@@ -501,7 +518,7 @@ void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State)
         togglePlayPauseAction->setEnabled(false);
         togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
         togglePlayPauseAction->setText(tr("Play"));
-        disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
+        disconnect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
         disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
         timeLcd->display("00:00");
     }
@@ -526,11 +543,13 @@ void QMusicPlayer::setupActions()
     previousAction->setShortcut(tr("Ctrl+R"));
     setSourceAction = new QAction(tr("&Set Audio..."), this);
     removeSourceAction = new QAction(tr("&Remove Audio"), this);
+    m_removeAllSourceAction = new QAction(tr("Remove Audio From All Album"), this);
     loadAlbumAction = new QAction(tr("&Load Album..."), this);
-    connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(play()));
+    connect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
     connect(stopAction, SIGNAL(triggered()), mediaObject, SLOT(stop()));
     connect(setSourceAction, SIGNAL(triggered()), this, SLOT(setSource()));
     connect(removeSourceAction, SIGNAL(triggered()), this, SLOT(removeSource()));
+    connect(m_removeAllSourceAction, SIGNAL(triggered()), this, SLOT(removeSource()));
     connect(loadAlbumAction, SIGNAL(triggered()), this, SLOT(loadAlbumFile()));
 }
 
@@ -543,6 +562,7 @@ void QMusicPlayer::setupUi()
     QMenu* menu = new QMenu;
     menu->addAction(setSourceAction);
     menu->addAction(removeSourceAction);
+    menu->addAction(m_removeAllSourceAction);
     menu->addSeparator();
     menu->addAction(loadAlbumAction);
     menu->addSeparator();
@@ -914,7 +934,9 @@ void QMusicPlayer::getFromAlbum(int mediaID, QString* mediaPath, QString* mediaT
     if (!mediaTag) {
         mediaPath->clear();
         mediaTitle->clear();
-        *mediaCurrentTime = 0;
+        if (mediaCurrentTime) {
+            *mediaCurrentTime = 0;
+        }
         if (albumNameIsNull) {
             albumName = 0;
         }
@@ -1170,6 +1192,12 @@ void AlbumManager::setCurrentAlbum(const QString &albumName)
 
         QTreeWidgetItem* mediaItem = new QTreeWidgetItem(mediaList);
         int tagMediaID = mediaIterator.key();
+
+        if (m_currentID > 0 && m_currentID == tagMediaID && m_musicPlayer->source().isEmpty()) {
+            disconnect(m_musicPlayer, SIGNAL(mediaChanged(QString,QString,int,bool)), this, SLOT(currentMediaChanged(QString,QString,int,bool)));
+            m_musicPlayer->setSource(mediaTag->PATH, mediaTag->TITLE, m_currentID);
+            connect(m_musicPlayer, SIGNAL(mediaChanged(QString,QString,int,bool)), this, SLOT(currentMediaChanged(QString,QString,int,bool)));
+        }
 
         bool isPaused = m_currentFile.isEmpty() ||
                         m_currentID < 0 ||
