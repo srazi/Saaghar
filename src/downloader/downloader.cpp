@@ -116,8 +116,8 @@ void Downloader::downloadFile(const QUrl &downloadUrl, const QString &path, cons
     qDebug() << "downloadFile=filePath=" << filePath;
     if (QFile::exists(filePath)) {
         QMessageBox question(QMessageBox::Question, tr("Downloader"), tr("There already exists a file called %1 in %2. Overwrite?")
-                            .arg(fileName).arg(QDir(filePath).path()), QMessageBox::Yes | QMessageBox::No
-                            , 0, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+                             .arg(fileName).arg(QDir(filePath).path()), QMessageBox::Yes | QMessageBox::No
+                             , 0, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
         question.setDefaultButton(QMessageBox::No);
 
         if (question.exec() == QMessageBox::No) {

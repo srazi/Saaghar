@@ -73,7 +73,8 @@ public:
     enum ExtractionOption {
         ExtractPaths = 0x0001,
         SkipPaths = 0x0002,
-        VerifyOnly = 0x0004
+        VerifyOnly = 0x0004,
+        NoSilentDirectoryCreation = 0x0008
     };
     Q_DECLARE_FLAGS(ExtractionOptions, ExtractionOption)
 

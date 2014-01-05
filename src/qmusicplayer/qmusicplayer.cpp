@@ -320,7 +320,7 @@ void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
     }
     else {
         QString file = QFileDialog::getSaveFileName(window(), tr("New Saaghar Album"), startDir,
-                                                    "Saaghar Album (*.sal *.m3u8 *.m3u);;All Files (*.*)");
+                       "Saaghar Album (*.sal *.m3u8 *.m3u);;All Files (*.*)");
 
         bool alreadyLoaded = albumsPathList.values().contains(file);
         if (file.isEmpty() || alreadyLoaded) {
@@ -855,7 +855,7 @@ void QMusicPlayer::removeFromAlbum(int mediaID, QString albumName)
 
 /*static*/
 void QMusicPlayer::insertToAlbum(int mediaID, const QString &mediaPath, const QString &mediaTitle,
-                                    int mediaCurrentTime, QString albumName)
+                                 int mediaCurrentTime, QString albumName)
 {
     if (albumName.isEmpty()) {
         albumName = albumManager->currentAlbumName();
@@ -895,7 +895,7 @@ void QMusicPlayer::insertToAlbum(int mediaID, const QString &mediaPath, const QS
 
 /*static*/
 void QMusicPlayer::getFromAlbum(int mediaID, QString* mediaPath, QString* mediaTitle,
-                                   int* mediaCurrentTime, QString* albumName)
+                                int* mediaCurrentTime, QString* albumName)
 {
     QString temp;
     bool albumNameIsNull = false;
@@ -935,7 +935,8 @@ void QMusicPlayer::getFromAlbum(int mediaID, QString* mediaPath, QString* mediaT
 }
 
 bool QMusicPlayer::albumContains(int mediaID, QString* albumName)
-{//albumName default can be NULL for test purposes we don't set it
+{
+    //albumName default can be NULL for test purposes we don't set it
     QStringList names = albumsMediaHash.keys();
     if (names.removeAll(albumManager->currentAlbumName()) > 0) {
         names.prepend(albumManager->currentAlbumName());

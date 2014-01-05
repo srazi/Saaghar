@@ -23,20 +23,20 @@
 
 #include <QToolButton>
 
-TabWidget::TabWidget(QWidget *parent)
+TabWidget::TabWidget(QWidget* parent)
     : QTabWidget(parent)
     , m_tabBar(new TabBar(this))
 {
     setTabBar(m_tabBar);
 }
 
-TabBar *TabWidget::getTabBar()
+TabBar* TabWidget::getTabBar()
 {
     return m_tabBar;
 }
 
 
-TabBar::TabBar(QWidget *parent)
+TabBar::TabBar(QWidget* parent)
     : QTabBar(parent)
     , m_addTabButton(new QToolButton(this))
 {
@@ -44,7 +44,7 @@ TabBar::TabBar(QWidget *parent)
     setDrawBase(true);
 }
 
-QToolButton *TabBar::addTabButton()
+QToolButton* TabBar::addTabButton()
 {
     return m_addTabButton;
 }
@@ -72,7 +72,7 @@ QSize TabBar::tabSizeHint(int index) const
     if (tabCount > 0) {
         boundedWidthForTab = qBound(minWidth, availableWidth / tabCount, maxWidth);
         if (index == currentIndex()) {
-            activeTabWidth = qBound(boundedWidthForTab, availableWidth - (tabCount -1) * boundedWidthForTab, maxWidth);
+            activeTabWidth = qBound(boundedWidthForTab, availableWidth - (tabCount - 1) * boundedWidthForTab, maxWidth);
             size.setWidth(activeTabWidth);
         }
         else {

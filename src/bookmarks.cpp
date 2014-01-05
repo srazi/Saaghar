@@ -69,9 +69,9 @@ Bookmarks::Bookmarks(QWidget* parent)
     setHeaderLabels(labels);
 
     m_folderIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirClosedIcon),
-                         QIcon::Normal, QIcon::Off);
+                           QIcon::Normal, QIcon::Off);
     m_folderIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirOpenIcon),
-                         QIcon::Normal, QIcon::On);
+                           QIcon::Normal, QIcon::On);
 
     m_bookmarkIcon.addPixmap(QPixmap(ICON_PATH + "/bookmark-on.png"));
 

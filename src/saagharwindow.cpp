@@ -724,7 +724,7 @@ void SaagharWindow::currentTabChanged(int tabIndex)
             }
         }
         else if (SaagharWidget::maxPoetsPerGroup != 0 &&
-                  saagharWidget->currentCat == 0 && saagharWidget->currentPoem == 0) {
+                 saagharWidget->currentCat == 0 && saagharWidget->currentPoem == 0) {
             QList<GanjoorPoet*> poets = SaagharWidget::ganjoorDataBase->getPoets();
             int numOfPoets = poets.size();
             if (numOfPoets > SaagharWidget::maxPoetsPerGroup) {
@@ -867,8 +867,7 @@ void SaagharWindow::checkForUpdates()
         QMessageBox criticalError(QMessageBox::Critical, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
         criticalError.exec();
         //QMessageBox::critical(this, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()));
-        if (!action)
-        {
+        if (!action) {
             showStatusText("!QExtendedSplashScreenCommands:SHOW");
         }
         return;
@@ -1009,8 +1008,8 @@ void SaagharWindow::tabCloser(int tabIndex)
 }
 
 QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int id,
-                                  const QString &type, bool noError,
-                                  bool pushToStack)
+                                     const QString &type, bool noError,
+                                     bool pushToStack)
 {
     QWidget* tabContent = new QWidget();
 
@@ -2296,7 +2295,7 @@ void SaagharWindow::createConnections()
 void SaagharWindow::showSettingsDialog()
 {
     m_settingsDialog = new Settings(this);
-  //  m_settingsDialog->setAttribute(Qt::WA_DeleteOnClose, true);
+    //  m_settingsDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
     //if (Settings::READ("UseTransparecy").toBool())
     ////settingsDlg->setStyleSheet("QGroupBox{border: 1px solid lightgray;\nborder-radius: 5px;\n}");
@@ -3842,7 +3841,7 @@ void SaagharWindow::setupBookmarkManagerUi()
         menuBookmarks = 0;
         showStatusText("!QExtendedSplashScreenCommands:HIDE");
         QMessageBox warning(QMessageBox::Warning, tr("Warning!"), tr("Bookmarking system was disabled, something going wrong with "
-                                                                     "writing or reading from bookmarks file:\n%1")
+                            "writing or reading from bookmarks file:\n%1")
                             .arg(bookmarkFileName), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
         warning.exec();
         showStatusText("!QExtendedSplashScreenCommands:SHOW");
@@ -4041,6 +4040,7 @@ void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
 
 void SaagharWindow::checkRegistration(bool forceShow)
 {
+    Q_UNUSED(forceShow)
 #if 0
     if (!forceShow && !RegisterationForm::showRegisterForm()) {
         return;

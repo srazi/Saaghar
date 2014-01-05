@@ -111,7 +111,7 @@ Settings::Settings(SaagharWindow* parent)
     ui->lineEditIconTheme->setEnabled(Settings::READ("Icon Theme State", false).toBool());
     ui->pushButtonIconTheme->setEnabled(Settings::READ("Icon Theme State", false).toBool());
     ui->lineEditIconTheme->setText(Settings::READ("Icon Theme Path", SaagharWindow::resourcesPath +
-                                                  "/themes/iconsets/light-gray/").toString());
+                                   "/themes/iconsets/light-gray/").toString());
     connect(ui->pushButtonIconTheme, SIGNAL(clicked()), this, SLOT(browseForIconTheme()));
 }
 

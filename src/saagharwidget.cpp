@@ -118,9 +118,9 @@ void SaagharWidget::applyDefaultSectionsHeight()
     int bookmarkIconHeight = 0;
     if (SaagharWidget::bookmarks) {
 #ifdef Q_OS_MAC
-    bookmarkIconHeight = 25;//35
+        bookmarkIconHeight = 25;//35
 #else
-    bookmarkIconHeight = 22;
+        bookmarkIconHeight = 22;
 #endif
     }
 
@@ -652,7 +652,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
     int betterRightToLeft = 0, betterLeftToRight = 0;
     int step = 99;
 
-    emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(currentCaption), (poems.size() + subcatsSize) / (step + 1) );
+    emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(currentCaption), (poems.size() + subcatsSize) / (step + 1));
 
     for (int i = 0; i < subcatsSize; ++i) {
         QString catText = QGanjoorDbBrowser::simpleCleanString(subcats.at(i)->_Text);
@@ -1211,8 +1211,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     QApplication::restoreOverrideCursor();
 
 #ifndef NO_PHONON_LIB
-    if (SaagharWidget::musicPlayer)
-    {
+    if (SaagharWidget::musicPlayer) {
         pageMetaInfo.id = currentPoem;
         pageMetaInfo.type = SaagharWidget::PoemViewerPage;
 
@@ -1310,9 +1309,9 @@ void SaagharWidget::resizeTable(QTableWidget* table)
         int iconWidth = 0;
         if (SaagharWidget::bookmarks) {
 #ifdef Q_OS_MAC
-        iconWidth = 35;
+            iconWidth = 35;
 #else
-        iconWidth = 22;
+            iconWidth = 22;
 #endif
         }
         int test = 0;
@@ -1332,7 +1331,6 @@ void SaagharWidget::resizeTable(QTableWidget* table)
         case 4:
             if (CurrentViewStyle == SteppedHemistichLine /*|| CurrentViewStyle==MesraPerLineGroupedBeyt*/) {
                 table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
-                int we = (7 * minMesraWidth) / 4;
                 baseWidthSize = baseWidthSize - table->columnWidth(0);
                 //qDebug()<<"(7*minMesraWidth)/4="<<we<<"baseWidthSize/2="<<(7*baseWidthSize)/8<<"minMesraWidth="<<minMesraWidth;
                 //qDebug()<<"maxMin="<<qMax(qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8), minMesraWidth );
@@ -1784,33 +1782,14 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
     else if (versePosition == Paragraph) {
         textWidth = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(mesraItem->text()).width();
 
-        QString tmp = currentVerseText;
-        tmp = tmp.remove("\n");
-        int tmpW = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(tmp).width();
-        int aW = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect("a").width();
-        int nW = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect("\n").width();
-        //qDebug()<<"aW="<<aW<<"nW="<<nW;
-        //qDebug() << "Paragraph1-textWidth="<<textWidth<<"tmpW=="<<tmpW<<"newLineCount="<<currentVerseText.count("\n")<<"text="<<currentVerseText;
-        //textWidth = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(currentVerseText).width();
-        //qDebug() << "Paragraph2-textWidth="<<textWidth<<"text="<<currentVerseText;
-        //totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-
-        //totalWidth = tableViewWidget->viewport()->width();
-        //numOfRow = textWidth/totalWidth;
-        {
-            //QTableWidgetItem *tmp = new QTableWidgetItem("");
-            ////tmp->setFlags(Qt::NoItemFlags);
-            //tmp->setFlags(versesItemFlag);
-            //tableViewWidget->setItem(row, 3, tmp);
-            //mesraItem->setTextAlignment(Qt::AlignVCenter|Qt::AlignLeft);
-            mesraItem->setText("");
-            tableViewWidget->setItem(row, 1, mesraItem);//inserted just for its data and its behavior like other cells that use QTableWidgetItem'.
-            createItemForLongText(row, 1, currentVerseText, SaagharWidget::lineEditSearchText->text());
-            tableViewWidget->setSpan(row, 1, 1, 3);
-        }
+        mesraItem->setText("");
+        //inserted just for its data and its behavior like other cells that use QTableWidgetItem'.
+        tableViewWidget->setItem(row, 1, mesraItem);
+        createItemForLongText(row, 1, currentVerseText, SaagharWidget::lineEditSearchText->text());
+        tableViewWidget->setSpan(row, 1, 1, 3);
 
         rowParagraphHeightMap.insert(row, QPair<int, int>(textWidth, currentVerseText.count("\n")));
-        //MissedMesras++;
+
         return;
     }
 

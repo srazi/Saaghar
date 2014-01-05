@@ -74,6 +74,7 @@
  \value UnZip::ExtractPaths Default. Does not ignore the path of the zipped files.
  \value UnZip::SkipPaths Default. Ignores the path of the zipped files and extracts them all to the same root directory.
  \value UnZip::VerifyOnly Doesn't actually extract files.
+ \value UnZip::NoSilentDirectoryCreation Doesn't attempt to silently create missing output directories.
 */
 
 //! Local header size (excluding signature, excluding variable length fields)
@@ -762,6 +763,14 @@ UnZip::ErrorCode UnzipPrivate::extractFile(const QString &path, const ZipEntryP 
         directory = dir.absolutePath();
     }
 
+    const bool silentDirectoryCreation = !(options & UnZip::NoSilentDirectoryCreation);
+    if (silentDirectoryCreation) {
+        if (!createDirectory(directory)) {
+            qDebug() << QString("Unable to create output directory %1").arg(directory);
+            return UnZip::CreateDirFailed;
+        }
+    }
+
     name = QString("%1/%2").arg(directory).arg(name);
 
     QFile outFile(name);
@@ -930,6 +939,7 @@ UnZip::ErrorCode UnzipPrivate::extractFile(const QString &path, const ZipEntryP 
     Q_UNUSED(options);
     Q_ASSERT(device);
     Q_ASSERT(verify ? true : outDev != 0);
+    Q_UNUSED(verify);
 
     if (!entry.lhEntryChecked) {
         UnZip::ErrorCode ec = parseLocalHeaderRecord(path, entry);
@@ -984,20 +994,9 @@ UnZip::ErrorCode UnzipPrivate::extractFile(const QString &path, const ZipEntryP 
 bool UnzipPrivate::createDirectory(const QString &path)
 {
     QDir d(path);
-    if (!d.exists()) {
-        int sep = path.lastIndexOf("/");
-        if (sep <= 0) {
-            return true;
-        }
-
-        if (!createDirectory(path.left(sep))) {
-            return false;
-        }
-
-        if (!d.mkdir(path)) {
-            qDebug() << QString("Unable to create directory: %1").arg(path);
-            return false;
-        }
+    if (!d.exists() && !d.mkpath(path)) {
+        qDebug() << QString("Unable to create directory: %1").arg(path);
+        return false;
     }
 
     return true;
