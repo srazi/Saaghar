@@ -23,7 +23,12 @@ CONFIG(static) {
     DEFINES += NO_PHONON_LIB
 }
 
-QT += sql network xml
+isEqual(QT_MAJOR_VERSION, 5) {
+    QT += network widgets printsupport sql xml
+    DEFINES += NO_PHONON_LIB
+} else {
+    QT += sql network xml
+}
 
 win32 {
 
@@ -37,6 +42,8 @@ win32-g++{
 }
     target.path = Saaghar-Win
     RESOURCES_PATH = Saaghar-Win
+
+LIBS += -lzdll
 
 !static {
     ##shared libs

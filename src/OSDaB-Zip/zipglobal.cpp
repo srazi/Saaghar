@@ -35,7 +35,7 @@
 #endif
 
 #if defined(Q_OS_WIN)
-#include <QtCore/qt_windows.h>
+#include <qt_windows.h>
 #elif defined(Q_OS_LINUX) || defined(Q_OS_MACX)
 #include <utime.h>
 #endif

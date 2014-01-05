@@ -225,7 +225,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
     parentCatsToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
     //addToolBar(Qt::BottomToolBarArea, parentCatsToolBar);
     insertToolBar(ui->mainToolBar, parentCatsToolBar);
-    parentCatsToolBar->setWindowTitle(QApplication::translate("MainWindow", "Parent Categories", 0, QApplication::UnicodeUTF8));
+    parentCatsToolBar->setWindowTitle(tr("Parent Categories"));
 
     //create Tab Widget
     mainTabWidget = ui->tabWidget;// new QTabWidget;//(ui->centralWidget);

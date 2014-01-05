@@ -32,6 +32,9 @@ public:
     static bool easyBlurUnBlur(QWidget* widget, bool enable = true);
     static void blurAll();
     static void unBlurAll();
+#ifdef Q_OS_WIN
+    static HWND hwndOfWidget(const QWidget* widget);
+#endif
 
 private:
     static WindowNotifier* windowNotifier();

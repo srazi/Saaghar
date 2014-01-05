@@ -39,8 +39,8 @@
 #ifndef OSDAB_ZIPENTRY_P__H
 #define OSDAB_ZIPENTRY_P__H
 
-#include <QtCore/QString>
-#include <QtCore/QtGlobal>
+#include <QString>
+#include <QtGlobal>
 
 OSDAB_BEGIN_NAMESPACE(Zip)
 

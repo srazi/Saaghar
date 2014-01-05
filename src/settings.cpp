@@ -507,11 +507,11 @@ void CustomizeRandomDialog::setupui()
 
 void CustomizeRandomDialog::retranslateUi()
 {
-    this->setWindowTitle(QApplication::translate("CustomizeRandomDialog", "Customize Faal & Random", 0, QApplication::UnicodeUTF8));
-    checkBox->setText(QApplication::translate("CustomizeRandomDialog", "Open in new Tab", 0, QApplication::UnicodeUTF8));
-    label->setText(QApplication::translate("CustomizeRandomDialog", "Select Random Range:", 0, QApplication::UnicodeUTF8));
-    pushButtonOk->setText(QApplication::translate("CustomizeRandomDialog", "Ok", 0, QApplication::UnicodeUTF8));
-    pushButtonCancel->setText(QApplication::translate("CustomizeRandomDialog", "Cancel", 0, QApplication::UnicodeUTF8));
+    this->setWindowTitle(tr("Customize Faal & Random"));
+    checkBox->setText(tr("Open in new Tab"));
+    label->setText(tr("Select Random Range:"));
+    pushButtonOk->setText(tr("Ok"));
+    pushButtonCancel->setText(tr("Cancel"));
 }
 
 

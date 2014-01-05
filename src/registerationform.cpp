@@ -11,6 +11,9 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QTabWidget>
+#if QT_VERSION >= 0x050000
+#include <QUrlQuery>
+#endif
 
 #include <QDebug>
 
@@ -165,19 +168,20 @@ void RegisterationForm::registeredButtonState()
 void RegisterationForm::tryToSubmit()
 {
     QUrl regUrl(ACTION_URL);
-    regUrl.addQueryItem("mainact", "register");
+    QList<QPair<QString, QString> > query;
+    query << QPair<QString, QString>("mainact", "register");
 
     if (m_isRegisteredUser) {
-        regUrl.addQueryItem("action", "renew");
+        query << QPair<QString, QString>("action", "renew");
         QString old_email = Settings::READ("RegisteredEmail").toString();
-        regUrl.addQueryItem("old_email", QString::fromLocal8Bit(old_email.toLocal8Bit().toBase64().data()));
+        query << QPair<QString, QString>("old_email", QString::fromLocal8Bit(old_email.toLocal8Bit().toBase64().data()));
     }
     else {
-        regUrl.addQueryItem("action", "register");
+        query << QPair<QString, QString>("action", "register");
     }
 
-    regUrl.addQueryItem("first_name", ui->lineEditFirstName->text());
-    regUrl.addQueryItem("last_name", ui->lineEditLastName->text());
+    query << QPair<QString, QString>("first_name", ui->lineEditFirstName->text());
+    query << QPair<QString, QString>("last_name", ui->lineEditLastName->text());
 //  QByteArray pass = QString(ui->lineEditPassword->text()+"Saaghar_Pozh").toLocal8Bit();
 //  pass = QCryptographicHash::hash(pass, QCryptographicHash::Sha1);
 //  pass = QCryptographicHash::hash(pass, QCryptographicHash::Sha1)+pass;
@@ -188,7 +192,7 @@ void RegisterationForm::tryToSubmit()
             << "email==" << ui->lineEditEmail->text() << "\n" << emailB64 << "\n" <<
             ui->lineEditEmail->text().toLocal8Bit()
             << "\nemailHex=" << emailArrayB64 << "emailF=" << QByteArray::fromBase64(emailArrayB64);
-    regUrl.addQueryItem("pass", getHashedPassword(ui->lineEditPassword->text()));
+    query << QPair<QString, QString>("pass", getHashedPassword(ui->lineEditPassword->text()));
     QString gender = "n";
     if (ui->comboBoxGender->currentText() == tr("Female") || ui->comboBoxGender->currentText() == "Female") {
         gender = "f";
@@ -196,10 +200,10 @@ void RegisterationForm::tryToSubmit()
     else if (ui->comboBoxGender->currentText() == tr("Male") || ui->comboBoxGender->currentText() == "Male") {
         gender = "m";
     }
-    regUrl.addQueryItem("gender", gender);
+    query << QPair<QString, QString>("gender", gender);
 
-    regUrl.addQueryItem("email", emailB64);
-//  regUrl.addQueryItem("email_is_verified", "0");
+    query << QPair<QString, QString>("email", emailB64);
+//  query << QPair<QString, QString>("email_is_verified", "0");
     QString education = "";
     if (ui->comboBoxEducation->currentText() == tr("Student")) {
         education = "Student";
@@ -217,7 +221,7 @@ void RegisterationForm::tryToSubmit()
         education = "Other";
     }
 
-    regUrl.addQueryItem("education", education);
+    query << QPair<QString, QString>("education", education);
 
     QString field = "";
     if (ui->comboBoxFieldOfStudy->currentText() == tr("Related to Mathematics")) {
@@ -239,34 +243,40 @@ void RegisterationForm::tryToSubmit()
         field = "Other";
     }
     qDebug() << "fieldOO=" << field << "currentText=" << ui->comboBoxFieldOfStudy->currentText();
-    regUrl.addQueryItem("field_study", field);
+    query << QPair<QString, QString>("field_study", field);
 
     QString date = QDateTime::currentDateTimeUtc().toString("yyyy-MM-ddThh:mm:ss");
-    regUrl.addQueryItem("reg_date", date);
+    query << QPair<QString, QString>("reg_date", date);
     QString key = QString::fromLocal8Bit(QString(date + ui->lineEditEmail->text()).toLocal8Bit().toHex().data());
     qDebug() << "KEY=" << key;
-    regUrl.addQueryItem("key", key);
+    query << QPair<QString, QString>("key", key);
 
-    regUrl.addQueryItem("normal_user", ui->checkBoxNormalApp->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("researcher_user", ui->checkBoxResearchApp->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("contributer", ui->groupBoxContribute->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("donator", ui->checkBoxDonation->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("dataset_creator", ui->checkBoxCreateNewDataSets->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("tester", ui->checkBoxTester->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("programmer", ui->checkBoxTester->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("usertype_other", ui->lineEditOtherContribute->text());
+    query << QPair<QString, QString>("normal_user", ui->checkBoxNormalApp->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("researcher_user", ui->checkBoxResearchApp->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("contributer", ui->groupBoxContribute->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("donator", ui->checkBoxDonation->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("dataset_creator", ui->checkBoxCreateNewDataSets->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("tester", ui->checkBoxTester->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("programmer", ui->checkBoxTester->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("usertype_other", ui->lineEditOtherContribute->text());
 
-    regUrl.addQueryItem("windows", ui->checkBoxWinOS->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("mac", ui->checkBoxMacOS->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("linux", ui->checkBoxLinuxOS->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("meego", ui->checkBoxMeegoOS->isChecked() ? "1" : "0");
-//  regUrl.addQueryItem("android", ui->checkBoxAndroidOS->isChecked() ? "1" : "0");
-//  regUrl.addQueryItem("symbian", ui->checkBoxSymbianOS->isChecked() ? "1" : "0");
-//  regUrl.addQueryItem("maemo", ui->checkBoxMaemoOS->isChecked() ? "1" : "0");
-//  regUrl.addQueryItem("windows_mobile", ui->checkBoxWinMobileOS->isChecked() ? "1" : "0");
-//  regUrl.addQueryItem("ios", ui->checkBoxIOS->isChecked() ? "1" : "0");
-    regUrl.addQueryItem("os_other", ui->lineEditOtherOS->text());
-
+    query << QPair<QString, QString>("windows", ui->checkBoxWinOS->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("mac", ui->checkBoxMacOS->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("linux", ui->checkBoxLinuxOS->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("meego", ui->checkBoxMeegoOS->isChecked() ? "1" : "0");
+//  query << QPair<QString, QString>("android", ui->checkBoxAndroidOS->isChecked() ? "1" : "0");
+//  query << QPair<QString, QString>("symbian", ui->checkBoxSymbianOS->isChecked() ? "1" : "0");
+//  query << QPair<QString, QString>("maemo", ui->checkBoxMaemoOS->isChecked() ? "1" : "0");
+//  query << QPair<QString, QString>("windows_mobile", ui->checkBoxWinMobileOS->isChecked() ? "1" : "0");
+//  query << QPair<QString, QString>("ios", ui->checkBoxIOS->isChecked() ? "1" : "0");
+    query << QPair<QString, QString>("os_other", ui->lineEditOtherOS->text());
+#if QT_VERSION < 0x050000
+    regUrl.setQueryItems(query);
+#else
+    QUrlQuery urlQuery(regUrl);
+    urlQuery.setQueryItems(query);
+    regUrl.setQuery(urlQuery);
+#endif
     //QDesktopServices::openUrl(regUrl);
     qDebug() << "regUl=" << regUrl.toString();
 
@@ -574,13 +584,22 @@ void RegisterationForm::fillForm(const QHash<QString, QString> &dataHash)
 bool RegisterationForm::sendEmail(const QString &email, const QString &key1, const QString &action, const QString &key2)
 {
     QUrl sendEmailUrl(ACTION_URL);
-    sendEmailUrl.addQueryItem("mainact", "email");
+    QList<QPair<QString, QString> > query;
+    query << QPair<QString, QString>("mainact", "email");
 
-    sendEmailUrl.addQueryItem("a", action);
-    sendEmailUrl.addQueryItem("e", email);
-    sendEmailUrl.addQueryItem("key1", key1);
-    sendEmailUrl.addQueryItem("key2", key2);
-//QDesktopServices::openUrl(sendEmailUrl);
+    query << QPair<QString, QString>("a", action);
+    query << QPair<QString, QString>("e", email);
+    query << QPair<QString, QString>("key1", key1);
+    query << QPair<QString, QString>("key2", key2);
+
+#if QT_VERSION < 0x050000
+    sendEmailUrl.setQueryItems(query);
+#else
+    QUrlQuery urlQuery(sendEmailUrl);
+    urlQuery.setQueryItems(query);
+    sendEmailUrl.setQuery(urlQuery);
+#endif
+
     QString rawInfo = getRemoteData(sendEmailUrl);
     qDebug() << "sendActivationEmail=" << rawInfo;
     if (rawInfo != "MessageSuccessfullySent!") {
@@ -593,11 +612,6 @@ bool RegisterationForm::sendEmail(const QString &email, const QString &key1, con
 
 void RegisterationForm::reSendEmail()
 {
-//  QByteArray emailArrayB64 = ui->lineEditEmailRegistered->text().toLocal8Bit().toBase64();
-//  qDebug() << "r_emailArrayHex====" << QString::fromLocal8Bit(emailArrayB64.data());
-//  getInfoUrl.addQueryItem("pass", getHashedPassword(r_pass));
-//  getInfoUrl.addQueryItem("email", QString::fromLocal8Bit(emailArrayB64.data()));
-
     QHash<QString, QString> infoHash = getInfo(ui->lineEditEmailRegistered->text(), ui->lineEditPasswordRegistered->text());
     if (sendEmail(infoHash.value("email"), infoHash.value("key"), "activation")) {
         QMessageBox::information(this, tr("Verification email was sent!"), tr("Please check your email for verification link!"));
@@ -612,19 +626,28 @@ QHash<QString, QString> RegisterationForm::getInfo(const QString &email, const Q
     }
 
     QUrl getInfoUrl(ACTION_URL);
-    getInfoUrl.addQueryItem("mainact", "info");
+    QList<QPair<QString, QString> > query;
+    query << QPair<QString, QString>("mainact", "info");
 
 
     QByteArray emailArrayB64 = email.toLocal8Bit().toBase64();
     qDebug() << "r_emailArrayHex====" << QString::fromLocal8Bit(emailArrayB64.data());
     if (!pass.isEmpty()) { //getting all data
-        getInfoUrl.addQueryItem("pass", getHashedPassword(pass));
+        query << QPair<QString, QString>("pass", getHashedPassword(pass));
     }
     else { //getting just 'email_is_verified'
-        getInfoUrl.addQueryItem("pass", "1");
+        query << QPair<QString, QString>("pass", "1");
     }
 
-    getInfoUrl.addQueryItem("email", QString::fromLocal8Bit(emailArrayB64.data()));
+    query << QPair<QString, QString>("email", QString::fromLocal8Bit(emailArrayB64.data()));
+
+#if QT_VERSION < 0x050000
+    getInfoUrl.setQueryItems(query);
+#else
+    QUrlQuery urlQuery(getInfoUrl);
+    urlQuery.setQueryItems(query);
+    getInfoUrl.setQuery(urlQuery);
+#endif
 
     //QDesktopServices::openUrl(getInfoUrl);
     qDebug() << "getInfoUrl=" << getInfoUrl.toString();
@@ -675,14 +698,23 @@ void RegisterationForm::forgotPass()
     QString emailB64 = QString::fromLocal8Bit(email.toLocal8Bit().toBase64().data());
 
     QUrl resetUrl(ACTION_URL);
-    resetUrl.addQueryItem("mainact", "reset");
+    QList<QPair<QString, QString> > query;
+    query << QPair<QString, QString>("mainact", "reset");
 
     QString key = QString::number(qrand()) + QString::number(qrand()) + QString::number(qrand()) + QString::number(qrand());
     key = QCryptographicHash::hash(key.toLocal8Bit(), QCryptographicHash::Sha1).toHex();
     //QString::fromLocal8Bit(key.toLocal8Bit().toBase64().toHex().data());
-    resetUrl.addQueryItem("a", "makekey");
-    resetUrl.addQueryItem("e", emailB64);
-    resetUrl.addQueryItem("k", key);
+    query << QPair<QString, QString>("a", "makekey");
+    query << QPair<QString, QString>("e", emailB64);
+    query << QPair<QString, QString>("k", key);
+
+#if QT_VERSION < 0x050000
+    resetUrl.setQueryItems(query);
+#else
+    QUrlQuery urlQuery(resetUrl);
+    urlQuery.setQueryItems(query);
+    resetUrl.setQuery(urlQuery);
+#endif
 
     QString rawInfo = getRemoteData(resetUrl);
     qDebug() << "resetKey=" << rawInfo << "\n" << resetUrl;
@@ -717,7 +749,6 @@ void RegisterationForm::forgotPass()
             QMessageBox::information(this, tr("Password Reset!"),
                                      tr("By clicking on the \"Ok\" button the password's reset link will be send to this email address: %1\nAre you sure?")
                                      .arg(ui->lineEditEmailRegistered->text()), QMessageBox::Ok | QMessageBox::Cancel)) {
-        //regUrl.addQueryItem("pass", getHashedPassword(newPass));nP=%2;
         if (sendEmail(emailB64, key/*infoHash.value("key")*/, "reset",  getHashedPassword(newPass))) {
             QMessageBox::information(this, tr("New Password!"),
                                      tr("The reset link was sent to \"%1\" for finish reset process you must to click on reset link!"

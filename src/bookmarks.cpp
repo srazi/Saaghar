@@ -61,8 +61,11 @@ Bookmarks::Bookmarks(QWidget* parent)
 #endif
     QStringList labels;
     labels << tr("Title") << tr("Comments");
-
-    header()->setResizeMode(QHeaderView::Interactive/*QHeaderView::Stretch*/);
+#if QT_VERSION < 0x050000
+    header()->setResizeMode(QHeaderView::Interactive);
+#else
+    header()->setSectionResizeMode(QHeaderView::Interactive);
+#endif
     setHeaderLabels(labels);
 
     m_folderIcon.addPixmap(style()->standardPixmap(QStyle::SP_DirClosedIcon),

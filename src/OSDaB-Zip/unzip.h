@@ -30,9 +30,9 @@
 
 #include "zipglobal.h"
 
-#include <QtCore/QDateTime>
-#include <QtCore/QMap>
-#include <QtCore/QtGlobal>
+#include <QDateTime>
+#include <QMap>
+#include <QtGlobal>
 
 #include "zlib/zlib.h"
 

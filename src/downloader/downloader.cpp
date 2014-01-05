@@ -255,7 +255,6 @@ void Downloader::replyReadyRead()
                 mirrorStr = "mesh";
             }
             reirectUrl.replace("downloads", mirrorStr + ".dl");
-            qDebug() << "triiiiiiiiicky==" << reirectUrl << "----" << newUrl.allQueryItemValues("use_mirror");
         }
         redirectTo(QUrl(reirectUrl));
         return;
