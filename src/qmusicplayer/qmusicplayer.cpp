@@ -1216,7 +1216,8 @@ void AlbumManager::setCurrentAlbum(const QString &albumName)
             previousItem = mediaItem;
         }
 
-        mediaItem->setText(0, mediaTag->TITLE);
+        mediaItem->setText(0, mediaTag->TITLE.mid(mediaTag->TITLE.lastIndexOf(">") + 1));
+        mediaItem->setToolTip(0, mediaTag->TITLE);
         //          mediaItem->setText(1, mediaTag->PATH);
         mediaItem->setData(0, Qt::UserRole, tagMediaID);
 
@@ -1283,7 +1284,8 @@ void AlbumManager::currentMediaChanged(const QString &fileName, const QString &t
                 }
                 else if (!fileName.isEmpty()) {
                     if (!title.isEmpty()) {
-                        childItem->setText(0, title);
+                        childItem->setText(0, title.mid(title.lastIndexOf(">") + 1));
+                        childItem->setToolTip(0, title);
                     }
 //                  childItem->setText(1, fileName);
                     if (albumMediaObject && albumMediaObject->state() == Phonon::PlayingState) {
@@ -1308,7 +1310,8 @@ void AlbumManager::currentMediaChanged(const QString &fileName, const QString &t
 
         if (rootItem || itemsAsTopItem) {
             QTreeWidgetItem* newChild = new QTreeWidgetItem;
-            newChild->setText(0, title);
+            newChild->setText(0, title.mid(title.lastIndexOf(">") + 1));
+            newChild->setToolTip(0, title);
 //          newChild->setText(1, fileName);
             newChild->setData(0, Qt::UserRole, mediaID);
             if (albumMediaObject && albumMediaObject->state() == Phonon::PlayingState) {
