@@ -30,6 +30,7 @@
 #include <QToolButton>
 #include <QUndoGroup>
 #include <QComboBox>
+class QPrinter;
 
 class QExtendedSplashScreen;
 class QMultiSelectWidget;
@@ -215,6 +216,9 @@ private slots:
 protected:
 //      void resizeEvent( QResizeEvent * event );
     void closeEvent(QCloseEvent* event);
+#if QT_VERSION >= 0x050000
+    void paintEvent(QPaintEvent* event);
+#endif
 
 signals:
     void maxItemPerPageChanged();

@@ -2917,6 +2917,19 @@ void SaagharWindow::closeEvent(QCloseEvent* event)
     event->accept();
 }
 
+#if QT_VERSION >= 0x050000
+void SaagharWindow::paintEvent(QPaintEvent *event)
+{
+    if (Settings::READ("UseTransparecy").toBool()) {
+        QPainter p(this);
+        p.setCompositionMode(QPainter::CompositionMode_Clear);
+        p.fillRect(event->rect(), QColor(0, 0, 0, 0));
+    }
+
+    QMainWindow::paintEvent(event);
+}
+#endif
+
 void SaagharWindow::tableItemMouseOver(QTableWidgetItem* item)
 {
     if (!item) {
