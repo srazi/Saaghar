@@ -1516,13 +1516,15 @@ void ScrollText::paintEvent(QPaintEvent*)
         QPainter pb(&buffer);
         pb.setPen(p.pen());
         pb.setFont(p.font());
+        bool textIsRTL = _text.isRightToLeft();
 
         int x = qMin(-scrollPos, 0) + leftMargin;
         while (x < width()) {
+            int visualX = textIsRTL ? (width() - x - wholeTextSize.width()) : x;
 #if QT_VERSION >= 0x040700
-            pb.drawStaticText(QPointF(x, (height() - wholeTextSize.height()) / 2), staticText);
+            pb.drawStaticText(QPointF(visualX, (height() - wholeTextSize.height()) / 2), staticText);
 #else
-            pb.drawText(QPointF(x, height() - 2 - ((height() - wholeTextSize.height()) / 2)), staticText.text());
+            pb.drawText(QPointF(visualX, height() - 2 - ((height() - wholeTextSize.height()) / 2)), staticText.text());
 #endif
             x += wholeTextSize.width();
         }
