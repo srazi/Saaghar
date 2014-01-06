@@ -43,6 +43,7 @@
  ***************************************************************************/
 
 #include "qmusicplayer.h"
+#include "lyricsreader.h"
 
 #include <QDesktopServices>
 #include <QLCDNumber>
@@ -74,6 +75,8 @@ const bool itemsAsTopItem = true;
 QMusicPlayer::QMusicPlayer(QWidget* parent)
     : QToolBar(parent)
     , albumManager(new AlbumManager(this, parent))
+    , m_lyricReader(new LyricsReader(this))
+    , m_lastVorder(-2)
 {
     setObjectName("QMusicPlayer");
 
@@ -179,6 +182,21 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
     }
     currentID = mediaID;
     emit mediaChanged(fileName, currentTitle, currentID, false);
+
+    QString gLyricName = fileName.left(fileName.lastIndexOf(QLatin1Char('.'))) + QLatin1String(".xml");
+
+    QFile file(gLyricName);
+
+    if (m_lyricReader->read(&file, "GANJOOR_XML")) {
+        mediaObject->setTickInterval(100);
+        connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(showTextByTime(qint64)));
+        connect(this, SIGNAL(highlightedTextChange(QString)), infoLabel, SLOT(setText(QString)));
+    }
+    else {
+        mediaObject->setTickInterval(0);
+        disconnect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(showTextByTime(qint64)));
+        disconnect(this, SIGNAL(highlightedTextChange(QString)), infoLabel, SLOT(setText(QString)));
+    }
 }
 
 void QMusicPlayer::setSource()
@@ -349,6 +367,16 @@ void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
     }
 }
 
+void QMusicPlayer::showTextByTime(qint64 time)
+{
+    int vorder = m_lyricReader->vorderByTime(time);
+  //  qDebug() <<"QMusicPlayer::showTextByTime" << time << vorder;
+    if (m_lastVorder != vorder) {
+        m_lastVorder = vorder;
+        emit showTextRequested(currentID, vorder);
+    }
+}
+
 void QMusicPlayer::removeSource()
 {
     _newTime = -1;
@@ -392,6 +420,8 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
         connect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
         disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
         timeLcd->display("00:00");
+        // clear highlight
+        emit showTextRequested(currentID, -1);
         break;
     case Phonon::PausedState:
         stopAction->setEnabled(true);

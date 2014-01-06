@@ -150,6 +150,7 @@ private:
 public slots:
     void updateTabsSubMenus();
     void importDataBase(const QString &fileName, bool* ok = 0);
+    void highlightTextOnPoem(int poemId, int vorder);
 
 private slots:
     void openParentPage(int parentID, bool newPage = false);
@@ -223,5 +224,6 @@ protected:
 signals:
     void maxItemPerPageChanged();
     void loadingStatusText(const QString &);
+    void highlightedTextChanged(const QString &);
 };
 #endif // SAAGHARWINDOW_H

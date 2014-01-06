@@ -29,6 +29,7 @@
 #include "outline.h"
 #include "registerationform.h"
 #include "searchoptionsdialog.h"
+#include "lyricsreader.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -172,6 +173,9 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
         }
     }
     SaagharWidget::musicPlayer->loadAllAlbums();
+
+    connect(SaagharWidget::musicPlayer, SIGNAL(showTextRequested(int,int)), this, SLOT(highlightTextOnPoem(int,int)));
+    connect(this, SIGNAL(highlightedTextChanged(QString)), SaagharWidget::musicPlayer, SIGNAL(highlightedTextChange(QString)));
 #endif
 
     loadGlobalSettings();
@@ -3189,6 +3193,16 @@ void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
     }
     qDebug() << "end of=" << Q_FUNC_INFO;
     //QApplication::restoreOverrideCursor();
+}
+
+void SaagharWindow::highlightTextOnPoem(int poemId, int vorder)
+{
+    if (saagharWidget->currentPoem != poemId) {
+        return;
+    }
+
+    QString highlightedText = saagharWidget->highlightCell(vorder);
+    emit highlightedTextChanged(highlightedText);
 }
 
 void SaagharWindow::showSearchOptionsDialog()

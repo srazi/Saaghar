@@ -61,6 +61,7 @@ class QDockWidget;
 
 class ScrollText;
 class AlbumManager;
+class LyricsReader;
 
 class QMusicPlayer : public QToolBar
 {
@@ -115,6 +116,7 @@ public slots:
     void renameAlbum(const QString &albumName);
     void removeAlbum(const QString &albumName);
     void saveAsAlbum(const QString &albumName, bool saveAs = true);
+    void showTextByTime(qint64 time);
 
 private slots:
     void removeSource();
@@ -166,12 +168,17 @@ private:
     ScrollText* infoLabel;
     QString startDir;
 
+    LyricsReader* m_lyricReader;
+    int m_lastVorder;
+
 protected:
     virtual void resizeEvent(QResizeEvent* e);
 
 signals:
     void mediaChanged(const QString &, const QString &, int, bool); //fileName, title, id, removeRequest
     void requestPageContainedMedia(int, bool); //pageId, newPage
+    void showTextRequested(int, int);
+    void highlightedTextChange(const QString &);
 };
 
 class QTreeWidget;

@@ -98,6 +98,8 @@ public:
     int currentVerticalPosition();
     void setVerticalPosition(int vPosition);
 
+    QString highlightCell(int vorder);
+
     int minMesraWidth;
 
     //STATIC Variables

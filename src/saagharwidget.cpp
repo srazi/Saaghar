@@ -260,7 +260,40 @@ void SaagharWidget::setVerticalPosition(int vPosition)
 //                return;
 //            }
 //        }
-//    }
+    //    }
+}
+
+QString SaagharWidget::highlightCell(int vorder)
+{
+    QString text;
+    if (currentPoem <= 0) {
+        return text;
+    }
+
+    int numOfCols = tableViewWidget->columnCount();
+    int numOfRows = tableViewWidget->rowCount();
+    const QColor poemColor(Settings::getFromColors(Settings::PoemTextFontColor));
+
+    for (int col = 0; col < numOfCols; ++col) {
+        for (int row = 0; row < numOfRows; ++row) {
+            QTableWidgetItem* item = tableViewWidget->item(row, col);
+            if (item) {
+                QStringList verseData = item->data(Qt::UserRole).toString().split("|", QString::SkipEmptyParts);
+                if (verseData.size() == 4 && verseData.at(0) == "VerseData=") {
+                    if (verseData.at(2).toInt() == vorder) {
+                        tableViewWidget->scrollToItem(item, QAbstractItemView::PositionAtCenter);
+                        item->setTextColor(SaagharWidget::matchedTextColor);
+                        text = item->text();
+                    }
+                    else {
+                        item->setTextColor(poemColor);
+                    }
+                }
+            }
+        }
+    }
+
+    return text;
 }
 
 void SaagharWidget::parentCatClicked()
