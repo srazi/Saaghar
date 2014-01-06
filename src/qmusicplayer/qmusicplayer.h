@@ -255,7 +255,7 @@ protected:
     virtual void resizeEvent(QResizeEvent*);
 
 private:
-    void updateText();
+    void updateText(bool keepScrolling = false);
     QString _text;
     QString _separator;
 #if QT_VERSION >= 0x040700

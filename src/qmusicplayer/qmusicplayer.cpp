@@ -1470,7 +1470,7 @@ QString ScrollText::text() const
 void ScrollText::setText(QString text)
 {
     _text = text;
-    updateText();
+    updateText(sender());
     update();
 }
 
@@ -1486,7 +1486,7 @@ void ScrollText::setSeparator(QString separator)
     update();
 }
 
-void ScrollText::updateText()
+void ScrollText::updateText(bool keepScrolling)
 {
     timer.stop();
 
@@ -1494,7 +1494,9 @@ void ScrollText::updateText()
     scrollEnabled = (singleTextWidth > width() - leftMargin);
 
     if (scrollEnabled) {
-        scrollPos = -64;
+        if (!keepScrolling) {
+            scrollPos = -64;
+        }
         staticText.setText(_text + _separator);
         timer.start();
     }
