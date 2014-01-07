@@ -61,6 +61,7 @@ Some bugs about computation of row's height and scrolling to current item were f
 The 'convertToHtml()' and 'convertToTeX()' recognize text paragraphs.
 Some bugs about justification by spaces and bookmark section and 'scrollToFirstItemContains()' were fixed!
 [Mac] The width of number's cells was corrected.
+Fixed long undo/redo action name.
 
 == 0.9.69-->1.0.94 ==
 New Features:
