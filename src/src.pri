@@ -22,8 +22,7 @@ HEADERS += \
     $$PWD/qtwin.h \
     $$PWD/registerationform.h \
     $$PWD/searchoptionsdialog.h \
-    $$PWD/tabwidget.h \
-    $$PWD/lyricsreader.h
+    $$PWD/tabwidget.h
 
 FORMS += \
     $$PWD/saagharwindow.ui \
@@ -50,8 +49,7 @@ SOURCES += \
     $$PWD/qtwin.cpp \
     $$PWD/registerationform.cpp \
     $$PWD/searchoptionsdialog.cpp \
-    $$PWD/tabwidget.cpp \
-    $$PWD/lyricsreader.cpp
+    $$PWD/tabwidget.cpp
 
 include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)

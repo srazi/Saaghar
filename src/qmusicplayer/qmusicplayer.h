@@ -61,7 +61,7 @@ class QDockWidget;
 
 class ScrollText;
 class AlbumManager;
-class LyricsReader;
+class LyricsManager;
 
 class QMusicPlayer : public QToolBar
 {
@@ -168,7 +168,7 @@ private:
     ScrollText* infoLabel;
     QString startDir;
 
-    LyricsReader* m_lyricReader;
+    LyricsManager* m_lyricReader;
     int m_lastVorder;
 
 protected:

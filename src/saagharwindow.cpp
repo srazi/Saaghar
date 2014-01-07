@@ -29,7 +29,6 @@
 #include "outline.h"
 #include "registerationform.h"
 #include "searchoptionsdialog.h"
-#include "lyricsreader.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>

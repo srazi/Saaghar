@@ -1,8 +1,12 @@
 QT        += phonon
 
-INCLUDEPATH += $${PWD}/
+INCLUDEPATH += $$PWD
 
-HEADERS   += $${PWD}/qmusicplayer.h
-SOURCES   += $${PWD}/qmusicplayer.cpp
+HEADERS   += \
+    $$PWD/qmusicplayer.h \
+    $$PWD/lyricsmanager.h
+SOURCES   += \
+    $$PWD/qmusicplayer.cpp \
+    $$PWD/lyricsmanager.cpp
 
 RESOURCES += $${PWD}/qmusicplayer.qrc

@@ -43,7 +43,7 @@
  ***************************************************************************/
 
 #include "qmusicplayer.h"
-#include "lyricsreader.h"
+#include "lyricsmanager.h"
 
 #include <QDesktopServices>
 #include <QLCDNumber>
@@ -75,7 +75,7 @@ const bool itemsAsTopItem = true;
 QMusicPlayer::QMusicPlayer(QWidget* parent)
     : QToolBar(parent)
     , albumManager(new AlbumManager(this, parent))
-    , m_lyricReader(new LyricsReader(this))
+    , m_lyricReader(new LyricsManager(this))
     , m_lastVorder(-2)
 {
     setObjectName("QMusicPlayer");
@@ -370,7 +370,7 @@ void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
 void QMusicPlayer::showTextByTime(qint64 time)
 {
     int vorder = m_lyricReader->vorderByTime(time);
-  //  qDebug() <<"QMusicPlayer::showTextByTime" << time << vorder;
+
     if (m_lastVorder != vorder) {
         m_lastVorder = vorder;
         emit showTextRequested(currentID, vorder);
