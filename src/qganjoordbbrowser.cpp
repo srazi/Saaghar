@@ -391,7 +391,7 @@ QList<GanjoorCat> QGanjoorDbBrowser::getParentCategories(GanjoorCat Cat)
             lst.insert(0, Cat);
         }
         GanjoorCat gCat;
-        gCat.init(0, 0, QString::fromLocal8Bit("خانه"), 0, "");
+        gCat.init(0, 0, tr("Home"), 0, QString());
         lst.insert(0, gCat);
     }
     return lst;

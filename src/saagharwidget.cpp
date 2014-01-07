@@ -546,6 +546,9 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
     //new Caption
     currentCaption = (currentCat == 0) ? tr("Home") : ganjoorDataBase->getPoetForCat(currentCat)._Name;//for Tab Title
+    if (currentCaption.isEmpty()) {
+        currentCaption = currentLocationList.at(0);
+    }
     qDebug() << "emit captionChanged()--392";
     emit captionChanged();
     QList<GanjoorCat*> subcats = ganjoorDataBase->getSubCategories(category._ID);
@@ -925,6 +928,9 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
     //new Caption
     currentCaption = (currentCat == 0) ? tr("Home") : ganjoorDataBase->getPoetForCat(currentCat)._Name;//for Tab Title
+    if (currentCaption.isEmpty()) {
+        currentCaption = currentLocationList.at(0);
+    }
     currentCaption += ":" + poem._Title; //.left(7);
     qDebug() << "emit captionChanged()--389";
     emit captionChanged();
