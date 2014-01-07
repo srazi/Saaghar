@@ -2334,14 +2334,6 @@ void SaagharWindow::showSettingsDialog()
     m_settingsDialog->ui->pushButtonBackground->setEnabled(SaagharWidget::backgroundImageState);
     connect(m_settingsDialog->ui->pushButtonBackground, SIGNAL(clicked()), m_settingsDialog, SLOT(browseForBackground()));
 
-    //colors
-    connect(m_settingsDialog->ui->pushButtonBackgroundColor, SIGNAL(clicked()), m_settingsDialog, SLOT(getColorForPushButton()));
-    connect(m_settingsDialog->ui->pushButtonMatchedTextColor, SIGNAL(clicked()), m_settingsDialog, SLOT(getColorForPushButton()));
-    m_settingsDialog->ui->pushButtonBackgroundColor->setPalette(QPalette(SaagharWidget::backgroundColor));
-    m_settingsDialog->ui->pushButtonBackgroundColor->setAutoFillBackground(true);
-    m_settingsDialog->ui->pushButtonMatchedTextColor->setPalette(QPalette(SaagharWidget::matchedTextColor));
-    m_settingsDialog->ui->pushButtonMatchedTextColor->setAutoFillBackground(true);
-
     //splash screen
     m_settingsDialog->ui->checkBoxSplashScreen->setChecked(Settings::READ("Display Splash Screen", true).toBool());
 
@@ -2389,9 +2381,8 @@ void SaagharWindow::applySettings()
     SaagharWidget::backgroundImagePath = m_settingsDialog->ui->lineEditBackground->text();
 
     //colors
-    SaagharWidget::backgroundColor = m_settingsDialog->ui->pushButtonBackgroundColor->palette().background().color();
-    //if (settingsDlg->ui->pushButtonMatchedTextColor->palette().background().color() != SaagharWidget::textColor)//they must be different.
-    SaagharWidget::matchedTextColor = m_settingsDialog->ui->pushButtonMatchedTextColor->palette().background().color();
+    SaagharWidget::backgroundColor = m_settingsDialog->backgroundFontColor->color();
+    SaagharWidget::matchedTextColor = m_settingsDialog->matchedFontColor->color();
 
     //splash screen
     Settings::WRITE("Display Splash Screen", m_settingsDialog->ui->checkBoxSplashScreen->isChecked());

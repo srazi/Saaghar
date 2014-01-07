@@ -340,50 +340,6 @@
                   </property>
                  </widget>
                 </item>
-                <item>
-                 <widget class="QPushButton" name="pushButtonBackgroundColor">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>24</width>
-                    <height>24</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>24</width>
-                    <height>24</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="autoDefault">
-                   <bool>true</bool>
-                  </property>
-                  <property name="flat">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_6">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </item>
               <item>
@@ -394,47 +350,6 @@
                    <string>&quot;Matched Text&quot; color</string>
                   </property>
                  </widget>
-                </item>
-                <item>
-                 <widget class="QPushButton" name="pushButtonMatchedTextColor">
-                  <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                    <horstretch>0</horstretch>
-                    <verstretch>0</verstretch>
-                   </sizepolicy>
-                  </property>
-                  <property name="minimumSize">
-                   <size>
-                    <width>24</width>
-                    <height>24</height>
-                   </size>
-                  </property>
-                  <property name="maximumSize">
-                   <size>
-                    <width>24</width>
-                    <height>24</height>
-                   </size>
-                  </property>
-                  <property name="text">
-                   <string/>
-                  </property>
-                  <property name="flat">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_7">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
                 </item>
                </layout>
               </item>
@@ -462,6 +377,9 @@
           <string>Simple</string>
          </property>
          <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
           <bool>true</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout_17">
@@ -846,6 +764,22 @@
     <hint type="destinationlabel">
      <x>411</x>
      <y>117</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBoxBackground</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>labelBackgroundColor</receiver>
+   <slot>setDisabled(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>91</x>
+     <y>135</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>77</x>
+     <y>69</y>
     </hint>
    </hints>
   </connection>

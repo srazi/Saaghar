@@ -40,26 +40,18 @@ Settings::Settings(SaagharWindow* parent)
     connect(ui->globalFontColorGroupBox, SIGNAL(toggled(bool)), this, SLOT(setUnCheckedOtherFontColorGroupBox(bool)));
     connect(ui->advancedFontColorGroupBox, SIGNAL(toggled(bool)), this, SLOT(setUnCheckedOtherFontColorGroupBox(bool)));
 
+    backgroundFontColor = new FontColorSelector(getFromFonts(OutLineFontColor, false),
+            SaagharWidget::backgroundColor, ui->groupBox_2);
+    backgroundFontColor->setObjectName(QString::fromUtf8("backgroundFontColor"));
+    backgroundFontColor->setColorSelector(true);
+    ui->horizontalLayout_6->addWidget(backgroundFontColor);
 
-    ui->globalFontColorGroupBox->setChecked(Settings::READ("Global Font", false).toBool());
-    //QHash<QString, QVariant> defaultFonts;
-    //QFont fnt;
-//  defaultFonts.insert("default", fnt);
-//  defaultFonts.insert("PoemText", fnt);
-//  defaultFonts.insert("ProseText", fnt);
-//  defaultFonts.insert("SectionName", fnt);
-//  defaultFonts.insert("PoemTitle", QFont(fnt.family(),fnt.pointSize()+2));
-//  defaultFonts.insert("BeytNumber", fnt);
-    //QHash<QString, QVariant> defaultColors;
-//  defaultColors.insert("default", QColor(0x23,0x65, 0xFF));
-//  defaultColors.insert("PoemText", QColor(0x23,0x65, 0xFF));
-//  defaultColors.insert("ProseText", QColor(0x23,0x65, 0xFF));
-//  defaultColors.insert("SectionName", QColor(0x23,0x65, 0xFF));
-//  defaultColors.insert("PoemTitle", QColor(0x23,0x65, 0xFF));
-//  defaultColors.insert("BeytNumber", QColor(0x23,0x65, 0xFF));
+    matchedFontColor = new FontColorSelector(getFromFonts(DefaultFontColor, false),
+            SaagharWidget::matchedTextColor, ui->groupBox_2);
+    matchedFontColor->setObjectName(QString::fromUtf8("matchedFontColor"));
+    matchedFontColor->setColorSelector(true);
+    ui->horizontalLayout_5->addWidget(matchedFontColor);
 
-//  QHash<QString, QVariant> tmphashFonts = Settings::READ("Fonts Hash", QVariant(defaultFonts)).toHash();
-//  QHash<QString, QVariant> tmphashColors = Settings::READ("Colors Hash", QVariant(defaultColors)).toHash();
 
     outlineFontColor = new FontColorSelector(getFromFonts(OutLineFontColor, false),
             getFromColors(OutLineFontColor, false),
@@ -113,6 +105,16 @@ Settings::Settings(SaagharWindow* parent)
     ui->lineEditIconTheme->setText(Settings::READ("Icon Theme Path", SaagharWindow::resourcesPath +
                                    "/themes/iconsets/light-gray/").toString());
     connect(ui->pushButtonIconTheme, SIGNAL(clicked()), this, SLOT(browseForIconTheme()));
+
+
+
+    // force emitting toggle signal
+    ui->globalFontColorGroupBox->setChecked(!Settings::READ("Global Font", false).toBool());
+    ui->globalFontColorGroupBox->setChecked(Settings::READ("Global Font", false).toBool());
+
+    connect(ui->checkBoxBackground, SIGNAL(toggled(bool)), backgroundFontColor, SLOT(disableAll(bool)));
+    backgroundFontColor->disableAll(ui->checkBoxBackground->isChecked());
+    ui->labelBackgroundColor->setDisabled(ui->checkBoxBackground->isChecked());
 }
 
 Settings::~Settings()
@@ -291,16 +293,6 @@ void Settings::tableAllActionsEntered()
     ui->pushButtonActionRemove->setEnabled(false);
     ui->pushButtonActionTop->setEnabled(false);
     ui->pushButtonActionBottom->setEnabled(false);
-}
-
-void Settings::getColorForPushButton()
-{
-    QPushButton* colorPushButton = qobject_cast<QPushButton*>(sender());
-    QColor color = QColorDialog::getColor(colorPushButton->palette().background().color(), this);
-    if (color.isValid()) {
-        colorPushButton->setPalette(QPalette(color));
-        colorPushButton->setAutoFillBackground(true);
-    }
 }
 
 void Settings::browseForDataBasePath()
@@ -570,11 +562,22 @@ FontColorSelector::FontColorSelector(const QFont &defaultFont, const QColor &def
     //hLayout->addWidget(italic);
 
     this->setLayout(hLayout);
+
+    if (parent) {
+        connect(parent, SIGNAL(toggled(bool)), this, SLOT(enableAll(bool)));
+    }
 }
 
 QColor FontColorSelector::color()
 {
-    return sampleLabel->palette().color(QPalette::WindowText);
+    return m_color;
+}
+
+void FontColorSelector::setColorSelector(bool colorSelector)
+{
+    sampleLabel->setHidden(colorSelector);
+    fontInfo->setHidden(colorSelector);
+    fontSelector->setHidden(colorSelector);
 }
 
 void FontColorSelector::setColor(const QColor &color)
@@ -583,12 +586,12 @@ void FontColorSelector::setColor(const QColor &color)
         return;
     }
 
-    colorSelector->setPalette(QPalette(color));
-    colorSelector->setAutoFillBackground(true);
+    m_color = color;
 
-    QPalette p(sampleLabel->palette());
-    p.setColor(QPalette::WindowText, color);
-    sampleLabel->setPalette(p);
+    colorSelector->setStyleSheet(QString("QPushButton{background: %1; border: 1px solid gray; border-radius: 3px;}")
+                                 .arg(color.name()));
+    sampleLabel->setStyleSheet(QString("QLabel{color: %1; border: 1px solid gray; border-radius: 3px;}")
+                               .arg(color.name()));
 }
 
 void FontColorSelector::setSampleFont(const QFont &font)
@@ -622,6 +625,28 @@ void FontColorSelector::selectFont()
 
 void FontColorSelector::selectColor()
 {
-    QColor color = QColorDialog::getColor(colorSelector->palette().background().color(), this);
+    disconnect(colorSelector, SIGNAL(clicked()), this, SLOT(selectColor()));
+    QColor color = QColorDialog::getColor(m_color, this);
     setColor(color);
+    connect(colorSelector, SIGNAL(clicked()), this, SLOT(selectColor()));
+}
+
+void FontColorSelector::enableAll(bool enabled)
+{
+    if (enabled) {
+        connect(fontSelector, SIGNAL(clicked()), this, SLOT(selectFont()));
+        connect(colorSelector, SIGNAL(clicked()), this, SLOT(selectColor()));
+        setColor(m_color);
+    }
+    else {
+        disconnect(fontSelector, SIGNAL(clicked()), this, SLOT(selectFont()));
+        disconnect(colorSelector, SIGNAL(clicked()), this, SLOT(selectColor()));
+        colorSelector->setStyleSheet(QString("QPushButton{background: lightgray; border: 1px solid gray; border-radius: 3px;}"));
+        sampleLabel->setStyleSheet(QString("QLabel{color: lightgray; border: 1px solid gray; border-radius: 3px;}"));
+    }
+}
+
+void FontColorSelector::disableAll(bool disable)
+{
+    enableAll(!disable);
 }

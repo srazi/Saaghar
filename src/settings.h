@@ -55,6 +55,8 @@ public:
     FontColorSelector* sectionNameFontColor;
     FontColorSelector* titlesFontColor;
     FontColorSelector* numbersFontColor;
+    FontColorSelector* backgroundFontColor;
+    FontColorSelector* matchedFontColor;
 
     Ui::Settings* ui;
     void initializeActionTables(const QMap<QString, QAction*> &actionsMap, const QStringList &toolBarItems);
@@ -112,7 +114,6 @@ private slots:
     void browseForBackground();
     void browseForIconTheme();
     void browseForDataBasePath();
-    void getColorForPushButton();
 
 private:
     void replaceWithNeighbor(int neighbor);
@@ -144,6 +145,7 @@ private:
     void retranslateUi();
 };
 
+
 class FontColorSelector : public QWidget
 {
     Q_OBJECT
@@ -153,10 +155,13 @@ public:
     inline QFont sampleFont()
     {return sampleLabel->font();}
     QColor color();
+    void setColorSelector(bool colorSelector);
 
 public slots:
     void setSampleFont(const QFont &font);
     void setColor(const QColor &color);
+    void enableAll(bool enabled);
+    void disableAll(bool disable);
 
 private:
     QLabel* fontInfo;
@@ -166,6 +171,7 @@ private:
     QCheckBox* bold;
     QCheckBox* italic;
     QHBoxLayout* hLayout;
+    QColor m_color;
 
 private slots:
     void selectFont();
