@@ -800,41 +800,56 @@ void SaagharWindow::checkForUpdates()
 
     QEventLoop loop;
 
-    QNetworkRequest requestVersionInfo(QUrl("http://saaghar.sourceforge.net/saaghar.version"));
-    QNetworkAccessManager* netManager = new QNetworkAccessManager();
-    QNetworkReply* reply = netManager->get(requestVersionInfo);
+    QStringList updateInfoServers;
+    updateInfoServers << "http://srazi.github.io/Saaghar/saaghar.version"
+                      << "https://saaghar.sourceforge.net/saaghar.version"
+                      << "http://pozh.org/saaghar.version";
 
-    QProgressDialog updateProgress(tr("Checking for updates..."),  tr("Cancel"), 0, 0, this);
-    if (action) {
-        updateProgress.setMinimumDuration(0);
+    QNetworkReply* reply;
+    bool error = true;
+
+    for (int i = 0; i < updateInfoServers.size(); ++i) {
+        showStatusText("<i><b>" + tr("Checking for updates... (server number=%1)").arg(i + 1) + "</b></i>");
+        QProgressDialog updateProgress(tr("Checking for updates... (server number=%1)").arg(i + 1),  tr("Cancel"), 0, 0, this);
+        if (action) {
+            updateProgress.setMinimumDuration(0);
+        }
+        else {
+            updateProgress.setParent(0);
+            updateProgress.setMinimumDuration(5000);
+        }
+
+        updateProgress.setWindowModality(Qt::WindowModal);
+        updateProgress.setFixedSize(updateProgress.size());
+        if (action || !Settings::READ("Display Splash Screen", true).toBool()) {
+            updateProgress.show();
+        }
+
+        QNetworkRequest requestVersionInfo(QUrl(updateInfoServers.at(i)));
+        QNetworkAccessManager* netManager = new QNetworkAccessManager();
+        reply = netManager->get(requestVersionInfo);
+
+        connect(&updateProgress, SIGNAL(canceled()), &loop, SLOT(quit()));
+        connect(reply, SIGNAL(finished()), &updateProgress, SLOT(hide()));
+        connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+        loop.exec();
+
+        if (updateProgress.wasCanceled()) {
+            updateProgress.hide();
+            loop.quit();
+            return;
+        }
+
+        if (!reply->error()) {
+            error = false;
+            break;
+        }
     }
-    else {
-        updateProgress.setParent(0);
-        updateProgress.setMinimumDuration(5000);
-    }
 
-    updateProgress.setWindowModality(Qt::WindowModal);
-    updateProgress.setFixedSize(updateProgress.size());
-    if (action || !Settings::READ("Display Splash Screen", true).toBool()) {
-        updateProgress.show();
-    }
-
-    connect(&updateProgress, SIGNAL(canceled()), &loop, SLOT(quit()));
-    connect(reply, SIGNAL(finished()), &updateProgress, SLOT(hide()));
-    connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-    loop.exec();
-
-    if (updateProgress.wasCanceled()) {
-        updateProgress.hide();
-        loop.quit();
-        return;
-    }
-
-    if (reply->error()) {
+    if (error) {
         showStatusText("!QExtendedSplashScreenCommands:HIDE");
-        QMessageBox criticalError(QMessageBox::Critical, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+        QMessageBox criticalError(QMessageBox::Critical, tr("Error"), tr("There is an error when checking for updates...\nCheck your internet connection and try again."), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
         criticalError.exec();
-        //QMessageBox::critical(this, tr("Error"), tr("There is an error when checking for updates...\nError: %1").arg(reply->errorString()));
         if (!action) {
             showStatusText("!QExtendedSplashScreenCommands:SHOW");
         }
