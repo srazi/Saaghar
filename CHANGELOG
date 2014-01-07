@@ -1,3 +1,67 @@
+== 1.0.94-->2.5.0 ==
+New Features:
+--------------------------
+Added an outline widget with filtering feature.
+Added two new icon sets (dark-glass (default) and iconic)
+The search result contains all occurrences from each poem, and the occurrences from each poem are highlighted by same color.
+Ability to search within titles!
+The font and color of each text item (e.g. Titles, Sections, Poem,...) are customizable!
+Ability to set an audio file to each poem also it supports Audio Albums. Morever, Saaghr automatically loads the Ganjoor XML lyric file for loaded audio file if it exists.
+Ability to fetch data-sets list from local and remote servers and installing datasets (also Saaghar can install photo if it's available)
+Now search engine search any variant of similar characters. Morever, it can search He-Ye as Kasre-ye Ezafe! e.g: for searching "koshte-ye eshgh" we can search "koshte eshgh"! (it's complex and slow!)
+Added support for LTR contents.
+Ability to select interface language.
+Added an option for changing view style of poems.
+{Windows Vista+] Added support of Aero blur effect of Windows 7.
+
+Improved Features:
+--------------------------
+Added a new splash-screen with a new look-n-feel.
+New source structure.
+Improved TabBar.
+Added "Apply" button to Settings dialog.
+The search result widgets can track viewed items, and highlight current item.
+The search result widgets show count of all results and filtered results.
+Added a dialog for advanced search options
+The text of paragraphs is selectable.
+Now 'SaagharWidget' has a contextmenu and it also supports a better copy.
+Now Saaghar can launch without database.
+The history saves and restores vertical position of a page.
+Unnecessary function call to 'navigateToPage()' was removed from NavigateToPage's constructor.
+The way of calling random methods was improved.
+The view menu was reordered
+All icons are customizable.
+The Persian translation was updated to more standard and native Persian.
+In settings dialog the 'empty.png' is used for action without an icon.
+The display text of categories and titles are simplified and cleaned!
+The 'folder' tags of bookmark file use 'id' attribute for tracking their type. (internal)
+On application startup, opening last opened tabs don't push to the stack!
+For paragraph an elided version of its text is sent to bookmark manager!
+The height computation of paragraphs was improved.
+Disabling bookmarksManager completely when bookmark file has I/O errors.
+The 'convertToHtml()' uses non-breakable space in an improved way.
+Added a fancy scrollbar for description's container.
+Now, while pressing pageup and pagedown and arrow keys the viewport is scrolled to item.
+Clicking on searchTable's item doesn't refresh page if it's the same poem.
+There are some improvments in loading poems.
+Used Qt::ElideMiddle for treeWidgets.
+Support compiling with Qt5 (but it's not supported)
+
+Fixed Bugs:
+--------------------------
+The computation of menubar width was corrected!
+Import database was improved, if one of new poet has no subcats (a null poet) it will not insert to database!
+Don't apply background image, when it doesn't exist.
+Fix height computation for home and sections and titles.
+Fixed infinite loop on new home tab.
+Don't show splash if "checkForUpdates()" was called from menu, also don't show it when starting freshly.
+The bug about undo/redo action's text was fixed.
+The bug of bookmark manager about using a new interface language was fixed.
+Some bugs about computation of row's height and scrolling to current item were fixed.
+The 'convertToHtml()' and 'convertToTeX()' recognize text paragraphs.
+Some bugs about justification by spaces and bookmark section and 'scrollToFirstItemContains()' were fixed!
+[Mac] The width of number's cells was corrected.
+
 == 0.9.69-->1.0.94 ==
 New Features:
 --------------------------
