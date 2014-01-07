@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of QSearchLineEdit, a custom Qt widget               *
  *                                                                         *
- *  Copyright (C) 2012-2013 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2012-2014 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  The initial idea is from a custom lineEdit from qt labs................*

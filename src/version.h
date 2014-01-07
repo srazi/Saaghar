@@ -1,7 +1,7 @@
-/***************************************************************************
+﻿/***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2013 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2014 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -22,18 +22,18 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VER_FILEVERSION             2,0,155,2580
-#define VER_FILEVERSION_STR         "2.1.155.2580\0"
+#define VER_FILEVERSION             2,5,0,0
+#define VER_FILEVERSION_STR         "2.5.0.0\0"
 
-#define VER_FILEBUILDTIME_STR       "31Jul2012, 03:15:28\0"
+#define VER_FILEBUILDTIME_STR       "07Jan2014, 22:23:28\0"
 
-#define VER_PRODUCTVERSION          2,0
-#define VER_PRODUCTVERSION_STR      "2.0\0"
+#define VER_PRODUCTVERSION          2,5
+#define VER_PRODUCTVERSION_STR      "2.5\0"
 
 #define VER_COMPANYNAME_STR         "Pozh"
 #define VER_FILEDESCRIPTION_STR     "Saaghar, a Persian Poetry Software"
 #define VER_INTERNALNAME_STR        "Saaghar"
-#define VER_LEGALCOPYRIGHT_STR      "Copyright � 2010-2013, S. Razi Alavizadeh"
+#define VER_LEGALCOPYRIGHT_STR      "Copyright © 2010-2014, S. Razi Alavizadeh"
 #define VER_LEGALTRADEMARKS1_STR    "This program is licensed under GPL v.3"
 #define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
 #define VER_ORIGINALFILENAME_STR    "Saaghar.exe"
