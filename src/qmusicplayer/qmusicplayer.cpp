@@ -808,7 +808,7 @@ void QMusicPlayer::loadAlbum(const QString &fileName, bool inserToPathList)
     albumManager->setCurrentAlbum(albumName);
 }
 
-void QMusicPlayer::saveAlbum(const QString &fileName, const QString &albumName, const QString &)
+void QMusicPlayer::saveAlbum(const QString &fileName, const QString &albumName, bool inserToPathList, const QString &)
 {
     if (albumName.isEmpty()) {
         return;
@@ -825,7 +825,9 @@ void QMusicPlayer::saveAlbum(const QString &fileName, const QString &albumName, 
         albumFileName = album->PATH;
     }
 
-    albumsPathList.insert(albumName, albumFileName);
+    if (inserToPathList) {
+        albumsPathList.insert(albumName, albumFileName);
+    }
 
     QFile file(fileName);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
@@ -878,7 +880,7 @@ void QMusicPlayer::saveAllAlbums(const QString &format)
     QHash<QString, QVariant>::const_iterator albumsIterator = albumsPathList.constBegin();
     while (albumsIterator != albumsPathList.constEnd()) {
         if (!albumsIterator.key().isEmpty()) {
-            saveAlbum(albumsIterator.value().toString(), albumsIterator.key(), format);
+            saveAlbum(albumsIterator.value().toString(), albumsIterator.key(), false, format);
         }
         ++albumsIterator;
     }

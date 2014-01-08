@@ -88,7 +88,7 @@ public:
     qint64 currentTime();
     void setCurrentTime(qint64 time);
     void loadAlbum(const QString &fileName, bool inserToPathList = true);
-    void saveAlbum(const QString &fileName, const QString &albumName, const QString &format = "M3U8");
+    void saveAlbum(const QString &fileName, const QString &albumName, bool inserToPathList = true, const QString &format = "M3U8");
 
     void loadAllAlbums();
     void saveAllAlbums(const QString &format = "M3U8");
