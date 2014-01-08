@@ -46,6 +46,8 @@ Clicking on searchTable's item doesn't refresh page if it's the same poem.
 There are some improvments in loading poems.
 Used Qt::ElideMiddle for treeWidgets.
 Support compiling with Qt5 (but it's not supported)
+Better check for new version, the other servers were added for fetching update information.
+Handling setting's changes that need to relaunch.
 
 Fixed Bugs:
 --------------------------
@@ -60,8 +62,10 @@ The bug of bookmark manager about using a new interface language was fixed.
 Some bugs about computation of row's height and scrolling to current item were fixed.
 The 'convertToHtml()' and 'convertToTeX()' recognize text paragraphs.
 Some bugs about justification by spaces and bookmark section and 'scrollToFirstItemContains()' were fixed!
-[Mac] The width of number's cells was corrected.
 Fixed long undo/redo action name.
+Fixed showing the caption of dataset that is installed badly.
+Fixed focus on search toolbar.
+[Mac] The width of number's cells was corrected.
 
 == 0.9.69-->1.0.94 ==
 New Features:
