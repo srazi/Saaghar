@@ -30,6 +30,10 @@ isEqual(QT_MAJOR_VERSION, 5) {
     QT += sql network xml
 }
 
+# Git revision
+rev = $$system(sh $$PWD/scripts/getrevision.sh)
+DEFINES += GIT_REVISION=\\\"""$$rev"\\\""
+
 win32 {
 
 win32-msvc*{
