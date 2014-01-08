@@ -103,8 +103,6 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     mediaObject = new Phonon::MediaObject(this);
     metaInformationResolver = new Phonon::MediaObject(this);
 
-    mediaObject->setTickInterval(1000);
-
     albumManager->setMediaObject(mediaObject);
 
     connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));

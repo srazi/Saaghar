@@ -51,6 +51,7 @@ bool LyricsManager::read(QIODevice* device, const QString &format)
         return false;
     }
 
+    m_syncMap.clear();
     QDomNodeList syncInfoList = root.elementsByTagName("SyncInfo");
 
     for (int i = 0; i < syncInfoList.count(); ++i) {
@@ -80,7 +81,7 @@ int LyricsManager::vorderByTime(qint64 time)
     }
 
     QMap<qint64, int>::const_iterator it = m_syncMap.constBegin();
-    qint64 key = it.key();
+    qint64 key = time;
     while (it != m_syncMap.constEnd()) {
         if (it.key() > time) {
             break;
