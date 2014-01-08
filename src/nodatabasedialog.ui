@@ -62,7 +62,7 @@
       <item>
        <widget class="QCommandLinkButton" name="exitPushButton">
         <property name="text">
-         <string>Nothing to do, just exit!</string>
+         <string>Exit!</string>
         </property>
         <property name="checkable">
          <bool>false</bool>

@@ -3486,6 +3486,7 @@ void SaagharWindow::setupSearchToolBarUi()
     horizontalStretch->addStretch(10000);
     searchToolBarContent->setLayout(horizontalStretch);
 
+    searchToolBarContent->setFocusProxy(SaagharWidget::lineEditSearchText);
     ui->searchToolBar->addWidget(searchToolBarContent);
 
     searchOptionMenu = new QMenu(ui->searchToolBar);
@@ -3634,6 +3635,11 @@ void SaagharWindow::namedActionTriggered(bool checked)
             mainTabWidget->setCurrentWidget(regForm);
         }
 #endif
+    }
+    else if (actionName == "searchToolbarAction") {
+        if (action->isChecked()) {
+            SaagharWidget::lineEditSearchText->setFocus();
+        }
     }
 
     connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
