@@ -607,6 +607,7 @@ void FontColorSelector::setSampleFont(const QFont &font)
 
 void FontColorSelector::selectFont()
 {
+    disconnect(fontSelector, SIGNAL(clicked()), this, SLOT(selectFont()));
     //bool ok;
     QFont tmp = sampleFont();
     //QFont font = QFontDialog::getFont(&ok, sampleFont(), this);
@@ -621,6 +622,7 @@ void FontColorSelector::selectFont()
         //maybe after emmitting signals font has been changed
         setSampleFont(tmp);
     }
+    connect(fontSelector, SIGNAL(clicked()), this, SLOT(selectFont()));
 }
 
 void FontColorSelector::selectColor()
