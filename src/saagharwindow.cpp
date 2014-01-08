@@ -2490,7 +2490,7 @@ void SaagharWindow::applySettings()
             (m_settingsDialog->ui->checkBoxIconTheme->isChecked() ? "TRUE" : "FALSE");
 
     if (m_compareSettings != optionsCompare) {
-        QMessageBox::information(this, tr("Need to Relaunch!"), tr("Some of settings are applied after relaunch!"));
+        QMessageBox::information(this, tr("Need to Relaunch!"), tr("Some of changes are applied after relaunch!"));
         m_compareSettings = optionsCompare;
     }
 }
