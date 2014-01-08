@@ -145,6 +145,8 @@ private:
     Settings* m_settingsDialog;
     QExtendedSplashScreen* m_splash;
 
+    QString m_compareSettings;
+
     static bool isPortable;
 
 public slots:

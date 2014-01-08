@@ -2360,6 +2360,11 @@ void SaagharWindow::showSettingsDialog()
     connect(m_settingsDialog->ui->pushButtonActionRemove, SIGNAL(clicked()), m_settingsDialog, SLOT(removeActionFromToolbarTable()));
 
     m_settingsDialog->ui->checkBoxTransparent->setChecked(Settings::READ("UseTransparecy").toBool());
+
+    m_compareSettings = m_settingsDialog->ui->uiLanguageComboBox->currentText() +
+            m_settingsDialog->ui->lineEditDataBasePath->text() +
+            m_settingsDialog->ui->lineEditIconTheme->text() +
+            (m_settingsDialog->ui->checkBoxIconTheme->isChecked() ? "TRUE" : "FALSE");
     /************end of initialization************/
 
     if (m_settingsDialog->exec()) {
@@ -2377,10 +2382,7 @@ void SaagharWindow::applySettings()
 
     setUpdatesEnabled(false);
 
-    if (Settings::READ("UI Language", "fa").toString() != m_settingsDialog->ui->uiLanguageComboBox->currentText()) {
-        Settings::WRITE("UI Language", m_settingsDialog->ui->uiLanguageComboBox->currentText());
-        QMessageBox::information(this, tr("Interface Language Changed!"), tr("The interface language changes after relunching application!"));
-    }
+    Settings::WRITE("UI Language", m_settingsDialog->ui->uiLanguageComboBox->currentText());
 
     SaagharWidget::maxPoetsPerGroup = m_settingsDialog->ui->spinBoxPoetsPerGroup->value();
 
@@ -2472,6 +2474,16 @@ void SaagharWindow::applySettings()
     //////////////////////////////////////////////////////
 
     setUpdatesEnabled(true);
+
+    QString optionsCompare = m_settingsDialog->ui->uiLanguageComboBox->currentText() +
+            m_settingsDialog->ui->lineEditDataBasePath->text() +
+            m_settingsDialog->ui->lineEditIconTheme->text() +
+            (m_settingsDialog->ui->checkBoxIconTheme->isChecked() ? "TRUE" : "FALSE");
+
+    if (m_compareSettings != optionsCompare) {
+        QMessageBox::information(this, tr("Need to Relaunch!"), tr("Some of settings are applied after relaunch!"));
+        m_compareSettings = optionsCompare;
+    }
 }
 
 /*static*/
