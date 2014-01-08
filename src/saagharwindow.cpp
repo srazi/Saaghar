@@ -158,7 +158,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
 #ifndef NO_PHONON_LIB
     SaagharWidget::musicPlayer = new QMusicPlayer(this);
     SaagharWidget::musicPlayer->setWindowTitle(tr("Audio Player"));
-    addDockWidget(Qt::LeftDockWidgetArea, SaagharWidget::musicPlayer->albumManagerDock());
+    addDockWidget(Qt::RightDockWidgetArea, SaagharWidget::musicPlayer->albumManagerDock());
     SaagharWidget::musicPlayer->albumManagerDock()->hide();
     SaagharWidget::musicPlayer->hide();
 
@@ -228,15 +228,10 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
     parentCatsToolBar->setObjectName(QString::fromUtf8("parentCatsToolBar"));
     parentCatsToolBar->setLayoutDirection(Qt::RightToLeft);
     parentCatsToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
-    //addToolBar(Qt::BottomToolBarArea, parentCatsToolBar);
-    insertToolBar(ui->mainToolBar, parentCatsToolBar);
     parentCatsToolBar->setWindowTitle(tr("Parent Categories"));
 
     //create Tab Widget
-    mainTabWidget = ui->tabWidget;// new QTabWidget;//(ui->centralWidget);
-//  mainTabWidget->setDocumentMode(true);
-//  mainTabWidget->setUsesScrollButtons(true);
-//  mainTabWidget->setMovable(true);
+    mainTabWidget = ui->tabWidget;
 
     if (autoCheckForUpdatesState && !fresh) {
         showStatusText(tr("<i><b>Checking for update...</b></i>"));
@@ -1721,9 +1716,9 @@ void SaagharWindow::setupUi()
     }
 #endif
 
-    if (Settings::READ("MainWindowState").isNull()) {
-        insertToolBarBreak(ui->mainToolBar);
-    }
+//    if (Settings::READ("MainWindowState").isNull()) {
+//        insertToolBarBreak(ui->mainToolBar);
+//    }
 
     skipSearchToolBarResize = false;
     comboBoxSearchRegion = 0;
@@ -1926,13 +1921,13 @@ void SaagharWindow::setupUi()
 //  actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setData(SaagharWidget::MesraPerLineGroupedBeyt);
 
     outlineTree = new OutLineTree;
-    QDockWidget* outlineDock = new QDockWidget(tr("Outline"), this);
-    outlineDock->setObjectName("outlineDock");
-    outlineDock->setWidget(outlineTree);
-    outlineDock->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
+    m_outlineDock = new QDockWidget(tr("Outline"), this);
+    m_outlineDock->setObjectName("outlineDock");
+    m_outlineDock->setWidget(outlineTree);
+    m_outlineDock->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
                                "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
-    addDockWidget(Qt::RightDockWidgetArea, outlineDock);
-    allActionMap.insert("outlineDockAction", outlineDock->toggleViewAction());
+    addDockWidget(Qt::RightDockWidgetArea, m_outlineDock);
+    allActionMap.insert("outlineDockAction", m_outlineDock->toggleViewAction());
     actionInstance("outlineDockAction")->setIcon(QIcon(ICON_PATH + "/outline.png"));
     actionInstance("outlineDockAction")->setObjectName(QString::fromUtf8("outlineDockAction"));
 
@@ -2103,6 +2098,17 @@ void SaagharWindow::setupUi()
     //removing no more supported items
     QString temp = mainToolBarItems.join("|");
     mainToolBarItems = temp.split("|", QString::SkipEmptyParts);
+
+    addToolBar(Qt::TopToolBarArea, parentCatsToolBar);
+    insertToolBar(parentCatsToolBar, ui->menuToolBar);
+    if (SaagharWidget::musicPlayer) {
+        insertToolBar(SaagharWidget::musicPlayer, ui->searchToolBar);
+    }
+    else {
+        addToolBar(Qt::BottomToolBarArea, ui->searchToolBar);
+    }
+
+    addToolBar(Qt::LeftToolBarArea, ui->mainToolBar);
 }
 
 QMenu* SaagharWindow::cornerMenu()
@@ -2549,37 +2555,39 @@ void SaagharWindow::loadGlobalSettings()
     //SaagharWidget::tableFont = fnt;
     SaagharWidget::showBeytNumbers = config->value("Show Beyt Numbers", true).toBool();
     //SaagharWidget::textColor = Settings::READ("Text Color",QColor(0x23,0x65, 0xFF)).value<QColor>();
-    SaagharWidget::matchedTextColor = Settings::READ("Matched Text Color", QColor(0x5E, 0xFF, 0x13)).value<QColor>();
+    SaagharWidget::matchedTextColor = Settings::READ("Matched Text Color", QColor(225, 0, 225)).value<QColor>();
     SaagharWidget::backgroundColor = Settings::READ("Background Color", QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
 
     //The "XB Sols" is an application font
-    QFont appFont1("XB Sols", 16);
+    QFont appFont1("XB Sols", 18);
+    appFont1.setBold(true);
     //The "FreeFarsi" is an application font
-    QFont appFont2("Scheherazade", 20);
+    QFont appFont2("Droid Arabic Naskh (with DOT)", 8);
+    appFont2.setBold(true);
 
     QHash<QString, QVariant> defaultFonts;
 
-    Settings::insertToFontColorHash(&defaultFonts, font(), Settings::OutLineFontColor);
+    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::DefaultFontColor);
     Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::PoemTextFontColor);
-    appFont1.setPointSize(12);
-    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::NumbersFontColor);
 
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::DefaultFontColor);
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::OutLineFontColor);
+    appFont2.setPointSize(12);
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::NumbersFontColor);
+    appFont2.setPointSize(16);
     Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::ProseTextFontColor);
-    appFont2.setBold(true);
     appFont2.setPointSize(18);
     Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::SectionNameFontColor);
     appFont2.setPointSize(22);
     Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::TitlesFontColor);
 
     QHash<QString, QVariant> defaultColors;
-    Settings::insertToFontColorHash(&defaultColors, QColor(0x00, 0x45, 0x00), Settings::OutLineFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(0x2F, 0x90, 0x2D), Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(0x2F, 0x90, 0x2D), Settings::PoemTextFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(0x2F, 0x90, 0x2D), Settings::ProseTextFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(0x00, 0x7D, 0x00), Settings::SectionNameFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(0x70, 0x53, 0x25), Settings::TitlesFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(0x00, 0x7D, 0x00), Settings::NumbersFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(22, 127, 175), Settings::OutLineFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(47, 144, 45), Settings::DefaultFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(57, 175, 175), Settings::PoemTextFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(2, 118, 190), Settings::ProseTextFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(48, 127, 105), Settings::SectionNameFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(143, 47, 47), Settings::TitlesFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(84, 81, 171), Settings::NumbersFontColor);
 
     Settings::hashFonts = Settings::READ("Fonts Hash", QVariant(defaultFonts)).toHash();
     Settings::hashColors = Settings::READ("Colors Hash", QVariant(defaultColors)).toHash();
@@ -2603,37 +2611,16 @@ void SaagharWindow::loadGlobalSettings()
     Settings::READ("UseTransparecy", false);
 #endif
 
-//  mainToolBarItems = config->value("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").toString().split("|", QString::SkipEmptyParts);
-//  QString tmp = mainToolBarItems.join("");
-//  tmp.remove("action", Qt::CaseInsensitive);
-//  tmp.remove("Separator", Qt::CaseInsensitive);
-//  if (tmp.isEmpty() || tmp.contains(" "))
-//      mainToolBarItems = QString("actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionExportAsPDF|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").split("|", QString::SkipEmptyParts);
-
-
-    //initialize variableHash
-//  S_R("Show Photo at Home", true);
-//  S_R("Lock ToolBars", true);//default locked
-
-    //config->setValue("VariableHash", QVariant(Settings::VariablesHash));
-    QHash<QString, QVariant> vHash = config->value("VariableHash").toHash();
-
-    mainToolBarItems = Settings::READ("Main ToolBar Items", "actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|fixedNameUndoAction|Separator|actionFaal|actionRandom|Separator|actionCopy|bookmarkManagerDockAction|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|Ganjoor Verification").toString().split("|", QString::SkipEmptyParts);
-//  QString tmp = mainToolBarItems.join("");
-//  tmp.remove("action", Qt::CaseInsensitive);
-//  tmp.remove("Separator", Qt::CaseInsensitive);
-//  if (tmp.isEmpty() || tmp.contains(" "))
-//      mainToolBarItems = QString("actionHome|Separator|actionPreviousPoem|actionNextPoem|Separator|actionFaal|actionRandom|Separator|actionCopy|searchToolbarAction|actionNewTab|actionFullScreen|Separator|actionSettings|actionHelpContents").split("|", QString::SkipEmptyParts);
-
-///////////////
-    //variable hash
-//  QHash<QString, QVariant>::const_iterator it = /*Settings::VariablesHash*/vHash.constBegin();
-//  while (it != vHash.constEnd())
-//  {
-//      qDebug() << "vHash--key=" << it.key() << "vHash--Value=" << it.value();
-//      ++it;
-//  }
-//////////////////////
+    const QString sepStr = QLatin1String("Separator");
+    QStringList defaultActions;
+    defaultActions << "outlineDockAction" << sepStr << "actionPreviousPoem" << "actionNextPoem"
+                   << "fixedNameUndoAction" << sepStr << "actionFaal" << "actionRandom"
+                   << sepStr << "searchToolbarAction" << "bookmarkManagerDockAction"
+#ifndef NO_PHONON_LIB
+                   << "albumDockAction" << "toggleMusicPlayer"
+#endif
+                   << sepStr << "actionSettings";
+    mainToolBarItems = Settings::READ("Main ToolBar Items", defaultActions.join("|")).toString().split("|", QString::SkipEmptyParts);
 }
 
 void SaagharWindow::loadTabWidgetSettings()
@@ -3361,8 +3348,8 @@ void SaagharWindow::toolBarViewActions(QToolBar* toolBar, QMenu* menu, bool subM
     actionInstance("actionToolBarStyleTextIcon")->setData(Qt::ToolButtonTextUnderIcon);
 
     //checked actions
-    actionInstance(Settings::READ("MainToolBar Style", "actionToolBarStyleTextIcon").toString())->setChecked(true);
-    actionInstance(Settings::READ("MainToolBar Size", "actionToolBarSizeMediumIcon").toString())->setChecked(true);
+    actionInstance(Settings::READ("MainToolBar Style", "actionToolBarStyleOnlyIcon").toString())->setChecked(true);
+    actionInstance(Settings::READ("MainToolBar Size", "actionToolBarSizeLargeIcon").toString())->setChecked(true);
 
     //create actiongroups connections
     connect(toolBarIconSize, SIGNAL(triggered(QAction*)), this, SLOT(toolbarViewChanges(QAction*)));
@@ -3662,6 +3649,26 @@ void SaagharWindow::namedActionTriggered(bool checked)
             SaagharWidget::lineEditSearchText->setFocus();
         }
     }
+#ifndef NO_PHONON_LIB
+    else if (actionName == "albumDockAction") {
+        if (action->isChecked()) {
+            SaagharWidget::musicPlayer->albumManagerDock()->show();
+            SaagharWidget::musicPlayer->albumManagerDock()->raise();
+        }
+    }
+#endif
+    else if (actionName == "outlineDockAction") {
+        if (action->isChecked()) {
+            m_outlineDock->show();
+            m_outlineDock->raise();
+        }
+    }
+    else if (actionName == "bookmarkManagerDockAction") {
+        if (action->isChecked()) {
+            m_bookmarkManagerDock->show();
+            m_bookmarkManagerDock->raise();
+        }
+    }
 
     connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
 }
@@ -3791,13 +3798,13 @@ void SaagharWindow::setAsDirty(int catId, int poemId)//-1 for skip it
 
 void SaagharWindow::setupBookmarkManagerUi()
 {
-    QDockWidget* bookmarkManagerWidget = new QDockWidget(tr("Bookmarks"), this);
-    bookmarkManagerWidget->setObjectName("bookMarkWidget");
-    bookmarkManagerWidget->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
+    m_bookmarkManagerDock = new QDockWidget(tr("Bookmarks"), this);
+    m_bookmarkManagerDock->setObjectName("bookMarkWidget");
+    m_bookmarkManagerDock->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
                                          "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
-    bookmarkManagerWidget->hide();
+    m_bookmarkManagerDock->hide();
 
-    QWidget* bookmarkContainer = new QWidget(bookmarkManagerWidget);
+    QWidget* bookmarkContainer = new QWidget(m_bookmarkManagerDock);
     QVBoxLayout* bookmarkMainLayout = new QVBoxLayout;
     QHBoxLayout* bookmarkToolsLayout = new QHBoxLayout;
 
@@ -3810,10 +3817,10 @@ void SaagharWindow::setupBookmarkManagerUi()
         clearIconPath = ICON_PATH + "/clear-right.png";
     }
 
-    QLabel* bookmarkFilterLabel = new QLabel(bookmarkManagerWidget);
+    QLabel* bookmarkFilterLabel = new QLabel(m_bookmarkManagerDock);
     bookmarkFilterLabel->setObjectName(QString::fromUtf8("bookmarkFilterLabel"));
     bookmarkFilterLabel->setText(tr("Filter:"));
-    QSearchLineEdit* bookmarkFilter = new QSearchLineEdit(bookmarkManagerWidget, clearIconPath, ICON_PATH + "/filter.png");
+    QSearchLineEdit* bookmarkFilter = new QSearchLineEdit(m_bookmarkManagerDock, clearIconPath, ICON_PATH + "/filter.png");
     bookmarkFilter->setObjectName("bookmarkFilter");
 #if QT_VERSION >= 0x040700
     bookmarkFilter->setPlaceholderText(tr("Filter"));
@@ -3822,7 +3829,7 @@ void SaagharWindow::setupBookmarkManagerUi()
 #endif
     connect(bookmarkFilter, SIGNAL(textChanged(QString)), SaagharWidget::bookmarks, SLOT(filterItems(QString)));
 
-    QToolButton* unBookmarkButton = new QToolButton(bookmarkManagerWidget);
+    QToolButton* unBookmarkButton = new QToolButton(m_bookmarkManagerDock);
     unBookmarkButton->setObjectName("unBookmarkButton");
     unBookmarkButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
 
@@ -3863,9 +3870,9 @@ void SaagharWindow::setupBookmarkManagerUi()
     }
 
     if (readBookmarkFile) {
-        bookmarkManagerWidget->setWidget(bookmarkContainer /*SaagharWidget::bookmarks*/);
-        addDockWidget(Qt::LeftDockWidgetArea, bookmarkManagerWidget);
-        allActionMap.insert("bookmarkManagerDockAction", bookmarkManagerWidget->toggleViewAction());
+        m_bookmarkManagerDock->setWidget(bookmarkContainer /*SaagharWidget::bookmarks*/);
+        addDockWidget(Qt::RightDockWidgetArea, m_bookmarkManagerDock);
+        allActionMap.insert("bookmarkManagerDockAction", m_bookmarkManagerDock->toggleViewAction());
         actionInstance("bookmarkManagerDockAction")->setIcon(QIcon(ICON_PATH + "/bookmark-folder.png"));
         actionInstance("bookmarkManagerDockAction")->setObjectName(QString::fromUtf8("bookmarkManagerDockAction"));;
 
@@ -3888,8 +3895,8 @@ void SaagharWindow::setupBookmarkManagerUi()
         delete bookmarkContainer;
         bookmarkContainer = 0;
         SaagharWidget::bookmarks = 0;
-        delete bookmarkManagerWidget;
-        bookmarkManagerWidget = 0;
+        delete m_bookmarkManagerDock;
+        m_bookmarkManagerDock = 0;
         menuBookmarks = 0;
         showStatusText("!QExtendedSplashScreenCommands:HIDE");
         QMessageBox warning(QMessageBox::Warning, tr("Warning!"), tr("Bookmarking system was disabled, something going wrong with "

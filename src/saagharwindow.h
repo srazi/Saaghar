@@ -146,6 +146,8 @@ private:
     QExtendedSplashScreen* m_splash;
 
     QString m_compareSettings;
+    QDockWidget* m_outlineDock;
+    QDockWidget* m_bookmarkManagerDock;
 
     static bool isPortable;
 
