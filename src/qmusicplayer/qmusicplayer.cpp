@@ -67,6 +67,7 @@
 #include <QUuid>
 #include <QCryptographicHash>
 
+#define TICK_INTERVAL 100
 
 QHash<QString, QVariant> QMusicPlayer::albumsPathList = QHash<QString, QVariant>();
 QHash<QString, QMusicPlayer::SaagharAlbum*> QMusicPlayer::albumsMediaHash = QHash<QString, QMusicPlayer::SaagharAlbum*>();
@@ -194,7 +195,7 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
     setLyricSyncerState(true, !file.exists());
 
     if (m_lyricReader->read(&file, "GANJOOR_XML")) {
-        mediaObject->setTickInterval(100);
+        mediaObject->setTickInterval(TICK_INTERVAL);
         connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(showTextByTime(qint64)));
         connect(this, SIGNAL(highlightedTextChange(QString)), infoLabel, SLOT(setText(QString)));
     }
@@ -223,7 +224,7 @@ void QMusicPlayer::setSource()
     }
 
     QFileInfo selectedFile(file);
-    startDir = selectedFile.path();
+    startDir = selectedFile.absolutePath();
 
     setSource(file, currentTitle, currentID, true);
 }
@@ -233,6 +234,7 @@ void QMusicPlayer::newAlbum(QString fileName, QString albumName)
     if (fileName.isEmpty()) {
         fileName = QFileDialog::getSaveFileName(window(), tr("New Saaghar Album"), startDir,
                                                 "Saaghar Album (*.sal *.m3u8 *.m3u);;All Files (*.*)");
+        startDir = QFileInfo(fileName).absolutePath();
     }
 
     bool alreadyLoaded = albumsPathList.values().contains(fileName);
@@ -267,7 +269,7 @@ void QMusicPlayer::loadAlbumFile()
     }
 
     QFileInfo selectedFile(file);
-    startDir = selectedFile.path();
+    startDir = selectedFile.absolutePath();
 
     loadAlbum(file);
 }
@@ -354,6 +356,8 @@ void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
             return;
         }
 
+        startDir = QFileInfo(fileName).absolutePath();
+
         QString name = QInputDialog::getText(window(), tr("Name Of Album"),
                                              tr("Enter name for this Album:"),
                                              QLineEdit::Normal, albumName + tr("_Copy"));
@@ -379,7 +383,30 @@ void QMusicPlayer::showTextByTime(qint64 time)
 
     if (m_lastVorder != vorder) {
         m_lastVorder = vorder;
-        emit showTextRequested(currentID, vorder);
+        if (m_lastVorder >= 0) {
+            emit showTextRequested(currentID, vorder);
+        }
+        else if (m_lastVorder == -1) {
+            infoLabel->setText(currentTitle);
+        }
+        else if (m_lastVorder == -2) {
+            infoLabel->setText(tr("Finished"));
+        }
+        else {
+            QMap<QString, QString> metaData = metaInformationResolver->metaData();
+
+            QString title = metaData.value("TITLE");
+            if (title == "") {
+                title = metaInformationResolver->currentSource().fileName();
+            }
+
+            QStringList metaInfos;
+            metaInfos << title << metaData.value("ARTIST") << metaData.value("ALBUM") << metaData.value("DATE");
+            metaInfos.removeDuplicates();
+            QString tmp = metaInfos.join("-");
+            metaInfos = tmp.split("-", QString::SkipEmptyParts);
+            infoLabel->setText(metaInfos.join(" - "));
+        }
     }
 }
 
@@ -427,7 +454,7 @@ void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldStat
         disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
         timeLcd->display("00:00");
         // clear highlight
-        emit showTextRequested(currentID, -1);
+        emit showTextRequested(currentID, -3);
         break;
     case Phonon::PausedState:
         stopAction->setEnabled(true);
@@ -560,6 +587,18 @@ void QMusicPlayer::stopLyricSyncer(bool cancel)
     fileCheckSum.appendChild(m_domDocument.createTextNode(audioMD5SUM));
     QDomNode syncArray = m_domDocument.createElement("SyncArray");
 
+    QList<int> vOrders = m_syncMap.values();
+    if (!vOrders.contains(-1)) {
+        qint64 first = qBound(qint64(0), qint64(m_syncMap.keys().at(0) / 2), qMin(m_syncMap.keys().at(0) - 1, qint64(1000)));
+        m_syncMap.insert(first, -1);
+    }
+
+    if (!vOrders.contains(-2)) {
+        qint64 last = m_syncMap.keys().at(m_syncMap.size() - 1) + 1;
+        last = qBound(last, (mediaObject->totalTime() + last) / 2, mediaObject->totalTime());
+        m_syncMap.insert(last, -2);
+    }
+
     QMap<qint64, int>::const_iterator it = m_syncMap.constBegin();
     while (it != m_syncMap.constEnd()) {
         QDomNode syncInfo = m_domDocument.createElement("SyncInfo");
@@ -598,13 +637,15 @@ void QMusicPlayer::stopLyricSyncer(bool cancel)
         out.setCodec("utf-8");
         QString domString = m_domDocument.toString(IndentSize);
         domString = domString.replace("&#xd;", "");
+        out << "<!-- This file is created by Saaghar. -->\n";
         out << domString;
     }
 }
 
 void QMusicPlayer::recordTimeForVerse(int vorder)
 {
-    m_syncMap.insert(mediaObject->currentTime(), vorder - 1);
+    qint64 currentTime = qMax(mediaObject->currentTime(), qint64(TICK_INTERVAL + 1));
+    m_syncMap.insert(currentTime, vorder - 1);
 }
 
 void QMusicPlayer::setLyricSyncerState(bool startState, bool enabled)
@@ -1364,6 +1405,7 @@ void AlbumManager::setCurrentAlbum(const QString &albumName)
 
     previousItem = 0;
     mediaList->clear();
+    QFontMetrics fontMetric(mediaList->font());
     QHash<int, QMusicPlayer::SaagharMediaTag*> items = album->mediaItems;
     QHash<int, QMusicPlayer::SaagharMediaTag*>::const_iterator mediaIterator = items.constBegin();
     while (mediaIterator != items.constEnd()) {
@@ -1400,7 +1442,7 @@ void AlbumManager::setCurrentAlbum(const QString &albumName)
         }
 
         mediaItem->setText(0, mediaTag->TITLE.mid(mediaTag->TITLE.lastIndexOf(">") + 1));
-        mediaItem->setToolTip(0, mediaTag->TITLE);
+        mediaItem->setToolTip(0, fontMetric.elidedText(mediaTag->TITLE, Qt::ElideRight, 400) + "\n" + mediaTag->PATH);
         //          mediaItem->setText(1, mediaTag->PATH);
         mediaItem->setData(0, Qt::UserRole, tagMediaID);
 
@@ -1431,6 +1473,7 @@ void AlbumManager::currentMediaChanged(const QString &fileName, const QString &t
     }
 
     setCurrentMedia(mediaID, fileName);
+    QFontMetrics fontMetric(mediaList->font());
     for (int i = 0; i < mediaList->topLevelItemCount(); ++i) {
         QTreeWidgetItem* rootItem = mediaList->topLevelItem(i);
         if (!rootItem) {
@@ -1468,7 +1511,7 @@ void AlbumManager::currentMediaChanged(const QString &fileName, const QString &t
                 else if (!fileName.isEmpty()) {
                     if (!title.isEmpty()) {
                         childItem->setText(0, title.mid(title.lastIndexOf(">") + 1));
-                        childItem->setToolTip(0, title);
+                        childItem->setToolTip(0, fontMetric.elidedText(title, Qt::ElideRight, 400) + "\n" + fileName);
                     }
 //                  childItem->setText(1, fileName);
                     if (albumMediaObject && albumMediaObject->state() == Phonon::PlayingState) {
@@ -1494,7 +1537,7 @@ void AlbumManager::currentMediaChanged(const QString &fileName, const QString &t
         if (rootItem || itemsAsTopItem) {
             QTreeWidgetItem* newChild = new QTreeWidgetItem;
             newChild->setText(0, title.mid(title.lastIndexOf(">") + 1));
-            newChild->setToolTip(0, title);
+            newChild->setToolTip(0, fontMetric.elidedText(title, Qt::ElideRight, 400) + "\n" + fileName);
 //          newChild->setText(1, fileName);
             newChild->setData(0, Qt::UserRole, mediaID);
             if (albumMediaObject && albumMediaObject->state() == Phonon::PlayingState) {

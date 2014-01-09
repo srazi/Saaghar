@@ -77,18 +77,18 @@ bool LyricsManager::read(QIODevice* device, const QString &format)
 int LyricsManager::vorderByTime(qint64 time)
 {
     if (m_syncMap.isEmpty() || time < 0) {
-        return -1;
+        return -3;
     }
 
     QMap<qint64, int>::const_iterator it = m_syncMap.constBegin();
     qint64 key = time;
     while (it != m_syncMap.constEnd()) {
-        if (it.key() > time) {
+        if (it.key() >= time) {
             break;
         }
         key = it.key();
         ++it;
     }
 
-    return m_syncMap.value(key, -1);
+    return m_syncMap.value(key, -3);
 }
