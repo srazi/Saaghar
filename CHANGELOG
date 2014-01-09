@@ -7,6 +7,7 @@ The search result contains all occurrences from each poem, and the occurrences f
 Ability to search within titles!
 The font and color of each text item (e.g. Titles, Sections, Poem,...) are customizable!
 Ability to set an audio file to each poem also it supports Audio Albums. Morever, Saaghr automatically loads the Ganjoor XML lyric file for loaded audio file if it exists.
+Added simple lyric syncer. (ganjoor xml format)
 Ability to fetch data-sets list from local and remote servers and installing datasets (also Saaghar can install photo if it's available)
 Now search engine search any variant of similar characters. Morever, it can search He-Ye as Kasre-ye Ezafe! e.g: for searching "koshte-ye eshgh" we can search "koshte eshgh"! (it's complex and slow!)
 Added support for LTR contents.

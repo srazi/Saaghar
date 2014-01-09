@@ -64,6 +64,8 @@
 #include <QComboBox>
 #include <QTreeWidget>
 #include <QHBoxLayout>
+#include <QUuid>
+#include <QCryptographicHash>
 
 
 QHash<QString, QVariant> QMusicPlayer::albumsPathList = QHash<QString, QVariant>();
@@ -77,6 +79,8 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     , albumManager(new AlbumManager(this, parent))
     , m_lyricReader(new LyricsManager(this))
     , m_lastVorder(-2)
+    , m_lyricSyncer(0)
+    , m_lyricSyncerRuninng(false)
 {
     setObjectName("QMusicPlayer");
 
@@ -149,6 +153,9 @@ QString QMusicPlayer::source()
 
 void QMusicPlayer::setSource(const QString &fileName, const QString &title, int mediaID, bool newSource)
 {
+    if (m_lyricSyncerRuninng) {
+        stopLyricSyncer();
+    }
     _newTime = -1;
     Phonon::MediaSource source(fileName);
     sources.clear();
@@ -184,6 +191,7 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
     QString gLyricName = fileName.left(fileName.lastIndexOf(QLatin1Char('.'))) + QLatin1String(".xml");
 
     QFile file(gLyricName);
+    setLyricSyncerState(true, !file.exists());
 
     if (m_lyricReader->read(&file, "GANJOOR_XML")) {
         mediaObject->setTickInterval(100);
@@ -495,6 +503,136 @@ void QMusicPlayer::playRequestedByUser()
     mediaObject->play();
 }
 
+void QMusicPlayer::startLyricSyncer()
+{
+    QString gLyricName = source().left(source().lastIndexOf(QLatin1Char('.'))) + QLatin1String(".xml");
+
+    QFile file(gLyricName);
+    if (file.exists()) {
+        setLyricSyncerState(true, false);
+        return;
+    }
+
+    m_syncMap.clear();
+    setLyricSyncerState(false);
+    connect(this, SIGNAL(verseSelectedByUser(int)), this, SLOT(recordTimeForVerse(int)));
+}
+
+void QMusicPlayer::stopLyricSyncer(bool cancel)
+{
+    disconnect(this, SIGNAL(verseSelectedByUser(int)), this, SLOT(recordTimeForVerse(int)));
+
+    QString gLyricName = source().left(source().lastIndexOf(QLatin1Char('.'))) + QLatin1String(".xml");
+
+    QFile file(gLyricName);
+    if (file.exists()) {
+        setLyricSyncerState(true, false);
+        return;
+    }
+
+    if (m_syncMap.isEmpty()) {
+        cancel = true;
+    }
+    setLyricSyncerState(true, cancel);
+
+    if (cancel) {
+        return;
+    }
+
+    QDomDocument m_domDocument;
+    QDomElement root = m_domDocument.createElement("DesktopGanjoorPoemAudioList");
+    QDomNode poemAudio = m_domDocument.createElement("PoemAudio");
+    QDomNode poemId = m_domDocument.createElement("PoemId");
+    poemId.appendChild(m_domDocument.createTextNode(QString::number(currentID)));
+    QDomNode id = m_domDocument.createElement("Id");
+    id.appendChild(m_domDocument.createTextNode("1"));
+    QDomNode filePath = m_domDocument.createElement("FilePath");
+    filePath.appendChild(m_domDocument.createTextNode(source()));
+    QDomNode description = m_domDocument.createElement("Description");
+    description.appendChild(m_domDocument.createTextNode(currentTitle));
+    QDomNode syncGuid = m_domDocument.createElement("SyncGuid");
+    syncGuid.appendChild(m_domDocument.createTextNode(QUuid::createUuid().toString().remove("{").remove("}")));
+    QDomNode fileCheckSum = m_domDocument.createElement("FileCheckSum");
+
+    QFile audio(source());
+    audio.open(QFile::ReadOnly);
+    QString audioMD5SUM = QString::fromLatin1(QCryptographicHash::hash(audio.readAll(), QCryptographicHash::Md5).toHex());
+    fileCheckSum.appendChild(m_domDocument.createTextNode(audioMD5SUM));
+    QDomNode syncArray = m_domDocument.createElement("SyncArray");
+
+    QMap<qint64, int>::const_iterator it = m_syncMap.constBegin();
+    while (it != m_syncMap.constEnd()) {
+        QDomNode syncInfo = m_domDocument.createElement("SyncInfo");
+        QDomNode verseOrder = m_domDocument.createElement("VerseOrder");
+        verseOrder.appendChild(m_domDocument.createTextNode(QString::number(it.value())));
+        QDomNode audioMiliseconds = m_domDocument.createElement("AudioMiliseconds");
+        audioMiliseconds.appendChild(m_domDocument.createTextNode(QString::number(it.key())));
+
+        syncInfo.appendChild(verseOrder);
+        syncInfo.appendChild(audioMiliseconds);
+
+        syncArray.appendChild(syncInfo);
+
+        ++it;
+    }
+
+    poemAudio.appendChild(poemId);
+    poemAudio.appendChild(id);
+    poemAudio.appendChild(filePath);
+    poemAudio.appendChild(description);
+    poemAudio.appendChild(syncGuid);
+    poemAudio.appendChild(fileCheckSum);
+    poemAudio.appendChild(syncArray);
+
+    root.appendChild(poemAudio);
+    m_domDocument.appendChild(root);
+
+    const int IndentSize = 4;
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("QMusicPlayer"), tr("Can not write the lyric file %1:\n%2.")
+                             .arg(file.fileName())
+                             .arg(file.errorString()));
+    }
+    else {
+        QTextStream out(&file);
+        out.setCodec("utf-8");
+        QString domString = m_domDocument.toString(IndentSize);
+        domString = domString.replace("&#xd;", "");
+        out << domString;
+    }
+}
+
+void QMusicPlayer::recordTimeForVerse(int vorder)
+{
+    m_syncMap.insert(mediaObject->currentTime(), vorder - 1);
+}
+
+void QMusicPlayer::setLyricSyncerState(bool startState, bool enabled)
+{
+    if (!m_lyricSyncer) {
+        return;
+    }
+
+    if (startState) {
+        // stop lyric syncer
+        disconnect(this, SIGNAL(verseSelectedByUser(int)), this, SLOT(recordTimeForVerse(int)));
+        m_lyricSyncer->setEnabled(enabled);
+        m_lyricSyncer->setText(tr("&Run text/audio syncer"));
+        connect(m_lyricSyncer, SIGNAL(triggered()), this, SLOT(startLyricSyncer()));
+        disconnect(m_lyricSyncer, SIGNAL(triggered()), this, SLOT(stopLyricSyncer()));
+        setStyleSheet("background-image:url(\":/resources/images/transp.png\"); border:none;");
+        m_lyricSyncerRuninng = false;
+    }
+    else {
+        m_lyricSyncerRuninng = true;
+        m_lyricSyncer->setEnabled(true);
+        m_lyricSyncer->setText(tr("&Stop text/audio syncer"));
+        disconnect(m_lyricSyncer, SIGNAL(triggered()), this, SLOT(startLyricSyncer()));
+        connect(m_lyricSyncer, SIGNAL(triggered()), this, SLOT(stopLyricSyncer()));
+        setStyleSheet("QToolBar{background-image:url(\":/resources/images/transp.png\"); border: 3px solid red; border-radius: 5px;}");
+    }
+}
+
 void QMusicPlayer::sourceChanged(const Phonon::MediaSource &)
 {
     timeLcd->display("00:00");
@@ -502,6 +640,10 @@ void QMusicPlayer::sourceChanged(const Phonon::MediaSource &)
 
 void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State)
 {
+    if (m_lyricSyncerRuninng && (newState == Phonon::StoppedState || newState == Phonon::ErrorState)) {
+        stopLyricSyncer();
+    }
+
     if (newState == Phonon::ErrorState) {
         qWarning() << "Error opening files: " << metaInformationResolver->errorString();
         infoLabel->setText("Error opening files: " + metaInformationResolver->errorString());
@@ -517,6 +659,7 @@ void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State)
     }
 
     if (metaInformationResolver->currentSource().type() == Phonon::MediaSource::Invalid) {
+        setLyricSyncerState(true, false);
         return;
     }
 
@@ -554,6 +697,10 @@ void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State)
 
 void QMusicPlayer::aboutToFinish()
 {
+    if (m_lyricSyncerRuninng) {
+        stopLyricSyncer();
+    }
+
     mediaObject->stop();
 }
 
@@ -573,12 +720,16 @@ void QMusicPlayer::setupActions()
     removeSourceAction = new QAction(tr("&Remove Audio"), this);
     m_removeAllSourceAction = new QAction(tr("Remove Audio From All Album"), this);
     loadAlbumAction = new QAction(tr("&Load Album..."), this);
+    m_lyricSyncer = new QAction(tr("&Run text/audio syncer"), this);
+    m_lyricSyncer->setDisabled(true);
+
     connect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
     connect(stopAction, SIGNAL(triggered()), mediaObject, SLOT(stop()));
     connect(setSourceAction, SIGNAL(triggered()), this, SLOT(setSource()));
     connect(removeSourceAction, SIGNAL(triggered()), this, SLOT(removeSource()));
     connect(m_removeAllSourceAction, SIGNAL(triggered()), this, SLOT(removeSource()));
     connect(loadAlbumAction, SIGNAL(triggered()), this, SLOT(loadAlbumFile()));
+    connect(m_lyricSyncer, SIGNAL(triggered()), this, SLOT(startLyricSyncer()));
 }
 
 void QMusicPlayer::setupUi()
@@ -591,6 +742,8 @@ void QMusicPlayer::setupUi()
     menu->addAction(setSourceAction);
     menu->addAction(removeSourceAction);
     menu->addAction(m_removeAllSourceAction);
+    menu->addSeparator();
+    menu->addAction(m_lyricSyncer);
     menu->addSeparator();
     menu->addAction(loadAlbumAction);
     menu->addSeparator();

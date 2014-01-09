@@ -130,8 +130,13 @@ private slots:
     void aboutToFinish();
     void load(int index);
     void playRequestedByUser();
+    void startLyricSyncer();
+    void stopLyricSyncer(bool cancel = false);
+    void recordTimeForVerse(int vorder);
 
 private:
+    void setLyricSyncerState(bool startState, bool enabled = true);
+
     bool notLoaded;
     int currentID;
     QString currentTitle;
@@ -160,6 +165,7 @@ private:
     QAction* setSourceAction;
     QAction* removeSourceAction;
     QAction* m_removeAllSourceAction;
+    QAction* m_lyricSyncer;
     QAction* loadAlbumAction;
     QAction* repeatAction;
     QAction* autoPlayAction;
@@ -169,7 +175,10 @@ private:
     QString startDir;
 
     LyricsManager* m_lyricReader;
-    int m_lastVorder;
+    int m_lastVorder; // -1: start, -2: end, -3: undefined
+
+    QMap<qint64, int> m_syncMap;
+    bool m_lyricSyncerRuninng;
 
 protected:
     virtual void resizeEvent(QResizeEvent* e);
@@ -179,6 +188,7 @@ signals:
     void requestPageContainedMedia(int, bool); //pageId, newPage
     void showTextRequested(int, int);
     void highlightedTextChange(const QString &);
+    void verseSelectedByUser(int);
 };
 
 class QTreeWidget;

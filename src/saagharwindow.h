@@ -229,5 +229,6 @@ signals:
     void maxItemPerPageChanged();
     void loadingStatusText(const QString &);
     void highlightedTextChanged(const QString &);
+    void verseSelected(int);
 };
 #endif // SAAGHARWINDOW_H

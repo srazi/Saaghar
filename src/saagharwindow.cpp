@@ -177,6 +177,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
 
     connect(SaagharWidget::musicPlayer, SIGNAL(showTextRequested(int,int)), this, SLOT(highlightTextOnPoem(int,int)));
     connect(this, SIGNAL(highlightedTextChanged(QString)), SaagharWidget::musicPlayer, SIGNAL(highlightedTextChange(QString)));
+    connect(this, SIGNAL(verseSelected(int)), SaagharWidget::musicPlayer, SIGNAL(verseSelectedByUser(int)));
 #endif
 
     loadGlobalSettings();
@@ -3038,7 +3039,12 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
     disconnect(senderTable, SIGNAL(itemClicked(QTableWidgetItem*)), 0, 0);
     QStringList itemData = item->data(Qt::UserRole).toString().split("=", QString::SkipEmptyParts);
 
-    //qDebug() << "itemData=" << item->data(Qt::UserRole).toString() << "-itemData-Size=" << itemData.size();
+    if (itemData.size() == 2 && itemData.at(0) == "VerseData") {
+        QStringList verseData = itemData.at(1).split("|", QString::SkipEmptyParts);
+        if (verseData.size() == 3) {
+            emit verseSelected(verseData.at(1).toInt());
+        }
+    }
 
     if (itemData.size() != 2 || itemData.at(0) == "VerseData") {
         connect(senderTable, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(tableItemClick(QTableWidgetItem*)));
