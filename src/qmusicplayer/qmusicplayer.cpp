@@ -356,7 +356,7 @@ void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
             return;
         }
 
-        startDir = QFileInfo(fileName).absolutePath();
+        startDir = QFileInfo(file).absolutePath();
 
         QString name = QInputDialog::getText(window(), tr("Name Of Album"),
                                              tr("Enter name for this Album:"),

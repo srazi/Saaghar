@@ -2601,7 +2601,7 @@ void SaagharWindow::loadGlobalSettings()
     autoCheckForUpdatesState = config->value("Auto Check For Updates", true).toBool();
 
     selectedRandomRange = config->value("Selected Random Range", "").toStringList();
-    selectedSearchRange = config->value("Selected Search Range", "").toStringList();
+    selectedSearchRange = config->value("Selected Search Range", (QStringList() << "0" << "ALL_TITLES")).toStringList();
 
     randomOpenInNewTab = config->value("Random Open New Tab", false).toBool();
 
