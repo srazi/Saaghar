@@ -59,7 +59,12 @@ LIBS += -lzdll
         $$[QT_INSTALL_BINS]/QtXml4.dll \
         $$[QT_INSTALL_BINS]/phonon4.dll \
         $$[QT_INSTALL_BINS]/mingwm10.dll \
-        $$[QT_INSTALL_BINS]/libgcc_s_dw2-1.dll
+        $$[QT_INSTALL_BINS]/libgcc_s_dw2-1.dll \
+        $$[QT_INSTALL_BINS]/zlib1.dll \
+        $$[QT_INSTALL_BINS]/libssl32.dll \
+        $$[QT_INSTALL_BINS]/ssleay32.dll \
+        $$[QT_INSTALL_BINS]/msvcp100.dll \
+        $$[QT_INSTALL_BINS]/msvcp100.dll
 
     sqlPlugins.path = Saaghar-Win/sqldrivers
     sqlPlugins.files = $$[QT_INSTALL_PLUGINS]/sqldrivers/qsqlite4.dll
@@ -72,9 +77,13 @@ LIBS += -lzdll
         $$[QT_INSTALL_PLUGINS]/imageformats/qsvg4.dll \
         $$[QT_INSTALL_PLUGINS]/imageformats/qtiff4.dll
 
+    phononBackend.path = Saaghar-Win/phonon_backend
+    phononBackend.files = $$[QT_INSTALL_PLUGINS]/phonon_backend/phonon_ds94.dll
+
     INSTALLS += depFiles \
         sqlPlugins \
-        imagePlugins
+        imagePlugins \
+        phononBackend
 }
 }
 
