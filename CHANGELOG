@@ -49,6 +49,7 @@ Used Qt::ElideMiddle for treeWidgets.
 Support compiling with Qt5 (but it's not supported)
 Better check for new version, the other servers were added for fetching update information.
 Handling setting's changes that need to relaunch.
+Added tab's tooltip.
 
 Fixed Bugs:
 --------------------------

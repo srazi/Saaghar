@@ -194,7 +194,7 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
     QFile file(gLyricName);
     setLyricSyncerState(true, !file.exists());
 
-    if (m_lyricReader->read(&file, "GANJOOR_XML")) {
+    if (!fileName.isEmpty() && m_lyricReader->read(&file, "GANJOOR_XML")) {
         mediaObject->setTickInterval(TICK_INTERVAL);
         connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(showTextByTime(qint64)));
         connect(this, SIGNAL(highlightedTextChange(QString)), infoLabel, SLOT(setText(QString)));

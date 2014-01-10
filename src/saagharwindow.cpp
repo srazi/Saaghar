@@ -1120,6 +1120,7 @@ void SaagharWindow::updateCaption()
 
     QString newTabCaption = QGanjoorDbBrowser::snippedText(sw->currentCaption, "", 0, 6, true, Qt::ElideRight) + QString(QChar(0x200F));
     mainTabWidget->setTabText(mainTabWidget->currentIndex(), newTabCaption);
+    mainTabWidget->setTabToolTip(mainTabWidget->currentIndex(), "<p>" + sw->currentCaption + "</p>");
     setWindowTitle(QString(QChar(0x202B)) + tr("Saaghar: ") + sw->currentCaption + QString(QChar(0x202C)));
 }
 
