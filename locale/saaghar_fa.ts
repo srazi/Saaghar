@@ -405,17 +405,17 @@ Bookmark&apos;s Comment:
     <message>
         <location filename="../src/nodatabasedialog.ui" line="81"/>
         <source>&lt;p&gt;By selecting this option opens a dialog, and you should select a path containing &apos;ganjoor.s3db&apos; file. Then Saaghar starts by setting it as its default data base!&lt;/p&gt;</source>
-        <translation>&lt;p&gt;با انتخاب این گزینه پنجره محاوره‌ای باز می‌شود و شما باید مسیری را که شامل فایل «ganjoor.s3db» می‌باشد انتخاب کنید. آنگاه ساغر با انتخاب این پایگاه‌داده به عنوان پیش‌فرض آغاز به کار می‌کند!&lt;/p&gt;</translation>
+        <translation>&lt;p&gt;با انتخاب این گزینه پنجره محاوره‌ای باز می‌شود و شما باید مسیری را که شامل فایل «ganjoor.s3db» می‌باشد انتخاب کنید. آنگاه ساغر با انتخاب این پایگاه‌داده به عنوان پایگاه‌داده پیش‌فرضش آغاز به کار می‌کند!&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../src/nodatabasedialog.ui" line="84"/>
         <source>By selecting this option opens a dialog, and you should select a path containing &apos;ganjoor.s3db&apos; file. Then Saaghar starts by setting it as its default data base!</source>
-        <translation>با انتخاب این گزینه پنجره محاوره‌ای باز می‌شود و شما باید مسیری را که شامل فایل «ganjoor.s3db» می‌باشد انتخاب کنید. آنگاه ساغر با انتخاب این پایگاه‌داده به عنوان پیش‌فرض آغاز به کار می‌کند!</translation>
+        <translation>با انتخاب این گزینه پنجره محاوره‌ای باز می‌شود و شما باید مسیری را که شامل فایل «ganjoor.s3db» می‌باشد انتخاب کنید. آنگاه ساغر با انتخاب این پایگاه‌داده به عنوان پایگاه‌داده پیش‌فرضش آغاز به کار می‌کند!</translation>
     </message>
     <message>
         <location filename="../src/nodatabasedialog.ui" line="87"/>
         <source>Select new path for  data base</source>
-        <translation>مسیر تازه‌ای برای پایگاه‌داده انتخاب کن</translation>
+        <translation>مسیر تازه‌ای برای پایگاه‌داده انتخاب کنید</translation>
     </message>
     <message>
         <location filename="../src/nodatabasedialog.ui" line="96"/>
@@ -435,7 +435,7 @@ Bookmark&apos;s Comment:
     <message>
         <location filename="../src/nodatabasedialog.ui" line="109"/>
         <source>Create data base and install existing data sets to it.</source>
-        <translation>پایگاه‌داده را بساز و آنگاه مجموعه‌داده‌ها موجود را و نصب کن.</translation>
+        <translation>از مجموعه‌داده‌های موجود انتخاب و نصب کنید.</translation>
     </message>
     <message>
         <location filename="../src/nodatabasedialog.ui" line="118"/>
@@ -455,7 +455,7 @@ Bookmark&apos;s Comment:
     <message>
         <location filename="../src/nodatabasedialog.ui" line="131"/>
         <source>Create data base then download and install data sets to it.</source>
-        <translation>پایگاه‌داده را بساز و آنگاه مجموعه‌داده‌ها را دانلود و نصب کن.</translation>
+        <translation>مجموعه‌داده‌ها را از خادم راه دور دریافت و نصب کنید.</translation>
     </message>
     <message>
         <location filename="../src/nodatabasedialog.ui" line="140"/>
