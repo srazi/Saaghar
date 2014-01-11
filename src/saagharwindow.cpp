@@ -2058,8 +2058,6 @@ void SaagharWindow::setupUi()
     menuView->addMenu(poemViewStylesMenu);
     menuView->addAction(actionInstance("Show Photo at Home"));
     menuView->addSeparator();
-
-    menuView->addSeparator();
     menuView->addAction(actionInstance("actionFullScreen"));
 
     // menuBookmarks is initialized in setupBookmarkManagerUi()
@@ -3673,10 +3671,16 @@ void SaagharWindow::namedActionTriggered(bool checked)
             m_outlineDock->raise();
         }
     }
-    else if (actionName == "bookmarkManagerDockAction") {
+    else if (actionName == "bookmarkManagerDockAction" ||
+             actionName == "copyOfBookmarkManagerDockAction") {
+        m_bookmarkManagerDock->toggleViewAction()->setChecked(action->isChecked());
+        allActionMap.value("bookmarkManagerDockAction")->setChecked(action->isChecked());
         if (action->isChecked()) {
             m_bookmarkManagerDock->show();
             m_bookmarkManagerDock->raise();
+        }
+        else {
+            m_bookmarkManagerDock->hide();
         }
     }
 
@@ -3882,14 +3886,23 @@ void SaagharWindow::setupBookmarkManagerUi()
     if (readBookmarkFile) {
         m_bookmarkManagerDock->setWidget(bookmarkContainer /*SaagharWidget::bookmarks*/);
         addDockWidget(Qt::RightDockWidgetArea, m_bookmarkManagerDock);
-        allActionMap.insert("bookmarkManagerDockAction", m_bookmarkManagerDock->toggleViewAction());
+
+        m_bookmarkManagerDock->toggleViewAction()->setIcon(QIcon(ICON_PATH + "/bookmark-folder.png"));
+        m_bookmarkManagerDock->toggleViewAction()->setObjectName(QString::fromUtf8("copyOfBookmarkManagerDockAction"));
+        connect(m_bookmarkManagerDock->toggleViewAction(), SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
+
+        // Fixed a bug (unity's global-menu): as a copy for toggleViewAction()
+        //  that we'll add to panelsView submenu.
+        actionInstance("bookmarkManagerDockAction")->setText(m_bookmarkManagerDock->toggleViewAction()->text());
+        actionInstance("bookmarkManagerDockAction")->setCheckable(true);
+        actionInstance("bookmarkManagerDockAction")->setChecked(m_bookmarkManagerDock->toggleViewAction()->isChecked());
         actionInstance("bookmarkManagerDockAction")->setIcon(QIcon(ICON_PATH + "/bookmark-folder.png"));
-        actionInstance("bookmarkManagerDockAction")->setObjectName(QString::fromUtf8("bookmarkManagerDockAction"));;
+        actionInstance("bookmarkManagerDockAction")->setObjectName(QString::fromUtf8("bookmarkManagerDockAction"));
+        connect(m_bookmarkManagerDock, SIGNAL(visibilityChanged(bool)), actionInstance("bookmarkManagerDockAction"), SLOT(setChecked(bool)));
 
         menuBookmarks = new QMenu(tr("&Bookmarks"), ui->menuBar);
         menuBookmarks->setObjectName(QString::fromUtf8("menuBookmarks"));
-
-        menuBookmarks->addAction(actionInstance("bookmarkManagerDockAction"));
+        menuBookmarks->addAction(m_bookmarkManagerDock->toggleViewAction());
         menuBookmarks->addSeparator();
         menuBookmarks->addAction(actionInstance("ImportGanjoorBookmarks", ICON_PATH + "/bookmarks-import.png", tr("&Import Ganjoor's Bookmarks")));
     }
