@@ -43,9 +43,12 @@ public:
     QPushButton* clickedButton();
 
 private:
+    void showEvent(QShowEvent *ev);
+
     QPushButton* _clickedButton;
 
 private slots:
+    void adjustSizeSlot();
     void buttonCheckStateToggled();
 };
 

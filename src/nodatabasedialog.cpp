@@ -21,6 +21,8 @@
 
 #include "nodatabasedialog.h"
 
+#include <QTimer>
+
 NoDataBaseDialog::NoDataBaseDialog(QWidget* parent, Qt::WindowFlags f) :
     QDialog(parent, f),
     ui(new Ui::NoDataBaseDialog)
@@ -58,4 +60,16 @@ void NoDataBaseDialog::buttonCheckStateToggled()
 QPushButton* NoDataBaseDialog::clickedButton()
 {
     return _clickedButton;
+}
+
+void NoDataBaseDialog::adjustSizeSlot()
+{
+    adjustSize();
+}
+
+void NoDataBaseDialog::showEvent(QShowEvent *ev)
+{
+    QDialog::showEvent(ev);
+
+    QTimer::singleShot(0, this, SLOT(adjustSizeSlot()));
 }
