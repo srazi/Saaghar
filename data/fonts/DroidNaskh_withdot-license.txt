@@ -1,0 +1,4 @@
+This font is a modified version of DroidNaskh.
+License: Apache License Version 2.0
+Modified by: Razi Alavizadeh <s.r.alavizadeh@gmail.com>
+

@@ -2562,10 +2562,11 @@ void SaagharWindow::loadGlobalSettings()
     SaagharWidget::matchedTextColor = Settings::READ("Matched Text Color", QColor(225, 0, 225)).value<QColor>();
     SaagharWidget::backgroundColor = Settings::READ("Background Color", QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
 
-    //The "XB Sols" is an application font
-    QFont appFont1("XB Sols", 18);
+    QString firstFamily = QFontDatabase().families().contains("XB Sols") ?
+                "XB Sols" : "Droid Arabic Naskh (with DOT)";
+    QFont appFont1(firstFamily, 18);
     appFont1.setBold(true);
-    //The "FreeFarsi" is an application font
+    //The "Droid Arabic Naskh (with DOT)" is an application font
     QFont appFont2("Droid Arabic Naskh (with DOT)", 8);
     appFont2.setBold(true);
 

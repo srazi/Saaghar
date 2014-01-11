@@ -2,19 +2,18 @@ TEMPLATE = app
 TARGET = Saaghar
 
 CONFIG += qt
-#warn_off
 
-##un-comment the following two lines for skipping all warning and debug messages.
+
 CONFIG(debug, debug|release) {
     !build_pass:message("DEBUG BUILD")
 } else {
     !build_pass:message("RELEASE BUILD")
-##un-comment for release version
+##un-comment the following two lines for skipping all warning and debug messages.
 #    DEFINES += QT_NO_WARNING_OUTPUT
 #    DEFINES += QT_NO_DEBUG_OUTPUT
 }
 
-##for static building un-comment the following two lines
+##un-comment for static build
 #CONFIG += static
 
 CONFIG(static) {
@@ -86,6 +85,9 @@ LIBS += -lzdll
         phononBackend
 }
 }
+else {
+    LIBS += -L/usr/lib -lz
+}
 
 mac {
     CONFIG += link_prl x86
@@ -95,8 +97,7 @@ mac {
     target.path = /Applications
     RESOURCES_PATH = Contents/Resources
 
-    DEFINES += NO_PHONON_LIB
-    LIBS += -L/usr/lib -lz
+#    DEFINES += NO_PHONON_LIB
 }
 
 
@@ -107,8 +108,6 @@ unix:!macx {
 isEmpty( PREFIX ) {
     PREFIX = /usr
 }
-
-    LIBS += -L/usr/lib -lz
 
 DEFINES += PREFIX=\\\"$${PREFIX}\\\"
 
@@ -127,7 +126,8 @@ utilities.path = $${RESOURCES_PATH}
 utilities.files += \
     $$PWD/AUTHORS \
     $$PWD/CHANGELOG \
-    $$PWD/GPLv2Fa-GPLv3En \
+    $$PWD/GPLv3 \
+    $$PWD/GPLv2Fa \
     $$PWD/README.md \
     $$PWD/TODO \
     $$PWD/LICENSE

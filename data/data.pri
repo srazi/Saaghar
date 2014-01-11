@@ -245,8 +245,7 @@ iconicCyanIcons.files = \
 
 exists( $$PWD/fonts/*.ttf ) {
     fonts.path = $${RESOURCES_PATH}/fonts
-    fonts.files = $$quote($$PWD/fonts/XB Sols.ttf) \
-        $$PWD/fonts/license.txt
+    fonts.files = $$files($$PWD/fonts/*)
 mac {
     QMAKE_BUNDLE_DATA += fonts
 }
