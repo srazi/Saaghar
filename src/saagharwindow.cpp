@@ -2102,7 +2102,9 @@ void SaagharWindow::setupUi()
     mainToolBarItems = temp.split("|", QString::SkipEmptyParts);
 
     addToolBar(Qt::TopToolBarArea, parentCatsToolBar);
-    insertToolBar(parentCatsToolBar, ui->menuToolBar);
+    if (ui->menuToolBar) {
+        insertToolBar(parentCatsToolBar, ui->menuToolBar);
+    }
     if (SaagharWidget::musicPlayer) {
         insertToolBar(SaagharWidget::musicPlayer, ui->searchToolBar);
     }
@@ -3356,7 +3358,7 @@ void SaagharWindow::toolBarViewActions(QToolBar* toolBar, QMenu* menu, bool subM
 
     //checked actions
     actionInstance(Settings::READ("MainToolBar Style", "actionToolBarStyleOnlyIcon").toString())->setChecked(true);
-    actionInstance(Settings::READ("MainToolBar Size", "actionToolBarSizeLargeIcon").toString())->setChecked(true);
+    actionInstance(Settings::READ("MainToolBar Size", "actionToolBarSizeMediumIcon").toString())->setChecked(true);
 
     //create actiongroups connections
     connect(toolBarIconSize, SIGNAL(triggered(QAction*)), this, SLOT(toolbarViewChanges(QAction*)));
