@@ -483,6 +483,7 @@ void SearchResultWidget::searchPageNavigationClicked(QAction* action)
     QStringList dataList = actionData.toString().split("|", QString::SkipEmptyParts);
     if (dataList.size() == 2) {
         showSearchResult(dataList.at(1).toInt());
+        searchTable->scrollToTop();
     }
 }
 
