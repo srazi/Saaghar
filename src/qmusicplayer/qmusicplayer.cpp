@@ -869,13 +869,13 @@ void QMusicPlayer::loadAlbum(const QString &fileName, bool inserToPathList)
 {
     /*******************************************************************************/
     //tags for Version-0.1 of Saaghar media album
-    //#SAAGHAR!ALBUM!            //start of album
-    //#SAAGHAR!ALBUM!TITLE!      //title tag
-    //#SAAGHAR!ITEMS!               //start of items
-    //#SAAGHAR!TITLE!               //item's title tag
-    //#SAAGHAR!ID!                  //item's id tag
-    //#SAAGHAR!PATH!                //item's full path
-    //#SAAGHAR!MD5SUM!              //item's MD5SUM hash
+    //#SAAGHAR!ALBUM!       //start of album
+    //#ALBUM!TITLE!         //title tag
+    //#ITEMS!               //start of items
+    //#TITLE!               //item's title tag
+    //#ID!                  //item's id tag
+    //#PATH!                //item's full path
+    //#MD5SUM!              //item's MD5SUM hash
     //<last property>               //item's path relative to album file
     /*******************************************************************************/
     QFile file(fileName);
@@ -896,14 +896,14 @@ void QMusicPlayer::loadAlbum(const QString &fileName, bool inserToPathList)
     }
 
     line = out.readLine();
-    while (!line.startsWith("#SAAGHAR!ALBUM!TITLE!")) {
+    while (!line.startsWith("#ALBUM!TITLE!")) {
         if (out.atEnd()) {
             return;
         }
         line = out.readLine();
     }
 
-    QString albumName = line.remove("#SAAGHAR!ALBUM!TITLE!");
+    QString albumName = line.remove("#ALBUM!TITLE!");
     if (albumName.isEmpty()) {
         return;
     }
@@ -913,7 +913,7 @@ void QMusicPlayer::loadAlbum(const QString &fileName, bool inserToPathList)
         albumsPathList.insert(albumName, fileName);
     }
 
-    while (!line.startsWith("#SAAGHAR!ITEMS!")) { //start of items
+    while (!line.startsWith("#ITEMS!")) { //start of items
         if (out.atEnd()) {
             return;
         }
@@ -931,33 +931,31 @@ void QMusicPlayer::loadAlbum(const QString &fileName, bool inserToPathList)
     while (!out.atEnd()) {
         line = out.readLine();
         if (line.startsWith("#")) {
-            if (!line.startsWith("#SAAGHAR!")) {
-                continue;
+            line.remove("#");
+            if (line.startsWith("TITLE!")) {
+                line.remove("TITLE!");
+                TITLE = line;
             }
-            else {
-                line.remove("#SAAGHAR!");
-                if (line.startsWith("TITLE!")) {
-                    line.remove("TITLE!");
-                    TITLE = line;
+            else if (line.startsWith("ID!")) {
+                line.remove("ID!");
+                if (line.isEmpty()) {
+                    continue;
                 }
-                else if (line.startsWith("ID!")) {
-                    line.remove("ID!");
-                    if (line.isEmpty()) {
-                        continue;
-                    }
-                    ID = line.toInt(&ok);
-                    if (!ok || ID < 0) {
-                        continue;
-                    }
+                ID = line.toInt(&ok);
+                if (!ok || ID < 0) {
+                    continue;
                 }
-                else if (line.startsWith("PATH!")) {
-                    line.remove("PATH!");
-                    FULL_PATH = line;
-                }
-                else if (line.startsWith("MD5SUM!")) {
-                    line.remove("MD5SUM!");
-                    MD5SUM = line;
-                }
+            }
+            else if (line.startsWith("PATH!")) {
+                line.remove("PATH!");
+                FULL_PATH = line;
+            }
+            else if (line.startsWith("MD5SUM!")) {
+                line.remove("MD5SUM!");
+                MD5SUM = line;
+            }
+            else if (line.startsWith("EXTINF:")) {
+                line.remove("EXTINF:");
             }
         }
         else {
@@ -1031,21 +1029,24 @@ void QMusicPlayer::saveAlbum(const QString &fileName, const QString &albumName, 
     QDir albumInfo(albumFileInfo.absolutePath());
     QTextStream out(&file);
     out.setCodec("UTF-8");
-    QString albumContent = QString("#SAAGHAR!ALBUM!V%1\n#SAAGHAR!ALBUM!TITLE!%2\n##################\n#SAAGHAR!ITEMS!\n").arg("0.1").arg(albumName);
+    QString albumContent = QString("#SAAGHAR!ALBUM!V%1\n#ALBUM!TITLE!%2\n##################\n#ITEMS!\n").arg("0.1").arg(albumName);
     QHash<int, SaagharMediaTag*>::const_iterator it = album->mediaItems.constBegin();  //album.constBegin();
     while (it != album->mediaItems.constEnd()) {
         QString relativePath = albumInfo.relativeFilePath(it.value()->PATH);
         QString md5sumStr;
         if (!it.value()->MD5SUM.isEmpty()) {
-            md5sumStr = QString("#SAAGHAR!MD5SUM!%1\n").arg(it.value()->MD5SUM);
+            md5sumStr = QString("#MD5SUM!%1\n").arg(it.value()->MD5SUM);
         }
         QString itemStr = QString(
-                              "#SAAGHAR!TITLE!%1\n"
-                              "#SAAGHAR!ID!%2\n"
+                              "#TITLE!%1\n"
+                              "#ID!%2\n"
                               "%3"
-                              "#SAAGHAR!PATH!%4\n"
+                              "#PATH!%4\n"
+                              "#EXTINF:0,%1\n"
                               "%5\n")
-                          .arg(it.value()->TITLE).arg(it.key()).arg(md5sumStr).arg(it.value()->PATH).arg(relativePath);
+                .arg(it.value()->TITLE).arg(it.key())
+                .arg(md5sumStr).arg(it.value()->PATH)
+                .arg(relativePath);
         albumContent += itemStr;
         ++it;
     }
