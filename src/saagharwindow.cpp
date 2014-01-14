@@ -1361,12 +1361,13 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
     }
     QString columnGroupFormat = QString("<COL WIDTH=%1>").arg(saagharObject->tableViewWidget->columnWidth(0));
     int numberOfCols = saagharObject->tableViewWidget->columnCount() - 1;
-    QString tableBody = "";
+    int totalWidth = saagharObject->tableViewWidget->width();
+    QString tableBody;
     if (numberOfCols == 3) {
         columnGroupFormat = QString("<COL WIDTH=%1><COL WIDTH=%2><COL WIDTH=%3>").arg(saagharObject->tableViewWidget->columnWidth(1)).arg(saagharObject->tableViewWidget->columnWidth(2)).arg(saagharObject->tableViewWidget->columnWidth(3));
         for (int row = 0; row < saagharObject->tableViewWidget->rowCount(); ++row) {
             int span = saagharObject->tableViewWidget->columnSpan(row, 1);
-            if (span == 1) {
+            if (span == 1 && SaagharWidget::CurrentViewStyle != SaagharWidget::SteppedHemistichLine) {
                 QTableWidgetItem* firstItem = saagharObject->tableViewWidget->item(row, 1);
                 QTableWidgetItem* secondItem = saagharObject->tableViewWidget->item(row, 3);
                 QString firstText = "";
@@ -1378,6 +1379,26 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                     secondText = secondItem->text();
                 }
                 tableBody += QString("\n<TR>\n<TD HEIGHT=%1 ALIGN=LEFT>%2</TD>\n<TD></TD>\n<TD ALIGN=RIGHT>%3</TD>\n</TR>\n").arg(saagharObject->tableViewWidget->rowHeight(row)).arg(firstText).arg(secondText);
+            }
+            else if (span == 1 && SaagharWidget::CurrentViewStyle == SaagharWidget::SteppedHemistichLine) {
+                if (row == 1) {
+                    totalWidth = saagharObject->tableViewWidget->columnWidth(2);
+                }
+
+                QTableWidgetItem* item = saagharObject->tableViewWidget->item(row, 2);
+                QString text;
+                QString align = "CENTER";
+                if (item) {
+                    if (item->textAlignment() & Qt::AlignRight) {
+                        align = "LEFT";
+                    }
+                    else if (item->textAlignment() & Qt::AlignLeft) {
+                        align = "RIGHT";
+                    }
+
+                    text = item->text();
+                }
+                tableBody += QString("\n<TR><TD HEIGHT=%1 ALIGN=%2>\n%3\n</TD>\n</TR>\n").arg(saagharObject->tableViewWidget->rowHeight(row)).arg(align).arg(text);
             }
             else {
                 QTableWidgetItem* item = saagharObject->tableViewWidget->item(row, 1);
@@ -1419,7 +1440,8 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                 default:
                     break;
                 }
-                tableBody += QString("\n<TR>\n<TD COLSPAN=3 HEIGHT=%1 WIDTH=%2 ALIGN=%3>%4</TD>\n</TR>\n").arg(saagharObject->tableViewWidget->rowHeight(row)).arg(saagharObject->tableViewWidget->width()).arg(align).arg(mesraText);
+                tableBody += QString("\n<TR>\n<TD %5 HEIGHT=%1 WIDTH=%2 ALIGN=%3>%4</TD>\n</TR>\n").arg(saagharObject->tableViewWidget->rowHeight(qMax(0, row - 1))).arg(saagharObject->tableViewWidget->width()).arg(align).arg(mesraText)
+                        .arg(SaagharWidget::CurrentViewStyle == SaagharWidget::SteppedHemistichLine ? "" : "COLSPAN=3");
             }
         }
     }
@@ -1427,8 +1449,22 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
         return "";
     }
 
-    QString tableAsHTML = QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<HTML>\n<HEAD>\n<META HTTP-EQUIV=\"CONTENT-TYPE\" CONTENT=\"text/html; charset=utf-8\">\n<TITLE>%1</TITLE>\n<META NAME=\"GENERATOR\" CONTENT=\"Saaghar, a Persian poetry software, http://saaghar.pozh.org\">\n</HEAD>\n\n<BODY TEXT=%2>\n<FONT FACE=\"%3\">\n<TABLE ALIGN=%4 DIR=RTL FRAME=VOID CELLSPACING=0 COLS=%5 RULES=NONE BORDER=0>\n<COLGROUP>%6</COLGROUP>\n<TBODY>\n%7\n</TBODY>\n</TABLE>\n</BODY>\n</HTML>\n")
-                          .arg(curPoem._Title).arg(Settings::getFromColors(Settings::PoemTextFontColor).name()).arg(Settings::getFromFonts(Settings::PoemTextFontColor).family()).arg("CENTER").arg(numberOfCols).arg(columnGroupFormat).arg(tableBody);
+    QString tableAsHTML = QString("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2//EN\">\n<HTML>\n<HEAD>\n"
+                                  "<META HTTP-EQUIV=\"CONTENT-TYPE\" CONTENT=\"text/html; charset=utf-8\">\n"
+                                  "<TITLE>%1</TITLE>\n<META NAME=\"GENERATOR\" CONTENT=\"Saaghar, a Persian poetry "
+                                  "software, http://saaghar.pozh.org\">\n</HEAD>\n\n<BODY>\n"
+                                  "<TABLE ALIGN=%2 DIR=RTL FRAME=VOID CELLSPACING=0 COLS=%3 RULES=NONE BORDER=0 "
+                                  "STYLE=\"width: %4; FONT-FAMILY: %5; COLOR: %6; FONT-SIZE: %7; %8;\">\n"
+                                  "<COLGROUP>%9</COLGROUP>\n<TBODY>\n%10\n</TBODY>\n"
+                                  "</TABLE>\n</BODY>\n</HTML>\n")
+            .arg(curPoem._Title)
+            .arg("CENTER").arg(numberOfCols).arg(totalWidth)
+            .arg(Settings::getFromFonts(Settings::PoemTextFontColor).family())
+            .arg(Settings::getFromColors(Settings::PoemTextFontColor).name())
+            .arg(Settings::getFromFonts(Settings::PoemTextFontColor).pointSize())
+            .arg(Settings::getFromFonts(Settings::PoemTextFontColor).bold() ? "FONT-WEIGHT: bold" : "")
+            .arg(columnGroupFormat).arg(tableBody);
+
     return tableAsHTML;
     /*******************************************************
     %1: title
