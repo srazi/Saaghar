@@ -119,7 +119,7 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
             this, SLOT(sourceChanged(Phonon::MediaSource)));
     connect(mediaObject, SIGNAL(finished()), this, SLOT(aboutToFinish()));
 
-    connect(mediaObject, SIGNAL(seekableChanged(bool)), this, SLOT(seekableChanged(bool)));
+    connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(seekOnStateChange()));
 
     Phonon::createPath(mediaObject, audioOutput);
 
@@ -128,10 +128,9 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     timeLcd->display("00:00");
 }
 
-void QMusicPlayer::seekableChanged(bool seekable)
+void QMusicPlayer::seekOnStateChange()
 {
-    qDebug() << "seekableChanged" << seekable << "_newTime=" << _newTime;
-    if (_newTime > 0 && seekable) {
+    if (_newTime > 0 && mediaObject->isSeekable()) {
         mediaObject->seek(_newTime);
         _newTime = -1;
     }
@@ -1102,7 +1101,7 @@ void QMusicPlayer::removeFromAlbum(int mediaID, QString albumName)
 
 /*static*/
 void QMusicPlayer::insertToAlbum(int mediaID, const QString &mediaPath, const QString &mediaTitle,
-                                 int mediaCurrentTime, QString albumName)
+                                 qint64 mediaCurrentTime, QString albumName)
 {
     if (albumName.isEmpty()) {
         albumName = albumManager->currentAlbumName();
@@ -1142,7 +1141,7 @@ void QMusicPlayer::insertToAlbum(int mediaID, const QString &mediaPath, const QS
 
 /*static*/
 void QMusicPlayer::getFromAlbum(int mediaID, QString* mediaPath, QString* mediaTitle,
-                                int* mediaCurrentTime, QString* albumName)
+                                qint64* mediaCurrentTime, QString* albumName)
 {
     QString temp;
     bool albumNameIsNull = false;

@@ -69,7 +69,7 @@ class QMusicPlayer : public QToolBar
 
 public:
     struct SaagharMediaTag {
-        int time;
+        qint64 time;
         QString TITLE;
         QString PATH;
         QString MD5SUM;
@@ -94,11 +94,11 @@ public:
     void saveAllAlbums(const QString &format = "M3U8");
 
     void insertToAlbum(int mediaID, const QString &mediaPath, const QString &mediaTitle = "",
-                       int mediaCurrentTime = 0, QString albumName = QString());
+                       qint64 mediaCurrentTime = 0, QString albumName = QString());
     void removeFromAlbum(int mediaID, QString albumName = QString());
     bool albumContains(int mediaID, QString* albumName);
     void getFromAlbum(int mediaID, QString* mediaPath, QString* mediaTitle = 0,
-                      int* mediaCurrentTime = 0, QString* albumName = 0);
+                      qint64* mediaCurrentTime = 0, QString* albumName = 0);
 
     static QHash<QString, QVariant> albumsPathList;
     static QStringList commonSupportedMedia(const QString &type = "");//"" or "audio" or "video"
@@ -121,7 +121,7 @@ public slots:
 private slots:
     void removeSource();
     void setSource();
-    void seekableChanged(bool seekable);
+    void seekOnStateChange();
 
     void stateChanged(Phonon::State newState, Phonon::State oldState);
     void tick(qint64 time);

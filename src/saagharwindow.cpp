@@ -2197,9 +2197,11 @@ void SaagharWindow::loadAudioForCurrentTab(SaagharWidget *old_saagharWidget)
     }
     path = "";
     title = "";
-    SaagharWidget::musicPlayer->getFromAlbum(saagharWidget->currentPoem, &path, &title);
+    qint64 time = 0;
+    SaagharWidget::musicPlayer->getFromAlbum(saagharWidget->currentPoem, &path, &title, &time);
     if (SaagharWidget::musicPlayer->source() != path) {
         SaagharWidget::musicPlayer->setSource(path, saagharWidget->currentLocationList.join(">") + ">" + saagharWidget->currentPoemTitle, saagharWidget->currentPoem);
+        SaagharWidget::musicPlayer->setCurrentTime(time);
     }
 
     bool isEnabled = (saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage);
