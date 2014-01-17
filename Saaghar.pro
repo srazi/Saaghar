@@ -6,6 +6,7 @@ CONFIG += qt
 
 CONFIG(debug, debug|release) {
     !build_pass:message("DEBUG BUILD")
+    DEFINES += SAAGHAR_DEBUG
 } else {
     !build_pass:message("RELEASE BUILD")
 ##un-comment the following two lines for skipping all warning and debug messages.

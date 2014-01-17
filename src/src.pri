@@ -20,7 +20,6 @@ HEADERS += \
     $$PWD/databaseupdater.h \
     $$PWD/nodatabasedialog.h \
     $$PWD/qtwin.h \
-    $$PWD/registerationform.h \
     $$PWD/searchoptionsdialog.h \
     $$PWD/tabwidget.h
 
@@ -29,7 +28,6 @@ FORMS += \
     $$PWD/settings.ui \
     $$PWD/databaseupdater.ui \
     $$PWD/nodatabasedialog.ui \
-    $$PWD/registerationform.ui \
     $$PWD/searchoptionsdialog.ui
 
 SOURCES += \
@@ -47,7 +45,6 @@ SOURCES += \
     $$PWD/databaseupdater.cpp \
     $$PWD/nodatabasedialog.cpp \
     $$PWD/qtwin.cpp \
-    $$PWD/registerationform.cpp \
     $$PWD/searchoptionsdialog.cpp \
     $$PWD/tabwidget.cpp
 

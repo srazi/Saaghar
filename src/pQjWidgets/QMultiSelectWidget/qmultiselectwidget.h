@@ -80,7 +80,6 @@ private:
     bool overCheckBox;
     bool isCheckBoxUnderPosition(const QPoint &pos);
     bool eventFilter(QObject* receiver, QEvent* event);
-    void init();
     QListWidget* listWidget;
     CustomComboBox* comboWidget;
     QWidget* containerWidget;
@@ -96,7 +95,6 @@ private slots:
     void checkStateChanged(QListWidgetItem* changedItem);
     void itemDataChanged(QListWidgetItem* item);
     void clickedOnItem(QListWidgetItem* item);
-    void doubleClickedOnItem(QListWidgetItem* item);
 
 signals:
     void itemCheckStateChanged(QListWidgetItem*);

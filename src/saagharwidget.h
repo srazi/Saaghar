@@ -56,16 +56,13 @@ public:
     ~SaagharWidget();
 
 #ifndef NO_PHONON_LIB
-    //Music Player
     static QMusicPlayer* musicPlayer;
 #endif
 
     enum PoemViewStyle {
         TwoHemistichLine,
-        //LastBeytCentered,
         OneHemistichLine,
-        SteppedHemistichLine/*,
-        MesraPerLineGroupedBeyt*/
+        SteppedHemistichLine
     };
 
     enum PageType {

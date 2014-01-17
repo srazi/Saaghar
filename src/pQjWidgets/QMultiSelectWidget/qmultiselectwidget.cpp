@@ -26,7 +26,6 @@
 #include <QLineEdit>
 #include <QGridLayout>
 #include <QKeyEvent>
-#include<QDebug>
 
 const int LAST_CHECK_STATE = Qt::UserRole + 10;
 
@@ -39,11 +38,8 @@ CustomComboBox::CustomComboBox(QWidget* parent, QListWidget* viewWidget, QObject
         setView(viewWidget);
     }
 
-    //read-only contents
     QLineEdit* lineEdit = new QLineEdit(this);
-//#if QT_VERSION > 0x040700
-//  lineEdit->setPlaceholderText(tr("Select Search Scope..."));
-//#endif
+
     lineEdit->setReadOnly(true);
     setLineEdit(lineEdit);
     lineEdit->disconnect(this);
@@ -62,17 +58,11 @@ CustomComboBox::~CustomComboBox()
 {
 }
 
-/*!
-    \reimp
- */
 void CustomComboBox::wheelEvent(QWheelEvent* e)
 {
     e->ignore();
 }
 
-/*!
-    \reimp
- */
 void CustomComboBox::hidePopup()
 {
     if (containerMousePress) {
@@ -85,27 +75,21 @@ QMultiSelectWidget::QMultiSelectWidget(QWidget* parent, QMultiSelectWidget::Widg
     , comboWidget(0)
 {
     separator = " - ";
-    //setMaximumHeight(180);
+
     overCheckBox = false;
-    //containerMousePress = false;
-    //listWidget = this;//qobject_cast<QListWidget *>(this);
-    //listWidget = new QListWidget(parent);
     if (type == QMultiSelectWidget::ComboBoxView) {
-        comboWidget = new CustomComboBox(parent, this/*qobject_cast<QListWidget *>(this)*/, this);
+        comboWidget = new CustomComboBox(parent, this, this);
         comboWidget->view()->setTextElideMode(Qt::ElideMiddle);
-        //comboWidget->view()->setMaximumHeight(200);
         comboWidget->view()->window()->setMaximumHeight(300);
-        //comboWidget->view()->viewport()->setMaximumHeight(200);
     }
     else {
         comboWidget = 0;
     }
 
-    //connect(this, SIGNAL(itemCheckStateChanged(QListWidgetItem*)), this, SLOT(checkStateChanged(QListWidgetItem*)));
     connect(this, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemDataChanged(QListWidgetItem*)));
     connect(this, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(clickedOnItem(QListWidgetItem*)));
     connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(doubleClickedOnItem(QListWidgetItem*)));
-    //init();
+
     updateSelectedLists();
 }
 
@@ -125,8 +109,8 @@ bool QMultiSelectWidget::isCheckBoxUnderPosition(const QPoint &pos)
         opt.rect = visualItemRect(item);
         QRect r = style()->subElementRect(QStyle::SE_ViewItemCheckIndicator, &opt);
         // assure that the item is also selected
-        if (/*selectedItems().contains(item) && */r.contains(pos)) {
-            return true;//item;
+        if (r.contains(pos)) {
+            return true;
         }
     }
     return false;
@@ -136,7 +120,7 @@ void QMultiSelectWidget::disableOtherItems(QListWidgetItem* excludedItem)
 {
     for (int i = 0; i < count(); ++i) {
         if (item(i) != excludedItem) {
-            item(i)->setFlags(item(i)->flags() ^ Qt::ItemIsEnabled);    //->setHidden(true);
+            item(i)->setFlags(item(i)->flags() ^ Qt::ItemIsEnabled);
         }
     }
 }
@@ -145,7 +129,7 @@ void QMultiSelectWidget::enableOtherItems(QListWidgetItem* excludedItem)
 {
     for (int i = 0; i < count(); ++i) {
         if (item(i) != excludedItem) {
-            item(i)->setFlags(item(i)->flags() | Qt::ItemIsEnabled);    //setHidden(false);
+            item(i)->setFlags(item(i)->flags() | Qt::ItemIsEnabled);
         }
     }
 }
@@ -239,8 +223,6 @@ QString QMultiSelectWidget::getSelectedString()
 
 void QMultiSelectWidget::updateSelectedLists()
 {
-    //QList<QListWidgetItem *> parents = parentChildHash.values();
-    //QList<QListWidgetItem *> childrenSkipList;
     selectedList.clear();
     selectedItemsList.clear();
 
@@ -248,10 +230,6 @@ void QMultiSelectWidget::updateSelectedLists()
         QListWidgetItem* iItem = item(i);
 
         if ((iItem->flags() & Qt::ItemIsEnabled) && iItem->checkState() == Qt::Checked) {
-//          if (parents.contains(iItem))
-//          {//iItem is a parent and we should skip all of its children.
-//              childrenSkipList << parentChildHash.keys(iItem);
-//          }
             QListWidgetItem* parentItem = parentChildHash.value(iItem);
             if (!(parentItem && parentItem->checkState() == Qt::Checked)) {
                 selectedList << iItem->text();
@@ -276,7 +254,7 @@ void QMultiSelectWidget::updateToolTips()
     if (layoutDirection() == Qt::RightToLeft) {
         dirStr = "rtl";
     }
-    qDebug() << "dirStr=" << dirStr;
+
     setToolTip(QString("<p dir=\'%1\'>").arg(dirStr) + selectedStr + "</p>");
     if (comboWidget) {
         comboWidget->setToolTip(QString("<p dir=\'%1\'>").arg(dirStr) + selectedStr + "</p>");
@@ -286,57 +264,35 @@ void QMultiSelectWidget::updateToolTips()
 
 void QMultiSelectWidget::clickedOnItem(QListWidgetItem* item)
 {
-//qDebug() << "clickedOnItem";
-    /*QRect rect = visualItemRect(item);
-    QStyle *style = style();
-    QRect checkRect = style->subElementRect(QStyle::SE_CheckBoxContents, item);*/
-//qDebug() << "item->flags()=" << (int)item->flags();
-//qDebug() << "item->flags()&=" << (int)(item->flags() & Qt::ItemIsUserCheckable);
+
     if ((item->flags() & Qt::ItemIsUserCheckable) && (item->flags() & Qt::ItemIsEnabled) && !overCheckBox) {
         item->setCheckState(item->checkState() == Qt::Checked ? Qt::Unchecked : Qt::Checked);
     }
     else if (!(item->flags() & Qt::ItemIsUserCheckable)  && (item->flags() & Qt::ItemIsEnabled)) {
-        qDebug() <<  "NONE-overCheckBox2=";
         setCurrentItem(item);
         if (comboWidget) {
             comboWidget->QComboBox::hidePopup();
         }
     }
-//comboWidget->containerMousePress = false;
-}
-
-void QMultiSelectWidget::doubleClickedOnItem(QListWidgetItem* item)
-{
-//comboWidget->hidePopup();
-//  if ( (item->flags() & Qt::ItemIsUserCheckable) && !overCheckBox)
-//      item->setCheckState(item->checkState() == Qt::Checked ? Qt::Unchecked : Qt::Checked);
-
-//  if (comboWidget)
-//      comboWidget->QComboBox::hidePopup();
 }
 
 QListWidgetItem* QMultiSelectWidget::insertRow(int row, const QString &label, bool checkable,
         const QString &data, Qt::ItemDataRole role, bool monoSelection, QListWidgetItem* parent)
 {
     QListWidgetItem* newItem = new QListWidgetItem(label);
-//  //just for test!!
-//  if(row == 0) checkable = false;
-//  if(row == 1) monoSelection = true;
+
     if (checkable) {
-        newItem->setCheckState(Qt::Unchecked);//Qt::ItemIsEnabled
+        newItem->setCheckState(Qt::Unchecked);
         newItem->setFlags(Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
         newItem->setData(LAST_CHECK_STATE, newItem->checkState());
     }
     else {
-        newItem->setFlags(Qt::ItemIsEnabled/*|Qt::ItemIsSelectable*/);
+        newItem->setFlags(Qt::ItemIsEnabled);
     }
 
     if (monoSelection) {
         insertNoMultiSelectItem(newItem);
     }
-
-//if (row>2 && row <6)//for test parent is replaced
-//{parent = item(2);}
 
     if (parent && parent != newItem) {
         parentChildHash.insert(newItem, parent);
@@ -347,10 +303,7 @@ QListWidgetItem* QMultiSelectWidget::insertRow(int row, const QString &label, bo
     }
 
     insertItem(row, newItem);
-//if (row>10)
-//{
-//newItem->setHidden(true);
-//}
+
     return newItem;
 }
 
@@ -361,58 +314,10 @@ void QMultiSelectWidget::insertNoMultiSelectItem(QListWidgetItem* item)
     }
 }
 
-//QWidget *QMultiSelectWidget::getWidgetInstance()
-//{
-//  QGridLayout *gridLayout = new QGridLayout();
-//  containerWidget = new QWidget();
-//  setParent(containerWidget);
-////    if (comboWidget)
-////    {
-////        comboWidget->setView(0);
-////        comboWidget->setModel(0);
-////    }
-
-//  gridLayout->addWidget(this);
-//  containerWidget->setLayout(gridLayout);
-//  return containerWidget;
-//}
-
-//QListWidget *QMultiSelectWidget::getListWidgetInstance()
-//{
-//  return qobject_cast<QListWidget *>(this);
-//}
-
 QComboBox* QMultiSelectWidget::getComboWidgetInstance()
 {
     //maybe 0
     return comboWidget;
-}
-
-void QMultiSelectWidget::init()
-{
-    //listWidget->hide();
-    //setModel(listWidget->model());
-    //setView(listWidget);
-    //privateObject = new QxtCheckComboBoxPrivate(this);
-    //checkModel = new QxtCheckComboModel(this);
-    //setModel(checkModel);
-/////////////////////////////////
-//  connect(this, SIGNAL(activated(int)), privateObject, SLOT(toggleCheckState(int)));
-//  connect(checkModel/*model()*/, SIGNAL(checkStateChanged()), privateObject, SLOT(updateCheckedItems()));
-//  connect(checkModel/*model()*/, SIGNAL(rowsInserted(QModelIndex,int,int)), privateObject, SLOT(updateCheckedItems()));
-//  connect(checkModel/*model()*/, SIGNAL(rowsRemoved(QModelIndex,int,int)), privateObject, SLOT(updateCheckedItems()));
-
-//  // read-only contents
-//  QLineEdit* lineEdit = new QLineEdit(this);
-//  lineEdit->setReadOnly(true);
-//  setLineEdit(lineEdit);
-//  lineEdit->disconnect(this);
-//  setInsertPolicy(QComboBox::NoInsert);
-
-    //view()->installEventFilter(privateObject);
-    //view()->window()->installEventFilter(privateObject);
-    //view()->viewport()->installEventFilter(privateObject);
-    //this->installEventFilter(privateObject);
 }
 
 bool QMultiSelectWidget::eventFilter(QObject* receiver, QEvent* event)
@@ -438,13 +343,10 @@ bool QMultiSelectWidget::eventFilter(QObject* receiver, QEvent* event)
     case QEvent::MouseButtonPress: {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
         overCheckBox = isCheckBoxUnderPosition(mouseEvent->pos());
-        qDebug() << "overCheckBox1=" << overCheckBox;
         comboWidget->containerMousePress = (receiver == window());
-        //qDebug() << "eventFilter-MouseButtonPress|bool=" << comboWidget->containerMousePress << receiver->objectName();
         break;
     }
     case QEvent::MouseButtonRelease:
-//  qDebug() << "eventFilter-MouseButtonRelease";
         comboWidget->containerMousePress = false;
         return false;
         break;
@@ -466,14 +368,3 @@ void QMultiSelectWidget::clear()
     }
     updateToolTips();
 }
-
-
-//void QMultiSelectWidget::insertPoets(const QList<GanjoorPoet *> &poets)
-//{
-//  int insertIndex = count();
-//  for(int i=0; i<poets.size(); ++i)
-//  {
-//      insertRow(i+insertIndex, poets.at(i)->_Name, true,
-//              QString::number(poets.at(i)->_ID), Qt::UserRole);
-//  }
-//}

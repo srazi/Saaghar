@@ -27,7 +27,6 @@
 #include "searchresultwidget.h"
 #include "searchpatternmanager.h"
 #include "outline.h"
-#include "registerationform.h"
 #include "searchoptionsdialog.h"
 
 #include <QTextBrowserDialog>
@@ -276,24 +275,14 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
     }
     //create ganjoor DataBase browser
     SaagharWidget::ganjoorDataBase = new QGanjoorDbBrowser(dataBaseCompleteName, splashScreen);
-    qDebug() << "QGanjoorDbBrowser2222=" << SaagharWidget::ganjoorDataBase;
     SaagharWidget::ganjoorDataBase->setObjectName(QString::fromUtf8("ganjoorDataBaseBrowser"));
 
     loadTabWidgetSettings();
-
-    //ui->gridLayout->setContentsMargins(0,0,0,0);
 
     outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
     connect(outlineTree, SIGNAL(openParentRequested(int)), this, SLOT(openParentPage(int)));
     connect(outlineTree, SIGNAL(newParentRequested(int)), this, SLOT(newTabForItem(int)));
     connect(outlineTree, SIGNAL(openRandomRequested(int,bool)), this, SLOT(openRandomPoem(int,bool)));
-
-//  splitter = new QSplitter(ui->centralWidget);
-//  splitter->setObjectName("splitter");
-//  //splitter->addWidget(dock);
-//  splitter->addWidget(mainTabWidget);
-
-    //ui->gridLayout->addWidget(mainTabWidget, 0, 0, 1, 1);
 
     if (!fresh) {
         QStringList openedTabs = Settings::READ("Opened tabs from last session").toStringList();
@@ -445,10 +434,6 @@ void SaagharWindow::searchStart()
             QVector<QStringList> phraseVectorList = SearchPatternManager::outputPhrases();
             QVector<QStringList> excludedVectorList = SearchPatternManager::outputExcludedLlist();
             int vectorSize = phraseVectorList.size();
-//          qDebug() << "SearchPatternManager::finished!";
-//          qDebug() << "phraseVectorList=" <<phraseVectorList;
-//          qDebug() << "excludedVectorList="<<excludedVectorList;
-            qDebug() << "=======================" << currentItemData;
 
             int poetID;
             if (currentItemData.toString() == "ALL_TITLES") {
@@ -501,28 +486,29 @@ void SaagharWindow::searchStart()
             int resultCount = 0;
             for (int j = 0; j < vectorSize; ++j) {
                 QStringList phrases = phraseVectorList.at(j);
-//              int phraseCount = phrases.size();
                 QStringList excluded = excludedVectorList.at(j);
+#ifdef SAAGHAR_DEBUG
                 int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+#endif
                 QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, resultCount, slowSearch);
+#ifdef SAAGHAR_DEBUG
                 int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
                 int miliSec = end - start;
                 qDebug() << "\n------------------------------------------------\n"
                          << phrases << "\tsearch-duration=" << miliSec
                          << "\n------------------------------------------------\n";
+#endif
                 QMap<int, QString>::const_iterator it = mapResult.constBegin();
 
-//              qDebug() << "mapResult-size" << mapResult.size();
                 while (it != mapResult.constEnd()) {
-                    finalResult.insertMulti(it.key(), it.value());//insertMulti for more than one result from a poem
+                    // insertMulti for more than one result from a poem
+                    finalResult.insertMulti(it.key(), it.value());
                     ++it;
                 }
                 resultCount = finalResult.size();
-//              qDebug() << "resultCount=" << resultCount;
 
                 QApplication::processEvents();
 
-                qDebug() << "finalResult-size" << finalResult.size();
                 if (searchCanceled) {
                     break;
                 }
@@ -533,12 +519,10 @@ void SaagharWindow::searchStart()
             if (i == selectList.size() - 1) {
                 SaagharWidget::lineEditSearchText->searchStop();
             }
-            ///////////////////////////////////////
 
             searchResultWidget->setResultList(finalResult);
             if (!searchResultWidget->init(this, ICON_PATH)) {
                 if (numOfResults == 0 && (i == selectList.size() - 1)) {
-                    //QMessageBox::information(this, tr("Search"), tr("Current Scope: %1\nNo match found.").arg(poetName));
                     SaagharWidget::lineEditSearchText->notFound();
                     connect(selectSearchRange, SIGNAL(itemCheckStateChanged(QListWidgetItem*)), SaagharWidget::lineEditSearchText, SLOT(resetNotFound()));
                     SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(selectSearchRange->getSelectedStringList().join("-")));
@@ -559,11 +543,8 @@ void SaagharWindow::searchStart()
             //create connections for mouse signals
             connect(searchResultWidget->searchTable, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(tableItemClick(QTableWidgetItem*)));
             connect(searchResultWidget->searchTable, SIGNAL(itemPressed(QTableWidgetItem*)), this, SLOT(tableItemPress(QTableWidgetItem*)));
-
-            //resize table on create and destroy
-//          emitReSizeEvent();
-//          connect(searchResultWidget, SIGNAL(destroyed()), this, SLOT(emitReSizeEvent()));
         }
+
         //we should create conection first and then break!
         if (searchCanceled) {
             break;    //search is canceled
@@ -573,25 +554,19 @@ void SaagharWindow::searchStart()
 
 void SaagharWindow::multiSelectObjectInitialize(QMultiSelectWidget* multiSelectWidget, const QStringList &selectedData, int insertIndex)
 {
-    qDebug() << "multiSelectObjectInitialize1";
     QListWidgetItem* rootItem = multiSelectWidget->insertRow(insertIndex, tr("All"), true, "0", Qt::UserRole);
-    qDebug() << "multiSelectObjectInitialize22";
     QList<GanjoorPoet*> poets = SaagharWidget::ganjoorDataBase->getPoets();
-    qDebug() << "multiSelectObjectInitialize333";
-    //int insertIndex = count();
+
     for (int i = 0; i < poets.size(); ++i) {
-        qDebug() << "for1-multiSelectObjectInitialize" << i + 4 << "i=" << i;
         multiSelectWidget->insertRow(i + 1 + insertIndex, poets.at(i)->_Name, true,
                                      QString::number(poets.at(i)->_ID), Qt::UserRole, false, rootItem)->setCheckState(selectedData.contains(QString::number(poets.at(i)->_ID)) ? Qt::Checked : Qt::Unchecked);
-        qDebug() << "for2-multiSelectObjectInitialize" << i + 4 << "i=" << i;
     }
-    qDebug() << "multiSelectObjectInitialize55555";
+
     if (selectedData.contains("0")) {
         rootItem->setCheckState(Qt::Checked);
     }
-    qDebug() << "multiSelectObjectInitialize666666";
+
     multiSelectWidget->updateSelectedLists();
-    qDebug() << "multiSelectObjectInitialize7777777";
 }
 
 void SaagharWindow::actionRemovePoet()
@@ -605,17 +580,12 @@ void SaagharWindow::actionRemovePoet()
     }
     QString item = QInputDialog::getItem(this, tr("Remove Poet"), tr("Select a poet name and click on 'OK' button, for remove it from database."), items, 0, false, &ok);
     if (ok && !item.isEmpty() && item != tr("Select a name...")) {
-        qDebug() << "item=" << item;
-        qDebug() << "int=" << item.toInt();
-        qDebug() << "Int-itemleft=" << item.mid(item.indexOf("(" + tr("poet's code=")) + tr("poet's code=").size() + 1).remove(")").toInt();
-
-        //int poetID = SaagharWidget::ganjoorDataBase->getPoet(item.left(item.indexOf("(")))._ID;
         int poetID = item.mid(item.indexOf("(" + tr("poet's code=")) + tr("poet's code=").size() + 1).remove(")").toInt();
         if (poetID > 0) {
             QMessageBox warnAboutDelete(this);
             warnAboutDelete.setWindowTitle(tr("Please Notice!"));
             warnAboutDelete.setIcon(QMessageBox::Warning);
-            warnAboutDelete.setText(tr("Are you sure for removing \"%1\", from database?").arg(SaagharWidget::ganjoorDataBase->getPoet(poetID)._Name/*item*/));
+            warnAboutDelete.setText(tr("Are you sure for removing \"%1\", from database?").arg(SaagharWidget::ganjoorDataBase->getPoet(poetID)._Name));
             warnAboutDelete.addButton(tr("Continue"), QMessageBox::AcceptRole);
             warnAboutDelete.setStandardButtons(QMessageBox::Cancel);
             warnAboutDelete.setEscapeButton(QMessageBox::Cancel);
@@ -626,24 +596,16 @@ void SaagharWindow::actionRemovePoet()
             }
 
             QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-            qDebug() << "Before remove";
             SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poetID);
-            qDebug() << "after remove";
             outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
 
-            //comboBoxSearchRegion->clear();
             selectSearchRange->clear();
             QListWidgetItem* item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
             QListWidgetItem* titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
             multiSelectObjectInitialize(selectSearchRange, selectedSearchRange, 2);
             item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
             titleSearchItem->setCheckState(selectedSearchRange.contains("ALL_TITLES") ? Qt::Checked : Qt::Unchecked);
-            //update visible region of searchToolBar
-//          bool tmpFlag = labelMaxResultAction->isVisible();
-//          labelMaxResultAction->setVisible(!tmpFlag);
-//          ui->searchToolBar->update();
-//          QApplication::processEvents();
-//          labelMaxResultAction->setVisible(tmpFlag);
+
             setHomeAsDirty();
             QApplication::restoreOverrideCursor();
             qDebug() << "end of" << Q_FUNC_INFO;
@@ -657,14 +619,6 @@ void SaagharWindow::currentTabChanged(int tabIndex)
     if (tmpSaagharWidget) {
         SaagharWidget* old_saagharWidget = saagharWidget;
         saagharWidget = tmpSaagharWidget;
-
-//      if (old_saagharWidget && old_saagharWidget->splitter && saagharWidget->splitter)
-//      {
-//      qDebug()<<"currentTabChanged222="<<old_saagharWidget<<"saagharWidget="<<saagharWidget;
-//          QList<int> sizes = old_saagharWidget->splitter->sizes();
-//          saagharWidget->splitter->insertWidget(old_saagharWidget->splitter->indexOf(outlineTree), outlineTree);
-//          saagharWidget->splitter->setSizes(sizes);
-//      }
 
         saagharWidget->loadSettings();
 
@@ -695,31 +649,24 @@ void SaagharWindow::currentTabChanged(int tabIndex)
                             text = textEdit->toPlainText();
                         }
                     }
-                    //int textWidth = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(text).width();
+
                     int verticalScrollBarWidth = 0;
                     if (saagharWidget->tableViewWidget->verticalScrollBar()->isVisible()) {
                         verticalScrollBarWidth = saagharWidget->tableViewWidget->verticalScrollBar()->width();
                     }
                     int totalWidth = saagharWidget->tableViewWidget->columnWidth(0) - verticalScrollBarWidth - 82;
-                    //int totalWidth = saagharWidget->tableViewWidget->viewport()->width()-verticalScrollBarWidth-82;
+
                     totalWidth = qMax(82 + verticalScrollBarWidth, totalWidth);
                     saagharWidget->resizeTable(saagharWidget->tableViewWidget);
-                    //saagharWidget->tableViewWidget->setRowHeight(0, qMax(100, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth)) );
-                    ////saagharWidget->tableViewWidget->setRowHeight(0, 2*saagharWidget->tableViewWidget->rowHeight(0)+(saagharWidget->tableViewWidget->fontMetrics().height()*(numOfRow/*+1*/)));
                 }
             }
             else if (saagharWidget->tableViewWidget->columnCount() > 1) {
                 QTableWidgetItem* item = saagharWidget->tableViewWidget->item(0, 1);
                 if (item) {
-                    QString text = item->text();
-                    //int textWidth = saagharWidget->tableViewWidget->fontMetrics().boundingRect(text).width();
                     int verticalScrollBarWidth = 0;
                     if (saagharWidget->tableViewWidget->verticalScrollBar()->isVisible()) {
                         verticalScrollBarWidth = saagharWidget->tableViewWidget->verticalScrollBar()->width();
                     }
-                    int totalWidth = saagharWidget->tableViewWidget->viewport()->width();
-                    //saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(saagharWidget->tableViewWidget->fontMetrics(), textWidth, totalWidth) );
-                    //new!!
                     saagharWidget->resizeTable(saagharWidget->tableViewWidget);
                 }
             }
@@ -920,12 +867,7 @@ void SaagharWindow::checkForUpdates()
 void SaagharWindow::tabCloser(int tabIndex)
 {
     QWidget* closedTabContent = mainTabWidget->widget(tabIndex);
-    if (closedTabContent) {
-        qDebug() << "closedTabContent=" << closedTabContent->objectName();
-    }
-    else {
-        qDebug() << "closedTabContent NUUUUUUL";
-    }
+
     if (closedTabContent && closedTabContent->objectName().startsWith("WidgetTab")) {
         mainTabWidget->setUpdatesEnabled(false);
         mainTabWidget->removeTab(tabIndex);
@@ -963,18 +905,6 @@ void SaagharWindow::tabCloser(int tabIndex)
     connect(tabAct, SIGNAL(triggered()), this, SLOT(actionClosedTabsClicked()));
     menuClosedTabs->addAction(tabAct);
 
-//  if (tmp && tmp->splitter && saagharWidget->splitter)
-//  {
-//      qDebug()<<"tabCloser()111="<<tmp<<"saagharWidget="<<saagharWidget;
-//      QList<int> sizes = tmp->splitter->sizes();
-//      saagharWidget->splitter->insertWidget(tmp->splitter->indexOf(outlineTree), outlineTree);
-//      saagharWidget->splitter->setSizes(sizes);
-//  }
-
-//  QAction *tabAction = new QAction(mainTabWidget->tabText(i), menuOpenedTabs);
-//  tabAction->setData(mainTabWidget->widget(i) /*QString::number(i)*/);
-//  menuOpenedTabs->addAction(tabAction);
-
     mainTabWidget->setUpdatesEnabled(false);
     mainTabWidget->removeTab(tabIndex);
     mainTabWidget->setUpdatesEnabled(true);
@@ -997,10 +927,10 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
     if (tabType == SaagharWindow::SaagharViewerTab) {
         QGridLayout* tabGridLayout = new QGridLayout(tabContent);
         tabGridLayout->setObjectName(QString::fromUtf8("tabGridLayout"));
-        tabGridLayout->setContentsMargins(0, 0, 0, 0); //3,4,3,3);
+        tabGridLayout->setContentsMargins(0, 0, 0, 0);
 
         tabContent->setObjectName(QString::fromUtf8("SaagharViewerTab"));
-        QTableWidget* tabTableWidget = new QTableWidget;//(tabContent);
+        QTableWidget* tabTableWidget = new QTableWidget;
 
         //table defaults
         tabTableWidget->setObjectName(QString::fromUtf8("mainTableWidget"));
@@ -1046,15 +976,14 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         connect(saagharWidget->tableViewWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
         connect(saagharWidget, SIGNAL(createContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
 
-        //Enable/Disable navigation actions
+        //\Enable/Disable navigation actions
         connect(saagharWidget, SIGNAL(navPreviousActionState(bool)),    actionInstance("actionPreviousPoem"), SLOT(setEnabled(bool)));
         connect(saagharWidget, SIGNAL(navNextActionState(bool)),    actionInstance("actionNextPoem"), SLOT(setEnabled(bool)));
         actionInstance("actionPreviousPoem")->setEnabled(!SaagharWidget::ganjoorDataBase->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
         actionInstance("actionNextPoem")->setEnabled(!SaagharWidget::ganjoorDataBase->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
 
-        //Updating table on changing of selection
+        // Updating table on changing of selection
         connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
-        //tabGridLayout->setContentsMargins(0,0,0,0);//3,4,3,3);
         if (id != -1) {
             saagharWidget->processClickedItem(type, id, noError, pushToStack);
         }
@@ -1104,11 +1033,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
 void SaagharWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack)
 {
     insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, type, noError, pushToStack);
-//    saagharWidget->processClickedItem(type, id, noError, pushToStack);
     showStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":") + 1), "", 0, 6, false, Qt::ElideRight)));
-    //qDebug() << "emit updateTabsSubMenus()--848";
-    //resolved by signal SaagharWidget::captionChanged()
-    //updateTabsSubMenus();
 }
 
 void SaagharWindow::updateCaption()
@@ -1404,8 +1329,6 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                 QTableWidgetItem* item = saagharObject->tableViewWidget->item(row, 1);
                 QString mesraText = "";
 
-                //QString align = "RIGHT";
-                //if (SaagharWidget::centeredView)
                 //title is centered by using each PoemViewStyle
                 QString align = "CENTER";
 
@@ -1466,15 +1389,6 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
             .arg(columnGroupFormat).arg(tableBody);
 
     return tableAsHTML;
-    /*******************************************************
-    %1: title
-    %2: Text Color, e.g: "#CC55AA"
-    %3: Font Face, e.g: "XB Zar"
-    %4: Table Align
-    %5: number of columns
-    %6: column group format, e.g: <COL WIDTH=259><COL WIDTH=10><COL WIDTH=293>
-    %7: table body, e.g: <TR><TD HEIGHT=17 ALIGN=LEFT>Column1</TD><TD></TD><TD ALIGN=LEFT>Column3</TD></TR>
-    *********************************************************/
 }
 
 QString SaagharWindow::convertToTeX(SaagharWidget* saagharObject)
@@ -1509,7 +1423,7 @@ QString SaagharWindow::convertToTeX(SaagharWidget* saagharObject)
             }
             else {
                 QString align = "r";
-                if (row == 0 /*&& SaagharWidget::centeredView*/) { //title is centered by using each PoemViewStyle
+                if (row == 0) { //title is centered by using each PoemViewStyle
                     align = "c";
                 }
                 QTableWidgetItem* item = saagharObject->tableViewWidget->item(row, 1);
@@ -1618,37 +1532,6 @@ void SaagharWindow::actFullScreenClicked(bool checked)
 
 void SaagharWindow::openRandomPoem(int parentID, bool newPage)
 {
-//  QAction *triggeredAction = qobject_cast<QAction *>(sender());
-//  int actionData = -1;//Faal
-//  if (triggeredAction && triggeredAction->data().isValid())
-//      actionData = triggeredAction->data().toInt();
-
-//  if (actionData == -1)
-//      actionData = 24;
-//  else
-//  {
-//      if (selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS"))
-//      {
-//          if (saagharWidget->currentPoem != 0)
-//              actionData = SaagharWidget::ganjoorDataBase->getPoem(saagharWidget->currentPoem)._CatID;
-//          else
-//              actionData = saagharWidget->currentCat;
-//      }
-//      else if (selectedRandomRange.contains("0")) //all
-//          actionData = 0;//home
-//      else
-//      {
-//          if (selectedRandomRange.isEmpty())
-//              actionData = 0;//all
-//          else
-//          {
-//              int randIndex = QGanjoorDbBrowser::getRandomNumber(0, selectedRandomRange.size()-1);
-//              actionData = SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex).toInt())._CatID;
-//              qDebug() << "actionData=" << actionData << "randIndex=" << randIndex << SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex))._Name;
-//          }
-//      }
-//  }
-
     int actionData = parentID;
 
     int PoemID = SaagharWidget::ganjoorDataBase->getRandomPoemID(&actionData);
@@ -1710,18 +1593,6 @@ void SaagharWindow::closeCurrentTab()
 
 void SaagharWindow::actionImportNewSet()
 {
-//  QMessageBox warnAboutBackup(this);
-//  warnAboutBackup.setWindowTitle(tr("Please Notice!"));
-//  warnAboutBackup.setIcon(QMessageBox::Information);
-//  warnAboutBackup.setText(tr("This feature is in beta state, before continue you should create a backup from your database."));
-//  warnAboutBackup.addButton(tr("Continue"), QMessageBox::AcceptRole);
-//  warnAboutBackup.setStandardButtons(QMessageBox::Cancel);
-//  warnAboutBackup.setEscapeButton(QMessageBox::Cancel);
-//  warnAboutBackup.setDefaultButton(QMessageBox::Cancel);
-//  int ret = warnAboutBackup.exec();
-//  if ( ret == QMessageBox::Cancel)
-//      return;
-
     QStringList fileList = QFileDialog::getOpenFileNames(this, tr("Browse for a new set"), QDir::homePath(), "Supported Files (*.gdb *.s3db *.zip);;Ganjoor DataBase (*.gdb *.s3db);;Compressed Data Sets (*.zip);;All Files (*.*)");
     if (!fileList.isEmpty()) {
         if (!QGanjoorDbBrowser::dbUpdater) {
@@ -1729,7 +1600,6 @@ void SaagharWindow::actionImportNewSet()
         }
 
         foreach (const QString &file, fileList) {
-            //connect(QGanjoorDbBrowser::dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
             QGanjoorDbBrowser::dbUpdater->installItemToDB(file);
             QApplication::processEvents();
         }
@@ -1755,10 +1625,6 @@ void SaagharWindow::setupUi()
     }
 #endif
 
-//    if (Settings::READ("MainWindowState").isNull()) {
-//        insertToolBarBreak(ui->mainToolBar);
-//    }
-
     skipSearchToolBarResize = false;
     comboBoxSearchRegion = 0;
     setupSearchToolBarUi();
@@ -1774,7 +1640,7 @@ void SaagharWindow::setupUi()
     }
 
     if (flagUnityGlobalMenu) {
-        qDebug() << "It seems that you are running Unity Desktop with global menubar!";
+        qDebug() << "Info: It seems that you are running Unity Desktop with global menubar!";
         delete ui->menuToolBar;
         ui->menuToolBar = 0;
     }
@@ -1935,12 +1801,6 @@ void SaagharWindow::setupUi()
     actionInstance("TwoHemistichPoemViewStyle")->setCheckable(true);
     actionInstance("TwoHemistichPoemViewStyle")->setData(SaagharWidget::TwoHemistichLine);
 
-//  poemViewStylesMenu->addAction(actionInstance("LastBeytCenteredPoemViewStyle", ICON_PATH+"/poem-view-last-beyt-centered.png",QObject::tr("&Last Beyt Centered")) );
-//  actionInstance("LastBeytCenteredPoemViewStyle")->setParent(poemViewStylesMenu);
-//  actionInstance("LastBeytCenteredPoemViewStyle")->setActionGroup(poemViewStylesGroup);
-//  actionInstance("LastBeytCenteredPoemViewStyle")->setCheckable(true);
-//  actionInstance("LastBeytCenteredPoemViewStyle")->setData(SaagharWidget::LastBeytCentered);
-
     poemViewStylesMenu->addAction(actionInstance("OneHemistichPoemViewStyle", ICON_PATH + "/one-hemistich-line.png", QObject::tr("&One Hemistich Line")));
     actionInstance("OneHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
     actionInstance("OneHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
@@ -1952,12 +1812,6 @@ void SaagharWindow::setupUi()
     actionInstance("SteppedHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
     actionInstance("SteppedHemistichPoemViewStyle")->setCheckable(true);
     actionInstance("SteppedHemistichPoemViewStyle")->setData(SaagharWidget::SteppedHemistichLine);
-
-//  poemViewStylesMenu->addAction(actionInstance("MesraPerLineGroupedBeytPoemViewStyle", ICON_PATH+"/poem-view-mesra-per-line-grouped-beyt.png",QObject::tr("Mesra Per Line &Grouped Beyt")) );
-//  actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setParent(poemViewStylesMenu);
-//  actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setActionGroup(poemViewStylesGroup);
-//  actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setCheckable(true);
-//  actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setData(SaagharWidget::MesraPerLineGroupedBeyt);
 
     outlineTree = new OutLineTree;
     m_outlineDock = new QDockWidget(tr("Outline"), this);
@@ -1974,18 +1828,12 @@ void SaagharWindow::setupUi()
     case SaagharWidget::TwoHemistichLine:
         actionInstance("TwoHemistichPoemViewStyle")->setChecked(true);
         break;
-//  case SaagharWidget::LastBeytCentered:
-//      actionInstance("LastBeytCenteredPoemViewStyle")->setChecked(true);
-//      break;
     case SaagharWidget::OneHemistichLine:
         actionInstance("OneHemistichPoemViewStyle")->setChecked(true);
         break;
     case SaagharWidget::SteppedHemistichLine:
         actionInstance("SteppedHemistichPoemViewStyle")->setChecked(true);
         break;
-//  case SaagharWidget::MesraPerLineGroupedBeyt:
-//      actionInstance("MesraPerLineGroupedBeytPoemViewStyle")->setChecked(true);
-//      break;
 
     default:
         break;
@@ -2024,9 +1872,7 @@ void SaagharWindow::setupUi()
 
     menuBarWidth = menuBarWidth + 3; //3 is offset of first item!
     int styleWidth = ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarHMargin) * 2 + ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth) * 2;
-//  QString debug = QString("PM_MenuBarHMargin = %1\nPM_MenuBarPanelWidth= %2\nPM_MenuBarItemSpacing= %3\nStyle= %4\nstyleWidth= %5")
-//          .arg(ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarHMargin)).arg(ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth)).arg(ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarItemSpacing)).arg(QApplication::style()->objectName()).arg(styleWidth);
-//  QMessageBox::information(0,"pixel",debug);
+
     styleWidth = qMax(styleWidth, 5);
     ui->menuBar->setMinimumWidth(menuBarWidth + styleWidth);
     ui->menuBar->setMaximumWidth(menuBarWidth + 2 * styleWidth);
@@ -2259,11 +2105,6 @@ void SaagharWindow::showStatusText(const QString &message, int newLevelsCount)
     m_splash->showMessage(message);
 }
 
-//void MainWindow::newSearchNonAlphabetChanged(bool checked)
-//{
-//  SaagharWidget::newSearchSkipNonAlphabet = checked;
-//}
-
 QAction* SaagharWindow::actionInstance(const QString &actionObjectName, QString iconPath, QString displayName)
 {
     QAction* action = 0;
@@ -2283,14 +2124,6 @@ QAction* SaagharWindow::actionInstance(const QString &actionObjectName, QString 
             displayName.replace("_", " ");
             displayName = tr(displayName.toUtf8().data());
         }
-
-        /*if (iconPath.isEmpty())
-        {
-            QString iconThemePath=":/resources/images/";
-            if (!settingsIconThemePath.isEmpty() && settingsIconThemeState)
-                iconThemePath = settingsIconThemePath;
-            iconPath = iconThemePath+"/"+actionObjectName+".png";
-        }*/
 
         action = new QAction(displayName, this);
         if (QFile::exists(iconPath)) {
@@ -2334,8 +2167,6 @@ void SaagharWindow::createConnections()
     connect(actionInstance("actionHome")                ,   SIGNAL(triggered())     ,   this, SLOT(actionHomeClicked()));
     connect(actionInstance("actionPreviousPoem")        ,   SIGNAL(triggered())     ,   this, SLOT(actionPreviousPoemClicked()));
     connect(actionInstance("actionNextPoem")            ,   SIGNAL(triggered())     ,   this, SLOT(actionNextPoemClicked()));
-//  connect(actionInstance("actionFaal")                ,   SIGNAL(triggered())     ,   this, SLOT(actionFaalRandomClicked())   );
-//  connect(actionInstance("actionRandom")              ,   SIGNAL(triggered())     ,   this, SLOT(actionFaalRandomClicked())   );
 
     //View
     connect(actionInstance("actionFullScreen")          ,   SIGNAL(toggled(bool))   ,   this, SLOT(actFullScreenClicked(bool)));
@@ -2355,18 +2186,13 @@ void SaagharWindow::createConnections()
 
     //searchToolBar connections
     connect(SaagharWidget::lineEditSearchText                           ,   SIGNAL(returnPressed()) ,   this, SLOT(searchStart()));
-    //connect(pushButtonSearch                          ,   SIGNAL(clicked())       ,   this, SLOT(searchStart())               );
 }
 
 //Settings Dialog
 void SaagharWindow::showSettingsDialog()
 {
     m_settingsDialog = new Settings(this);
-    //  m_settingsDialog->setAttribute(Qt::WA_DeleteOnClose, true);
 
-    //if (Settings::READ("UseTransparecy").toBool())
-    ////settingsDlg->setStyleSheet("QGroupBox{border: 1px solid lightgray;\nborder-radius: 5px;\n}");
-    //settingsDlg->setStyleSheet("QGroupBox {\n     border: 1px solid lightgray;\n     border-radius: 5px;\n\n     margin-top: 1ex; /* leave space at the top for the title */\n }\n ");
     QtWin::easyBlurUnBlur(m_settingsDialog, Settings::READ("UseTransparecy").toBool());
 
     connect(m_settingsDialog->ui->pushButtonRandomOptions, SIGNAL(clicked()), this, SLOT(customizeRandomDialog()));
@@ -2515,19 +2341,17 @@ void SaagharWindow::applySettings()
         }
         else if (saagharWidget->currentCat == 0 && saagharWidget->currentPoem == 0) { //it's Home.
             saagharWidget->homeResizeColsRows();
-            //  saagharWidget->tableViewWidget->resizeRowsToContents();
         }
     }
 #ifndef Q_OS_MAC //This doesn't work on MACX and moved to "SaagharWidget::loadSettings()"
     //apply new text and background color, and also background picture
     loadTabWidgetSettings();
 #endif
-    saveSettings();//save new settings to disk
+    // save new settings to disk
+    saveSettings();
 
-    //////////////////////////////////////////////////////
-    //set for refreshed all pages
+    // all tab have to be refreshed
     setAllAsDirty();
-    //////////////////////////////////////////////////////
 
     setUpdatesEnabled(true);
 
@@ -2564,8 +2388,6 @@ void SaagharWindow::loadGlobalSettings()
 
     Settings::LOAD_VARIABLES(config->value("VariableHash").toHash());
 
-    //openedTabs = config->value("openedTabs", "").toStringList();
-
     SaagharWidget::CurrentViewStyle = (SaagharWidget::PoemViewStyle)Settings::READ("Poem Current View Style", SaagharWidget::SteppedHemistichLine).toInt();
 
     if (SaagharWidget::CurrentViewStyle != SaagharWidget::OneHemistichLine &&
@@ -2577,8 +2399,6 @@ void SaagharWindow::loadGlobalSettings()
     SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
 
     //search options
-    //SaagharWidget::newSearchFlag = config->value("New Search",true).toBool();
-    //SaagharWidget::newSearchSkipNonAlphabet  = config->value("New Search non-Alphabet",false).toBool();
     SearchResultWidget::maxItemPerPage  = config->value("Max Search Results Per Page", 100).toInt();
     SearchResultWidget::nonPagedSearch = config->value("SearchNonPagedResults", false).toBool();
     SearchResultWidget::skipVowelSigns = config->value("SearchSkipVowelSigns", false).toBool();
@@ -2589,13 +2409,8 @@ void SaagharWindow::loadGlobalSettings()
 
     QGanjoorDbBrowser::dataBasePath = config->value("DataBase Path", "").toString().split(";", QString::SkipEmptyParts);
 
-    //The "XB Sols" is embeded in executable.
-//  QString fontFamily=config->value("Font Family", "XB Sols").toString();
-//  int fontSize=config->value( "Font Size", 18).toInt();
-//  QFont fnt(fontFamily,fontSize);
-    //SaagharWidget::tableFont = fnt;
+
     SaagharWidget::showBeytNumbers = config->value("Show Beyt Numbers", true).toBool();
-    //SaagharWidget::textColor = Settings::READ("Text Color",QColor(0x23,0x65, 0xFF)).value<QColor>();
     SaagharWidget::matchedTextColor = Settings::READ("Matched Text Color", QColor(225, 0, 225)).value<QColor>();
     SaagharWidget::backgroundColor = Settings::READ("Background Color", QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
 
@@ -2604,7 +2419,11 @@ void SaagharWindow::loadGlobalSettings()
     QFont appFont1(firstFamily, 18);
     appFont1.setBold(true);
     //The "Droid Arabic Naskh (with DOT)" is an application font
-    QFont appFont2("Droid Arabic Naskh (with DOT)", 8);
+    QString secondFamily = "Droid Arabic Naskh (with DOT)";
+#ifdef Q_OS_MAC
+    secondFamily = firstFamily;
+#endif
+    QFont appFont2(secondFamily, 8);
     appFont2.setBold(true);
 
     QHash<QString, QVariant> defaultFonts;
@@ -2679,9 +2498,6 @@ void SaagharWindow::loadTabWidgetSettings()
 
     outlineTree->setTreeFont(Settings::getFromFonts(Settings::OutLineFontColor));
     outlineTree->setTreeColor(Settings::getFromColors(Settings::OutLineFontColor));
-//  QPalette outlinePalette(outlineTree->palette());
-//  outlinePalette.setColor(QPalette::Text, Settings::getFromColors(Settings::OutLineFontColor));
-//  outlineTree->setPalette(outlinePalette);
 }
 
 void SaagharWindow::saveSettings()
@@ -2712,8 +2528,6 @@ void SaagharWindow::saveSettings()
     SaagharWidget::musicPlayer->savePlayerSettings(config);
 #endif
 
-    //config->setValue("Main ToolBar Items", mainToolBarItems.join("|"));
-
     Settings::WRITE("Poem Current View Style", SaagharWidget::CurrentViewStyle);
 
     config->setValue("Max Poets Per Group", SaagharWidget::maxPoetsPerGroup);
@@ -2721,14 +2535,9 @@ void SaagharWindow::saveSettings()
     Settings::WRITE("Background State", SaagharWidget::backgroundImageState);
     Settings::WRITE("Background Path", SaagharWidget::backgroundImagePath);
 
-//  //font
-//  config->setValue("Font Family", SaagharWidget::tableFont.family());
-//  config->setValue( "Font Size", SaagharWidget::tableFont.pointSize());
-
     config->setValue("Show Beyt Numbers", SaagharWidget::showBeytNumbers);
 
     //colors
-    //Settings::WRITE("Text Color", SaagharWidget::textColor);
     Settings::WRITE("Matched Text Color", SaagharWidget::matchedTextColor);
     Settings::WRITE("Background Color", SaagharWidget::backgroundColor);
 
@@ -2739,10 +2548,7 @@ void SaagharWindow::saveSettings()
     Settings::WRITE("MainWindowState", saveState(1));
     Settings::WRITE("Mainwindow Geometry", saveGeometry());
 
-    //Settings::WRITE("SplitterState", splitter->saveState());
-
     QStringList openedTabs;
-    //openedTabs.clear();
     for (int i = 0; i < mainTabWidget->count(); ++i) {
         SaagharWidget* tmp = getSaagharWidget(i);
         if (tmp) {
@@ -2758,14 +2564,11 @@ void SaagharWindow::saveSettings()
         }
     }
     Settings::WRITE("Opened tabs from last session", openedTabs);
-    //config->setValue("openedTabs", openedTabs);
 
     //database path
     config->setValue("DataBase Path", QDir::toNativeSeparators(QGanjoorDbBrowser::dataBasePath.join(";")));
 
     //search options
-    //config->setValue("New Search", SaagharWidget::newSearchFlag);
-    //config->setValue("New Search non-Alphabet", SaagharWidget::newSearchSkipNonAlphabet);
     config->setValue("Max Search Results Per Page", SearchResultWidget::maxItemPerPage);
     config->setValue("SearchNonPagedResults", SearchResultWidget::nonPagedSearch);
     config->setValue("SearchSkipVowelSigns", SearchResultWidget::skipVowelSigns);
@@ -2792,39 +2595,12 @@ void SaagharWindow::saveSettings()
     Settings::WRITE("Keep Downloaded File", QVariant(DataBaseUpdater::keepDownloadedFiles));
     Settings::WRITE("Download Location", DataBaseUpdater::downloadLocation);
 
-//  QHash<int, QPair<QString, qint64> >::const_iterator it = SaagharWidget::mediaInfoCash.constBegin();
-
-//  bool transectionStarted = false;
-
-//  if (it != SaagharWidget::mediaInfoCash.constEnd())
-//  {
-//      transectionStarted = true;
-//      SaagharWidget::ganjoorDataBase->dBConnection.transaction();
-//  }
-
-//  while (it != SaagharWidget::mediaInfoCash.constEnd())
-//  {
-//      SaagharWidget::ganjoorDataBase->setPoemMediaSource(it.key(), it.value().first);
-//      ++it;
-//  }
-
-//  if ( transectionStarted )
-//  {
-//      SaagharWidget::ganjoorDataBase->dBConnection.commit();
-//  }
 
 
     /////////////////////save state////////////////////
     ///////////////////////////////////////////////////
     //variable hash
     config->setValue("VariableHash", Settings::GET_VARIABLES_VARIANT());
-//  QHash<QString, QVariant> vHash = Settings::GET_VARIABLES_VARIANT().toHash();
-//  QHash<QString, QVariant>::const_iterator it = vHash.constBegin();
-//  while (it != vHash.constEnd())
-//  {
-//      config->setValue(it.key(), it.value());
-//      ++it;
-//  }
 }
 
 QString SaagharWindow::tableToString(QTableWidget* table, QString mesraSeparator, QString beytSeparator, int startRow, int startColumn, int endRow, int endColumn)
@@ -2867,8 +2643,6 @@ void SaagharWindow::copySelectedItems()
     }
     QString selectedText = "";
     QList<QTableWidgetSelectionRange> selectedRanges = saagharWidget->tableViewWidget->selectedRanges();
-//  if (selectedRanges.isEmpty())
-//      return;
 
     int row = 0;
 
@@ -2951,21 +2725,6 @@ void SaagharWindow::actionGanjoorSiteClicked()
     }
 }
 
-//void MainWindow::emitReSizeEvent()
-//{
-//  maybe a Qt BUG
-//  before 'QMainWindow::show()' the computation of width of QMainWindow is not correct!
-//  resizeEvent(0);
-//  eventFilter(saagharWidget->tableViewWidget->viewport(), 0);
-//}
-
-//void MainWindow::resizeEvent( QResizeEvent * event )
-//{
-//  saagharWidget->resizeTable(saagharWidget->tableViewWidget);
-//  if (event)
-//      QMainWindow::resizeEvent(event);
-//}
-
 void SaagharWindow::closeEvent(QCloseEvent* event)
 {
     QFontDatabase::removeAllApplicationFonts();
@@ -3041,7 +2800,6 @@ void SaagharWindow::tableCurrentItemChanged(QTableWidgetItem* current, QTableWid
         current->setBackground(QBrush(image));
         //TODO: pageup and page down miss one row!! Qt-4.7.3
         if (saagharWidget && (saagharWidget->currentPoem > 0 || saagharWidget->currentCat > 0)) { //everywhere but home
-            //saagharWidget->tableViewWidget->scrollToItem(current);
             //Fixed BUG: sometimes saagharWidget->tableViewWidget != current->tableWidget()
             current->tableWidget()->scrollToItem(current);
         }
@@ -3051,15 +2809,6 @@ void SaagharWindow::tableCurrentItemChanged(QTableWidgetItem* current, QTableWid
 void SaagharWindow::tableItemPress(QTableWidgetItem* item)
 {
     pressedMouseButton = QApplication::mouseButtons();
-    if (item) {
-        if (pressedMouseButton == Qt::RightButton) {
-            qDebug() << "Press->RightClick";
-        }
-
-        if (item->isSelected()) {
-            qDebug() << "Press->selected";
-        }
-    }
 }
 
 void SaagharWindow::tableItemClick(QTableWidgetItem* item)
@@ -3068,15 +2817,7 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
     if (!senderTable) {
         return;
     }
-    if (item) {
-        if (pressedMouseButton == Qt::RightButton) {
-            qDebug() << "Click->RightClick";
-        }
 
-        if (item->isSelected()) {
-            qDebug() << "Click->selected";
-        }
-    }
     disconnect(senderTable, SIGNAL(itemClicked(QTableWidgetItem*)), 0, 0);
     QStringList itemData = item->data(Qt::UserRole).toString().split("=", QString::SkipEmptyParts);
 
@@ -3094,9 +2835,8 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
 
     //search data
     QStringList searchDataList = item->data(ITEM_SEARCH_DATA).toStringList();
-//  QStringList searchDataList = QStringList();
-    QString searchPhraseData = "";//searchData.toString();
-    QString searchVerseData = "";
+    QString searchPhraseData;
+    QString searchVerseData;
     if (searchDataList.size() == 2) {
         searchPhraseData = searchDataList.at(0);
         searchVerseData = searchDataList.at(1);
@@ -3105,12 +2845,6 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
     if (searchPhraseData.isEmpty()) {
         searchPhraseData = SaagharWidget::lineEditSearchText->text();
     }
-//  if (searchData.isValid() && !searchData.isNull())
-//  {
-//      searchDataList = searchData.toString().split("|", QString::SkipEmptyParts);
-
-//      searchPhraseData = searchDataList.at(0);
-//  }
 
     bool OK = false;
     int idData = itemData.at(1).toInt(&OK);
@@ -3122,7 +2856,6 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
 
     //right click event
     if (pressedMouseButton == Qt::RightButton) {
-        //qDebug() << "tableItemClick-Qt::RightButton";
         skipContextMenu = true;
         newTabForItem(idData, itemData.at(0), noError);
 
@@ -3159,16 +2892,15 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
     saagharWidget->tableViewWidget->setItemDelegate(searchDelegate);
     connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(QString)), searchDelegate, SLOT(keywordChanged(QString)));
 
-    //qDebug() << "emit updateTabsSubMenus()--2306";
-    //resolved by signal SaagharWidget::captionChanged()
+    // resolved by signal SaagharWidget::captionChanged()
     //updateTabsSubMenus();
     connect(senderTable, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(tableItemClick(QTableWidgetItem*)));
 }
 
 void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
 {
-    QSqlDatabase dataBaseObject = QSqlDatabase::database(QGanjoorDbBrowser::dBName/*SaagharWidget::ganjoorDataBase->dBName*/);
-    QFileInfo dataBaseFile(/*QSqlDatabase::database("ganjoor.s3db")*/ dataBaseObject.databaseName());
+    QSqlDatabase dataBaseObject = QSqlDatabase::database(QGanjoorDbBrowser::dBName);
+    QFileInfo dataBaseFile(dataBaseObject.databaseName());
     if (!dataBaseFile.isWritable()) {
         QMessageBox::warning(this, tr("Error!"), tr("You have not write permission to database file, the import procedure can not proceed.\nDataBase Path: %2").arg(dataBaseFile.fileName()));
         if (ok) {
@@ -3178,7 +2910,6 @@ void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
     }
     QList<GanjoorPoet*> poetsConflictList = SaagharWidget::ganjoorDataBase->getConflictingPoets(fileName);
 
-    //SaagharWidget::ganjoorDataBase->dBConnection.transaction();
     dataBaseObject.transaction();
 
     if (!poetsConflictList.isEmpty()) {
@@ -3210,48 +2941,29 @@ void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
     //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
     if (SaagharWidget::ganjoorDataBase->importDataBase(fileName)) {
-        //SaagharWidget::ganjoorDataBase->dBConnection.commit();
-        qDebug() << "before commit";
         dataBaseObject.commit();
-        qDebug() << "after commit1";
         if (ok) {
             *ok = true;
         }
 
         outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
-        qDebug() << "after commit22";
-        //comboBoxSearchRegion->clear();
         selectSearchRange->clear();
-        qDebug() << "after commit333";
         QListWidgetItem* item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
-        qDebug() << "after commit4444";
         QListWidgetItem* titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
-        qDebug() << "after commit55555";
         multiSelectObjectInitialize(selectSearchRange, selectedSearchRange, 2);
-        qDebug() << "after commit666666";
         item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
-        qDebug() << "after commit7777777";
         titleSearchItem->setCheckState(selectedSearchRange.contains("ALL_TITLES") ? Qt::Checked : Qt::Unchecked);
-        qDebug() << "after commit88888888";
         setHomeAsDirty();
-        //update visible region of searchToolBar
-//      bool tmpFlag = labelMaxResultAction->isVisible();
-//      labelMaxResultAction->setVisible(!tmpFlag);
-//      ui->searchToolBar->update();
-//      QApplication::processEvents();
-//      labelMaxResultAction->setVisible(tmpFlag);
     }
     else {
         if (ok) {
             *ok = false;
         }
-        //SaagharWidget::ganjoorDataBase->dBConnection.rollback();
         dataBaseObject.rollback();
         QMessageBox warning(QMessageBox::Warning, tr("Error!"), tr("There are some errors, the import procedure was not completed"), QMessageBox::Ok
                             , QGanjoorDbBrowser::dbUpdater, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
         warning.exec();
     }
-    qDebug() << "end of=" << Q_FUNC_INFO;
     //QApplication::restoreOverrideCursor();
 }
 
@@ -3277,28 +2989,11 @@ void SaagharWindow::toolBarContextMenu(const QPoint &/*pos*/)
     QMenu* contextMenu = new QMenu(0);
     toolBarViewActions(ui->mainToolBar, contextMenu, false);
 
-    //it has not a friendly view!
-//  contextMenu->addSeparator();
-//  QMenu *otherActions =   contextMenu->addMenu(tr("Other Actions"));
-//  QMap<QString, QAction *>::const_iterator actIterator = allActionMap.constBegin();
-//  while (actIterator != allActionMap.constEnd())
-//  {
-//      if (!mainToolBarItems.contains(actIterator.key()))
-//      {
-//          otherActions->addAction(actIterator.value());
-//      }
-//      ++actIterator;
-//  }
-
     QAction* customizeRandom = 0;
     if (mainToolBarItems.contains("actionFaal", Qt::CaseInsensitive) || mainToolBarItems.contains("actionRandom", Qt::CaseInsensitive)) {
         contextMenu->addSeparator();
         customizeRandom = contextMenu->addAction(tr("Customize Faal && Random...")/*, customizeRandomButtons()*/);
     }
-//  else
-//  {
-//      customizeRandom = otherActions->addAction(tr("Customize Faal && Random...")/*, customizeRandomButtons()*/);
-//  }
 
     if (contextMenu->exec(QCursor::pos()) == customizeRandom) {
         customizeRandomDialog();
@@ -3317,18 +3012,12 @@ void SaagharWindow::customizeRandomDialog()
 
     if (randomSetting->exec()) {
         randomSetting->acceptSettings(&randomOpenInNewTab);
-        //randomSetting->selectRandomRange->updateSelectedLists();
         QList<QListWidgetItem*> selectedItems = randomSetting->selectRandomRange->getSelectedItemList();
 
         selectedRandomRange.clear();
         foreach (QListWidgetItem* item, selectedItems) {
             selectedRandomRange << item->data(Qt::UserRole).toString();
         }
-
-        qDebug() << "selectedItems-size=" << selectedItems.size();
-        qDebug() << "STR=" << randomSetting->selectRandomRange->getSelectedString();
-        qDebug() << selectedRandomRange.join("|");
-        qDebug() << "randomOpenInNewTab=" << randomOpenInNewTab;
     }
     delete randomSetting;
     randomSetting = 0;
@@ -3346,7 +3035,6 @@ void SaagharWindow::toolBarViewActions(QToolBar* toolBar, QMenu* menu, bool subM
     QActionGroup* toolBarIconSize = actionInstance("actionToolBarSizeLargeIcon")->actionGroup();
     if (!toolBarIconSize) {
         toolBarIconSize = new QActionGroup(this);
-        qDebug() << "toolBarIconSize CREATED";
     }
     const int normalSize = toolBar->style()->pixelMetric(QStyle::PM_ToolBarIconSize);
     const int largeSize = toolBar->style()->pixelMetric(QStyle::PM_LargeIconSize);
@@ -3375,7 +3063,6 @@ void SaagharWindow::toolBarViewActions(QToolBar* toolBar, QMenu* menu, bool subM
     QActionGroup* toolBarButtonStyle = actionInstance("actionToolBarStyleOnlyIcon")->actionGroup();
     if (!toolBarButtonStyle) {
         toolBarButtonStyle = new QActionGroup(this);
-        qDebug() << "toolBarButtonStyle CREATED";
     }
     actionInstance("actionToolBarStyleOnlyIcon")->setParent(toolBar);
     actionInstance("actionToolBarStyleOnlyIcon")->setActionGroup(toolBarButtonStyle);
@@ -3410,14 +3097,12 @@ void SaagharWindow::toolbarViewChanges(QAction* action)
     }
     QToolBar* toolbar = qobject_cast<QToolBar*>(action->parent());
     if (!toolbar) {
-        qDebug() << "toolbar is not recived";
         return;
     }
 
     bool ok = false;
     int data = action->data().toInt(&ok);
     if (!ok) {
-        qDebug() << "data is nor recived";
         return;
     }
 
@@ -3425,7 +3110,7 @@ void SaagharWindow::toolbarViewChanges(QAction* action)
 
     QString actionId = allActionMap.key(action);
     QString actionType = actionId.contains("Size") ? "SizeType" : "StyleType";
-    qDebug() << "actionType=" << actionType;
+
     if (actionType == "SizeType") {
         toolbar->setIconSize(QSize(data, data));
         Settings::WRITE("MainToolBar Size", actionId);
@@ -3440,23 +3125,14 @@ void SaagharWindow::toolbarViewChanges(QAction* action)
 
 bool SaagharWindow::eventFilter(QObject* receiver, QEvent* event)
 {
-//  if (skipSearchToolBarResize)
-//  {
-//      qDebug() << "skipSearchToolBarResize=TRUE";
-//      skipSearchToolBarResize = false;
-//      return false;
-//  }
-//  else
-//      skipSearchToolBarResize = true;
     QEvent::Type eventType = QEvent::None;
     if (event) {
         eventType = event->type();
     }
 
-    switch (eventType/*event->type()*/) {
+    switch (eventType) {
     case QEvent::Resize :
     case QEvent::None : {
-//          QResizeEvent *resizeEvent = static_cast<QResizeEvent*>(event);
         if (saagharWidget &&
                 saagharWidget->tableViewWidget &&
                 receiver == saagharWidget->tableViewWidget->viewport()) {
@@ -3468,7 +3144,6 @@ bool SaagharWindow::eventFilter(QObject* receiver, QEvent* event)
         QMoveEvent* resEvent = static_cast<QMoveEvent*>(event);
         if (resEvent && receiver == ui->searchToolBar) {
             if (searchToolBarBoxLayout->direction() != QBoxLayout::LeftToRight && ui->searchToolBar->isFloating()) {
-                qDebug() << "isFloating()=" << ui->searchToolBar->isFloating();
                 searchToolBarBoxLayout->setDirection(QBoxLayout::LeftToRight);
                 searchToolBarBoxLayout->setSpacing(4);
                 searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
@@ -3568,7 +3243,6 @@ void SaagharWindow::namedActionTriggered(bool checked)
     disconnect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
 
     QString actionName = action->objectName();
-    //qDebug() << "triggred=" << actionName << "checked=" << checked;
     QString text = action->text();
     text.remove("&");
     if (actionName == "Show Photo at Home") {
@@ -3624,7 +3298,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
         SaagharWidget::PoemViewStyle newPoemViewStyle = (SaagharWidget::PoemViewStyle)action->data().toInt();
         if (SaagharWidget::CurrentViewStyle != newPoemViewStyle) {
             SaagharWidget::CurrentViewStyle = newPoemViewStyle;
-            //setAllAsDirty();
+
             for (int i = 0; i < mainTabWidget->count(); ++i) {
                 SaagharWidget* tmp = getSaagharWidget(i);
                 if (tmp && tmp->currentPoem != 0) {
@@ -3643,7 +3317,6 @@ void SaagharWindow::namedActionTriggered(bool checked)
 
         QtWin::easyBlurUnBlur(QGanjoorDbBrowser::dbUpdater, Settings::READ("UseTransparecy").toBool());
 
-        //connect(QGanjoorDbBrowser::dbUpdater, SIGNAL(installRequest(QString,bool*)), this, SLOT(importDataBase(QString,bool*)));
         QGanjoorDbBrowser::dbUpdater->exec();
     }
     else if (actionName == "actionFaal") {
@@ -3674,10 +3347,9 @@ void SaagharWindow::namedActionTriggered(bool checked)
             else {
                 int randIndex = QGanjoorDbBrowser::getRandomNumber(0, selectedRandomRange.size() - 1);
                 id = SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex).toInt())._CatID;
-                qDebug() << "actionData=" << id << "randIndex=" << randIndex << SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex))._Name;
             }
         }
-        qDebug() << "Random Parent ID=" << id;
+
         openRandomPoem(id, randomOpenInNewTab);
     }
     else if (actionName == "Registeration") {
@@ -3746,7 +3418,6 @@ void SaagharWindow::updateTabsSubMenus()
         connect(tabAction, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
         menuOpenedTabs->addAction(tabAction);
     }
-    qDebug() << "end::updateTabsSubMenus";
 }
 
 void SaagharWindow::actionClosedTabsClicked()
@@ -3765,61 +3436,18 @@ void SaagharWindow::actionClosedTabsClicked()
     else {
         newTabForItem(id, type, true);
     }
-    //QStringList tabViewData = action->data().toString().split("=", QString::SkipEmptyParts);
-//  if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
-//  {
-//      bool Ok = false;
-//      int id = tabViewData.at(1).toInt(&Ok);
-//      if (Ok)
-//          newTabForItem(tabViewData.at(0), id, true);
-//  }
+
     menuClosedTabs->removeAction(action);
 }
 
-//bool MainWindow::dataFromIdentifier(const QString &identifier, QString *type, int *id)
-//{
-//  QStringList tabViewData = identifier.split("=", QString::SkipEmptyParts);
-//  if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID") )
-//  {
-//      bool Ok = false;
-//      int ID = tabViewData.at(1).toInt(&Ok);
-//      if (Ok)
-//      {
-//          if (type) *type = tabViewData.at(0);
-//          if (id) *id = ID;
-//          return true;
-//      }
-//  }
-//  return false;
-//}
-
 void SaagharWindow::setHomeAsDirty()
 {
-    setAsDirty(0);
-//  for (int i = 0; i < mainTabWidget->count(); ++i)
-//  {
-//      SaagharWidget *tmp = getSaagharWidget(i);
-//      if (tmp && tmp->currentCat==0)
-//      {
-//          tmp->setDirty();//needs to be refreshed
-//      }
-//  }
-
-//  if (saagharWidget && saagharWidget->isDirty())
-//      saagharWidget->showHome();
+    setAsDirty(0, -1);
 }
 
 void SaagharWindow::setAllAsDirty()
 {
-    setAsDirty();
-//  //set for refreshed all pages
-//  for (int i = 0; i < mainTabWidget->count(); ++i)
-//  {
-//      SaagharWidget *tmp = getSaagharWidget(i);
-//      if (tmp)
-//          tmp->setDirty();//needs to be refreshed
-//  }
-//  saagharWidget->refresh();
+    setAsDirty(-1, -1);
 }
 
 void SaagharWindow::setAsDirty(int catId, int poemId)//-1 for skip it
@@ -3894,7 +3522,6 @@ void SaagharWindow::setupBookmarkManagerUi()
     bookmarkToolsLayout->addWidget(bookmarkFilter);
     bookmarkToolsLayout->addItem(filterHorizSpacer);
     bookmarkToolsLayout->addWidget(unBookmarkButton);
-    //bookmarkMainLayout->addWidget(bookmarkFilter);
 
     bookmarkMainLayout->addWidget(SaagharWidget::bookmarks);
     bookmarkMainLayout->addLayout(bookmarkToolsLayout);//move to bottom of layout! just we want looks similar other dock widgets!
@@ -4031,46 +3658,33 @@ void SaagharWindow::mediaInfoChanged(const QString &fileName, const QString &tit
     }
 
     QString mediaTitle = title;
-    if (saagharWidget->currentPoem == id) {
-        qDebug() << "SetSource-mediaInfoChanged! saagharWidget->currentPoem == id";
-    }
-    else {
-        qDebug() << "!!!!---SetSource-mediaInfoChanged!!!!!!!!!! saagharWidget->currentPoem != id" << title << id;
-    }
 
-    //if (saagharWidget->currentPoem == id && SaagharWidget::musicPlayer->source() == fileName)
-    qDebug() << "mediaInfoChanged-saagharWidget->currentPoem=" << saagharWidget->currentPoem << "fileName=" << fileName;
     qint64 time = 0;
     if (SaagharWidget::musicPlayer) {
         time = SaagharWidget::musicPlayer->currentTime();
     }
     if (mediaTitle.isEmpty()) {
-        qDebug() << "currentLocationList=" << saagharWidget->currentLocationList;
         mediaTitle = saagharWidget->currentLocationList.join(">");
-        qDebug() << "mediaTitle11=" << mediaTitle;
         if (!saagharWidget->currentPoemTitle.isEmpty()) {
             mediaTitle += ">" + saagharWidget->currentPoemTitle;
-            qDebug() << "mediaTitle22=" << mediaTitle;
         }
     }
     if (SaagharWidget::musicPlayer) {
-        SaagharWidget::musicPlayer->insertToAlbum(id/*saagharWidget->currentPoem*/, fileName, mediaTitle, time);
+        SaagharWidget::musicPlayer->insertToAlbum(id, fileName, mediaTitle, time);
     }
-    //SaagharWidget::mediaInfoCash.insert(saagharWidget->currentPoem,QPair<QString, qint64>(fileName, time));
-    //saagharWidget->pageMetaInfo.mediaFile = fileName;
 }
 #endif
 
 void SaagharWindow::createCustomContextMenu(const QPoint &pos)
 {
-    if (!saagharWidget || !saagharWidget->tableViewWidget/*|| saagharWidget->currentPoem==0*/) {
+    if (!saagharWidget || !saagharWidget->tableViewWidget) {
         return;
     }
     if (skipContextMenu) {
         skipContextMenu = false;
         return;
     }
-    qDebug() << "MainWindow--createCustomContextMenu-Pos=" << pos;
+
     QTableWidgetItem* item = saagharWidget->tableViewWidget->itemAt(pos);
 
     QString cellText = "";
@@ -4085,7 +3699,6 @@ void SaagharWindow::createCustomContextMenu(const QPoint &pos)
     }
 
     QMenu* contextMenu = new QMenu;
-//  QAction *contextAction;
     contextMenu->addAction(tr("Copy Selected Text"));
     contextMenu->addAction(tr("Copy Cell\'s Text"));
     contextMenu->addAction(tr("Copy All"));
@@ -4142,10 +3755,8 @@ void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
             SaagharWidget* tmp = getSaagharWidget(j);
 
             if (tmp && tmp->pageMetaInfo.type == type && tmp->pageMetaInfo.id == id) {
-                qDebug() << "mainTabWidget->setCurrentWidget--Bef";
                 mainTabWidget->setCurrentWidget(tmp->parentWidget());
                 loadAudioForCurrentTab();
-                qDebug() << "mainTabWidget->setCurrentWidget--Aft";
                 return;
             }
         }
@@ -4177,7 +3788,6 @@ void SaagharWindow::checkRegistration(bool forceShow)
         regForm->show();
     }
     else {
-        qDebug() << "formContainer=" << formContainer->objectName();
         QGridLayout* gridLayout = new QGridLayout(formContainer);
         gridLayout->setObjectName(QString::fromUtf8("tabGridLayout"));
         gridLayout->setContentsMargins(0, 0, 0, 0);

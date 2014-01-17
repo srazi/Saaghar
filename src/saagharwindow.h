@@ -169,7 +169,7 @@ private slots:
     void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true, bool unbookmark = true);
     void setHomeAsDirty();
     void setAllAsDirty();
-    void setAsDirty(int catId = -1, int poemId = -1);//-1 for skip it
+    void setAsDirty(int catId, int poemId);//-1 for skip it
     void actionClosedTabsClicked();
     void namedActionTriggered(bool checked = false);
     void toolbarViewChanges(QAction* action);

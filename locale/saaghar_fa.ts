@@ -869,62 +869,62 @@ Error: %1</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="188"/>
+        <location filename="../src/saagharwindow.cpp" line="187"/>
         <source>&lt;i&gt;&lt;b&gt;Loading...&lt;/b&gt;&lt;/i&gt;</source>
         <translation>&lt;i&gt;&lt;b&gt;بارگذاری...&lt;/b&gt;&lt;/i&gt;</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1932"/>
+        <location filename="../src/saagharwindow.cpp" line="1931"/>
         <source>&amp;Two Hemistich Line</source>
         <translation>&amp;جفت لَت</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1944"/>
+        <location filename="../src/saagharwindow.cpp" line="1943"/>
         <source>&amp;One Hemistich Line</source>
         <translation>&amp;یک لَت</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1950"/>
+        <location filename="../src/saagharwindow.cpp" line="1949"/>
         <source>&amp;Stepped Hemistich Line</source>
         <translation>&amp;نردبانی</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1994"/>
+        <location filename="../src/saagharwindow.cpp" line="1993"/>
         <source>&amp;Download From Repositories...</source>
         <translation>&amp;دریافت از مخزن‌ها...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1996"/>
+        <location filename="../src/saagharwindow.cpp" line="1995"/>
         <source>&amp;Registeration...</source>
         <translation>&amp;ثبت‌نام...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3345"/>
+        <location filename="../src/saagharwindow.cpp" line="3344"/>
         <source>&amp;Large Icon</source>
         <translation>نماد &amp;بزرگ</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3360"/>
+        <location filename="../src/saagharwindow.cpp" line="3359"/>
         <source>&amp;Medium Icon</source>
         <translation>نماد &amp;متوسط</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3366"/>
+        <location filename="../src/saagharwindow.cpp" line="3365"/>
         <source>&amp;Small Icon</source>
         <translation>نماد &amp;کوچک</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3374"/>
+        <location filename="../src/saagharwindow.cpp" line="3373"/>
         <source>Only &amp;Icon</source>
         <translation>تنها &amp;نماد</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3385"/>
+        <location filename="../src/saagharwindow.cpp" line="3384"/>
         <source>Only &amp;Text</source>
         <translation>تنها &amp;فرنام</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3391"/>
+        <location filename="../src/saagharwindow.cpp" line="3390"/>
         <source>&amp;Both Text &amp;&amp; Icon</source>
         <translation>نماد &amp;و فرنام</translation>
     </message>
@@ -983,482 +983,12 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>RegisterationForm</name>
     <message>
-        <location filename="../src/registerationform.ui" line="14"/>
-        <source>Registeration Form</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="23"/>
-        <source>Type Of Use</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="29"/>
-        <source>As Normal App.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="36"/>
-        <source>As Research App.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="46"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600; color:#ff0000;&quot;&gt;Your email is not verified, yet!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="59"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;*&lt;/span&gt;Required field.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="66"/>
-        <source>Links</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="72"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;https://github.com/srazi/Saaghar&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;GitHub Repository&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="79"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://saaghar.pozh.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Home Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="89"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://pozh.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Pozh&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="99"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://saaghar.pozh.org/downloads&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Download Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="109"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://groups.google.com/group/saaghar&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Google Group&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="119"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://www.facebook.com/saaghar.p&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Facebook Fan Page&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="129"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://pozh.org/contribution&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Contribution&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="136"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;http://pozh.org/donate&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Donate Now&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="149"/>
-        <source>Info.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="161"/>
-        <location filename="../src/registerationform.cpp" line="197"/>
-        <location filename="../src/registerationform.cpp" line="512"/>
-        <source>Female</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="166"/>
-        <location filename="../src/registerationform.cpp" line="200"/>
-        <location filename="../src/registerationform.cpp" line="509"/>
-        <source>Male</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="190"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;*&lt;/span&gt;Password: &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="203"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;*&lt;/span&gt;Email: &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="226"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;*&lt;/span&gt;Last Name:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="239"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;*&lt;/span&gt;ReType Pass.:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="246"/>
-        <source>Gender: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="259"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;*&lt;/span&gt;First Name:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="279"/>
-        <location filename="../src/registerationform.cpp" line="208"/>
-        <location filename="../src/registerationform.cpp" line="524"/>
-        <source>Student</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="284"/>
-        <location filename="../src/registerationform.cpp" line="211"/>
-        <location filename="../src/registerationform.cpp" line="527"/>
-        <source>BSc</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="289"/>
-        <location filename="../src/registerationform.cpp" line="214"/>
-        <location filename="../src/registerationform.cpp" line="530"/>
-        <source>MSc</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="294"/>
-        <location filename="../src/registerationform.cpp" line="217"/>
-        <location filename="../src/registerationform.cpp" line="533"/>
-        <source>PhD</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="299"/>
-        <location filename="../src/registerationform.ui" line="352"/>
-        <location filename="../src/registerationform.cpp" line="220"/>
-        <location filename="../src/registerationform.cpp" line="242"/>
-        <location filename="../src/registerationform.cpp" line="536"/>
-        <location filename="../src/registerationform.cpp" line="557"/>
-        <source>Other</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="307"/>
-        <source>Education:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="314"/>
-        <source>Field Of Study:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="327"/>
-        <location filename="../src/registerationform.cpp" line="227"/>
-        <location filename="../src/registerationform.cpp" line="542"/>
-        <source>Related to Mathematics</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="332"/>
-        <location filename="../src/registerationform.cpp" line="230"/>
-        <location filename="../src/registerationform.cpp" line="545"/>
-        <source>Related to Computer</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="337"/>
-        <location filename="../src/registerationform.cpp" line="233"/>
-        <location filename="../src/registerationform.cpp" line="548"/>
-        <source>Related to Literature</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="342"/>
-        <location filename="../src/registerationform.cpp" line="236"/>
-        <location filename="../src/registerationform.cpp" line="551"/>
-        <source>Related to Linguistics</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="347"/>
-        <location filename="../src/registerationform.cpp" line="239"/>
-        <location filename="../src/registerationform.cpp" line="554"/>
-        <source>Related to Art</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="363"/>
-        <source>I want to contribute (or a contributer)</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="377"/>
-        <source>Donation</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="384"/>
-        <source>Create New Data Sets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="391"/>
-        <source>Test The Pre-Releases</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="402"/>
-        <source>Programming</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="424"/>
-        <source>Other:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="453"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; color:#ff0000;&quot;&gt;*&lt;/span&gt;I run Saaghar on the following Operating System(s):&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="462"/>
-        <source>Windows</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="469"/>
-        <source>Mac</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="476"/>
-        <source>Linux</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="483"/>
-        <source>Meego</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="490"/>
-        <source>Symbian</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="497"/>
-        <source>Maemo</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="504"/>
-        <source>Win. Mobile</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="511"/>
-        <source>iOS</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="522"/>
-        <source>Android</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="542"/>
-        <source>Other(e.g Linux Dist.):</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="561"/>
-        <source>Ask Later</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="568"/>
-        <source>Never Ask</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="589"/>
-        <location filename="../src/registerationform.cpp" line="737"/>
-        <source>Submit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="624"/>
-        <source>Registered User:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="630"/>
-        <source>If you a rgistered user and want to edit your information or you want your new installation know that you are already registered then please enter your email and password and click button.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="644"/>
-        <source>Email: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="658"/>
-        <source>Password: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="682"/>
-        <source>Get Info.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="692"/>
-        <source>Resend Verification Email</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.ui" line="703"/>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;a href=&quot;#FORGOT_PASSWORD&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Forgotten your password?&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="287"/>
-        <source>This email is present on database, if you want to modify your registeration information please use fields on the top of this form!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="290"/>
-        <location filename="../src/registerationform.cpp" line="666"/>
-        <source>There was some errors!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="292"/>
-        <location filename="../src/registerationform.cpp" line="377"/>
-        <location filename="../src/registerationform.cpp" line="668"/>
-        <location filename="../src/registerationform.cpp" line="730"/>
-        <location filename="../src/registerationform.cpp" line="742"/>
-        <location filename="../src/registerationform.cpp" line="758"/>
         <source>Error</source>
-        <translation type="unfinished">خطا</translation>
+        <translation type="obsolete">خطا</translation>
     </message>
     <message>
-        <location filename="../src/registerationform.cpp" line="303"/>
-        <source>
-Please check your email for verification link!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="308"/>
-        <source>Registered!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="308"/>
-        <source>Successfully registered!%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="311"/>
-        <source>Updated!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="311"/>
-        <source>Successfully updated!%1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="334"/>
-        <source>Re-Submit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="353"/>
-        <source>Get/Send Data...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="353"/>
         <source>Cancel</source>
-        <translation type="unfinished">رد</translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="377"/>
-        <source>There is an error when transfering data to/from remote data base...
-Error: %1</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="418"/>
-        <source>Warning</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="419"/>
-        <source>Do you want to cancel registeration process?
-The registeration&apos;s dialog is accessible from &quot;Help-&gt;Registeration&quot; menu.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="617"/>
-        <source>Verification email was sent!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="617"/>
-        <source>Please check your email for verification link!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="660"/>
-        <source>Wrong password.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="663"/>
-        <source>There was some errors, maybe you entered wrong email.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="730"/>
-        <source>You are not registered!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="742"/>
-        <source>There was an error!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="749"/>
-        <source>Password Reset!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="750"/>
-        <source>By clicking on the &quot;Ok&quot; button the password&apos;s reset link will be send to this email address: %1
-Are you sure?</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="753"/>
-        <source>New Password!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="754"/>
-        <source>The reset link was sent to &quot;%1&quot; for finish reset process you must to click on reset link!&lt;br&gt;New password: &lt;b&gt;%2&lt;/b&gt; you need this after resetting!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/registerationform.cpp" line="758"/>
-        <source>There was an error, the email was not sent!</source>
-        <translation type="unfinished"></translation>
+        <translation type="obsolete">رد</translation>
     </message>
 </context>
 <context>
@@ -1520,20 +1050,20 @@ Are you sure?</source>
         <translation type="obsolete">بستن</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="232"/>
+        <location filename="../src/saagharwindow.cpp" line="231"/>
         <source>Parent Categories</source>
         <translation>دسته‌های والد</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="392"/>
-        <location filename="../src/saagharwindow.cpp" line="849"/>
-        <location filename="../src/saagharwindow.cpp" line="1207"/>
-        <location filename="../src/saagharwindow.cpp" line="1697"/>
+        <location filename="../src/saagharwindow.cpp" line="391"/>
+        <location filename="../src/saagharwindow.cpp" line="848"/>
+        <location filename="../src/saagharwindow.cpp" line="1206"/>
+        <location filename="../src/saagharwindow.cpp" line="1696"/>
         <source>Error</source>
         <translation>خطا</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="392"/>
+        <location filename="../src/saagharwindow.cpp" line="391"/>
         <source>The search phrase can not be empty.</source>
         <translation>عبارت جستجو نمی‌تواند خالی باشد.</translation>
     </message>
@@ -1542,55 +1072,55 @@ Are you sure?</source>
         <translation type="obsolete">برگه‌جاری</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="328"/>
-        <location filename="../src/saagharwindow.cpp" line="636"/>
-        <location filename="../src/saagharwindow.cpp" line="3226"/>
+        <location filename="../src/saagharwindow.cpp" line="327"/>
+        <location filename="../src/saagharwindow.cpp" line="635"/>
+        <location filename="../src/saagharwindow.cpp" line="3225"/>
         <source>All Opened Tab</source>
         <translation>همه برگه‌های باز</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="329"/>
-        <location filename="../src/saagharwindow.cpp" line="637"/>
-        <location filename="../src/saagharwindow.cpp" line="3228"/>
+        <location filename="../src/saagharwindow.cpp" line="328"/>
+        <location filename="../src/saagharwindow.cpp" line="636"/>
+        <location filename="../src/saagharwindow.cpp" line="3227"/>
         <source>Titles</source>
         <translation>سرنویس‌ها</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="470"/>
-        <location filename="../src/saagharwindow.cpp" line="577"/>
+        <location filename="../src/saagharwindow.cpp" line="469"/>
+        <location filename="../src/saagharwindow.cpp" line="576"/>
         <source>All</source>
         <translation>همه</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="499"/>
+        <location filename="../src/saagharwindow.cpp" line="498"/>
         <source>Searching Data Base(subset= %1)...</source>
         <translation>جستجوی پایگاه‌داده(بخش: %1)...</translation>
     </message>
     <message>
+        <location filename="../src/saagharwindow.cpp" line="809"/>
         <location filename="../src/saagharwindow.cpp" line="810"/>
-        <location filename="../src/saagharwindow.cpp" line="811"/>
         <source>Checking for updates... (server number=%1)</source>
         <translation>بررسی برای بروز رسانی‌ها... (خادم شماره=%1)</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="849"/>
+        <location filename="../src/saagharwindow.cpp" line="848"/>
         <source>There is an error when checking for updates...
 Check your internet connection and try again.</source>
         <translation>بروز خطا هنگام بررسی برای بروز رسانی‌ها...
 ارتباط اینترنت خود را بررسی کنید و دوباره سعی کنید.</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1173"/>
+        <location filename="../src/saagharwindow.cpp" line="1172"/>
         <source>Export As</source>
         <translation>رونوشت‌برداری در پیکر</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1207"/>
+        <location filename="../src/saagharwindow.cpp" line="1206"/>
         <source>The file could not be saved. Please check if you have write permission.</source>
         <translation>پرونده نمی‌تواند ذخیره شود. لطفا اجازه دسترسی نوشتن را بررسی کنید.</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1676"/>
+        <location filename="../src/saagharwindow.cpp" line="1675"/>
         <source>About Saaghar</source>
         <translation>درباره ساغر</translation>
     </message>
@@ -1607,32 +1137,32 @@ Check your internet connection and try again.</source>
         <translation type="obsolete">&lt;br /&gt;ساغر نسخه‌ی: %1&lt;br /&gt;&lt;br /&gt;کلیک چپ موشواره: بازکردن در برگه جاری&lt;br /&gt;کلیک راست موشواره: بازکردن در برگه‌‌ی جدید&lt;br /&gt;&lt;br /&gt;میان‌برها:&lt;br /&gt;ساغر از میان‌برهای استاندارد سیستم‌عامل استفاده می‌کند.</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="616"/>
+        <location filename="../src/saagharwindow.cpp" line="615"/>
         <source>Please Notice!</source>
         <translation>توجه!</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1678"/>
+        <location filename="../src/saagharwindow.cpp" line="1677"/>
         <source>&lt;br /&gt;%1 is a persian poem viewer software, it uses &quot;ganjoor.net&quot; database, and some of its initial codes are ported to C++ and Qt from &quot;desktop ganjoor&quot; that is a C# .NET application written by %2.&lt;br /&gt;&lt;br /&gt;Logo Designer: %3&lt;br /&gt;&lt;br /&gt;Author: %4,&lt;br /&gt;&lt;br /&gt;Home Page (English): %5&lt;br /&gt;Home Page (Persian): %6&lt;br /&gt;Mailing List: %7&lt;br /&gt;Saaghar in FaceBook: %8&lt;br /&gt;&lt;br /&gt;Version: %9 - (git-rev: %10)&lt;br /&gt;Build Time: %11</source>
         <translation>&lt;br /&gt;%1 نرم‌افزار شعر پارسی است و از پایگاه‌داده «گنجور» استفاده می‌کند، بخشی ازکدهای اولیه آن تبدیل شده کدهای «گنجور رومیزی» که توسط %2 به زبان C#‎ نوشته شده است، به C++‎ و Qt می‌باشد.&lt;br /&gt;&lt;br /&gt;طراح لوگو: %3&lt;br /&gt;&lt;br /&gt;برنامه‌نویس: %4,&lt;br /&gt;&lt;br /&gt;صفحه خانگی (انگلیسی): %5&lt;br /&gt;صفحه خانگی (فارسی): %6&lt;br /&gt;خبرنامه: %7&lt;br /&gt;ساغر در فیس‌بوک: %8&lt;br /&gt;&lt;br /&gt;نسخه: %9 - (git-rev: %10)&lt;br /&gt;زمان ساخت: %11</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1679"/>
+        <location filename="../src/saagharwindow.cpp" line="1678"/>
         <source>Saaghar</source>
         <translation>ساغر</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1680"/>
+        <location filename="../src/saagharwindow.cpp" line="1679"/>
         <source>Hamid Reza Mohammadi</source>
         <translation>حمیدرضا محمدی</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1681"/>
+        <location filename="../src/saagharwindow.cpp" line="1680"/>
         <source>S. Nasser Alavizadeh</source>
         <translation>سیدناصر علوی‌زاده</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1682"/>
+        <location filename="../src/saagharwindow.cpp" line="1681"/>
         <source>S. Razi Alavizadeh</source>
         <translation>سیدرضی علوی‌زاده</translation>
     </message>
@@ -1641,7 +1171,7 @@ Check your internet connection and try again.</source>
         <translation type="obsolete">این ویژگی در حالت آزمایشی (بتا) قرار دارد، بهتر است که قبل از ادامه از پایگاه‌داده پشتیبان تهیه کنید.</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="619"/>
+        <location filename="../src/saagharwindow.cpp" line="618"/>
         <source>Continue</source>
         <translation>ادامه</translation>
     </message>
@@ -1650,7 +1180,7 @@ Check your internet connection and try again.</source>
         <translation type="obsolete">&lt;i&gt;&lt;b&gt;بارگذاری تنظیمات...&lt;/b&gt;&lt;/i&gt;</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="238"/>
+        <location filename="../src/saagharwindow.cpp" line="237"/>
         <source>&lt;i&gt;&lt;b&gt;Checking for update...&lt;/b&gt;&lt;/i&gt;</source>
         <translation>&lt;i&gt;&lt;b&gt;بررسی برای بروز رسانی‌ها...&lt;/b&gt;&lt;/i&gt;</translation>
     </message>
@@ -1659,14 +1189,14 @@ Check your internet connection and try again.</source>
         <translation type="obsolete">منوی اصلی</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="355"/>
-        <location filename="../src/saagharwindow.cpp" line="1603"/>
+        <location filename="../src/saagharwindow.cpp" line="354"/>
+        <location filename="../src/saagharwindow.cpp" line="1602"/>
         <source>Exit &amp;Full Screen</source>
         <translation>&amp;پنجره‌ای</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="300"/>
-        <location filename="../src/saagharwindow.cpp" line="366"/>
+        <location filename="../src/saagharwindow.cpp" line="299"/>
+        <location filename="../src/saagharwindow.cpp" line="365"/>
         <source>&lt;i&gt;&lt;b&gt;Saaghar is starting...&lt;/b&gt;&lt;/i&gt;</source>
         <translation>&lt;i&gt;&lt;b&gt;ساغر راه‌اندازی می‌شود...&lt;/b&gt;&lt;/i&gt;</translation>
     </message>
@@ -1675,37 +1205,37 @@ Check your internet connection and try again.</source>
         <translation type="obsolete">جستجوی پایگاه‌داده...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="544"/>
+        <location filename="../src/saagharwindow.cpp" line="543"/>
         <source>Current Scope: %1
 No match found.</source>
         <translation>محدوده جاری: %1
 موردی پیدا نشد.</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="601"/>
-        <location filename="../src/saagharwindow.cpp" line="607"/>
+        <location filename="../src/saagharwindow.cpp" line="600"/>
+        <location filename="../src/saagharwindow.cpp" line="606"/>
         <source>Select a name...</source>
         <translation>یک نام انتخاب کنید...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="604"/>
-        <location filename="../src/saagharwindow.cpp" line="610"/>
-        <location filename="../src/saagharwindow.cpp" line="613"/>
+        <location filename="../src/saagharwindow.cpp" line="603"/>
+        <location filename="../src/saagharwindow.cpp" line="609"/>
+        <location filename="../src/saagharwindow.cpp" line="612"/>
         <source>poet&apos;s code=</source>
         <translation>کد شاعر=</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="606"/>
+        <location filename="../src/saagharwindow.cpp" line="605"/>
         <source>Remove Poet</source>
         <translation>کنار نهادن نویسنده</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="606"/>
+        <location filename="../src/saagharwindow.cpp" line="605"/>
         <source>Select a poet name and click on &apos;OK&apos; button, for remove it from database.</source>
         <translation>برای کنار نهادن نویسنده، نام نویسنده را انتخاب کنید و روی دکمه «قبول» کلیک کنید.</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="618"/>
+        <location filename="../src/saagharwindow.cpp" line="617"/>
         <source>Are you sure for removing &quot;%1&quot;, from database?</source>
         <translation>آیا از حذف «%1» از پایگاه‌داده اطمینان داری؟</translation>
     </message>
@@ -1720,32 +1250,32 @@ Error: %1</source>
 خطا: %1</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="881"/>
+        <location filename="../src/saagharwindow.cpp" line="880"/>
         <source>New Saaghar Version Available</source>
         <translation>نسخه جدید ساغر در دسترس است</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="890"/>
+        <location filename="../src/saagharwindow.cpp" line="889"/>
         <source>The Version &lt;strong&gt;%1&lt;/strong&gt; of Saaghar is available for download.&lt;br /&gt;%2&lt;br /&gt;Do you want to browse download page?</source>
         <translation>نسخه &lt;strong&gt;%1&lt;/strong&gt; ساغر برای دانلود در دسترس است.&lt;br /&gt;%2&lt;br /&gt;آیا می‌خواهید به صفحه دانلود بروید؟</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="915"/>
+        <location filename="../src/saagharwindow.cpp" line="914"/>
         <source>Saaghar is up to date</source>
         <translation>ساغر بروز است</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="915"/>
+        <location filename="../src/saagharwindow.cpp" line="914"/>
         <source>There is no new version available. Please check for updates later!</source>
         <translation>نسخه جدیدی در دسترس نیست. لطفا بعدا وجود بروز رسانی را بررسی کنید!</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1108"/>
+        <location filename="../src/saagharwindow.cpp" line="1107"/>
         <source>&lt;i&gt;&lt;b&gt;&quot;%1&quot; was loaded!&lt;/b&gt;&lt;/i&gt;</source>
         <translation>&lt;i&gt;&lt;b&gt;«%1» بارگذاری شد!&lt;/b&gt;&lt;/i&gt;</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1124"/>
+        <location filename="../src/saagharwindow.cpp" line="1123"/>
         <source>Saaghar: </source>
         <translation>ساغر: </translation>
     </message>
@@ -1755,54 +1285,54 @@ Error: %1</source>
         <translation type="obsolete">&lt;br /&gt;%1 نرم‌افزار شعر پارسی است و از پایگاه‌داده «گنجور» استفاده می‌کند، بخشی ازکدهای آن تبدیل شده کدهای «گنجور رومیزی» که به زبان C#‎ می‌باشد و توسط %2 نوشته شده است، به C++‎ و Qt می‌باشد.&lt;br /&gt;&lt;br /&gt;طراح لوگو: %3&lt;br /&gt;&lt;br /&gt;برنامه‌نویس: %4,&lt;br /&gt;&lt;br /&gt;صفحه خانگی: %5&lt;br /&gt;خبرنامه: %6&lt;br /&gt;ساغر در فیس‌بوک: %7&lt;br /&gt;&lt;br /&gt;نسخه: %8&lt;br /&gt;زمان ساخت: %9</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2081"/>
+        <location filename="../src/saagharwindow.cpp" line="2080"/>
         <source>Panels</source>
         <translation>پنل‌ها</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3549"/>
+        <location filename="../src/saagharwindow.cpp" line="3548"/>
         <source>Search &amp;Options...</source>
         <translation>&amp;گزینه‌های جستجو...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3942"/>
+        <location filename="../src/saagharwindow.cpp" line="3941"/>
         <source>&amp;Bookmarks</source>
         <translation>&amp;گنجواره</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="4171"/>
+        <location filename="../src/saagharwindow.cpp" line="4170"/>
         <source>Registeration</source>
         <translation>ثبت‌نام</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1902"/>
+        <location filename="../src/saagharwindow.cpp" line="1901"/>
         <source>&amp;OCR Verification</source>
         <translation>&amp;بازبینی</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1905"/>
-        <location filename="../src/saagharwindow.cpp" line="1921"/>
+        <location filename="../src/saagharwindow.cpp" line="1904"/>
+        <location filename="../src/saagharwindow.cpp" line="1920"/>
         <source>&amp;Redo</source>
         <translation>&amp;چیدن</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1907"/>
-        <location filename="../src/saagharwindow.cpp" line="1922"/>
+        <location filename="../src/saagharwindow.cpp" line="1906"/>
+        <location filename="../src/saagharwindow.cpp" line="1921"/>
         <source>&amp;Undo</source>
         <translation>&amp;وا چیدن</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3946"/>
+        <location filename="../src/saagharwindow.cpp" line="3945"/>
         <source>&amp;Import Ganjoor&apos;s Bookmarks</source>
         <translation>&amp;گرفتن نشان‌ها از گنجور</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1929"/>
+        <location filename="../src/saagharwindow.cpp" line="1928"/>
         <source>Poem View Styles</source>
         <translation>سبک‌های نمایش چامه</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1963"/>
+        <location filename="../src/saagharwindow.cpp" line="1962"/>
         <source>Outline</source>
         <translation>نَسک‌ها</translation>
     </message>
@@ -1815,13 +1345,13 @@ Error: %1</source>
         <translation type="obsolete">زبان رابط کاربری در اجرای دوباره نرم‌افزار تغییر خواهد کرد!</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2698"/>
-        <location filename="../src/saagharwindow.cpp" line="3854"/>
+        <location filename="../src/saagharwindow.cpp" line="2697"/>
+        <location filename="../src/saagharwindow.cpp" line="3853"/>
         <source>Bookmarks</source>
         <translation>گنجواره</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2698"/>
+        <location filename="../src/saagharwindow.cpp" line="2697"/>
         <source>Can not write the bookmark file %1:
 %2.</source>
         <translation>پرونده گنجواره نشان‌ها را نمی‌تواند بنویسد %1:
@@ -1836,24 +1366,24 @@ Error: %1</source>
         <translation type="obsolete">تعیین حداکثر یافته‌ها بر صفحه:</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3296"/>
+        <location filename="../src/saagharwindow.cpp" line="3295"/>
         <source>Customize Faal &amp;&amp; Random...</source>
         <translation>شخصی‌سازی فال و بخت‌آورد...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3314"/>
+        <location filename="../src/saagharwindow.cpp" line="3313"/>
         <source>Current tab&apos;s subsections</source>
         <translation>زیربخش‌های برگه جاری</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3517"/>
-        <location filename="../src/saagharwindow.cpp" line="3520"/>
+        <location filename="../src/saagharwindow.cpp" line="3516"/>
+        <location filename="../src/saagharwindow.cpp" line="3519"/>
         <source>Enter Search Phrase</source>
         <translation>عبارت جستجو</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3518"/>
-        <location filename="../src/saagharwindow.cpp" line="3521"/>
+        <location filename="../src/saagharwindow.cpp" line="3517"/>
+        <location filename="../src/saagharwindow.cpp" line="3520"/>
         <source>Select Search Scope...</source>
         <translation>محدوده جستجو...</translation>
     </message>
@@ -1862,12 +1392,12 @@ Error: %1</source>
         <translation type="obsolete">حداکثر یافته‌ها در هر صفحه...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3552"/>
+        <location filename="../src/saagharwindow.cpp" line="3551"/>
         <source>&amp;Search Tips...</source>
         <translation>&amp;راه‌کارهای جستجو...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2226"/>
+        <location filename="../src/saagharwindow.cpp" line="2225"/>
         <source>&lt;b&gt;Tip1:&lt;/b&gt; Search operators and commands:%5&lt;TR&gt;&lt;TD%3 id=&quot;and-operator&quot;&gt;&lt;b&gt;%1+%2&lt;/b&gt;&lt;/TD&gt;%8&lt;TD%4&gt;Mesras containing both &lt;b&gt;%1&lt;/b&gt; and &lt;b&gt;%2&lt;/b&gt;, &lt;i&gt;at any order&lt;/i&gt;.&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%3&gt;&lt;b&gt;%1**%2&lt;/b&gt;&lt;/TD&gt;%8&lt;TD%4&gt;Mesras containing both &lt;b&gt;%1&lt;/b&gt; and &lt;b&gt;%2&lt;/b&gt;, &lt;i&gt;at this order&lt;/i&gt;.&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%3&gt;&lt;b&gt;%1 %2&lt;/b&gt;&lt;/TD&gt;%8&lt;TD%4&gt;Same as &lt;b&gt;&lt;a href=&quot;#and-operator&quot;&gt;%1+%2&lt;/a&gt;&lt;/b&gt;.&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%3&gt;&lt;b&gt;%1 | %2&lt;/b&gt;&lt;/TD&gt;%8&lt;TD%4&gt;Mesras containing &lt;b&gt;%1&lt;/b&gt; or &lt;b&gt;%2&lt;/b&gt;, or both.&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%3&gt;&lt;b&gt;%1 -%2&lt;/b&gt;&lt;/TD&gt;%8&lt;TD%4&gt;Mesras containing &lt;b&gt;%1&lt;/b&gt;, but not &lt;b&gt;%2&lt;/b&gt;.&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%3&gt;&lt;b&gt;&quot;%1&quot;&lt;/b&gt;&lt;/TD&gt;%8&lt;TD%4&gt;Mesras containing the whole word &lt;b&gt;%1&lt;/b&gt;.&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%3&gt;&lt;b&gt;&quot;%1 %2&quot;&lt;/b&gt;&lt;/TD&gt;%8&lt;TD%4&gt;Mesras containing the whole mixed word &lt;b&gt;%1 %2&lt;/b&gt;.&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%3&gt;&lt;b&gt;Sp*ng&lt;/b&gt;&lt;/TD&gt;%8&lt;TD%4&gt;Mesras containing any phrase started with &lt;b&gt;Sp&lt;/b&gt; and ended with &lt;b&gt;ng&lt;/b&gt;; i.e: Mesras containing &lt;b&gt;Spring&lt;/b&gt; or &lt;b&gt;Spying&lt;/b&gt; or &lt;b&gt;Spoking&lt;/b&gt; or...&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%3&gt;&lt;b&gt;=%1&lt;/b&gt;&lt;/TD&gt;%8&lt;TD%4&gt;Mesras containing the word &lt;b&gt;%1&lt;/b&gt; &lt;i&gt;as Rhyme&lt;/i&gt;.&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%3&gt;&lt;b&gt;==%1&lt;/b&gt;&lt;/TD&gt;%8&lt;TD%4&gt;Mesras containing the word &lt;b&gt;%1&lt;/b&gt; &lt;i&gt;as Radif&lt;/i&gt;.&lt;/TD&gt;&lt;/TR&gt;&lt;/TBODY&gt;&lt;/TABLE&gt;&lt;br /&gt;&lt;br /&gt;&lt;b&gt;Tip2:&lt;/b&gt; All search queries are case insensitive.&lt;br /&gt;&lt;br /&gt;&lt;b&gt;Tip3:&lt;/b&gt; User can use an operator more than once;&lt;br /&gt;i.e: &lt;b&gt;%1+%2+%6&lt;/b&gt;, &lt;b&gt;%1 -%6 -%7&lt;/b&gt;, &lt;b&gt;%1**%2**%7&lt;/b&gt; and &lt;b&gt;S*r*g&lt;/b&gt; are valid search terms.&lt;br /&gt;&lt;br /&gt;&lt;b&gt;Tip4:&lt;/b&gt; User can use operators mixed together;&lt;br /&gt;i.e: &lt;b&gt;&quot;%1&quot;+&quot;%2&quot;+%6&lt;/b&gt;, &lt;b&gt;%1+%2|%6 -%7&lt;/b&gt;, &lt;b&gt;&quot;%1&quot;**&quot;%2&quot;&lt;/b&gt;, &lt;b&gt;S*r*g -Spring&lt;/b&gt; and &lt;b&gt;&quot;Gr*en&quot;&lt;/b&gt; are valid search terms.&lt;br /&gt;&lt;br /&gt;</source>
         <translation>&lt;b&gt;راه‌کار1:&lt;/b&gt; دستورات و عمل‌گرهای جستجوی:%5&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که هردوی &lt;b&gt;%1&lt;/b&gt; و &lt;b&gt;%2&lt;/b&gt; را &lt;i&gt;با هر ترتیبی&lt;/i&gt; شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3 id=&quot;and-operator&quot;&gt;&lt;b&gt;%1+%2&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که هردوی &lt;b&gt;%1&lt;/b&gt; و &lt;b&gt;%2&lt;/b&gt; را دقیقا &lt;i&gt;با همین ترتیب&lt;/i&gt; شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;%1**%2&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;مانند &lt;b&gt;&lt;a href=&quot;#and-operator&quot;&gt;%1+%2&lt;/a&gt;&lt;/b&gt;.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;%1 %2&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که &lt;b&gt;%1&lt;/b&gt; یا &lt;b&gt;%2&lt;/b&gt; و یا هردو را شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;%1 | %2&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که شامل &lt;b&gt;%1&lt;/b&gt;می‌شوند اما  &lt;b&gt;%2&lt;/b&gt; را شامل نمی‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;%1 -%2&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که عین کلمه &lt;b&gt;%1&lt;/b&gt; را شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;&quot;%1&quot;&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که عین کلمه مرکب &lt;b&gt;%1 %2&lt;/b&gt; را شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;&quot;%1 %2&quot;&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که هر عبارتی که با &lt;b&gt;به&lt;/b&gt; شروع و با &lt;b&gt;ان&lt;/b&gt; تمام می‌شوند، شامل می‌شود؛ به‌عنوان مثال: لَت‌هایی که &lt;b&gt;بهاران&lt;/b&gt; یا &lt;b&gt;بهشتیان&lt;/b&gt; یا &lt;b&gt;برادران&lt;/b&gt; یا... را شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;به*ان&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt; لَت‌های &lt;i&gt;هم‌قافیه&lt;/i&gt; با &lt;b&gt;%1&lt;/b&gt;.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;=%1&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt; لَت‌های &lt;i&gt;هم‌ردیف&lt;/i&gt; با &lt;b&gt;%1&lt;/b&gt;.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;==%1&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;/TBODY&gt;&lt;/TABLE&gt;&lt;br /&gt;&lt;br /&gt;&lt;b&gt;راه‌کار2:&lt;/b&gt; همه جستارها بصورت غیرحساس به حروف بزرگ و کوچک به انجام می‌رسند.(تنها در انگلیسی)&lt;br /&gt;&lt;br /&gt;&lt;b&gt;راه‌کار3:&lt;/b&gt; کاربر می‌تواند یک عملگر را بیشتر از یک‌بار به کار ببرد؛&lt;br /&gt;به‌عنوان مثال: &lt;b&gt;%1+%2+%6&lt;/b&gt;، &lt;b&gt;%1 -%6 -%7&lt;/b&gt;، &lt;b&gt;%1**%2**%7&lt;/b&gt; و &lt;b&gt;ب*ا*ن&lt;/b&gt; عبارات جستجوی معتبری هستند.&lt;br /&gt;&lt;br /&gt;&lt;b&gt;راه‌کار4:&lt;/b&gt; کاربر می‌تواند عملگرها را بصورت همراه با هم به‌کار ببرد؛&lt;br /&gt;به‌عنوان مثال: &lt;b&gt;&quot;%1&quot;+&quot;%2&quot;+%6&lt;/b&gt;، &lt;b&gt;%1+%2|%6 -%7&lt;/b&gt;، &lt;b&gt;&quot;%1&quot;**&quot;%2&quot;&lt;/b&gt;، &lt;b&gt;ب*ا*ن -بهاران&lt;/b&gt; و &lt;b&gt;&quot;س*ز&quot;&lt;/b&gt; عبارات جستجوی معتبری هستند.&lt;br /&gt;&lt;br /&gt;</translation>
     </message>
@@ -1876,38 +1406,38 @@ Error: %1</source>
         <translation type="obsolete">&lt;br /&gt;%1 نرم‌افزار شعر پارسی است و از پایگاه‌داده «گنجور» استفاده می‌کند، بخشی ازکدهای آن تبدیل شده کدهای «گنجور رومیزی» که به زبان C#‎ می‌باشد و توسط %2 نوشته شده است، به C++‎ و Qt می‌باشد.&lt;br /&gt;&lt;br /&gt;طراح لوگو: %3&lt;br /&gt;&lt;br /&gt;برنامه‌نویس: %4,&lt;br /&gt;&lt;br /&gt;صفحه خانگی: %5&lt;br /&gt;خبرنامه: %6&lt;br /&gt;ساغر در فیس‌بوک: %7&lt;br /&gt;&lt;br /&gt;نسخه: %8 - (git-rev: %9)&lt;br /&gt;زمان ساخت: %10</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="4089"/>
-        <location filename="../src/saagharwindow.cpp" line="4105"/>
+        <location filename="../src/saagharwindow.cpp" line="4088"/>
+        <location filename="../src/saagharwindow.cpp" line="4104"/>
         <source>Copy Selected Text</source>
         <translation>رو نگاشت از متن انتخابی</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="4090"/>
-        <location filename="../src/saagharwindow.cpp" line="4108"/>
+        <location filename="../src/saagharwindow.cpp" line="4089"/>
+        <location filename="../src/saagharwindow.cpp" line="4107"/>
         <source>Copy Cell&apos;s Text</source>
         <translation>رو نگاشت از متن سلول</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="4091"/>
-        <location filename="../src/saagharwindow.cpp" line="4113"/>
+        <location filename="../src/saagharwindow.cpp" line="4090"/>
+        <location filename="../src/saagharwindow.cpp" line="4112"/>
         <source>Copy All</source>
         <translation>رو نگاشت از همه</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="4093"/>
-        <location filename="../src/saagharwindow.cpp" line="4117"/>
+        <location filename="../src/saagharwindow.cpp" line="4092"/>
+        <location filename="../src/saagharwindow.cpp" line="4116"/>
         <source>New Tab</source>
         <translation>برگ تازه</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="4094"/>
-        <location filename="../src/saagharwindow.cpp" line="4120"/>
+        <location filename="../src/saagharwindow.cpp" line="4093"/>
+        <location filename="../src/saagharwindow.cpp" line="4119"/>
         <source>Duplicate Tab</source>
         <translation>ایجاد نسخه دوم از برگه</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="4095"/>
-        <location filename="../src/saagharwindow.cpp" line="4123"/>
+        <location filename="../src/saagharwindow.cpp" line="4094"/>
+        <location filename="../src/saagharwindow.cpp" line="4122"/>
         <source>Refresh</source>
         <translation>تازه‌سازی</translation>
     </message>
@@ -1916,74 +1446,74 @@ Error: %1</source>
         <translation type="obsolete">&lt;b&gt;راه‌کار1:&lt;/b&gt; دستورات و عمل‌گرهای جستجوی:%5&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که هردوی &lt;b&gt;%1&lt;/b&gt; و &lt;b&gt;%2&lt;/b&gt; را &lt;i&gt;با هر ترتیبی&lt;/i&gt; شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3 id=&quot;and-operator&quot;&gt;&lt;b&gt;%1+%2&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که هردوی &lt;b&gt;%1&lt;/b&gt; و &lt;b&gt;%2&lt;/b&gt; را دقیقا &lt;i&gt;با همین ترتیب&lt;/i&gt; شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;%1**%2&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;مانند &lt;b&gt;&lt;a href=&quot;#and-operator&quot;&gt;%1+%2&lt;/a&gt;&lt;/b&gt;.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;%1 %2&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که &lt;b&gt;%1&lt;/b&gt; یا &lt;b&gt;%2&lt;/b&gt; و یا هردو را شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;%1 | %2&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که شامل &lt;b&gt;%1&lt;/b&gt;می‌شوند اما  &lt;b&gt;%2&lt;/b&gt; را شامل نمی‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;%1 -%2&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که عین کلمه &lt;b&gt;%1&lt;/b&gt; را شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;&quot;%1&quot;&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که عین کلمه مرکب &lt;b&gt;%1 %2&lt;/b&gt; را شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;&quot;%1 %2&quot;&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;TR&gt;&lt;TD%4&gt;لَت‌هایی که هر عبارتی که با &lt;b&gt;به&lt;/b&gt; شروع و با &lt;b&gt;ان&lt;/b&gt; تمام می‌شوند، شامل می‌شود؛ به‌عنوان مثال: لَت‌هایی که &lt;b&gt;بهاران&lt;/b&gt; یا &lt;b&gt;بهشتیان&lt;/b&gt; یا &lt;b&gt;برادران&lt;/b&gt; یا... را شامل می‌شوند.&lt;/TD&gt;%8&lt;TD%3&gt;&lt;b&gt;به*ان&lt;/b&gt;&lt;/TD&gt;&lt;/TR&gt;&lt;/TBODY&gt;&lt;/TABLE&gt;&lt;br /&gt;&lt;br /&gt;&lt;b&gt;راه‌کار2:&lt;/b&gt; همه جستارها بصورت غیرحساس به حروف بزرگ و کوچک به انجام می‌رسند.(فقط انگلیسی)&lt;br /&gt;&lt;br /&gt;&lt;b&gt;راه‌کار3:&lt;/b&gt; کاربر می‌تواند یک عملگر را بیشتر از یک‌بار به کار ببرد؛&lt;br /&gt;به‌عنوان مثال: &lt;b&gt;%1+%2+%6&lt;/b&gt;، &lt;b&gt;%1 -%6 -%7&lt;/b&gt;، &lt;b&gt;%1**%2**%7&lt;/b&gt; و &lt;b&gt;ب*ا*ن&lt;/b&gt; عبارات جستجوی معتبری هستند.&lt;br /&gt;&lt;br /&gt;&lt;b&gt;راه‌کار4:&lt;/b&gt; کاربر می‌تواند عملگرها را بصورت همراه با هم به‌کار ببرد؛&lt;br /&gt;به‌عنوان مثال: &lt;b&gt;&quot;%1&quot;+&quot;%2&quot;+%6&lt;/b&gt;، &lt;b&gt;%1+%2|%6 -%7&lt;/b&gt;، &lt;b&gt;&quot;%1&quot;**&quot;%2&quot;&lt;/b&gt;، &lt;b&gt;ب*ا*ن -بهاران&lt;/b&gt; و &lt;b&gt;&quot;س*ز&quot;&lt;/b&gt; عبارات جستجوی معتبری هستند.&lt;br /&gt;&lt;br /&gt;</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2245"/>
+        <location filename="../src/saagharwindow.cpp" line="2244"/>
         <source>Spring</source>
         <translation>بهار</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2245"/>
+        <location filename="../src/saagharwindow.cpp" line="2244"/>
         <source>Flower</source>
         <translation>گل</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2245"/>
+        <location filename="../src/saagharwindow.cpp" line="2244"/>
         <source> ALIGN=CENTER</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2245"/>
+        <location filename="../src/saagharwindow.cpp" line="2244"/>
         <source> ALIGN=Left</source>
         <translation> ALIGN=Right</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2246"/>
+        <location filename="../src/saagharwindow.cpp" line="2245"/>
         <source>Rain</source>
         <translation>باران</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2246"/>
+        <location filename="../src/saagharwindow.cpp" line="2245"/>
         <source>Sunny</source>
         <translation>آفتابی</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2246"/>
+        <location filename="../src/saagharwindow.cpp" line="2245"/>
         <source>&lt;TABLE DIR=LTR FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0&gt;&lt;TBODY&gt;</source>
         <translation>&lt;TABLE DIR=RTL FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0&gt;&lt;TBODY&gt;</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2247"/>
+        <location filename="../src/saagharwindow.cpp" line="2246"/>
         <source>&lt;TD  ALIGN=Left&gt;:&lt;/TD&gt;</source>
         <translation>&lt;TD  ALIGN=Right&gt;:&lt;/TD&gt;</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2248"/>
+        <location filename="../src/saagharwindow.cpp" line="2247"/>
         <source>Search Tips...</source>
         <translation>راه‌کارهای جستجو...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2540"/>
+        <location filename="../src/saagharwindow.cpp" line="2539"/>
         <source>Some of changes are applied after relaunch!</source>
         <translation>برخی از تغییرات بعد از باز آغاز اعمال خواهند شد!</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3875"/>
+        <location filename="../src/saagharwindow.cpp" line="3874"/>
         <source>Filter:</source>
         <translation>پرویزن:</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3879"/>
-        <location filename="../src/saagharwindow.cpp" line="3881"/>
+        <location filename="../src/saagharwindow.cpp" line="3878"/>
+        <location filename="../src/saagharwindow.cpp" line="3880"/>
         <source>Filter</source>
         <translation>پرویزن</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3964"/>
+        <location filename="../src/saagharwindow.cpp" line="3963"/>
         <source>Bookmarking system was disabled, something going wrong with writing or reading from bookmarks file:
 %1</source>
         <translation>بخش نشان‌ها غیرفعال شد، اشکالی در خواندن یا نوشتن فایل نشان‌ها وجود دارد: %1</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3974"/>
+        <location filename="../src/saagharwindow.cpp" line="3973"/>
         <source>Verses</source>
         <translation>چامه‌ها</translation>
     </message>
@@ -2001,12 +1531,12 @@ Error: %1</source>
         <translation type="obsolete">&lt;a href=&quot;http://www.phototak.com/&quot;&gt;سیدناصر علوی‌زاده&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1697"/>
+        <location filename="../src/saagharwindow.cpp" line="1696"/>
         <source>Help file not found!</source>
         <translation>پرونده راهنما یافت نمی‌شود!</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1725"/>
+        <location filename="../src/saagharwindow.cpp" line="1724"/>
         <source>Browse for a new set</source>
         <translation>گزیدن نَسک تازه</translation>
     </message>
@@ -2019,89 +1549,89 @@ Error: %1</source>
         <translation type="obsolete">نادیده گرفتن نویسه‌های &amp;غیر-الفبایی</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1797"/>
+        <location filename="../src/saagharwindow.cpp" line="1796"/>
         <source>&amp;File</source>
         <translation>&amp;پرونده</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1801"/>
+        <location filename="../src/saagharwindow.cpp" line="1800"/>
         <source>&amp;Opened Tabs</source>
         <translation>برگه‌های با&amp;زشده</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1803"/>
+        <location filename="../src/saagharwindow.cpp" line="1802"/>
         <source>&amp;Closed Tabs</source>
         <translation>برگه‌های ب&amp;سته‌شده</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1806"/>
+        <location filename="../src/saagharwindow.cpp" line="1805"/>
         <source>&amp;Navigation</source>
         <translation>&amp;ناوبری</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1808"/>
+        <location filename="../src/saagharwindow.cpp" line="1807"/>
         <source>&amp;View</source>
         <translation>ن&amp;ما</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1811"/>
+        <location filename="../src/saagharwindow.cpp" line="1810"/>
         <source>&amp;Tools</source>
         <translation>&amp;ابزارها</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1813"/>
+        <location filename="../src/saagharwindow.cpp" line="1812"/>
         <source>&amp;Help</source>
         <translation>&amp;راهنما</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1822"/>
+        <location filename="../src/saagharwindow.cpp" line="1821"/>
         <source>&amp;Home</source>
         <translation>&amp;خانه</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1825"/>
-        <location filename="../src/saagharwindow.cpp" line="1829"/>
+        <location filename="../src/saagharwindow.cpp" line="1824"/>
+        <location filename="../src/saagharwindow.cpp" line="1828"/>
         <source>&amp;Previous</source>
         <translation>&amp;پیشین</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1826"/>
-        <location filename="../src/saagharwindow.cpp" line="1830"/>
+        <location filename="../src/saagharwindow.cpp" line="1825"/>
+        <location filename="../src/saagharwindow.cpp" line="1829"/>
         <source>&amp;Next</source>
         <translation>&amp;پسین</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1833"/>
+        <location filename="../src/saagharwindow.cpp" line="1832"/>
         <source>&amp;Copy</source>
         <translation>&amp;رو نگاشت</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1883"/>
+        <location filename="../src/saagharwindow.cpp" line="1882"/>
         <source>Check for &amp;Updates</source>
         <translation>بررسی برای &amp;بروز رسانی‌ها</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1886"/>
+        <location filename="../src/saagharwindow.cpp" line="1885"/>
         <source>&amp;Show Photo at Home</source>
         <translation>&amp;نمایش نگاره‌ها در برگ نخست</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1889"/>
+        <location filename="../src/saagharwindow.cpp" line="1888"/>
         <source>&amp;Lock ToolBars</source>
         <translation>&amp;ایستایی  نوار ابزارها</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2065"/>
+        <location filename="../src/saagharwindow.cpp" line="2064"/>
         <source>ToolBars</source>
         <translation>نوار ابزارها</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2540"/>
+        <location filename="../src/saagharwindow.cpp" line="2539"/>
         <source>Need to Relaunch!</source>
         <translation>باز آغازی نیاز است!</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3173"/>
+        <location filename="../src/saagharwindow.cpp" line="3172"/>
         <source>You have not write permission to database file, the import procedure can not proceed.
 DataBase Path: %2</source>
         <translation>به پرونده پایگاه‌داده دسترسی نوشتنی ندارید، فرایند افزودن نَسک تازه نمی‌تواند ادامه پیدا کند.
@@ -2112,8 +1642,8 @@ DataBase Path: %2</source>
         <translation type="obsolete">به پرونده پایگاه‌داده دسترسی نوشتنی ندارید، فرایند افزودن نَسک تازه نمی‌تواند ادامه پیدا کند.</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3186"/>
-        <location filename="../src/saagharwindow.cpp" line="3964"/>
+        <location filename="../src/saagharwindow.cpp" line="3185"/>
+        <location filename="../src/saagharwindow.cpp" line="3963"/>
         <source>Warning!</source>
         <translation>هشدار!‏</translation>
     </message>
@@ -2122,13 +1652,13 @@ DataBase Path: %2</source>
         <translation type="obsolete">بخش‌هایی از نَسک تازه در پایگاه‌داده نصب شده موجودند.</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3189"/>
+        <location filename="../src/saagharwindow.cpp" line="3188"/>
         <source>These poets are present in installed database:
 </source>
         <translation>سخن‌سراهایی که در پایگاه‌داده فعلی موجودند:</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3250"/>
+        <location filename="../src/saagharwindow.cpp" line="3249"/>
         <source>There are some errors, the import procedure was not completed</source>
         <translation>خطایی رخ داده است، فرایند افزودن نَسک تازه کامل نشد</translation>
     </message>
@@ -2137,111 +1667,111 @@ DataBase Path: %2</source>
         <translation type="obsolete">&amp;جستجو</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1840"/>
+        <location filename="../src/saagharwindow.cpp" line="1839"/>
         <source>S&amp;ettings</source>
         <translation>&amp;سامانِش</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1842"/>
+        <location filename="../src/saagharwindow.cpp" line="1841"/>
         <source>View in &quot;&amp;ganjoor.net&quot;</source>
         <translation>بررسی در تارنمای &amp;گنجور</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1844"/>
+        <location filename="../src/saagharwindow.cpp" line="1843"/>
         <source>E&amp;xit</source>
         <translation>&amp;خروج</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1847"/>
+        <location filename="../src/saagharwindow.cpp" line="1846"/>
         <source>New &amp;Tab</source>
         <translation>&amp;برگ تازه</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1849"/>
+        <location filename="../src/saagharwindow.cpp" line="1848"/>
         <source>&amp;New Window</source>
         <translation>&amp;پنجره جدید</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1851"/>
+        <location filename="../src/saagharwindow.cpp" line="1850"/>
         <source>&amp;About</source>
         <translation>&amp;درباره</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1853"/>
+        <location filename="../src/saagharwindow.cpp" line="1852"/>
         <source>About &amp;Qt</source>
         <translation>درباره &amp;کیوت</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1855"/>
+        <location filename="../src/saagharwindow.cpp" line="1854"/>
         <source>&amp;Faal</source>
         <translation>&amp;فال</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1857"/>
+        <location filename="../src/saagharwindow.cpp" line="1856"/>
         <source>&amp;Print...</source>
         <translation>&amp;چاپ...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1859"/>
+        <location filename="../src/saagharwindow.cpp" line="1858"/>
         <source>Print Pre&amp;view...</source>
         <translation>پیش‌&amp;نمایش چاپ...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1861"/>
+        <location filename="../src/saagharwindow.cpp" line="1860"/>
         <source>&amp;Export As...</source>
         <translation>&amp;رونوشت‌برداری در پیکر...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1863"/>
+        <location filename="../src/saagharwindow.cpp" line="1862"/>
         <source>Exp&amp;ort As PDF...</source>
         <translation>رونوشت‌برداری در پیکر پی‌دی‌ا&amp;ف ...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1865"/>
+        <location filename="../src/saagharwindow.cpp" line="1864"/>
         <source>&amp;Help Contents...</source>
         <translation>&amp;راهنما...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1867"/>
+        <location filename="../src/saagharwindow.cpp" line="1866"/>
         <source>&amp;Close Tab</source>
         <translation>بستن برگ&amp;ه</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1869"/>
+        <location filename="../src/saagharwindow.cpp" line="1868"/>
         <source>&amp;Random</source>
         <translation>&amp;بخت‌آورد</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1872"/>
+        <location filename="../src/saagharwindow.cpp" line="1871"/>
         <source>Insert New &amp;Set...</source>
         <translation>افزودن &amp;نَسک تازه...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="1874"/>
+        <location filename="../src/saagharwindow.cpp" line="1873"/>
         <source>&amp;Remove Poet...</source>
         <translation>کنار نهادن &amp;نویسنده...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="360"/>
-        <location filename="../src/saagharwindow.cpp" line="1611"/>
-        <location filename="../src/saagharwindow.cpp" line="1876"/>
+        <location filename="../src/saagharwindow.cpp" line="359"/>
+        <location filename="../src/saagharwindow.cpp" line="1610"/>
+        <location filename="../src/saagharwindow.cpp" line="1875"/>
         <source>&amp;Full Screen</source>
         <translation>&amp;سراسر نما</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="160"/>
+        <location filename="../src/saagharwindow.cpp" line="159"/>
         <source>Audio Player</source>
         <translation>پخش کننده صدا</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2947"/>
-        <location filename="../src/saagharwindow.cpp" line="3173"/>
-        <location filename="../src/saagharwindow.cpp" line="3250"/>
+        <location filename="../src/saagharwindow.cpp" line="2946"/>
+        <location filename="../src/saagharwindow.cpp" line="3172"/>
+        <location filename="../src/saagharwindow.cpp" line="3249"/>
         <source>Error!</source>
         <translation>خطا!</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="2947"/>
+        <location filename="../src/saagharwindow.cpp" line="2946"/>
         <source>There is no equivalent page there at ganjoor website.</source>
         <translation>صفحه متناظر در تارنمای گنجور وحود ندارد.</translation>
     </message>
@@ -2250,7 +1780,7 @@ DataBase Path: %2</source>
         <translation type="obsolete">آماده‌سازی جدول یافته‌ها...</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="811"/>
+        <location filename="../src/saagharwindow.cpp" line="810"/>
         <source>Cancel</source>
         <translation>رد</translation>
     </message>
@@ -2259,7 +1789,7 @@ DataBase Path: %2</source>
         <translation type="obsolete">موردی یافت نشد.</translation>
     </message>
     <message>
-        <location filename="../src/saagharwindow.cpp" line="3188"/>
+        <location filename="../src/saagharwindow.cpp" line="3187"/>
         <source>There are some conflict with your installed database. If you continue, these poets will be removed!</source>
         <translation>بخش‌هایی از نَسک تازه در پایگاه‌داده نصب شده موجودند. اگر ادامه دهید سخن‌سرایانی که این بخش‌ها را دربرمی‌گیرند از پایگاه‌داده فعلی حذف خواهند شد!</translation>
     </message>
