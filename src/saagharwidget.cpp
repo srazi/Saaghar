@@ -1771,6 +1771,13 @@ QTextEdit* SaagharWidget::createItemForLongText(int row, int column, const QStri
     para->setTextInteractionFlags(Qt::TextBrowserInteraction/*Qt::NoTextInteraction*/);
     para->setText(text);
     para->setLayoutDirection(text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight);
+    QTextCursor tc = para->textCursor();
+    tc.select(QTextCursor::Document);
+    QTextBlockFormat tBF = tc.blockFormat();
+    tBF.setAlignment(Qt::AlignJustify);
+    tc.setBlockFormat(tBF);
+    tc.clearSelection();
+    para->setTextCursor(tc);
     //para->setAttribute(Qt::WA_TransparentForMouseEvents, true);
     //para->setAttribute(Qt::WA_NoMousePropagation, true);
     //para->setMouseTracking(false);
