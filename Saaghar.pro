@@ -38,6 +38,7 @@ win32 {
 win32-msvc*{
     DEFINES += D_MSVC_CC
     #QTPLUGIN += qsqlite
+    LIBS += -lzdll
 }
 
 win32-g++{
@@ -45,8 +46,6 @@ win32-g++{
 }
     target.path = Saaghar-Win
     RESOURCES_PATH = Saaghar-Win
-
-LIBS += -lzdll
 
 !static {
     ##shared libs
@@ -90,14 +89,13 @@ else {
 }
 
 mac {
-    CONFIG += link_prl x86
-    QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.5
+## Should be removed?
+#    CONFIG += link_prl x86
+#    QMAKE_MAC_SDK=/Developer/SDKs/MacOSX10.5.sdk
+#    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.5
 
     target.path = /Applications
     RESOURCES_PATH = Contents/Resources
-
-#    DEFINES += NO_PHONON_LIB
 }
 
 

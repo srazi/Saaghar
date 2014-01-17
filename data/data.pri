@@ -67,7 +67,6 @@ poetsImage.files = \
     $$PWD/poets_images/504.png \
     $$PWD/poets_images/505.png \
     $$PWD/poets_images/6.png \
-    $$PWD/poets_images/600.png \
     $$PWD/poets_images/602.png \
     $$PWD/poets_images/7.png \
     $$PWD/poets_images/8.png \
@@ -77,7 +76,14 @@ poetsImage.files = \
     $$PWD/poets_images/50.png \
     $$PWD/poets_images/506.png \
     $$PWD/poets_images/51.png \
-    $$PWD/poets_images/610.png
+    $$PWD/poets_images/615.png \
+    $$PWD/poets_images/52.png \
+    $$PWD/poets_images/53.png \
+    $$PWD/poets_images/54.png \
+    $$PWD/poets_images/56.png \
+    $$PWD/poets_images/512.png \
+    $$PWD/poets_images/514.png \
+    $$PWD/poets_images/50001.png
 
 backgrounds.path = $${RESOURCES_PATH}/themes/backgrounds
 backgrounds.files = \

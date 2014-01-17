@@ -2114,9 +2114,13 @@ QString QGanjoorDbBrowser::getLongPathName(const QString &fileName)
     }
 #else
     DWORD  retval = 0;
-    //BOOL   success;
+#ifdef D_MSVC_CC
     TCHAR  bufLongFileName[BUFSIZE] = TEXT("");
     TCHAR  bufFileName[BUFSIZE] = TEXT("");
+#else
+    TCHAR  bufLongFileName[BUFSIZE] = TEXT(L"");
+    TCHAR  bufFileName[BUFSIZE] = TEXT(L"");
+#endif
     //TCHAR** lppPart={NULL};
 
     //QString tmp(QDir::tempPath());
