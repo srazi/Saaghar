@@ -761,7 +761,7 @@ void SaagharWindow::checkForUpdates()
         }
         else {
             updateProgress.setParent(0);
-            updateProgress.setMinimumDuration(5000);
+            updateProgress.setMinimumDuration(1000);
         }
 
         updateProgress.setWindowModality(Qt::WindowModal);
@@ -792,11 +792,12 @@ void SaagharWindow::checkForUpdates()
     }
 
     if (error) {
-        showStatusText("!QExtendedSplashScreenCommands:HIDE");
-        QMessageBox criticalError(QMessageBox::Critical, tr("Error"), tr("There is an error when checking for updates...\nCheck your internet connection and try again."), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
-        criticalError.exec();
-        if (!action) {
-            showStatusText("!QExtendedSplashScreenCommands:SHOW");
+        if (action || !Settings::READ("Display Splash Screen", true).toBool()) {
+            QMessageBox criticalError(QMessageBox::Critical, tr("Error"), tr("There is an error when checking for updates...\nCheck your internet connection and try again."), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+            criticalError.exec();
+        }
+        else {
+            showStatusText("<p style=\"color: red;\"><i><b>" + tr("Error when checking for update!") + "</b></i></p>");
         }
         return;
     }
@@ -858,8 +859,11 @@ void SaagharWindow::checkForUpdates()
         }
     }
     else {
-        if (action) {
+        if (action || !Settings::READ("Display Splash Screen", true).toBool()) {
             QMessageBox::information(this, tr("Saaghar is up to date"), tr("There is no new version available. Please check for updates later!"));
+        }
+        else {
+            showStatusText("<i><b>" + tr("Saaghar is up to date") + "</b></i>");
         }
     }
 }
