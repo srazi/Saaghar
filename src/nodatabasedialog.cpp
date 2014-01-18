@@ -67,7 +67,7 @@ void NoDataBaseDialog::adjustSizeSlot()
     adjustSize();
 }
 
-void NoDataBaseDialog::showEvent(QShowEvent *ev)
+void NoDataBaseDialog::showEvent(QShowEvent* ev)
 {
     QDialog::showEvent(ev);
 

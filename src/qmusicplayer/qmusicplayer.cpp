@@ -1043,9 +1043,9 @@ void QMusicPlayer::saveAlbum(const QString &fileName, const QString &albumName, 
                               "#PATH!%4\n"
                               "#EXTINF:0,%1\n"
                               "%5\n")
-                .arg(it.value()->TITLE).arg(it.key())
-                .arg(md5sumStr).arg(it.value()->PATH)
-                .arg(relativePath);
+                          .arg(it.value()->TITLE).arg(it.key())
+                          .arg(md5sumStr).arg(it.value()->PATH)
+                          .arg(relativePath);
         albumContent += itemStr;
         ++it;
     }

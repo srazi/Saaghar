@@ -1364,7 +1364,7 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                     break;
                 }
                 tableBody += QString("\n<TR>\n<TD %5 HEIGHT=%1 WIDTH=%2 ALIGN=%3>%4</TD>\n</TR>\n").arg(saagharObject->tableViewWidget->rowHeight(qMax(0, row - 1))).arg(saagharObject->tableViewWidget->width()).arg(align).arg(mesraText)
-                        .arg(SaagharWidget::CurrentViewStyle == SaagharWidget::SteppedHemistichLine ? "" : "COLSPAN=3");
+                             .arg(SaagharWidget::CurrentViewStyle == SaagharWidget::SteppedHemistichLine ? "" : "COLSPAN=3");
             }
         }
     }
@@ -1380,13 +1380,13 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                                   "STYLE=\"width: %4; FONT-FAMILY: %5; COLOR: %6; FONT-SIZE: %7; %8;\">\n"
                                   "<COLGROUP>%9</COLGROUP>\n<TBODY>\n%10\n</TBODY>\n"
                                   "</TABLE>\n</BODY>\n</HTML>\n")
-            .arg(curPoem._Title)
-            .arg("CENTER").arg(numberOfCols).arg(totalWidth)
-            .arg(Settings::getFromFonts(Settings::PoemTextFontColor).family())
-            .arg(Settings::getFromColors(Settings::PoemTextFontColor).name())
-            .arg(Settings::getFromFonts(Settings::PoemTextFontColor).pointSize())
-            .arg(Settings::getFromFonts(Settings::PoemTextFontColor).bold() ? "FONT-WEIGHT: bold" : "")
-            .arg(columnGroupFormat).arg(tableBody);
+                          .arg(curPoem._Title)
+                          .arg("CENTER").arg(numberOfCols).arg(totalWidth)
+                          .arg(Settings::getFromFonts(Settings::PoemTextFontColor).family())
+                          .arg(Settings::getFromColors(Settings::PoemTextFontColor).name())
+                          .arg(Settings::getFromFonts(Settings::PoemTextFontColor).pointSize())
+                          .arg(Settings::getFromFonts(Settings::PoemTextFontColor).bold() ? "FONT-WEIGHT: bold" : "")
+                          .arg(columnGroupFormat).arg(tableBody);
 
     return tableAsHTML;
 }
@@ -1818,7 +1818,7 @@ void SaagharWindow::setupUi()
     m_outlineDock->setObjectName("outlineDock");
     m_outlineDock->setWidget(outlineTree);
     m_outlineDock->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
-                               "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
+                                 "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
     addDockWidget(Qt::RightDockWidgetArea, m_outlineDock);
     allActionMap.insert("outlineDockAction", m_outlineDock->toggleViewAction());
     actionInstance("outlineDockAction")->setIcon(QIcon(ICON_PATH + "/outline.png"));
@@ -2028,7 +2028,7 @@ QMenu* SaagharWindow::cornerMenu()
     return m_cornerMenu;
 }
 
-void SaagharWindow::loadAudioForCurrentTab(SaagharWidget *old_saagharWidget)
+void SaagharWindow::loadAudioForCurrentTab(SaagharWidget* old_saagharWidget)
 {
 #ifndef NO_PHONON_LIB
     if (!SaagharWidget::musicPlayer) {
@@ -2244,9 +2244,9 @@ void SaagharWindow::showSettingsDialog()
     m_settingsDialog->ui->checkBoxTransparent->setChecked(Settings::READ("UseTransparecy").toBool());
 
     m_compareSettings = m_settingsDialog->ui->uiLanguageComboBox->currentText() +
-            m_settingsDialog->ui->lineEditDataBasePath->text() +
-            m_settingsDialog->ui->lineEditIconTheme->text() +
-            (m_settingsDialog->ui->checkBoxIconTheme->isChecked() ? "TRUE" : "FALSE");
+                        m_settingsDialog->ui->lineEditDataBasePath->text() +
+                        m_settingsDialog->ui->lineEditIconTheme->text() +
+                        (m_settingsDialog->ui->checkBoxIconTheme->isChecked() ? "TRUE" : "FALSE");
     /************end of initialization************/
 
     if (m_settingsDialog->exec()) {
@@ -2356,9 +2356,9 @@ void SaagharWindow::applySettings()
     setUpdatesEnabled(true);
 
     QString optionsCompare = m_settingsDialog->ui->uiLanguageComboBox->currentText() +
-            m_settingsDialog->ui->lineEditDataBasePath->text() +
-            m_settingsDialog->ui->lineEditIconTheme->text() +
-            (m_settingsDialog->ui->checkBoxIconTheme->isChecked() ? "TRUE" : "FALSE");
+                             m_settingsDialog->ui->lineEditDataBasePath->text() +
+                             m_settingsDialog->ui->lineEditIconTheme->text() +
+                             (m_settingsDialog->ui->checkBoxIconTheme->isChecked() ? "TRUE" : "FALSE");
 
     if (m_compareSettings != optionsCompare) {
         QMessageBox::information(this, tr("Need to Relaunch!"), tr("Some of changes are applied after relaunch!"));
@@ -2415,7 +2415,7 @@ void SaagharWindow::loadGlobalSettings()
     SaagharWidget::backgroundColor = Settings::READ("Background Color", QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
 
     QString firstFamily = QFontDatabase().families().contains("XB Sols") ?
-                "XB Sols" : "Droid Arabic Naskh (with DOT)";
+                          "XB Sols" : "Droid Arabic Naskh (with DOT)";
     QFont appFont1(firstFamily, 18);
     appFont1.setBold(true);
     //The "Droid Arabic Naskh (with DOT)" is an application font
@@ -2736,7 +2736,7 @@ void SaagharWindow::closeEvent(QCloseEvent* event)
 }
 
 #if QT_VERSION >= 0x050000
-void SaagharWindow::paintEvent(QPaintEvent *event)
+void SaagharWindow::paintEvent(QPaintEvent* event)
 {
     if (Settings::READ("UseTransparecy").toBool()) {
         QPainter p(this);

@@ -134,39 +134,18 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* spla
         QString errorString = dBConnection.lastError().text();
 
         dBConnection = QSqlDatabase();
-        qDebug() << __LINE__ << __FUNCTION__;
         QSqlDatabase::removeDatabase(dBName);
 
         NoDataBaseDialog noDataBaseDialog(0, Qt::WindowStaysOnTopHint);
         noDataBaseDialog.ui->pathLabel->setText(tr("Data Base Path:") + " " + sqliteDbCompletePath);
         noDataBaseDialog.ui->errorLabel->setText(tr("Error:") + " " + (errorString.isEmpty() ? tr("No Error!") : errorString));
 
-//      QMessageBox warnDataBaseOpen(0);
-//      warnDataBaseOpen.setWindowTitle(tr("Cannot open Database File!"));
-//      warnDataBaseOpen.setIcon(QMessageBox::Information);
-//      QAbstractButton *browseButton = 0;
-//      QAbstractButton *downloadButton = 0;
-//      if ( errorString.simplified().isEmpty() /*contains("Driver not loaded")*/ )
-//      {
-//          warnDataBaseOpen.setText(tr("Cannot open database file...\nDataBase Path=%1\nSaaghar needs its database for working properly. Press 'OK' if you want to terminate application or press 'Browse' for select a new path for database.").arg(sqliteDbCompletePath));
-//          browseButton = warnDataBaseOpen.addButton(tr("Browse..."), QMessageBox::ActionRole);
-//          downloadButton = warnDataBaseOpen.addButton(tr("Download..."), QMessageBox::ActionRole);
-//      }
-//      else
-//          warnDataBaseOpen.setText(tr("Cannot open database file...\nThere is an error!\nError: %1\nDataBase Path=%2").arg(errorString).arg(sqliteDbCompletePath));
-
-//      warnDataBaseOpen.setStandardButtons(QMessageBox::Ok);
-//      warnDataBaseOpen.setEscapeButton(QMessageBox::Ok);
-//      warnDataBaseOpen.setDefaultButton(QMessageBox::Ok);
-//      warnDataBaseOpen.setWindowFlags(Qt::WindowStaysOnTopHint);
-//      int ret = warnDataBaseOpen.exec();
         QtWin::easyBlurUnBlur(&noDataBaseDialog, Settings::READ("UseTransparecy").toBool());
-        int ret = noDataBaseDialog.exec();
-        if ( /*ret != QMessageBox::Ok &&*/
-            noDataBaseDialog.clickedButton() != noDataBaseDialog.ui->exitPushButton
-            &&
-            errorString.simplified().isEmpty()) {
-            //if (warnDataBaseOpen.clickedButton() == browseButton)
+
+        noDataBaseDialog.exec();
+
+        if (noDataBaseDialog.clickedButton() != noDataBaseDialog.ui->exitPushButton &&
+                errorString.simplified().isEmpty()) {
             if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->selectDataBase) {
                 QString dir = QFileDialog::getExistingDirectory(0, tr("Add Path For Data Base"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
                 if (!dir.isEmpty()) {
@@ -175,9 +154,8 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* spla
                         dir += "/";
                     }
                     dBFile.setFile(dir + "/ganjoor.s3db");
-//                  dBName = getIdForDataBase(dir+"/ganjoor.s3db");
-//                  dBConnection = QSqlDatabase::database(dBName, false);//don't open! we won't it created if not exists
-                    //dBName = dBFile.fileName();
+
+                    //don't open it here!
                     dBName = dir + "/ganjoor.s3db";
                     dBConnection = QSqlDatabase::addDatabase(sqlDriver, dBName);
                     dBConnection.setDatabaseName(dir + "/ganjoor.s3db");
@@ -189,7 +167,6 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* spla
                     exit(1);
                 }
             }
-            //else if (warnDataBaseOpen.clickedButton() == downloadButton)
             else if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromLocal
                      ||
                      noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromRemote) {
@@ -197,8 +174,6 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* spla
                 QFileDialog getDir(0, tr("Select Save Location"), dBFile.absoluteDir().path());
                 getDir.setFileMode(QFileDialog::Directory);
                 getDir.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks /*| QFileDialog::DontUseNativeDialog*/);
-                //getDir.setOptions(getDir.options() & ~QFileDialog::DontUseNativeDialog);
-                //getDir.setLayoutDirection(Qt::LeftToRight);
                 getDir.setAcceptMode(QFileDialog::AcceptOpen);
                 QtWin::easyBlurUnBlur(&getDir, Settings::READ("UseTransparecy").toBool());
                 getDir.exec();
@@ -206,7 +181,7 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* spla
                 if (!getDir.selectedFiles().isEmpty()) {
                     dir = getDir.selectedFiles().at(0);
                 }
-                //QString dir = QFileDialog::getExistingDirectory(0,tr("Select Save Location"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks | QFileDialog::DontUseNativeDialog);
+
                 while (dir.isEmpty() || QFile::exists(dir + "/ganjoor.s3db")) {
                     getDir.exec();
                     if (!getDir.selectedFiles().isEmpty()) {
@@ -220,9 +195,7 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* spla
                     dir += "/";
                 }
                 dBFile.setFile(dir + "/ganjoor.s3db");
-//              dBName = getIdForDataBase(dir+"/ganjoor.s3db");
-//              dBConnection = QSqlDatabase::database(dBName, true);//it doesn't exist, it's created.
-//              dBName = dBFile.fileName();
+
                 dBName = dir + "/ganjoor.s3db";
                 dBConnection = QSqlDatabase::addDatabase(sqlDriver, dBName);
                 dBConnection.setDatabaseName(dir + "/ganjoor.s3db");
@@ -249,15 +222,17 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* spla
     }
 
     dBConnection.close();
-    qDebug() << __LINE__ << __FUNCTION__;
+    QString name = dBConnection.databaseName();
+    dBConnection = QSqlDatabase();
+
+    // use getIdForDataBase for adding database
     QSqlDatabase::removeDatabase(dBName);
-    dBName = getIdForDataBase(dBConnection.databaseName());
+    dBName = getIdForDataBase(name);
     dBConnection = QSqlDatabase::database(dBName, true);
 
-    qDebug() << "dBName=" << dBName;
-
     if (flagSelectNewPath) {
-        QGanjoorDbBrowser::dataBasePath.clear();//in this version Saaghar just use its first search path
+        //in this version Saaghar just use its first search path
+        QGanjoorDbBrowser::dataBasePath.clear();
         QGanjoorDbBrowser::dataBasePath << newPath;
     }
 
@@ -766,7 +741,6 @@ QList<GanjoorPoet*> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
     QString dataBaseID = getIdForDataBase(fileName);
     QSqlDatabase databaseObject = QSqlDatabase::database(dataBaseID);
     if (!databaseObject.open()) {
-        qDebug() << __LINE__ << __FUNCTION__;
         QSqlDatabase::removeDatabase(dataBaseID);
         return poetsInDataBase;
     }
@@ -775,7 +749,6 @@ QList<GanjoorPoet*> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
     QSqlQuery q(databaseObject);
 
     databaseObject.close();
-    qDebug() << __LINE__ << __FUNCTION__;
     QSqlDatabase::removeDatabase(dataBaseID);
 
     return poetsInDataBase;
@@ -946,7 +919,6 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
     {
         QSqlDatabase dataBaseObject = QSqlDatabase::database(connectionID);
         if (!dataBaseObject.open() || !isValid(connectionID)) {
-            qDebug() << __LINE__ << __FUNCTION__;
             QSqlDatabase::removeDatabase(connectionID);
             return false;
         }
@@ -1129,12 +1101,9 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
             }
         }
     }
-    //qDebug() << "BEFORE CLOSE";
-    //dataBaseObject.close();
-    qDebug() << "AFTER CLOSE - BEFORE REMOVE";
-    qDebug() << __LINE__ << __FUNCTION__;
+
     QSqlDatabase::removeDatabase(connectionID);
-    qDebug() << "AFTER REMOVE";
+
     return true;
 }
 

@@ -56,7 +56,7 @@ bool LyricsManager::read(QIODevice* device, const QString &format)
 
     for (int i = 0; i < syncInfoList.count(); ++i) {
         QDomElement e = syncInfoList.at(i).toElement();
-        if(!e.isNull()) {
+        if (!e.isNull()) {
             bool ok;
             qint64 time = e.firstChildElement("AudioMiliseconds").text().toLongLong(&ok);
             int vorder = e.firstChildElement("VerseOrder").text().toInt(&ok);

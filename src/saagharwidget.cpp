@@ -313,30 +313,11 @@ void SaagharWidget::parentCatClicked()
         noError = true;
     }
     processClickedItem("CatID", idData, noError);
-
-//  parentCatButtonData.remove("CATEGORY_ID=");
-//
-//  GanjoorCat category;
-//  category.init(0, 0, "", 0, "");
-//  bool OK = false;
-//  int CatID = parentCatButtonData.toInt(&OK);
-
-//  //qDebug() << "parentCatButtonData=" << parentCatButtonData << "CatID=" << CatID;
-
-//  if (OK && ganjoorDataBase)
-//      category = ganjoorDataBase->getCategory(CatID);
-
-//  clearSaagharWidget();
-//  showCategory(category);
 }
 
 void SaagharWidget::showHome()
 {
     processClickedItem("CatID", 0, true);
-//  GanjoorCat homeCat;
-//  homeCat.init(0, 0, "", 0, "");
-//  clearSaagharWidget();
-//  showCategory(homeCat);
 }
 
 bool SaagharWidget::nextPoem()
@@ -345,8 +326,6 @@ bool SaagharWidget::nextPoem()
         GanjoorPoem poem = ganjoorDataBase->getNextPoem(currentPoem, currentCat);
         if (!poem.isNull()) {
             processClickedItem("PoemID", poem._ID, true);
-//          clearSaagharWidget();
-//          showPoem(poem);
             return true;
         }
     }
@@ -359,8 +338,6 @@ bool SaagharWidget::previousPoem()
         GanjoorPoem poem = ganjoorDataBase->getPreviousPoem(currentPoem, currentCat);
         if (!poem.isNull()) {
             processClickedItem("PoemID", poem._ID, true);
-//          clearSaagharWidget();
-//          showPoem(poem);
             return true;
         }
     }
@@ -606,7 +583,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
             tableViewWidget->setRowCount(1 + subcatsSize + poems.size());
             QTableWidgetItem* catItem = new QTableWidgetItem(""/*itemText*/);
             catItem->setFlags(catsItemFlag);
-            qDebug() << "showCategory";
+
             catItem->setTextAlignment(Qt::AlignJustify);
             catItem->setData(Qt::UserRole, "CatID=" + QString::number(category._ID));
             QString poetPhotoFileName = poetsImagesDir + "/" + QString::number(gPoet._ID) + ".png";;

@@ -56,8 +56,7 @@ public:
         szUncomp(0),
         absolutePath(),
         fileSize(0),
-        lhEntryChecked(false)
-    {
+        lhEntryChecked(false) {
         gpFlag[0] = gpFlag[1] = 0;
         modTime[0] = modTime[1] = 0;
         modDate[0] = modDate[1] = 0;
