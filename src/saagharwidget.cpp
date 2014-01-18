@@ -542,14 +542,13 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
     pageMetaInfo.id = currentCat;
     pageMetaInfo.type = SaagharWidget::CategoryViewerPage;
-    //pageMetaInfo.mediaFile = "";
 
     //new Caption
     currentCaption = (currentCat == 0) ? tr("Home") : ganjoorDataBase->getPoetForCat(currentCat)._Name;//for Tab Title
     if (currentCaption.isEmpty()) {
         currentCaption = currentLocationList.at(0);
     }
-    qDebug() << "emit captionChanged()--392";
+
     emit captionChanged();
     QList<GanjoorCat*> subcats = ganjoorDataBase->getSubCategories(category._ID);
 
@@ -931,11 +930,11 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     if (currentCaption.isEmpty()) {
         currentCaption = currentLocationList.at(0);
     }
-    currentCaption += ":" + poem._Title; //.left(7);
-    qDebug() << "emit captionChanged()--389";
+    currentCaption += ":" + poem._Title;
+
     emit captionChanged();
 
-    //disabling item (0,0)
+    // disabling item at (0,0)
     QTableWidgetItem* flagItem = new QTableWidgetItem("");
     flagItem->setFlags(Qt::NoItemFlags);
     tableViewWidget->setItem(0, 0, flagItem);
@@ -944,23 +943,20 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     QTableWidgetItem* poemTitle = new QTableWidgetItem(QGanjoorDbBrowser::simpleCleanString(poem._Title));
     poemTitle->setFlags(poemsTitleItemFlag);
     poemTitle->setData(Qt::UserRole, "PoemID=" + QString::number(poem._ID));
-    //if (centeredView)
+
     //title is centered by using each PoemViewStyle
     poemTitle->setTextAlignment(Qt::AlignCenter);
-    //else
-    //  poemTitle->setTextAlignment(Qt::AlignLeft|Qt::AlignCenter);
 
     QFont titleFont(Settings::getFromFonts(Settings::TitlesFontColor));
     int textWidth = QFontMetrics(titleFont).boundingRect(poem._Title).width();
     int totalWidth = tableViewWidget->columnWidth(1) + tableViewWidget->columnWidth(2) + tableViewWidget->columnWidth(3);
-    //int numOfRow = textWidth/totalWidth ;
+
     poemTitle->setFont(titleFont);
     poemTitle->setForeground(Settings::getFromColors(Settings::TitlesFontColor));
     tableViewWidget->setItem(0, 1, poemTitle);
     tableViewWidget->setSpan(0, 1, 1, 3);
     tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(titleFont), textWidth, totalWidth));
-    rowSingleHeightMap.insert(0, textWidth/*tableViewWidget->rowHeight(row)*/);
-    ////tableViewWidget->rowHeight(0)+(fontMetric.height()*(numOfRow/*+1*/)));
+    rowSingleHeightMap.insert(0, textWidth);
 
     int row = 1;
 
@@ -973,7 +969,9 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
         maxWidth = poemFontMetric.width(longestHemistiches.value(poem._ID));
     }
     int numberOfVerses = verses.size();
+#ifdef SAAGHAR_DEBUG
     QTime start = QTime::currentTime();
+#endif
     if (justified) {
         if (maxWidth <= 0) {
             QString longest = "";
@@ -993,8 +991,10 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
             }
             longestHemistiches.insert(poem._ID, longest);
         }
-        qDebug() << "JustificationTime=" << QTime::currentTime().msecsTo(start);
+#ifdef SAAGHAR_DEBUG
+        qDebug() << "JustificationTime=" << -QTime::currentTime().msecsTo(start);
         start = QTime::currentTime();
+#endif
     }
 //#endif
 
@@ -1005,7 +1005,6 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
     QStringList bookmarkedVerses("");
     if (SaagharWidget::bookmarks) {
-        qDebug() << "SHOW-POEM-->SaagharWidget::bookmarks";
         bookmarkedVerses = SaagharWidget::bookmarks->bookmarkList("Verses");
     }
 
@@ -1091,27 +1090,11 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
         simplifiedText.remove("\t");
         simplifiedText.remove("\n");
 
-        //move from for scope!!
-//      QStringList bookmarkedVerses("");
-//      if (SaagharWidget::bookmarks)
-//      {
-//          qDebug() << "SHOW-POEM-->SaagharWidget::bookmarks";
-//          bookmarkedVerses = SaagharWidget::bookmarks->bookmarkList("Verses");
-//      }
         QString currentVerseData = QString::number(verses.at(i)->_PoemID) + "|" + QString::number(verses.at(i)->_Order);
         bool verseIsBookmarked = false;
         if (bookmarkedVerses.contains(currentVerseData)) {
-            qDebug() << "SHOW-POEM-->verseIsBookmarked = true";
-            //QMessageBox::information(0,"booooooooook", verseData+verses.at(i)->_Text);
             verseIsBookmarked = true;
         }
-//      else
-//      {
-//          for (int t=0; t<bookmarkedVerses.size(); ++t)
-//          {
-//              qDebug() << "SHOW-POEM-->currentVerseData="<<currentVerseData<<"\n"<<bookmarkedVerses.at(t);
-//          }
-//      }
 
         if (!simplifiedText.isEmpty() && ((verses.at(i)->_Position == Single && !currentVerseText.isEmpty()) ||
                                           verses.at(i)->_Position == Right ||
@@ -1222,8 +1205,9 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     else {
         tableViewWidget->setLayoutDirection(Qt::LeftToRight);
     }
-
-    qDebug() << "end of big for=" << QTime::currentTime().msecsTo(start);
+#ifdef SAAGHAR_DEBUG
+    qDebug() << "end of poem layouting=" << -QTime::currentTime().msecsTo(start);
+#endif
 
     //a trick for removing last empty row withoout QTextEdit widget
     if (!tableViewWidget->cellWidget(tableViewWidget->rowCount() - 1, 1)) {
@@ -1258,28 +1242,14 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
             QString path;
             QString title;
             SaagharWidget::musicPlayer->getFromAlbum(currentPoem, &path, &title);
-            //QPair<QString, qint64> currentMediaInfo = SaagharWidget::mediaInfoCash.value(currentPoem);
             if (SaagharWidget::musicPlayer->source() != path) {
                 SaagharWidget::musicPlayer->setSource(path, currentLocationList.join(">") + ">" + currentPoemTitle, currentPoem);
-                //QApplication::processEvents();
-                //SaagharWidget::musicPlayer->setCurrentTime(currentMediaInfo.second);
             }
-            qDebug() << "ShowPmediaFile=" << path;
-            qDebug() << "ShowPinternalName=" << SaagharWidget::musicPlayer->source();
         }
         else {
             //at startup we load everythings!
             SaagharWidget::musicPlayer->setSource("", currentLocationList.join(">") + ">" + currentPoemTitle, currentPoem);
         }
-//      else //at startup we load everythings!
-//      {
-//          QString mediaSource = SaagharWidget::ganjoorDataBase->getPoemMediaSource(currentPoem);
-//          SaagharWidget::mediaInfoCash.insert(currentPoem, QPair<QString, qint64>(mediaSource, 0));
-//          qDebug() << "showPoem1-currentPoem="<<currentPoem<<"mediaSource="<<mediaSource;
-//          SaagharWidget::musicPlayer->setSource(mediaSource);
-//          qDebug() << "showPoem2-currentPoem="<<currentPoem<<"mediaSource="<<mediaSource;
-//          //SaagharWidget::musicPlayer->
-//      }
     }
 #endif //NO_PHONON_LIB
 
@@ -1320,7 +1290,6 @@ void SaagharWidget::resizeTable(QTableWidget* table)
 {
     if (table && table->columnCount() > 0) {
         if (currentCat == 0  && currentPoem == 0) { //it's Home.
-            //table->resizeRowsToContents();
             homeResizeColsRows();
             return;
         }
@@ -1332,13 +1301,6 @@ void SaagharWidget::resizeTable(QTableWidget* table)
             verticalScrollBarWidth = table->verticalScrollBar()->width();
         }
         int baseWidthSize = parentWidget()->width() - (2 * table->x() + verticalScrollBarWidth);
-        //qDebug()<<"baseWidthSize="<<baseWidthSize<<"viewPW="<<table->viewport()->width();
-        //int tW=0;
-        //for (int i=0; i<table->columnCount(); ++i)
-        //{
-        //  tW+=table->columnWidth(i);
-        //}
-        //qDebug() << QString("x=*%1*--w=*%2*--vX=*%3*--v-W=*%4*--Scroll=*%5*--verticalScrollBarWidth=*%6*--baseWidthSize=*%7*\ntW=*%8*--tableW=*%9*").arg(table->x()).arg(thisWidget->width()/* width()-(2*table->viewport()->x())*/).arg(table->viewport()->x()).arg(table->viewport()->width()).arg(vV).arg(verticalScrollBarWidth).arg(baseWidthSize).arg(tW).arg(-1 );
 
         //****************************//
         //Start colWidths computations//
@@ -1371,33 +1333,22 @@ void SaagharWidget::resizeTable(QTableWidget* table)
             if (CurrentViewStyle == SteppedHemistichLine /*|| CurrentViewStyle==MesraPerLineGroupedBeyt*/) {
                 table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
                 baseWidthSize = baseWidthSize - table->columnWidth(0);
-                //qDebug()<<"(7*minMesraWidth)/4="<<we<<"baseWidthSize/2="<<(7*baseWidthSize)/8<<"minMesraWidth="<<minMesraWidth;
-                //qDebug()<<"maxMin="<<qMax(qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8), minMesraWidth );
                 table->setColumnWidth(2, qMax(qMin((7 * minMesraWidth) / 4, (7 * baseWidthSize) / 8), minMesraWidth)); // cells contain mesras
                 test = qMax(0, baseWidthSize - (table->columnWidth(2)));
-                //qDebug() << "baseWidthSize="<<baseWidthSize<<"test="<<test;
                 table->setColumnWidth(1, test / 2); //right margin
                 table->setColumnWidth(3, test / 2); //left margin
             }
             else if (CurrentViewStyle == OneHemistichLine) {
-                //qDebug() << "ResTable--CurrentViewStyle==AllMesrasCentered";
                 table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
-                //int we=(7*minMesraWidth)/4;
                 baseWidthSize = baseWidthSize - table->columnWidth(0);
-                //qDebug()<<"(7*minMesraWidth)/4="<<we<<"baseWidthSize/2="<<(7*baseWidthSize)/8<<"minMesraWidth="<<minMesraWidth;
-                //qDebug()<<"maxMin="<<qMax(qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8), minMesraWidth );
-                table->setColumnWidth(2, qMax(0/*qMin((7*minMesraWidth)/4, (7*baseWidthSize)/8)*/, minMesraWidth));  // cells contain mesras
+                table->setColumnWidth(2, qMax(0, minMesraWidth));  // cells contain mesras
                 test = qMax(0, baseWidthSize - (table->columnWidth(2)));
-                //qDebug() << "baseWidthSize="<<baseWidthSize<<"test="<<test;
                 table->setColumnWidth(1, test / 2); //right margin
                 table->setColumnWidth(3, test / 2); //left margin
             }
             else {
                 table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
-//                  table->setColumnWidth(2, poemFontMetrics.height()*2 /*5/2*/ );//spacing between mesras
                 int tw = baseWidthSize - (table->columnWidth(0) + poemFontMetrics.height() * 2/*table->columnWidth(2)*/);
-                //qDebug()<<"w-0="<<table->columnWidth(0)<<"w-1="<<table->columnWidth(2)<<"minMesraWidth="<<minMesraWidth<<"baseWidthSize/2="<<baseWidthSize/2;
-                //qDebug()<<"max="<<qMax(minMesraWidth, baseWidthSize/2);
                 table->setColumnWidth(1, qMax(minMesraWidth, tw / 2/* -table->columnWidth(0) */)); //mesra width
                 table->setColumnWidth(3, qMax(minMesraWidth, tw / 2)); //mesra width
                 table->setColumnWidth(2, qMax(poemFontMetrics.height() + 1, baseWidthSize - (table->columnWidth(0) + table->columnWidth(1) + table->columnWidth(3)))); //spacing between mesras
@@ -1424,16 +1375,8 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                     itemText = textEdit->toPlainText();
                 }
                 else {
-//                  if (table->item(0,0))
-//                  {
-
-//                      itemText = table->item(0,0)->text();
-//                  }
-//                  else
-//                  {
                     GanjoorPoet gPoet = SaagharWidget::ganjoorDataBase->getPoetForCat(currentCat);
                     itemText = gPoet._Description;
-//                  }
                 }
 
                 if (!itemText.isEmpty()) {
@@ -1443,7 +1386,6 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                         verticalScrollBarWidth = table->verticalScrollBar()->width();
                     }
                     int totalWidth = table->columnWidth(0) - verticalScrollBarWidth - 82;
-                    //int totalWidth = table->viewport()->width();
                     totalWidth = qMax(82 + verticalScrollBarWidth, totalWidth);
                     table->setRowHeight(0, qMin(200, qMax(100, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)), textWidth, totalWidth))));
                 }
@@ -1454,20 +1396,14 @@ void SaagharWidget::resizeTable(QTableWidget* table)
         int totalWidth = 0;
         if (table->columnCount() == 4) {
             totalWidth = table->columnWidth(1) + table->columnWidth(2) + table->columnWidth(3);
-            //totalWidth = qMax(totalWidth, table->viewport()->width()-table->columnWidth(0));
-            //totalWidth = table->viewport()->width();
 
             QMap<int, QPair<int, int> >::const_iterator i = rowParagraphHeightMap.constBegin();
             while (i != rowParagraphHeightMap.constEnd()) {
                 //Paragraphs
                 QFontMetrics paragraphFontMetric(Settings::getFromFonts(Settings::ProseTextFontColor));
                 int height = SaagharWidget::computeRowHeight(paragraphFontMetric, i.value().first, totalWidth , (5 * paragraphFontMetric.height()) / 3);
-                //qDebug() << "Paragraphs-r="<<i.key()<<"w="<<i.value()<<"totalWidth="<<totalWidth<<"oldH="<<table->rowHeight(i.key())<<"newheight="<<height<<"vWidth="<<table->viewport()->width()-table->columnWidth(0);
-                //qDebug()<<"emptyH="<<i.value().second*paragraphFontMetric.height()<<"ds"<<height<<height+i.value().second*paragraphFontMetric.height();
                 height = height + i.value().second * paragraphFontMetric.height();
                 table->setRowHeight(i.key(), height);
-                //qDebug()<<"newNewHei="<<table->rowHeight(i.key());
-                //table->setRowHeight(i.key(), i.value());
                 ++i;
             }
 
@@ -1484,7 +1420,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                     }
                     table->setRowHeight(it.key(), height);
                 }
-                //table->setRowHeight(i.key(), i.value());
+
                 ++it;
             }
         }
@@ -1586,7 +1522,6 @@ int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidt
 void SaagharWidget::pressedOnItem(int row, int /*col*/)
 {
     pressedPosition = QCursor::pos();
-    //if (QApplication::mouseButtons()!=Qt::RightButton)
     clickedOnItem(row, -1);
 }
 
@@ -1605,12 +1540,10 @@ void SaagharWidget::clickedOnItem(int row, int column)
         QTableWidgetItem* verseItem = 0;
         if (tableViewWidget->columnCount() > 1) {
             if (SaagharWidget::CurrentViewStyle == TwoHemistichLine ||
-//              SaagharWidget::CurrentViewStyle == LastBeytCentered ||
                     SaagharWidget::CurrentViewStyle == OneHemistichLine) {
                 verseItem = tableViewWidget->item(row, 1);
             }
-            else if (SaagharWidget::CurrentViewStyle == SteppedHemistichLine/* ||
-                SaagharWidget::CurrentViewStyle == MesraPerLineGroupedBeyt*/) {
+            else if (SaagharWidget::CurrentViewStyle == SteppedHemistichLine) {
                 verseItem = tableViewWidget->item(row, 2);
                 if (!verseItem) {
                     //it's Paragraph, Single, CenteredVerse1/2 or empty!
@@ -1621,7 +1554,6 @@ void SaagharWidget::clickedOnItem(int row, int column)
 
         if (verseItem && item && !item->icon().isNull()) {
             QStringList data = verseItem->data(Qt::UserRole).toString().split("|");
-            //url = url.mid(url.indexOf("|"));
             if (data.size() != 4) {
                 return;
             }
@@ -1651,7 +1583,7 @@ void SaagharWidget::clickedOnItem(int row, int column)
                     verseText = QGanjoorDbBrowser::snippedText(verseText, "", 0, 20);
                 }
             }
-            //verseText = verseText.trimmed();
+
             QString currentLocation = currentLocationList.join(">");
             if (!currentPoemTitle.isEmpty()) {
                 currentLocation += ">" + currentPoemTitle;
@@ -1660,9 +1592,7 @@ void SaagharWidget::clickedOnItem(int row, int column)
             verseText.prepend(currentLocation + "\n");
 
             if (data.at(3).toInt() == Right && tableViewWidget->item(row + 1, 2) &&
-                    (SaagharWidget::CurrentViewStyle == SteppedHemistichLine/* ||
-                SaagharWidget::CurrentViewStyle == MesraPerLineGroupedBeyt*/)) {
-                qDebug() << "iiiiiiii" << tableViewWidget->item(row + 1, 2)->text() << data.at(3).toInt();
+                    (SaagharWidget::CurrentViewStyle == SteppedHemistichLine)) {
                 verseText += "\n" + tableViewWidget->item(row + 1, 2)->text().simplified();
             }
             else if (tableViewWidget->columnCount() == 4 && tableViewWidget->item(row, 3)) {
@@ -1670,7 +1600,7 @@ void SaagharWidget::clickedOnItem(int row, int column)
             }
             else if (data.at(3).toInt() == CenteredVerse1 && tableViewWidget->item(row + 1, 1)) {
                 QStringList tmp = tableViewWidget->item(row + 1, 1)->data(Qt::UserRole).toString().split("|");
-                //url = url.mid(url.indexOf("|"));
+
                 if (tmp.size() == 4 && tmp.at(3).toInt() == CenteredVerse2) {
                     verseText += "\n" + tableViewWidget->item(row + 1, 1)->text().simplified();
                 }
@@ -1685,8 +1615,6 @@ void SaagharWidget::clickedOnItem(int row, int column)
                 item->setIcon(bookmarkIcon);
                 item->setData(ITEM_BOOKMARKED_STATE, bookmarkState);
             }
-
-            qDebug() << "ICON STATE CHANGED" << item->text() << "row=" << row << "col=" << column << verseItem->data(Qt::UserRole).toString();
         }
     }
 
@@ -1715,7 +1643,7 @@ void SaagharWidget::clickedOnItem(int row, int column)
     for (int col = 0; col < tableViewWidget->columnCount(); ++col) {
         QTableWidgetItem* item = tableViewWidget->item(row, col);
         if (item && QApplication::mouseButtons() != Qt::RightButton) {
-            if (item->isSelected() /*->flags() & Qt::ItemIsSelectable*/) {
+            if (item->isSelected()) {
                 item->setSelected(false);
             }
         }
@@ -1731,9 +1659,6 @@ QStringList SaagharWidget::identifier()
     else {
         tabViewType << "CatID" << QString::number(currentCat);
     }
-
-    qDebug() << "identifier=" << tabViewType;
-    qDebug() << "STRUCT-identifier()=pageMetaInfo.id=" << pageMetaInfo.id << "pageMetaInfo.type=" << pageMetaInfo.type;
 
     return tabViewType;
 }
@@ -1795,13 +1720,8 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
     }
     int row = *prow;
 
-//  mesraItem->setFont(Settings::getFromFonts(Settings::PoemTextFontColor));
-//  mesraItem->setForeground(Settings::getFromColors(Settings::PoemTextFontColor));
-    //QFontMetrics fontMetric(Settings::getFromFonts(Settings::PoemTextFontColor));
-
     int BandBeytNums = 0;
     bool MustHave2ndBandBeyt = false;
-    //int MissedMesras = 0;
 
     bool spacerColumnIsPresent = false;
     int firstEmptyThirdColumn = 1;
@@ -1812,17 +1732,13 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
     //Single and Paragraph are layouted just at one form!
     if (versePosition == Single) {
         textWidth = fontMetric.boundingRect(mesraItem->text()).width();
-        //totalWidth = tableViewWidget->columnWidth(1)+tableViewWidget->columnWidth(2)+tableViewWidget->columnWidth(3);
-        //numOfRow = textWidth/totalWidth ;
+
         if (!currentVerseText.isEmpty()) {
             tableViewWidget->setItem(row, 1, mesraItem);
             tableViewWidget->setSpan(row, 1, 1, 3);
         }
 
-        //tableViewWidget->setRowHeight(row, SaagharWidget::computeRowHeight(fontMetric, textWidth/*mesraItem->text()*/, totalWidth/*, tableViewWidget->rowHeight(row)*/));
-        //                  tableViewWidget->setRowHeight(row, tableViewWidget->rowHeight(row)+(fontMetric.height()*(numOfRow/*+1*/)));
-        rowSingleHeightMap.insert(row, textWidth/*tableViewWidget->rowHeight(row)*/);
-        //MissedMesras--;
+        rowSingleHeightMap.insert(row, textWidth);
         return;
     }
     else if (versePosition == Paragraph) {
@@ -1840,11 +1756,9 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
     }
 
     switch (CurrentViewStyle) {
-        //case LastBeytCentered:
     case TwoHemistichLine:
         switch (versePosition) {
         case Right :
-            //rightVerseFlag = true;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
             spacerColumnIsPresent = true;
             if (!flagEmptyThirdColumn) {
                 firstEmptyThirdColumn = row;
@@ -1856,7 +1770,6 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
             mesraItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
             tableViewWidget->setItem(row, 1, mesraItem);
             if (MustHave2ndBandBeyt) {
-                //MissedMesras++;
                 MustHave2ndBandBeyt = false;
             }
             break;
@@ -1901,13 +1814,10 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
         break;//end of BeytPerLine
 
     case SteppedHemistichLine:
-//  case MesraPerLineGroupedBeyt:
     case OneHemistichLine:
         switch (versePosition) {
 
         case Right :
-            //qDebug()<<"RightRightRightRightRightRight";
-            //rightVerseFlag = true;//temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
             spacerColumnIsPresent = true;
             if (!flagEmptyThirdColumn) {
                 firstEmptyThirdColumn = row;
@@ -1921,12 +1831,6 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
                 mesraItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
                 tableViewWidget->setItem(row, 2, mesraItem);
             }
-//          else if (CurrentViewStyle==MesraPerLineGroupedBeyt)
-//          {
-//              mesraItem->setTextAlignment(beytAlignment|Qt::AlignVCenter);
-//                          //beytNum%2 == 0 ? Qt::AlignLeft|Qt::AlignVCenter : Qt::AlignRight|Qt::AlignVCenter);
-//              tableViewWidget->setItem(row, 2, mesraItem);
-//          }
             else if (CurrentViewStyle == OneHemistichLine) {
                 spacerColumnIsPresent = false;
                 mesraItem->setTextAlignment(Qt::AlignCenter);
@@ -1935,18 +1839,15 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
             }
 
             if (MustHave2ndBandBeyt) {
-                //MissedMesras++;
                 MustHave2ndBandBeyt = false;
             }
             break;
 
         case Left :
-            //qDebug()<<"LeftLeft=**"<<currentVerseText<<"**"<<currentVerseText.size();
             spacerColumnIsPresent = true;
             if (!currentVerseText.isEmpty()) {
                 ++row;
                 *prow = row;
-                //if (i != verses.size()-1)
                 tableViewWidget->insertRow(row);
             }
             if (!flagEmptyThirdColumn) {
@@ -1961,24 +1862,12 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
                 mesraItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
                 tableViewWidget->setItem(row, 2, mesraItem);
             }
-//          else if (CurrentViewStyle==MesraPerLineGroupedBeyt)
-//          {
-//              mesraItem->setTextAlignment(beytAlignment|Qt::AlignVCenter);
-//              tableViewWidget->setItem(row, 2, mesraItem);
-//          }
             else if (CurrentViewStyle == OneHemistichLine) {
                 spacerColumnIsPresent = false;
                 mesraItem->setTextAlignment(Qt::AlignCenter);
                 tableViewWidget->setItem(row, 1, mesraItem);
                 tableViewWidget->setSpan(row, 1, 1, 3);
             }
-
-//          text=tableViewWidget->item(row,1) ? tableViewWidget->item(row,1)->text() : "";
-//          qDebug() << text;
-//          if (!text.isEmpty())
-//              text.append("\n");
-//          mesraItem->setText(text+currentVerseText);
-//          qDebug() <<"mesraItem->text()="<< mesraItem->text();
             break;
 
         case CenteredVerse1 :

@@ -31,6 +31,7 @@
 #include <QTime>
 #include <QPushButton>
 #include <QTimer>
+#include <QTreeWidgetItem>
 
 DataBaseUpdater* QGanjoorDbBrowser::dbUpdater = 0;
 QString QGanjoorDbBrowser::dBName = QString();
@@ -133,6 +134,7 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* spla
         QString errorString = dBConnection.lastError().text();
 
         dBConnection = QSqlDatabase();
+        qDebug() << __LINE__ << __FUNCTION__;
         QSqlDatabase::removeDatabase(dBName);
 
         NoDataBaseDialog noDataBaseDialog(0, Qt::WindowStaysOnTopHint);
@@ -247,6 +249,7 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* spla
     }
 
     dBConnection.close();
+    qDebug() << __LINE__ << __FUNCTION__;
     QSqlDatabase::removeDatabase(dBName);
     dBName = getIdForDataBase(dBConnection.databaseName());
     dBConnection = QSqlDatabase::database(dBName, true);
@@ -763,6 +766,7 @@ QList<GanjoorPoet*> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
     QString dataBaseID = getIdForDataBase(fileName);
     QSqlDatabase databaseObject = QSqlDatabase::database(dataBaseID);
     if (!databaseObject.open()) {
+        qDebug() << __LINE__ << __FUNCTION__;
         QSqlDatabase::removeDatabase(dataBaseID);
         return poetsInDataBase;
     }
@@ -771,6 +775,7 @@ QList<GanjoorPoet*> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
     QSqlQuery q(databaseObject);
 
     databaseObject.close();
+    qDebug() << __LINE__ << __FUNCTION__;
     QSqlDatabase::removeDatabase(dataBaseID);
 
     return poetsInDataBase;
@@ -941,6 +946,7 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
     {
         QSqlDatabase dataBaseObject = QSqlDatabase::database(connectionID);
         if (!dataBaseObject.open() || !isValid(connectionID)) {
+            qDebug() << __LINE__ << __FUNCTION__;
             QSqlDatabase::removeDatabase(connectionID);
             return false;
         }
@@ -1126,6 +1132,7 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
     //qDebug() << "BEFORE CLOSE";
     //dataBaseObject.close();
     qDebug() << "AFTER CLOSE - BEFORE REMOVE";
+    qDebug() << __LINE__ << __FUNCTION__;
     QSqlDatabase::removeDatabase(connectionID);
     qDebug() << "AFTER REMOVE";
     return true;
@@ -1136,43 +1143,14 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
     QString cleanedText = text;
 
     cleanedText.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-    //qDebug()<<"========================";
-//      qDebug()<<"BeforeRemove-cleanedText="<<cleanedText;
-    ////remove some characters! maybe creates bug!!! 2012-05-11
 
-    //cleanedText.remove(QRegExp("["+someSymbols.join("")+"\\)\\(\\[\\]:!-]+"));
-//      qDebug()<<"AfterRemove-cleanedText="<<cleanedText;
-    //10s-->14s
-//  cleanedText.replace(QRegExp("["+Ve_Variant.join("").remove(Ve_Variant.at(0))+"]"), Ve_Variant.at(0));
-//  cleanedText.replace(QRegExp("["+Ye_Variant.join("").remove(Ye_Variant.at(0))+"]"), Ye_Variant.at(0));
-//  cleanedText.replace(QRegExp("["+AE_Variant.join("").remove(AE_Variant.at(0))+"]"), AE_Variant.at(0));
-//  cleanedText.replace(QRegExp("["+He_Variant.join("").remove(He_Variant.at(0))+"]"), He_Variant.at(0));
+    // 14s-->10s
     if (SearchResultWidget::skipVowelLetters) {
         cleanedText.replace(Ve_EXP, QChar(72, 6) /*Ve_Variant.at(0)*/);
         cleanedText.replace(Ye_EXP, QChar(204, 6) /*Ye_Variant.at(0)*/);
         cleanedText.replace(AE_EXP, QChar(39, 6) /*AE_Variant.at(0)*/);
         cleanedText.replace(He_EXP, QChar(71, 6) /*He_Variant.at(0)*/);
     }
-////    qDebug()<<"AfterReplace-cleanedText="<<cleanedText;
-////    QRegExp regExp("[\)\(:-»؟!«\[\]\.،؛]+");
-////    QString temp=QString::fromLocal8Bit("»؟!«.،؛هيؤویئآاأإة");
-////    qDebug()<<"========================";
-////    for (int i=0; i<temp.size();++i)
-////    {
-
-////        qDebug()<<QString(temp.at(i))<<"cell="<<temp.at(i).cell()<<"row="<<temp.at(i).row();
-
-////    }
-//  qDebug()<<"========================";
-//  //return "";
-//  //QChar(12,6))//cell=12,row=6 is for persian and arabic comma
-////    qDebug()<<"regExp.pattern()="<< regExp.pattern();
-////    cleanedText.remove(regExp);
-
-////    QChar tatweel = QChar(0x0640);
-////    cleanedText.remove(tatweel);
-
-//  //cleanedText = cleanedText.simplified();//new
 
     for (int i = 0; i < cleanedText.size(); ++i) {
         QChar tmpChar = cleanedText.at(i);
@@ -1180,7 +1158,6 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
         if (excludeList.contains(tmpChar)) {
             continue;
         }
-        //if (tmpChar.isSpace() || QString(tmpChar) == "%" || QString(tmpChar) == "*") continue;
 
         QChar::Direction chDir = tmpChar.direction();
 
@@ -1191,13 +1168,6 @@ QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &e
             --i;
             continue;
         }
-
-//      if (chDir != QChar::DirAL && chDir != QChar::DirL && chDir != QChar::DirR)
-//      {
-//          cleanedText.remove(tmpChar);
-//          --i;
-//          continue;
-//      }
     }
     return cleanedText;
 }
@@ -1207,12 +1177,8 @@ QString QGanjoorDbBrowser::cleanStringFast(const QString &text, const QStringLis
     QString cleanedText = text;
 
     cleanedText.remove(QChar(0x200C));//.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-    //10s-->14s
-//  cleanedText.replace(QRegExp("["+Ve_STR+"]"), QChar(72,6) /*Ve_Variant.at(0)*/);
-//  cleanedText.replace(QRegExp("["+Ye_STR+"]"), QChar(204,6) /*Ye_Variant.at(0)*/);
-//  cleanedText.replace(QRegExp("["+AE_STR+"]"), QChar(39,6) /*AE_Variant.at(0)*/);
-//  cleanedText.replace(QRegExp("["+He_STR+"]"), QChar(71,6) /*He_Variant.at(0)*/);
-//  cleanedText.remove(QRegExp("["+SomeSymbol_STR+"]+"));
+
+    // 14s-->10s
     if (SearchResultWidget::skipVowelLetters) {
         cleanedText.replace(Ve_EXP, QChar(72, 6) /*Ve_Variant.at(0)*/);
         cleanedText.replace(Ye_EXP, QChar(204, 6) /*Ye_Variant.at(0)*/);
@@ -1272,7 +1238,6 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
         }
         //replace characters that have some variants with anyWord replaceholder!
         //we have not to worry about this replacement, because phraseList.at(0) is tested again!
-        qDebug() << "firstPhrase11=" << firstPhrase;
         bool variantPresent = false;
         if (SearchResultWidget::skipVowelLetters) {
             QRegExp variantEXP("[" + Ve_Variant.join("") + AE_Variant.join("") + He_Variant.join("") + Ye_Variant.join("") + "]+");
@@ -1281,7 +1246,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
                 variantPresent = true;
             }
         }
-        qDebug() << "firstPhrase222=" << firstPhrase;
+
         QStringList anyWordedList = firstPhrase.split("%%", QString::SkipEmptyParts);
         for (int i = 0; i < anyWordedList.size(); ++i) {
             QString subPhrase = anyWordedList.at(i);
@@ -1299,8 +1264,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
         }
 
         QString searchQueryPhrase = anyWordedList.join("%");
-        qDebug() << "searchQueryPhrase=" << searchQueryPhrase;
-//      QMessageBox::information(qApp->activeWindow(),"DEBUG:Method2", searchQueryPhrase);
+
         int andedPhraseCount = phraseList.size();
         int excludedCount = excludedList.size();
         int numOfFounded = 0;
@@ -1314,17 +1278,17 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
         else {
             strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + searchQueryPhrase + "%\' AND poet_id=" + QString::number(PoetID) + " ORDER BY poem_id");
         }
-//SELECT poem_id, text, vorder, position FROM verse WHERE text LIKE \'%" + searchQueryPhrase + "%\' AND (position=1 OR position=3) ORDER BY poem_id
-        qDebug() << "strQuery=" << strQuery << "PoetID" << PoetID ;
-        qDebug() << "phraseList.at(0)=" << phraseList.at(0);
-//return idList;
+
         QSqlQuery q(dBConnection);
+#ifdef SAAGHAR_DEBUG
         int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+#endif
         q.exec(strQuery);
+#ifdef SAAGHAR_DEBUG
         int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
         int miliSec = end - start;
         qDebug() << "duration=" << miliSec;
-
+#endif
         int numOfNearResult = 0, nextStep = 0, stepLenght = 300;
         if (slowSearch) {
             stepLenght = 30;
@@ -1338,7 +1302,6 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
             if (numOfNearResult > nextStep) {
                 nextStep += stepLenght; //500
                 emit searchStatusChanged(QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
-                //qDebug() << "step="<<nextStep<<"numOfNearResult="<<numOfNearResult<<"numOfFounded="<<numOfFounded;
                 QApplication::processEvents(QEventLoop::AllEvents);
             }
 
@@ -1348,41 +1311,17 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
 //              continue;//we need just first result
 
             QString verseText = qrec.value(1).toString();
-            int verseOrder = (PoetID == -1000 ? 0 : qrec.value(2).toInt());//assume title's order is zero!
-            //int versePos = qrec.value(3).toInt();
+            // assume title's order is zero!
+            int verseOrder = (PoetID == -1000 ? 0 : qrec.value(2).toInt());
 
-//          //////////////////
-//          if (value.contains(
-//                  QString::fromLocal8Bit("پسر چون ز مادر بران گونه زاد")
-//                  )
-//          )
-//          {
-//              qDebug() << "value="<<value;
-//              qDebug() << "valueContains="<<value.contains(text, Qt::CaseInsensitive);
-//          }
-//          ///////////////////////////
             QString foundedVerse = QGanjoorDbBrowser::cleanStringFast(verseText, excludeWhenCleaning);
-            foundedVerse = " " + foundedVerse + " "; //for whole word option when word is in the start or end of verse
-//          if (verseText.contains(QString::fromLocal8Bit(
-//                                     "که هر که در صف باغ است صاحب هنریست"
-//                                        //"ترا خوردنی هست و آب روان"
-////                                          "تراخوردنيهستوآبروان"
-//                                        /*"پسر چون ز مادر بران گونه زاد"*/
-//                                        /*"باسحاب"*/
-//                                        /*"وین چشم رمد دیده من سرمه اقبال"*/
-//                                                           /*"من از یمن اقبال این خاندان"*/)))
-//          {
-//              QMessageBox::information(0, "ifffffffffff",tr("poemID=%1").arg(poemID));
-//              //foundedVerse = QGanjoorDbBrowser::cleanString(foundedVerse/*, skipNonAlphabet*/);
-//              //qDebug() << "foundedVerse="<<foundedVerse<<"phraseForSearch="<<phraseForSearch;
-//              //foundedVerse = " "+foundedVerse+" ";
-//          }
+            // for whole word option when word is in the start or end of verse
+            foundedVerse = " " + foundedVerse + " ";
 
             //excluded list
             bool excludeCurrentVerse = false;
             for (int t = 0; t < excludedCount; ++t) {
                 if (foundedVerse.contains(excludedList.at(t))) {
-                    //qDebug() <<"excludeCurrentVerse->TRUE-verse=" << verseText<< "tPharse="<<tphrase<<"tExcluded="<<excludedList.at(t);
                     excludeCurrentVerse = true;
                     break;
                 }
@@ -1395,14 +1334,12 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
                         tphrase.remove("==");
                         if (lastPoemID != poemID/* && findRhyme*/) {
                             lastPoemID = poemID;
-                            //verses.clear();
                             int versesSize = verses.size();
                             for (int j = 0; j < versesSize; ++j) {
                                 delete verses[j];
                                 verses[j] = 0;
                             }
                             verses = getVerses(poemID);
-                            //qDebug()<<"poemID="<<poemID<<"poemSize="<<verses.size();
                         }
                         excludeCurrentVerse = !isRadif(verses, tphrase, verseOrder);
                         break;
@@ -1411,14 +1348,12 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
                         tphrase.remove("=");
                         if (lastPoemID != poemID/* && findRhyme*/) {
                             lastPoemID = poemID;
-                            //verses.clear();
                             int versesSize = verses.size();
                             for (int j = 0; j < versesSize; ++j) {
                                 delete verses[j];
                                 verses[j] = 0;
                             }
                             verses = getVerses(poemID);
-                            //qDebug()<<"poemID="<<poemID<<"poemSize="<<verses.size();
                         }
                         excludeCurrentVerse = !isRhyme(verses, tphrase, verseOrder);
                         break;
@@ -1428,14 +1363,11 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
                         //QChar(204,6): Persian Ye
                         QString YeAsKasre = QString(QChar(71, 6)) + " ";
                         if (tphrase.contains(YeAsKasre)) {
-                            qDebug() << "before-tphrase=" << tphrase;
                             tphrase.replace(YeAsKasre, QString(QChar(71, 6)) + "\\s*" + QString(QChar(204, 6)) +
                                             "{0,2}\\s+");
-                            qDebug() << "after-tphrase=" << tphrase;
 
                             QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
-                            qDebug() << "anySearch.indexIn=" << anySearch.indexIn(foundedVerse);
-                            qDebug() << "anySearch.cap(0)=" << anySearch.cap(0);
+
                             if (!anySearch.exactMatch(foundedVerse)) {
                                 excludeCurrentVerse = true;
                                 break;
@@ -1477,14 +1409,12 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
             ++numOfFounded;
             GanjoorPoem gPoem = getPoem(poemID);
             idList.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + getPoetForCat(gPoem._CatID)._Name);
-            //QString labelText = QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded+resultCount);
-            //emit searchStatusChanged(labelText);
 #ifdef Q_OS_X11
             QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
 #endif
 
         }
-        qDebug() << "NumOfNearResult=" << numOfNearResult;
+
         //for the last result
         emit searchStatusChanged(QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
 
@@ -1665,7 +1595,6 @@ QString QGanjoorDbBrowser::snippedText(const QString &text, const QString &str, 
 
 bool QGanjoorDbBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder)
 {
-//qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<verseOrder<<versePos;
     //verseOrder starts from 1 to verses.size()
     if (verseOrder <= 0 || verseOrder > verses.size()) {
         return false;
@@ -1742,12 +1671,6 @@ bool QGanjoorDbBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QStrin
 
         QString firstEnding = cleanedVerse.mid(cleanedVerse.lastIndexOf(cleanedPhrase) + cleanedPhrase.size());
         QString secondEnding = secondMesra.mid(secondMesra.lastIndexOf(cleanedPhrase) + cleanedPhrase.size());
-        //  qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;
-        //  if (firstEnding.isEmpty())
-        //      qDebug()<<"------------------------------------------------------------------";
-        //  qDebug()<<"secondMesra="<<secondMesra<<"secondEnding="<<secondEnding;
-        //  if (secondEnding.isEmpty())
-        //      qDebug()<<"------------------------------------------------------------------";
 
         if (firstEnding != "" || secondEnding != "") { //they're not empty or RADIF
             continue;    //return false;
@@ -1758,39 +1681,20 @@ bool QGanjoorDbBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QStrin
         if (tmp1 < 0 || tmp2 < 0) {
             continue;    //return false;
         }
-        qDebug() << "cleanedVerse=" << cleanedVerse << "firstEnding=" << firstEnding;
-        qDebug() << "1ch=" << cleanedVerse.at(tmp1);
-        qDebug() << "secondMesra=" << secondMesra << "secondEnding=" << secondEnding;
-        qDebug() << "2ch=" << secondMesra.at(tmp2);
 
-//      if ( cleanedVerse.at(tmp1) == secondMesra.at(tmp2) &&
-//           firstEnding.isEmpty() )  // and so secondEnding
-//      {
-//          //if last character before phrase are similar this is not a Rhyme maybe its RADIF
-//          //or a part!!! of Rhyme.
-//          //the following algorithm works good for Rhyme with similar spell and diffrent meanings.
-//          continue;//return false;
-//      }
-//      else
         return true;
     }
     return false;
-//qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<"verseOrder="<<verseOrder<<getPoem(PoemID)._Title;
-//  return true;
 }
 
 bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder)
 {
-//qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<verseOrder<<versePos;
     //verseOrder starts from 1 to verses.size()
     if (verseOrder <= 0 || verseOrder > verses.size()) {
         return false;
     }
 
-    //QList<GanjoorVerse *> verses = getVerses(PoemID);
-
     QString cleanedVerse = QGanjoorDbBrowser::cleanStringFast(verses.at(verseOrder - 1)->_Text, QStringList(""));
-    //cleanedVerse = " "+cleanedVerse+" ";//just needed for whole word
     QString cleanedPhrase = QGanjoorDbBrowser::cleanStringFast(phrase, QStringList(""));
 
     if (!cleanedVerse.contains(cleanedPhrase)) {
@@ -1850,12 +1754,6 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse*> &verses, const QStrin
         }
         secondMesra = QGanjoorDbBrowser::cleanStringFast(verses.at(secondMesraOrder)->_Text, QStringList(""));
 
-//      if (!secondMesra.contains(cleanedPhrase))
-//      {
-//          //verses.clear();
-//          //return false;
-//          continue;
-//      }
         int indexInSecondMesra = secondMesra.lastIndexOf(cleanedPhrase);
         int offset = cleanedPhrase.size();
         while (indexInSecondMesra < 0) {
@@ -1869,31 +1767,18 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse*> &verses, const QStrin
             continue;
         }
 
-        //  qDebug() << "offset="<<offset<<"index="<<indexInSecondMesra<< "str="<<cleanedPhrase.right(offset)<<"wholeStr="<<secondMesra<<"ending="
-        //           <<secondMesra.mid(indexInSecondMesra+cleanedPhrase.right(offset).size());
-
         QString firstEnding = cleanedVerse.mid(cleanedVerse.lastIndexOf(cleanedPhrase) + cleanedPhrase.size());
         QString secondEnding = secondMesra.mid(indexInSecondMesra + cleanedPhrase.right(offset).size()); //secondMesra.mid(secondMesra.lastIndexOf(cleanedPhrase)+cleanedPhrase.size());
-        //  qDebug()<<"cleanedVerse="<<cleanedVerse<<"firstEnding="<<firstEnding;
-        //  if (firstEnding.isEmpty())
-        //      qDebug()<<"------------------------------------------------------------------";
-        //  qDebug()<<"secondMesra="<<secondMesra<<"secondEnding="<<secondEnding;
-        //  if (secondEnding.isEmpty())
-        //      qDebug()<<"------------------------------------------------------------------";
 
         if (firstEnding != secondEnding) { //they're not empty or RADIF
             continue;    //return false;
         }
 
         int tmp1 = cleanedVerse.lastIndexOf(cleanedPhrase) - 1;
-        int tmp2 = indexInSecondMesra - 1; //secondMesra.lastIndexOf(cleanedPhrase)-1;
+        int tmp2 = indexInSecondMesra - 1;
         if (tmp1 < 0 || tmp2 < 0) {
             continue;    //return false;
         }
-        qDebug() << "cleanedVerse=" << cleanedVerse << "firstEnding=" << firstEnding;
-        qDebug() << "1ch=" << cleanedVerse.at(tmp1);
-        qDebug() << "secondMesra=" << secondMesra << "secondEnding=" << secondEnding;
-        qDebug() << "2ch=" << secondMesra.at(tmp2);
 
         if (cleanedVerse.at(tmp1) == secondMesra.at(tmp2) &&
                 firstEnding.isEmpty()) { // and so secondEnding
@@ -1907,8 +1792,6 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse*> &verses, const QStrin
         }
     }
     return false;
-//qDebug()<<"---->isRhyme!!!!!!!"<<PoemID<<"verseOrder="<<verseOrder<<getPoem(PoemID)._Title;
-//  return true;
 }
 
 QVariantList QGanjoorDbBrowser::importGanjoorBookmarks()
@@ -1960,20 +1843,13 @@ QString QGanjoorDbBrowser::getBeyt(int poemID, int firstMesraID, const QString &
             case Single:
             case Paragraph:
                 breakLoop = true;
-//              if (qrec.value(0).toInt() != firstMesraID || centeredVerse1)
-//                  break;
-//              mesras << qrec.value(2).toString();
                 break;
             case Right:
                 break;
             case Left:
                 breakLoop = true;
                 break;
-//              if (centeredVerse1)
-//                  break;
-//              mesras << qrec.value(2).toString();
             case CenteredVerse1:
-                //mesras << qrec.value(2).toString();
                 centeredVerse1 = true;
                 break;
             case CenteredVerse2:
@@ -2016,7 +1892,7 @@ bool QGanjoorDbBrowser::poetHasSubCats(int poetID, const QString &connectionID)
     }
     return false;
 }
-#include <QTreeWidgetItem>
+
 QList<QTreeWidgetItem*> QGanjoorDbBrowser::loadOutlineFromDataBase(int parentID)
 {
     QList<QTreeWidgetItem*> items;
@@ -2121,13 +1997,10 @@ QString QGanjoorDbBrowser::getLongPathName(const QString &fileName)
     TCHAR  bufLongFileName[BUFSIZE] = TEXT(L"");
     TCHAR  bufFileName[BUFSIZE] = TEXT(L"");
 #endif
-    //TCHAR** lppPart={NULL};
 
-    //QString tmp(QDir::tempPath());
     QString winFileName = fileName;
     winFileName.replace("/", "\\");
-    qDebug() << "tmp.size=" << winFileName.size() << winFileName << "===\n=tmp.toWCharArray(buf)=";
-    qDebug() << winFileName.toWCharArray(bufFileName);
+    winFileName.toWCharArray(bufFileName);
 
     retval = GetLongPathName(bufFileName, bufLongFileName, BUFSIZE);
 
@@ -2144,11 +2017,7 @@ QString QGanjoorDbBrowser::getLongPathName(const QString &fileName)
     else {
         QString longFileName = QString::fromWCharArray(bufLongFileName);
         longFileName.replace("\\", "/");
-        qDebug()
-                << "getLongPathName:\nFile Name: "
-                << fileName
-                << "Long File Name: "
-                << longFileName;
+
         return longFileName;
     }
 #endif

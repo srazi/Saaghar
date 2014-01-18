@@ -39,17 +39,12 @@ SaagharItemDelegate::SaagharItemDelegate(QWidget* parent, QStyle* style, QString
     opacity = 0.65;
     if (parent->objectName() == "searchTable") {
         opacity = 1;
-        qDebug() << "delegate-searchTable=" << keywordList;
     }
 }
 
 void SaagharItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &option,
                                 const QModelIndex &index) const
 {
-//  if (parent()->objectName()=="searchTable")
-//  {
-//      qDebug() << keywordList;
-//  }
     bool flagRightToLeft = true;
     if (parentWidget) {
         flagRightToLeft = parentWidget->layoutDirection() == Qt::RightToLeft;
@@ -83,17 +78,9 @@ void SaagharItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
         }
 
         cleanedText = QGanjoorDbBrowser::cleanString(text);
-//      if (text.contains( QString::fromLocal8Bit(
-//                            "پسر چون ز مادر بران گونه زاد"
-////                                  "پرپر شد ..."
-//                  /*"وَز ســوری و نــعــمـان وزد، هـر دم شـمـیـم عـنـبـریـن"*/)))
-//      {
-//          qDebug() << "textt="<<text;
-//          qDebug() << "clean="<<cleanedText;
-//      }
         text = QGanjoorDbBrowser::cleanString(text, QStringList() << " " << QGanjoorDbBrowser::someSymbols);
     }
-    //qDebug() << "text="<<index.data().toString()<<"W="<<fontMetric.width(index.data().toString())<<"cleanedText="<<cleanedText<<"W="<<fontMetric.width(cleanedText);
+
     Qt::Alignment itemAlignment = 0;
     QVariant alignValue = index.data(Qt::TextAlignmentRole);
 
@@ -104,19 +91,13 @@ void SaagharItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     int keywordsCount = keywordList.size();
     for (int i = 0; i < keywordsCount; ++i) {
         lastX = x = option.rect.x() + textHMargin;
-        //QString keyword = keywordList.isEmpty() ? "" : keywordList.at(0);
         QString keyword = keywordList.at(i);
 
         keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-        //qDebug() << "keyword1="<<keyword;
         keyword = keyword.split("", QString::SkipEmptyParts).join(tatweel + "*");
-        //qDebug() << "keyword2="<<keyword;
         keyword.replace("@" + tatweel + "*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
-        //qDebug() << "keyword3="<<keyword;
         QRegExp maybeTatweel(keyword, Qt::CaseInsensitive);
         maybeTatweel.indexIn(text);
-        //qDebug() << text<<"count=" << maybeTatweel.captureCount()<<maybeTatweel.capturedTexts();
-        //qDebug() << "Match: "<<maybeTatweel.cap(0);
         keyword = maybeTatweel.cap(0);
         if (!(keyword.isEmpty() || text.indexOf(keyword) == -1)) {
             QString txt = text;
@@ -194,7 +175,6 @@ void SaagharItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
             painter->setOpacity(0.35);
             painter->fillRect(option.rect, itemBrush);
             painter->setOpacity(oldOpacity);
-            //painter->fillRect( rectf, itemBrush );
         }
     }
     QItemDelegate::paint(painter, option, index);
@@ -246,13 +226,9 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
         QString keyword = keywordList.at(i);
 
         keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-        //qDebug() << "keyword1="<<keyword;
         const QString others = QString::fromLocal8Bit("َُِّـًٌٍْ");//tashdid+keshide+o+a+e+an+en+on+saaken
         keyword = keyword.split("", QString::SkipEmptyParts).join("[" + others + "]*") + "[" + others + "]*"; //(tatweel+"*");
-        //qDebug() << "keyword2="<<keyword;
         keyword.replace("@[" + others + "]*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
-        //keyword.replace("@"+tatweel+"*", "\\S*", Qt::CaseInsensitive);//replace wildcard by word chars
-        //qDebug() << "keyword3="<<keyword;
         keyword.replace(QGanjoorDbBrowser::AE_Variant.at(0), "(" + QGanjoorDbBrowser::AE_Variant.join("|") + ")");
         keyword.replace(QGanjoorDbBrowser::Ye_Variant.at(0), "(" + QGanjoorDbBrowser::Ye_Variant.join("|") + ")");
         keyword.replace(QGanjoorDbBrowser::He_Variant.at(0), "(" + QGanjoorDbBrowser::He_Variant.join("|") + ")");
@@ -260,12 +236,9 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
         QRegExp maybeOthers(keyword, Qt::CaseInsensitive);
         int index = maybeOthers.indexIn(text);
         while (index >= 0) {
-            //keyword = maybeOthers.cap(0);
-            int length = maybeOthers.matchedLength();//keyword.size();
-            setFormat(index, length, paragraphHighightFormat /*QColor(Qt::red)*/);
+            int length = maybeOthers.matchedLength();
+            setFormat(index, length, paragraphHighightFormat);
             index = maybeOthers.indexIn(text, index + length);
-            //qDebug() << text<<"count=" << maybeOthers.captureCount()<<maybeOthers.capturedTexts();
-            //qDebug() << "Match: "<<maybeOthers.cap(0);
         }
     }
 }

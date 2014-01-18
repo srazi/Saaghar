@@ -88,7 +88,6 @@ QMultiSelectWidget::QMultiSelectWidget(QWidget* parent, QMultiSelectWidget::Widg
 
     connect(this, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(itemDataChanged(QListWidgetItem*)));
     connect(this, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(clickedOnItem(QListWidgetItem*)));
-    connect(this, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(doubleClickedOnItem(QListWidgetItem*)));
 
     updateSelectedLists();
 }
