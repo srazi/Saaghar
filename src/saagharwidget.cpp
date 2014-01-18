@@ -1726,7 +1726,9 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
     bool spacerColumnIsPresent = false;
     int firstEmptyThirdColumn = 1;
     bool flagEmptyThirdColumn = false;
-    QString extendString = QString::fromLocal8Bit("پپ");//mesra width computation
+
+    // mesra width computation: QChar(126, 6) is Pe
+    const QString &extendString = QString(QChar(126, 6)) + QChar(126, 6);
     int textWidth;
 
     //Single and Paragraph are layouted just at one form!

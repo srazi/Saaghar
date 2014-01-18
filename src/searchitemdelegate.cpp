@@ -226,7 +226,11 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
         QString keyword = keywordList.at(i);
 
         keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-        const QString others = QString::fromLocal8Bit("َُِّـًٌٍْ");//tashdid+keshide+o+a+e+an+en+on+saaken
+
+        // tashdid+keshide+o+a+e+an+en+on+saaken
+        const QString &others = QString(QChar(78, 6)) + QChar(79, 6) + QChar(80, 6) + QChar(81, 6) +
+                QChar(64, 6) + QChar(75, 6) + QChar(76, 6) + QChar(77, 6) + QChar(82, 6);
+
         keyword = keyword.split("", QString::SkipEmptyParts).join("[" + others + "]*") + "[" + others + "]*"; //(tatweel+"*");
         keyword.replace("@[" + others + "]*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
         keyword.replace(QGanjoorDbBrowser::AE_Variant.at(0), "(" + QGanjoorDbBrowser::AE_Variant.join("|") + ")");
