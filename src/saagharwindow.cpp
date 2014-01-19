@@ -1990,10 +1990,13 @@ void SaagharWindow::setupUi()
     if (ui->menuToolBar) {
         insertToolBar(parentCatsToolBar, ui->menuToolBar);
     }
+#ifndef NO_PHONON_LIB
     if (SaagharWidget::musicPlayer) {
         insertToolBar(SaagharWidget::musicPlayer, ui->searchToolBar);
     }
-    else {
+    else
+#endif
+    {
         addToolBar(Qt::BottomToolBarArea, ui->searchToolBar);
     }
 
