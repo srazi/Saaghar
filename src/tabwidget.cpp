@@ -62,8 +62,9 @@ QSize TabBar::tabSizeHint(int index) const
     TabBar* tabBar = const_cast<TabBar*>(this);
 
     QSize size = QTabBar::tabSizeHint(index);
+#ifndef Q_OS_MAC
     size.setHeight(qMax(size.height(), minHeight));
-
+#endif
     int availableWidth = width() - (m_addTabButton->isVisible() ? m_addTabButton->width() : 0);
     int tabCount = count();
     int boundedWidthForTab = maxWidth;

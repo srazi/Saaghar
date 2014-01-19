@@ -22,13 +22,25 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define VER_FILEVERSION             2,5,0,0
-#define VER_FILEVERSION_STR         "2.5.0.0\0"
+#define MAJOR_VERSION               2
+#define MINOR_VERSION               5
+#define PATCH_VERSION               0
 
-#define VER_FILEBUILDTIME_STR       "07Jan2014, 22:23:28\0"
+const QString BUILD_TIME = __DATE__" "__TIME__;
+const QString SAAGHAR_VERSION = QString("%1.%2.%3").arg(MAJOR_VERSION).arg(MINOR_VERSION).arg(PATCH_VERSION);
 
-#define VER_PRODUCTVERSION          2,5
-#define VER_PRODUCTVERSION_STR      "2.5\0"
+#define CONCAT(...)                 __VA_ARGS__
+#define STR(s)                      #s
+#define TO_STR(w, x, y, z)          STR(w) "." STR(x) "." STR(y) "." STR(z) "\0"
+#define TO_STR_S(w, x)              STR(w) "." STR(x) "\0"
+
+#define VER_FILEVERSION             CONCAT(MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION, 0)
+#define VER_FILEVERSION_STR         TO_STR(MAJOR_VERSION, MINOR_VERSION, PATCH_VERSION, 0)
+
+#define VER_FILEBUILDTIME_STR       (BUILD_TIME + "\0")
+
+#define VER_PRODUCTVERSION          CONCAT(MAJOR_VERSION, MINOR_VERSION)
+#define VER_PRODUCTVERSION_STR      TO_STR_S(MAJOR_VERSION, MINOR_VERSION)\
 
 #define VER_COMPANYNAME_STR         "Pozh"
 #define VER_FILEDESCRIPTION_STR     "Saaghar, a Persian Poetry Software"

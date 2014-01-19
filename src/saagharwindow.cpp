@@ -65,10 +65,6 @@
 #include "qmusicplayer.h"
 #endif
 
-//const int ITEM_SEARCH_DATA = Qt::UserRole+10;
-const QString BUILD_TIME = __DATE__" "__TIME__;
-const QString SAAGHAR_VERSION = "2.5.0";
-
 QString SaagharWindow::resourcesPath;
 QString SaagharWindow::userHomePath;
 bool SaagharWindow::autoCheckForUpdatesState = true;
@@ -814,7 +810,7 @@ void SaagharWindow::checkForUpdates()
     if (releaseInfo.value("VERSION").isEmpty()) {
         return;
     }
-    QString runningAppVersionStr = QString(VER_FILEVERSION_STR);
+    QString runningAppVersionStr = SAAGHAR_VERSION + ".0";
     runningAppVersionStr.remove('.');
     int runningAppVersion = runningAppVersionStr.toInt();
     QString serverAppVerionStr = releaseInfo.value("VERSION");
@@ -1488,10 +1484,10 @@ QString SaagharWindow::convertToTeX(SaagharWidget* saagharObject)
     }
 
     QString tableAsTeX = QString("%%%%%\n%This file is generated automatically by Saaghar %1, 2010 http://pozh.org\n%%%%%\n%XePersian and bidipoem packages must have been installed on your TeX distribution for compiling this document\n%You can compile this document by running XeLaTeX on it, twice.\n%%%%%\n\\documentclass{article}\n\\usepackage{hyperref}%\n\\usepackage[Kashida]{xepersian}\n\\usepackage{bidipoem}\n\\settextfont{%2}\n\\hypersetup{\npdftitle={%3},%\npdfsubject={Poem},%\npdfkeywords={Poem, Persian},%\npdfcreator={Saaghar, a Persian poetry software, http://saaghar.pozh.org},%\npdfview=FitV,\n}\n\\renewcommand{\\poemcolsepskip}{1.5cm}\n\\begin{document}\n\\begin{center}\n%3\\\\\n\\end{center}\n\\begin{%4}\n%5\n%6\\end{document}\n%End of document\n")
-                         .arg(VER_FILEVERSION_STR).arg(Settings::getFromFonts(Settings::PoemTextFontColor).family()).arg(curPoem._Title).arg(poemType).arg(tableBody).arg(endOfEnvironment);
+                         .arg(SAAGHAR_VERSION).arg(Settings::getFromFonts(Settings::PoemTextFontColor).family()).arg(curPoem._Title).arg(poemType).arg(tableBody).arg(endOfEnvironment);
     return tableAsTeX;
     /*******************************************************
-    %1: Saaghar Version: VER_FILEVERSION_STR
+    %1: Saaghar Version: SAAGHAR_VERSION
     %2: Font Family
     %3: Poem Title
     %4: Poem Type, traditionalpoem or modernpoem environment
