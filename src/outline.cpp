@@ -53,6 +53,7 @@
 
 #include "outline.h"
 #include "qganjoordbbrowser.h"
+#include "searchitemdelegate.h"
 
 OutLineTree::OutLineTree(QWidget* parent)
     : QWidget(parent)
@@ -74,20 +75,14 @@ OutLineTree::OutLineTree(QWidget* parent)
     labels << tr("Title") << tr("Comments");
 
     setObjectName("OutLineWidget");
-    //hide();
 
-    //QWidget *bookmarkContainer = new QWidget(bookmarkManagerWidget);
     QVBoxLayout* mainLayout = new QVBoxLayout;
     QHBoxLayout* toolsLayout = new QHBoxLayout;
-
-//  QString clearIconPath = currentIconThemePath()+"/clear-left.png";
-//  if (layoutDirection() == Qt::RightToLeft)
-//      clearIconPath = currentIconThemePath()+"/clear-right.png";
 
     QLabel* filterLabel = new QLabel;
     filterLabel->setObjectName(QString::fromUtf8("OutLineTreeFilterLabel"));
     filterLabel->setText(tr("Filter:"));
-    QSearchLineEdit* outLineFilter = new QSearchLineEdit(this, ""/*clearIconPath*/, ""/*currentIconThemePath()+"/filter.png"*/);
+    QSearchLineEdit* outLineFilter = new QSearchLineEdit(this);
     outLineFilter->setObjectName("outLineFilter");
 #if QT_VERSION >= 0x040700
     outLineFilter->setPlaceholderText(tr("Filter"));
@@ -109,6 +104,10 @@ OutLineTree::OutLineTree(QWidget* parent)
     connect(outlineWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(doubleClicked(QTreeWidgetItem*,int)));
     connect(outlineWidget, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(justClicked(QTreeWidgetItem*,int)));
     connect(outlineWidget, SIGNAL(itemPressed(QTreeWidgetItem*,int)), this, SLOT(itemPressed(QTreeWidgetItem*,int)));
+
+    SaagharItemDelegate* filterDelegate = new SaagharItemDelegate(this, outlineWidget->style());
+    outlineWidget->setItemDelegate(filterDelegate);
+    connect(outLineFilter, SIGNAL(textChanged(QString)), filterDelegate, SLOT(keywordChanged(QString)));
 }
 
 void OutLineTree::setItems(const QList<QTreeWidgetItem*> &items)
@@ -119,21 +118,6 @@ void OutLineTree::setItems(const QList<QTreeWidgetItem*> &items)
 
 bool OutLineTree::filterItems(const QString &str, QTreeWidgetItem* parentItem)
 {
-//  QList<QTreeWidgetItem *> list = outlineWidget->findItems("", Qt::MatchContains|Qt::MatchWrap|Qt::MatchRecursive);
-
-//      for (int i=0; i<list.size();++i)
-//      {
-//          if (list.at(i))
-//          {
-//              QString text = list.at(i)->text(0);
-//              text = QGanjoorDbBrowser::cleanString(text);
-//              if (!str.isEmpty() && !text.contains(str))
-//                  list.at(i)->setHidden(true);
-//              else
-//                  list.at(i)->setHidden(false);
-//          }
-//      }
-
     int childrenSize;
     if (!parentItem) {
         childrenSize = outlineWidget->topLevelItemCount();
@@ -161,7 +145,6 @@ bool OutLineTree::filterItems(const QString &str, QTreeWidgetItem* parentItem)
                 bool tmp = filterItems(cleanStr, ithChild);
                 if (!tmp) {
                     ithChild->setExpanded(true);
-                    //recursivelyUnHide(ithChild);
                 }
 
                 ithChild->setHidden(tmp);
@@ -173,31 +156,10 @@ bool OutLineTree::filterItems(const QString &str, QTreeWidgetItem* parentItem)
             }
         }
         else {
-            ////if (ithChild->isHidden())
-//          {
-//              ithChild->setHidden(false);
-//              int childCount = ithChild->childCount();
-//              for (int j=0; j<childCount;++j)
-//              {
-//                  QTreeWidgetItem *child = ithChild->child(j);
-//                  child->setHidden(false);
-//              }
-//          }
             recursivelyUnHide(ithChild);
             ithChild->setExpanded(false);
             result = result && false;//return false when at least one child is visible
         }
-//      int childCount = ithChild->childCount();
-//      for (int j=0; j<childCount;++j)
-//      {
-//          QTreeWidgetItem *child = ithRootChild->child(j);
-//          QString text = child->text(0)+child->text(1);
-//          text = QGanjoorDbBrowser::cleanString(text);
-//          if (!str.isEmpty() && !text.contains(str))
-//              child->setHidden(true);
-//          else
-//              child->setHidden(false);
-//      }
     }
     return result;
 }
