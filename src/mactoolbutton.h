@@ -1,8 +1,11 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2014 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2013-2014 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
+ *                                                                         *
+ *  This file was taken from QupZilla                                      *
+ *  Copyright (C) 2013-2014  David Rosca <nowrep@gmail.com>                *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -18,39 +21,40 @@
  *  along with this program; if not, see http://www.gnu.org/licenses/      *
  *                                                                         *
  ***************************************************************************/
+#ifndef MACTOOLBUTTON_H
+#define MACTOOLBUTTON_H
 
-#ifndef TABWIDGET_H
-#define TABWIDGET_H
+#include <QObject>
 
-#include <QTabBar>
-#include <QTabWidget>
+#ifdef Q_OS_MAC
+#include <QPushButton>
 
-class MacToolButton;
+class MacToolButton : public QPushButton
+{
+    Q_OBJECT
+    Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
 
-class TabBar : public QTabBar
+public:
+    explicit MacToolButton(QWidget* parent = 0);
+
+    void setIconSize(const QSize &size);
+
+    void setAutoRaise(bool enable);
+    bool autoRaise() const;
+
+private:
+    bool m_autoRise;
+    QSize m_buttonFixedSize;
+};
+#else
+#include <QToolButton>
+
+class MacToolButton : public QToolButton
 {
     Q_OBJECT
 
 public:
-    TabBar(QWidget* parent = 0);
-    MacToolButton* addTabButton();
-
-private:
-    QSize tabSizeHint(int index) const;
-    void moveAddTabButton(int posX);
-
-    MacToolButton* m_addTabButton;
+    explicit MacToolButton(QWidget* parent = 0);
 };
-
-class TabWidget : public QTabWidget
-{
-    Q_OBJECT
-
-public:
-    TabWidget(QWidget* parent = 0);
-    TabBar* getTabBar();
-
-private:
-    TabBar* m_tabBar;
-};
-#endif // TABWIDGET_H
+#endif
+#endif // MACTOOLBUTTON_H

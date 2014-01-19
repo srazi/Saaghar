@@ -1,8 +1,11 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2014 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2013-2014 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
+ *                                                                         *
+ *  This file was taken from QupZilla                                      *
+ *  Copyright (C) 2013-2014  David Rosca <nowrep@gmail.com>                *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
  *  it under the terms of the GNU General Public License as published by   *
@@ -19,38 +22,38 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef TABWIDGET_H
-#define TABWIDGET_H
+#include "mactoolbutton.h"
 
-#include <QTabBar>
-#include <QTabWidget>
-
-class MacToolButton;
-
-class TabBar : public QTabBar
+#ifdef Q_OS_MAC
+MacToolButton::MacToolButton(QWidget* parent)
+    : QPushButton(parent)
+    , m_autoRise(false)
+    , m_buttonFixedSize(18, 18)
 {
-    Q_OBJECT
+}
 
-public:
-    TabBar(QWidget* parent = 0);
-    MacToolButton* addTabButton();
-
-private:
-    QSize tabSizeHint(int index) const;
-    void moveAddTabButton(int posX);
-
-    MacToolButton* m_addTabButton;
-};
-
-class TabWidget : public QTabWidget
+void MacToolButton::setIconSize(const QSize &size)
 {
-    Q_OBJECT
+    QPushButton::setIconSize(size);
+    m_buttonFixedSize = QSize(size.width() + 2, size.height() + 2);
+}
 
-public:
-    TabWidget(QWidget* parent = 0);
-    TabBar* getTabBar();
+void MacToolButton::setAutoRaise(bool enable)
+{
+    m_autoRise = enable;
+    setFlat(enable);
+    if (enable) {
+        setFixedSize(m_buttonFixedSize);
+    }
+}
 
-private:
-    TabBar* m_tabBar;
-};
-#endif // TABWIDGET_H
+bool MacToolButton::autoRaise() const
+{
+    return m_autoRise;
+}
+#else
+MacToolButton::MacToolButton(QWidget* parent)
+    : QToolButton(parent)
+{
+}
+#endif

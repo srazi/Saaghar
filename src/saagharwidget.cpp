@@ -163,6 +163,12 @@ void SaagharWidget::loadSettings()
         disconnect(tableViewWidget->verticalScrollBar()     , SIGNAL(valueChanged(int)), tableViewWidget->viewport(), SLOT(update()));
         disconnect(tableViewWidget->horizontalScrollBar()   , SIGNAL(valueChanged(int)), tableViewWidget->viewport(), SLOT(update()));
     }
+
+#ifdef Q_OS_MAC
+    // Workaround for Qt 4.8 Bug: see https://bugreports.qt-project.org/browse/QTBUG-25180
+    connect(tableViewWidget->verticalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(forceReLayoutTable()));
+    connect(tableViewWidget->horizontalScrollBar(), SIGNAL(valueChanged(int)), this, SLOT(forceReLayoutTable()));
+#endif
     tableViewWidget->setPalette(p);
     //tableViewWidget->setFont(SaagharWidget::tableFont);
 
@@ -1509,6 +1515,16 @@ void SaagharWidget::setFromMVPosition()
         m_vPosition = -1;
     }
 }
+
+#ifdef Q_OS_MAC
+// Workaround for Qt 4.8 Bug: see https://bugreports.qt-project.org/browse/QTBUG-25180
+#include <QResizeEvent>
+void SaagharWidget::forceReLayoutTable()
+{
+    QResizeEvent requestLayout(tableViewWidget->viewport()->size(), tableViewWidget->viewport()->size());//QSize(0,0));
+    qApp->sendEvent(tableViewWidget->viewport(), &requestLayout);
+}
+#endif
 
 void SaagharWidget::clickedOnItem(int row, int column)
 {

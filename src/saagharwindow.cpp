@@ -28,6 +28,7 @@
 #include "searchpatternmanager.h"
 #include "outline.h"
 #include "searchoptionsdialog.h"
+#include "mactoolbutton.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -241,7 +242,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
     mainTabWidget->getTabBar()->addTabButton()->setIcon(QIcon(ICON_PATH + "/add-tab.png"));
     connect(mainTabWidget->getTabBar()->addTabButton(), SIGNAL(clicked()), this, SLOT(actionNewTabClicked()));
 
-    QToolButton* cornerMenuButton = new QToolButton(mainTabWidget);
+    MacToolButton* cornerMenuButton = new MacToolButton(mainTabWidget);
     cornerMenuButton->setStyleSheet("QToolButton::menu-indicator{image: none;}");
     cornerMenuButton->setAutoRaise(true);
     cornerMenuButton->setIcon(QIcon(ICON_PATH + "/arrow-down.png"));

@@ -20,8 +20,7 @@
  ***************************************************************************/
 
 #include "tabwidget.h"
-
-#include <QToolButton>
+#include "mactoolbutton.h"
 
 TabWidget::TabWidget(QWidget* parent)
     : QTabWidget(parent)
@@ -38,13 +37,15 @@ TabBar* TabWidget::getTabBar()
 
 TabBar::TabBar(QWidget* parent)
     : QTabBar(parent)
-    , m_addTabButton(new QToolButton(this))
+    , m_addTabButton(new MacToolButton(this))
 {
+    // on Mac its default state is off
+    setUsesScrollButtons(true);
     m_addTabButton->setAutoRaise(true);
     setDrawBase(true);
 }
 
-QToolButton* TabBar::addTabButton()
+MacToolButton* TabBar::addTabButton()
 {
     return m_addTabButton;
 }

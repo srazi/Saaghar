@@ -167,6 +167,10 @@ private slots:
 
     void setFromMVPosition();
 
+#ifdef Q_OS_MAC
+    void forceReLayoutTable();
+#endif
+
 public slots:
     QTableWidgetItem* scrollToFirstItemContains(const QString &phrase, bool pharseIsList = true, bool scroll = true);
 
