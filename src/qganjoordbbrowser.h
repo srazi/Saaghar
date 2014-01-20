@@ -118,6 +118,7 @@ public:
     static const QStringList Ye_Variant;
     static const QStringList AE_Variant;
     static const QStringList He_Variant;
+    static const QString &OTHER_GLYPHS;
 
 public slots:
     void addDataSets();

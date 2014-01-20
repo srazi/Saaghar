@@ -88,6 +88,11 @@ const QStringList QGanjoorDbBrowser::AE_Variant = QStringList()
 //  "ه" cell= 71 row= 6
 const QStringList QGanjoorDbBrowser::He_Variant = QStringList()
         << QChar(71, 6) << QChar(41, 6) << QChar(192, 6);
+
+// tashdid+keshide+o+a+e+an+en+on+saaken+zwnj
+const QString &QGanjoorDbBrowser::OTHER_GLYPHS = QString(QChar(78, 6)) +
+        QChar(79, 6) + QChar(80, 6) + QChar(81, 6) + QChar(64, 6) +
+        QChar(75, 6) + QChar(76, 6) + QChar(77, 6) + QChar(82, 6) + QChar(0x200C);
 ////////////////////////////
 const QRegExp Ve_EXP = QRegExp("[" +
                                QGanjoorDbBrowser::Ve_Variant.join("").remove(QGanjoorDbBrowser::Ve_Variant.at(0))
