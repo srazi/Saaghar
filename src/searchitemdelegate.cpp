@@ -320,15 +320,34 @@ void SaagharItemDelegate::updateAdditionalFormats() const
     QString text = m_textLayout.text();
     qreal pointSize = m_textLayout.font().pointSizeF() + 2.0;
     //int fontWeight = m_textLayout.font().weight() + 50;
-    QColor highlight = SaagharWidget::matchedTextColor.lighter();
-    highlight.setAlpha(30);
+    QColor highlight = SaagharWidget::matchedTextColor;
 
-    //QString cleanedText = QGanjoorDbBrowser::cleanString(text);
+    // see: http://gamedev.stackexchange.com/a/38542
+    qreal l = 0.2126 * highlight.redF() * highlight.redF() +
+            0.7152 * highlight.greenF() * highlight.greenF() +
+            0.0722 * highlight.blueF() * highlight.blueF();
+
+    if (l > 0.85) {
+        highlight = highlight.darker(150);
+        highlight.setAlpha(200);
+    }
+    else if (l > 0.6) {
+        highlight = highlight.lighter(105);
+        highlight.setAlpha(40);
+    }
+    else if (l > 0.4){
+        highlight = highlight.lighter(120);
+        highlight.setAlpha(50);
+    }
+    else {
+        highlight = highlight.lighter(140);
+        highlight.setAlpha(30);
+    }
+
     text = QGanjoorDbBrowser::cleanString(text, QStringList() << " " << QGanjoorDbBrowser::someSymbols);
-    /////////////////////////////////////////////////
+
     int keywordsCount = keywordList.size();
     for (int i = 0; i < keywordsCount; ++i) {
-        //lastX = x = option.rect.x() + textHMargin;
         QString keyword = keywordList.at(i);
         if (keyword.isEmpty()) {
             continue;
@@ -400,8 +419,32 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
 {
     int keywordsCount = keywordList.size();
 
+    QColor highlight = SaagharWidget::matchedTextColor;
+    // see: http://gamedev.stackexchange.com/a/38542
+    qreal l = 0.2126 * highlight.redF() * highlight.redF() +
+            0.7152 * highlight.greenF() * highlight.greenF() +
+            0.0722 * highlight.blueF() * highlight.blueF();
+
+    if (l > 0.85) {
+        highlight = highlight.darker(150);
+        highlight.setAlpha(200);
+    }
+    else if (l > 0.6) {
+        highlight = highlight.lighter(105);
+        highlight.setAlpha(40);
+    }
+    else if (l > 0.4){
+        highlight = highlight.lighter(120);
+        highlight.setAlpha(50);
+    }
+    else {
+        highlight = highlight.lighter(140);
+        highlight.setAlpha(30);
+    }
+
     QTextCharFormat paragraphHighightFormat;
-    paragraphHighightFormat.setBackground(SaagharWidget::matchedTextColor);
+    paragraphHighightFormat.setForeground(SaagharWidget::matchedTextColor);
+    paragraphHighightFormat.setBackground(highlight);
 
     for (int i = 0; i < keywordsCount; ++i) {
         QString keyword = keywordList.at(i);
