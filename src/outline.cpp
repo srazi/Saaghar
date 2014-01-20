@@ -105,7 +105,7 @@ OutLineTree::OutLineTree(QWidget* parent)
     connect(outlineWidget, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(justClicked(QTreeWidgetItem*,int)));
     connect(outlineWidget, SIGNAL(itemPressed(QTreeWidgetItem*,int)), this, SLOT(itemPressed(QTreeWidgetItem*,int)));
 
-    SaagharItemDelegate* filterDelegate = new SaagharItemDelegate(this, outlineWidget->style());
+    SaagharItemDelegate* filterDelegate = new SaagharItemDelegate(outlineWidget, outlineWidget->style());
     outlineWidget->setItemDelegate(filterDelegate);
     connect(outLineFilter, SIGNAL(textChanged(QString)), filterDelegate, SLOT(keywordChanged(QString)));
 }

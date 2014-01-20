@@ -24,6 +24,7 @@
 #include "qganjoordbstuff.h"
 #include "saagharwidget.h"
 
+#include <qmath.h>
 #include <QPainter>
 #include <QIcon>
 
@@ -42,6 +43,7 @@ SaagharItemDelegate::SaagharItemDelegate(QWidget* parent, QStyle* style, QString
     }
 }
 
+#if 0 // old highlight algorithm
 void SaagharItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &option,
                                 const QModelIndex &index) const
 {
@@ -179,6 +181,186 @@ void SaagharItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
     }
     QItemDelegate::paint(painter, option, index);
 }
+#endif // old highlight algorithm
+
+// taken from qitemdelegate.cpp
+inline static QString replaceNewLine(QString text)
+{
+    const QChar nl = QLatin1Char('\n');
+    for (int i = 0; i < text.count(); ++i) {
+        if (text.at(i) == nl) {
+            text[i] = QChar::LineSeparator;
+        }
+    }
+
+    return text;
+}
+
+// taken from qitemdelegate.cpp
+void SaagharItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QString &text) const
+{
+    QPalette::ColorGroup cg = option.state & QStyle::State_Enabled
+                              ? QPalette::Normal : QPalette::Disabled;
+    if (cg == QPalette::Normal && !(option.state & QStyle::State_Active))
+        cg = QPalette::Inactive;
+    if (option.state & QStyle::State_Selected) {
+        painter->fillRect(rect, option.palette.brush(cg, QPalette::Highlight));
+        painter->setPen(option.palette.color(cg, QPalette::HighlightedText));
+    } else {
+        painter->setPen(option.palette.color(cg, QPalette::Text));
+    }
+
+    if (text.isEmpty())
+        return;
+
+    if (option.state & QStyle::State_Editing) {
+        painter->save();
+        painter->setPen(option.palette.color(cg, QPalette::Text));
+        painter->drawRect(rect.adjusted(0, 0, -1, -1));
+        painter->restore();
+    }
+
+    const QStyleOptionViewItemV4 opt = option;
+    const QStyleOptionViewItemV3 *v3 = 0;//qstyleoption_cast<const QStyleOptionViewItemV3 *>(&option);
+
+    QStyle *style = v3 && v3->widget ? v3->widget->style() : QApplication::style();
+    const int textMargin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, 0,  (v3 && v3->widget ? v3->widget : 0)) + 1;
+    QRect textRect = rect.adjusted(textMargin, 0, -textMargin, 0); // remove width padding
+    const bool wrapText = opt.features & QStyleOptionViewItemV2::WrapText;
+    m_textOption.setWrapMode(wrapText ? QTextOption::WordWrap : QTextOption::ManualWrap);
+    m_textOption.setTextDirection(option.direction);
+    m_textOption.setAlignment(QStyle::visualAlignment(option.direction, option.displayAlignment));
+    m_textLayout.setTextOption(m_textOption);
+    m_textLayout.setFont(option.font);
+    m_textLayout.setText(replaceNewLine(text));
+
+    QSizeF textLayoutSize = doTextLayout(textRect.width());
+
+    if (textRect.width() < textLayoutSize.width()
+        || textRect.height() < textLayoutSize.height()) {
+        QString elided;
+        int start = 0;
+        int end = text.indexOf(QChar::LineSeparator, start);
+        if (end == -1) {
+            elided += option.fontMetrics.elidedText(text, option.textElideMode, textRect.width());
+        } else {
+            while (end != -1) {
+                elided += option.fontMetrics.elidedText(text.mid(start, end - start),
+                                                        option.textElideMode, textRect.width());
+                elided += QChar::LineSeparator;
+                start = end + 1;
+                end = text.indexOf(QChar::LineSeparator, start);
+            }
+            //let's add the last line (after the last QChar::LineSeparator)
+            elided += option.fontMetrics.elidedText(text.mid(start),
+                                                    option.textElideMode, textRect.width());
+        }
+        m_textLayout.setText(elided);
+        textLayoutSize = doTextLayout(textRect.width());
+    }
+
+    const QSize layoutSize(textRect.width(), int(textLayoutSize.height()));
+    const QRect layoutRect = QStyle::alignedRect(option.direction, option.displayAlignment,
+                                                  layoutSize, textRect);
+    // if we still overflow even after eliding the text, enable clipping
+    if (!hasClipping() && (textRect.width() < textLayoutSize.width()
+                           || textRect.height() < textLayoutSize.height())) {
+        painter->save();
+        painter->setClipRect(layoutRect);
+        m_textLayout.draw(painter, layoutRect.topLeft(), QVector<QTextLayout::FormatRange>(), layoutRect);
+        painter->restore();
+    } else {
+        m_textLayout.draw(painter, layoutRect.topLeft(), QVector<QTextLayout::FormatRange>(), layoutRect);
+    }
+}
+
+// taken from qitemdelegate.cpp
+QRect SaagharItemDelegate::textRectangle(QPainter * /*painter*/, const QRect &rect,
+                                         const QFont &font, const QString &text) const
+{
+    m_textOption.setWrapMode(QTextOption::WordWrap);
+    m_textLayout.setTextOption(m_textOption);
+    m_textLayout.setFont(font);
+    m_textLayout.setText(replaceNewLine(text));
+    QSizeF fpSize = doTextLayout(rect.width());
+    const QSize size = QSize(qCeil(fpSize.width()), qCeil(fpSize.height()));
+    // ###: textRectangle should take style option as argument
+    const int textMargin = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 1;
+    return QRect(0, 0, size.width() + 2 * textMargin, size.height());
+}
+
+// taken from qitemdelegate.cpp
+QSizeF SaagharItemDelegate::doTextLayout(int lineWidth) const
+{
+    updateAdditionalFormats();
+
+    qreal height = 0;
+    qreal widthUsed = 0;
+    m_textLayout.beginLayout();
+    while (true) {
+        QTextLine line = m_textLayout.createLine();
+        if (!line.isValid())
+            break;
+        line.setLineWidth(lineWidth);
+        line.setPosition(QPointF(0, height));
+        height += line.height();
+        widthUsed = qMax(widthUsed, line.naturalTextWidth());
+    }
+    m_textLayout.endLayout();
+
+    return QSizeF(widthUsed, height);
+}
+
+void SaagharItemDelegate::updateAdditionalFormats() const
+{
+    m_additionalFormats.clear();
+    m_textLayout.clearAdditionalFormats();
+
+    const static QString tatweel = QString(0x0640);
+    QString text = m_textLayout.text();
+    qreal pointSize = m_textLayout.font().pointSizeF() + 2.0;
+    //int fontWeight = m_textLayout.font().weight() + 50;
+    QColor highlight = SaagharWidget::matchedTextColor.lighter();
+    highlight.setAlpha(30);
+
+    //QString cleanedText = QGanjoorDbBrowser::cleanString(text);
+    text = QGanjoorDbBrowser::cleanString(text, QStringList() << " " << QGanjoorDbBrowser::someSymbols);
+    /////////////////////////////////////////////////
+    int keywordsCount = keywordList.size();
+    for (int i = 0; i < keywordsCount; ++i) {
+        //lastX = x = option.rect.x() + textHMargin;
+        QString keyword = keywordList.at(i);
+        if (keyword.isEmpty()) {
+            continue;
+        }
+
+        keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
+        keyword = keyword.split("", QString::SkipEmptyParts).join(tatweel + "*");
+        keyword.replace("@" + tatweel + "*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
+        QRegExp maybeTatweel(keyword, Qt::CaseInsensitive);
+
+        int pos = 0;
+        while ((pos = maybeTatweel.indexIn(text, pos)) != -1) {
+            QTextLayout::FormatRange fr;
+            fr.start = pos;
+            fr.length = maybeTatweel.matchedLength();
+
+            pos += fr.length;
+
+            fr.format.setFontPointSize(pointSize);
+            fr.format.setForeground(SaagharWidget::matchedTextColor);
+            fr.format.setBackground(highlight);
+            fr.format.setFontWeight(99);
+
+            m_additionalFormats << fr;
+        }
+    }
+
+    if (!m_additionalFormats.isEmpty()) {
+        m_textLayout.setText(text);
+        m_textLayout.setAdditionalFormats(m_additionalFormats);
+    }
+}
 
 void SaagharItemDelegate::keywordChanged(const QString &text)
 {
@@ -188,9 +370,8 @@ void SaagharItemDelegate::keywordChanged(const QString &text)
     keywordList = SearchPatternManager::phraseToList(tmp, false);
     keywordList.removeDuplicates();
 
-    QTableWidget* table = qobject_cast<QTableWidget*>(parent());
-    if (table) {
-        table->viewport()->update();
+    if (QAbstractScrollArea* scrollArea = qobject_cast<QAbstractScrollArea*>(parent())) {
+        scrollArea->viewport()->update();
     }
 }
 

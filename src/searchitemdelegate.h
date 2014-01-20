@@ -24,7 +24,8 @@
 
 #include <QItemDelegate>
 #include <QSyntaxHighlighter>
-
+#include <QTextLayout>
+#include <QTextOption>
 
 class SaagharItemDelegate : public QItemDelegate
 {
@@ -34,11 +35,28 @@ public:
     SaagharItemDelegate(QWidget* parent = 0, QStyle* style = 0, const QString phrase = QString());
 
 private:
+#if 0 // old highlight algorithm
+    void paint(QPainter* painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+#endif
+    void drawDisplay(QPainter *painter, const QStyleOptionViewItem &option,
+                     const QRect &rect, const QString &text) const;
+
+    QRect textRectangle(QPainter *painter, const QRect &rect,
+                        const QFont &font, const QString &text) const;
+
+    QSizeF doTextLayout(int lineWidth) const;
+
+    void updateAdditionalFormats() const;
+
     QWidget* parentWidget;
     qreal opacity;
     QStyle* tableStyle;
     QStringList keywordList;
-    void paint(QPainter* painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+    mutable QTextLayout m_textLayout;
+    mutable QTextOption m_textOption;
+
+    mutable QList<QTextLayout::FormatRange> m_additionalFormats;
 
 private slots:
     void keywordChanged(const QString &text);
