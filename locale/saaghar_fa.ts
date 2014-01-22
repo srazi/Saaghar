@@ -1228,17 +1228,17 @@ No match found.</source>
         <location filename="../src/saagharwindow.cpp" line="576"/>
         <location filename="../src/saagharwindow.cpp" line="580"/>
         <source>poet&apos;s code=</source>
-        <translation>کد شاعر=</translation>
+        <translation>کد نسک=</translation>
     </message>
     <message>
         <location filename="../src/saagharwindow.cpp" line="578"/>
         <source>Remove Poet</source>
-        <translation>کنار نهادن نویسنده</translation>
+        <translation>کنار نهادن نَسک</translation>
     </message>
     <message>
         <location filename="../src/saagharwindow.cpp" line="578"/>
         <source>Select a poet name and click on &apos;OK&apos; button, for remove it from database.</source>
-        <translation>برای کنار نهادن نویسنده، نام نویسنده را انتخاب کنید و روی دکمه «قبول» کلیک کنید.</translation>
+        <translation>برای کنار نهادن نَسک نام نَسک/نویسنده را انتخاب کنید و روی دکمه «قبول» کلیک کنید.</translation>
     </message>
     <message>
         <location filename="../src/saagharwindow.cpp" line="585"/>
@@ -1756,7 +1756,7 @@ DataBase Path: %2</source>
     <message>
         <location filename="../src/saagharwindow.cpp" line="1744"/>
         <source>&amp;Remove Poet...</source>
-        <translation>کنار نهادن &amp;نویسنده...</translation>
+        <translation>&amp;کنار نهادن نَسک...</translation>
     </message>
     <message>
         <location filename="../src/saagharwindow.cpp" line="346"/>

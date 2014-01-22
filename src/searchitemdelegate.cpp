@@ -197,21 +197,24 @@ inline static QString replaceNewLine(QString text)
 }
 
 // taken from qitemdelegate.cpp
-void SaagharItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QString &text) const
+void SaagharItemDelegate::drawDisplay(QPainter* painter, const QStyleOptionViewItem &option, const QRect &rect, const QString &text) const
 {
     QPalette::ColorGroup cg = option.state & QStyle::State_Enabled
                               ? QPalette::Normal : QPalette::Disabled;
-    if (cg == QPalette::Normal && !(option.state & QStyle::State_Active))
+    if (cg == QPalette::Normal && !(option.state & QStyle::State_Active)) {
         cg = QPalette::Inactive;
+    }
     if (option.state & QStyle::State_Selected) {
         painter->fillRect(rect, option.palette.brush(cg, QPalette::Highlight));
         painter->setPen(option.palette.color(cg, QPalette::HighlightedText));
-    } else {
+    }
+    else {
         painter->setPen(option.palette.color(cg, QPalette::Text));
     }
 
-    if (text.isEmpty())
+    if (text.isEmpty()) {
         return;
+    }
 
     if (option.state & QStyle::State_Editing) {
         painter->save();
@@ -221,10 +224,10 @@ void SaagharItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewI
     }
 
     const QStyleOptionViewItemV4 opt = option;
-    const QStyleOptionViewItemV3 *v3 = 0;//qstyleoption_cast<const QStyleOptionViewItemV3 *>(&option);
+    const QStyleOptionViewItemV3* v3 = 0;//qstyleoption_cast<const QStyleOptionViewItemV3 *>(&option);
 
-    QStyle *style = v3 && v3->widget ? v3->widget->style() : QApplication::style();
-    const int textMargin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, 0,  (v3 && v3->widget ? v3->widget : 0)) + 1;
+    QStyle* style = v3 && v3->widget ? v3->widget->style() : QApplication::style();
+    const int textMargin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, (v3 && v3->widget ? v3->widget : 0)) + 1;
     QRect textRect = rect.adjusted(textMargin, 0, -textMargin, 0); // remove width padding
     const bool wrapText = opt.features & QStyleOptionViewItemV2::WrapText;
     m_textOption.setWrapMode(wrapText ? QTextOption::WordWrap : QTextOption::ManualWrap);
@@ -237,13 +240,14 @@ void SaagharItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewI
     QSizeF textLayoutSize = doTextLayout(textRect.width());
 
     if (textRect.width() < textLayoutSize.width()
-        || textRect.height() < textLayoutSize.height()) {
+            || textRect.height() < textLayoutSize.height()) {
         QString elided;
         int start = 0;
         int end = text.indexOf(QChar::LineSeparator, start);
         if (end == -1) {
             elided += option.fontMetrics.elidedText(text, option.textElideMode, textRect.width());
-        } else {
+        }
+        else {
             while (end != -1) {
                 elided += option.fontMetrics.elidedText(text.mid(start, end - start),
                                                         option.textElideMode, textRect.width());
@@ -261,7 +265,7 @@ void SaagharItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewI
 
     const QSize layoutSize(textRect.width(), int(textLayoutSize.height()));
     const QRect layoutRect = QStyle::alignedRect(option.direction, option.displayAlignment,
-                                                  layoutSize, textRect);
+                             layoutSize, textRect);
     // if we still overflow even after eliding the text, enable clipping
     if (!hasClipping() && (textRect.width() < textLayoutSize.width()
                            || textRect.height() < textLayoutSize.height())) {
@@ -269,14 +273,15 @@ void SaagharItemDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewI
         painter->setClipRect(layoutRect);
         m_textLayout.draw(painter, layoutRect.topLeft(), QVector<QTextLayout::FormatRange>(), layoutRect);
         painter->restore();
-    } else {
+    }
+    else {
         m_textLayout.draw(painter, layoutRect.topLeft(), QVector<QTextLayout::FormatRange>(), layoutRect);
     }
 }
 
 // taken from qitemdelegate.cpp
-QRect SaagharItemDelegate::textRectangle(QPainter * /*painter*/, const QRect &rect,
-                                         const QFont &font, const QString &text) const
+QRect SaagharItemDelegate::textRectangle(QPainter* /*painter*/, const QRect &rect,
+        const QFont &font, const QString &text) const
 {
     m_textOption.setWrapMode(QTextOption::WordWrap);
     m_textLayout.setTextOption(m_textOption);
@@ -299,8 +304,9 @@ QSizeF SaagharItemDelegate::doTextLayout(int lineWidth) const
     m_textLayout.beginLayout();
     while (true) {
         QTextLine line = m_textLayout.createLine();
-        if (!line.isValid())
+        if (!line.isValid()) {
             break;
+        }
         line.setLineWidth(lineWidth);
         line.setPosition(QPointF(0, height));
         height += line.height();
@@ -323,8 +329,8 @@ void SaagharItemDelegate::updateAdditionalFormats() const
 
     // see: http://gamedev.stackexchange.com/a/38542
     qreal l = 0.2126 * highlight.redF() * highlight.redF() +
-            0.7152 * highlight.greenF() * highlight.greenF() +
-            0.0722 * highlight.blueF() * highlight.blueF();
+              0.7152 * highlight.greenF() * highlight.greenF() +
+              0.0722 * highlight.blueF() * highlight.blueF();
 
     if (l > 0.85) {
         highlight = highlight.darker(150);
@@ -334,7 +340,7 @@ void SaagharItemDelegate::updateAdditionalFormats() const
         highlight = highlight.lighter(105);
         highlight.setAlpha(40);
     }
-    else if (l > 0.4){
+    else if (l > 0.4) {
         highlight = highlight.lighter(120);
         highlight.setAlpha(50);
     }
@@ -419,8 +425,8 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
     QColor highlight = SaagharWidget::matchedTextColor;
     // see: http://gamedev.stackexchange.com/a/38542
     qreal l = 0.2126 * highlight.redF() * highlight.redF() +
-            0.7152 * highlight.greenF() * highlight.greenF() +
-            0.0722 * highlight.blueF() * highlight.blueF();
+              0.7152 * highlight.greenF() * highlight.greenF() +
+              0.0722 * highlight.blueF() * highlight.blueF();
 
     if (l > 0.85) {
         highlight = highlight.darker(150);
@@ -430,7 +436,7 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
         highlight = highlight.lighter(105);
         highlight.setAlpha(40);
     }
-    else if (l > 0.4){
+    else if (l > 0.4) {
         highlight = highlight.lighter(120);
         highlight.setAlpha(50);
     }

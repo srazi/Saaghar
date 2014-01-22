@@ -38,10 +38,10 @@ private:
 #if 0 // old highlight algorithm
     void paint(QPainter* painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 #endif
-    void drawDisplay(QPainter *painter, const QStyleOptionViewItem &option,
+    void drawDisplay(QPainter* painter, const QStyleOptionViewItem &option,
                      const QRect &rect, const QString &text) const;
 
-    QRect textRectangle(QPainter *painter, const QRect &rect,
+    QRect textRectangle(QPainter* painter, const QRect &rect,
                         const QFont &font, const QString &text) const;
 
     QSizeF doTextLayout(int lineWidth) const;
