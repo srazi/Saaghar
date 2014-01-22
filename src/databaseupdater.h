@@ -66,29 +66,31 @@ private slots:
     void itemDataChanged(QTreeWidgetItem* item, int column);
 
 private:
-    static SaagharWindow* s_saagharWindow;
-    static QStringList defaultRepositories;
-    static QStringList repositoriesUrls;
     void addRemoveRepository();
     void resizeColumnsToContents();
-    QHash<QString, QPair<QTreeWidgetItem*, QTreeWidgetItem*> > itemsCache;
     bool parseDocument();
     void setupTreeRootItems();
-    bool installCompleted;
     QString getTempDir(const QString &path = "", bool makeDir = false);
+    void downloadItem(QTreeWidgetItem* item, bool install = false);
+    void setupUi();
+    void parseElement(const QDomElement &element);
+    void fillRepositoryList();
+
+    QHash<QString, QPair<QTreeWidgetItem*, QTreeWidgetItem*> > itemsCache;
+    static SaagharWindow* s_saagharWindow;
+    const static QStringList defaultRepositories;
+    static QStringList repositoriesUrls;
+    bool installCompleted;
     QString randomFolder;
     Downloader* downloaderObject;
     QString sessionDownloadFolder;
-    void downloadItem(QTreeWidgetItem* item, bool install = false);
     bool downloadAboutToStart;
     bool downloadStarted;
     QHash <int, QString> insertedToList;
     Ui::DataBaseUpdater* ui;
-    void setupUi();
     QTreeWidget* repoSelectTree;
     QTreeWidgetItem* oldRootItem;
     QTreeWidgetItem* newRootItem;
-    void parseElement(const QDomElement &element);
     QDomDocument domDocument;
 
 protected:

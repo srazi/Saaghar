@@ -39,7 +39,7 @@
 QString DataBaseUpdater::downloadLocation;
 bool DataBaseUpdater::keepDownloadedFiles = false;
 QStringList DataBaseUpdater::repositoriesUrls = QStringList();
-QStringList DataBaseUpdater::defaultRepositories = QStringList()
+const QStringList DataBaseUpdater::defaultRepositories = QStringList()
         << "http://i.ganjoor.net/android/androidgdbs.xml";
 //        << "http://ganjoor.sourceforge.net/newgdbs.xml"
 //        << "http://ganjoor.sourceforge.net/programgdbs.xml"
@@ -179,14 +179,22 @@ void DataBaseUpdater::parseElement(const QDomElement &element)
     }
 }
 
+void DataBaseUpdater::fillRepositoryList()
+{
+    ui->comboBoxRepoList->clear();
+    ui->comboBoxRepoList->addItems(QStringList()
+                                   << tr("Select From Repositories List...")
+                                   << repositoriesUrls
+                                   << tr("Click To Add/Remove..."));
+    ui->comboBoxRepoList->insertSeparator(1);
+    ui->comboBoxRepoList->insertSeparator(ui->comboBoxRepoList->count() - 1);
+}
+
 void DataBaseUpdater::setRepositories(const QStringList &urls)
 {
-    if (!urls.isEmpty()) {
-        repositoriesUrls = urls;
-    }
-    else {
-        repositoriesUrls = defaultRepositories;
-    }
+    repositoriesUrls.clear();
+    repositoriesUrls << urls << defaultRepositories;
+    repositoriesUrls.removeDuplicates();
 }
 
 QStringList DataBaseUpdater::repositories()
@@ -202,9 +210,7 @@ void DataBaseUpdater::setupUi()
     ui->lineEditDownloadLocation->setToolTip(tr("Please select download location..."));
 #endif
 
-    ui->comboBoxRepoList->addItems(QStringList() << repositoriesUrls << tr("Click To Add/Remove..."));
-    ui->comboBoxRepoList->insertSeparator(1);
-    ui->comboBoxRepoList->insertSeparator(ui->comboBoxRepoList->count() - 1);
+    fillRepositoryList();
 
     ui->refreshPushButton->setEnabled(false);
 
@@ -740,7 +746,7 @@ void DataBaseUpdater::addRemoveRepository()
     QDialog addRemove(this);
     addRemove.setWindowTitle(tr("Add/Remove Repository Address"));
     QVBoxLayout vLayout(&addRemove);
-    QLabel label(tr("Insert each address in its own line!"));
+    QLabel label(tr("Insert each address in a separate line!"));
     QTextEdit textEdit;
     textEdit.setPlainText(repositoriesUrls.join("\n"));
     //QHBoxLayout hLayout(this);
@@ -768,13 +774,8 @@ void DataBaseUpdater::addRemoveRepository()
     QObject::connect(&buttonBox, SIGNAL(rejected()), &addRemove, SLOT(reject()));
 
     if (addRemove.exec() == QDialog::Accepted) {
-        repositoriesUrls.clear();
-        repositoriesUrls = textEdit.toPlainText().split("\n", QString::SkipEmptyParts);
-        ui->comboBoxRepoList->clear();
-        ui->comboBoxRepoList->addItems(QStringList()
-                                       << tr("Select From Repositories List...")
-                                       << repositoriesUrls
-                                       << tr("Click To Add/Remove..."));
+        setRepositories(textEdit.toPlainText().split("\n", QString::SkipEmptyParts));
+        fillRepositoryList();
     }
 }
 

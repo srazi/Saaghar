@@ -22,13 +22,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayoutRepo">
        <item>
-        <widget class="QComboBox" name="comboBoxRepoList">
-         <item>
-          <property name="text">
-           <string>Select From Repositories List...</string>
-          </property>
-         </item>
-        </widget>
+        <widget class="QComboBox" name="comboBoxRepoList"/>
        </item>
        <item>
         <widget class="QPushButton" name="refreshPushButton">

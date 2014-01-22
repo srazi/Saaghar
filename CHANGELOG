@@ -17,6 +17,7 @@ Added an option for changing view style of poems.
 
 Improved Features:
 --------------------------
+New highlighter algorithm correctly and accurately highlights RTL text.
 Added a new splash-screen with a new look-n-feel.
 New source structure.
 Improved TabBar.
