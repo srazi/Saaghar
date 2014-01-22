@@ -2770,7 +2770,9 @@ void SaagharWindow::tableItemMouseOver(QTableWidgetItem* item)
             senderTable->setCursor(QCursor(Qt::PointingHandCursor));
 
             if (!(item->flags() & Qt::ItemIsSelectable)) {
+                int pos = senderTable->verticalScrollBar()->value();
                 senderTable->setCurrentItem(item);
+                senderTable->verticalScrollBar()->setValue(pos);
                 QImage image(ICON_PATH + "/select-mask.png");
                 item->setBackground(QBrush(image.scaledToHeight(senderTable->rowHeight(item->row()))));
             }
