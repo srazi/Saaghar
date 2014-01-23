@@ -1,6 +1,7 @@
 ##############################################
 #The 'QTextBrowserDialog' Qt widget!         #
-#Copy Right by S. Razi Alavizadeh 2012       #
+# Copyright:                                 #
+# (C) 2012-2014 by S. Razi Alavizadeh        #
 ##############################################
 
 #DEPENDPATH += $${PWD}/.

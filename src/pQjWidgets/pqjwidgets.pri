@@ -2,8 +2,8 @@
 # The 'pQjWidgets' a set of Qt widgets!      #
 # The 'pQjWidgets' comes from PoJh QWidgets  #
 #                                            #
-# Copy Right by:                             #
-# S. Razi Alavizadeh, Pozh,2012              #
+# Copyright:                                 #
+# (C) 2012-2014 by S. Razi Alavizadeh        #
 # email: s.r.alavizadeh@gmail.com            #
 #                                            #
 # The 'pQjWidgets' is dual licensed:         #
@@ -13,7 +13,7 @@
 # contact: <email: s.r.alavizadeh@gmail.com> #
 ##############################################
 
-pQjWidgetsVersion = 0.1.2
+pQjWidgetsVersion = 0.1.3
 
 !build_pass:message("Thanks for using pQjWidgets. pQjWidgets version: $${pQjWidgetsVersion}")
 
