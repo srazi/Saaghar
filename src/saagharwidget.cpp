@@ -78,9 +78,9 @@ SaagharWidget::SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidge
     : QWidget(parent)
     , tableViewWidget(tableWidget)
     , parentCatsToolBar(catsToolBar)
-    , m_vPosition(-1)
     , currentPoem(0)
     , currentCat(0)
+    , m_vPosition(-1)
 {
     pageMetaInfo.id = 0;
     pageMetaInfo.type = SaagharWidget::CategoryViewerPage;

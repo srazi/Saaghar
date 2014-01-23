@@ -74,8 +74,8 @@ bool SaagharWindow::isPortable = false;
 SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScreen)
     : QMainWindow(parent)
     , ui(new Ui::SaagharWindow)
-    , m_cornerMenu(0)
     , menuBookmarks(0)
+    , m_cornerMenu(0)
     , m_settingsDialog(0)
     , m_splash(splashScreen)
 {
@@ -1193,7 +1193,7 @@ void SaagharWindow::print(QPrinter* printer)
                         //Single or Paragraph
                         rectX1 = 0;
                         rectX2 = saagharWidget->tableViewWidget->columnWidth(3) + saagharWidget->tableViewWidget->columnWidth(2) + saagharWidget->tableViewWidget->columnWidth(1);
-                        int textWidth;
+                        int textWidth = 0;
                         QFontMetrics fontMetric(fnt);
                         if (!item->text().isEmpty()) {
                             textWidth = fontMetric.boundingRect(item->text()).width();
@@ -2332,7 +2332,7 @@ void SaagharWindow::applySettings()
         saagharWidget->loadSettings();
 
         if (saagharWidget->tableViewWidget->columnCount() == 1 && saagharWidget->tableViewWidget->rowCount() > 0 && saagharWidget->currentCat != 0) {
-            QTableWidgetItem* item = saagharWidget->tableViewWidget->item(0, 0);
+//            QTableWidgetItem* item = saagharWidget->tableViewWidget->item(0, 0);
             //it seems after using QTextEdit this is not needed!
 //              if (item)
 //              {
@@ -2814,6 +2814,7 @@ void SaagharWindow::tableCurrentItemChanged(QTableWidgetItem* current, QTableWid
 
 void SaagharWindow::tableItemPress(QTableWidgetItem* item)
 {
+    Q_UNUSED(item)
     pressedMouseButton = QApplication::mouseButtons();
 }
 

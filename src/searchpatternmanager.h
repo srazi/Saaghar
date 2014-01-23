@@ -50,7 +50,7 @@ public:
     static void setInputPhrase(const QString &str);
     static QVector<QStringList> outputPhrases();
     static QVector<QStringList> outputExcludedLlist();
-    static void filterResults(QStringList* resultList);
+    static void filterResults(QStringList*);
     static QStringList phraseToList(const QString &str, bool removeWildCard = true);
     //static void setSpaceOperator(SearchPatternManager::Operator op);
     static int uniqueKeysCount;

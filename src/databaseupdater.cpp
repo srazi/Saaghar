@@ -377,17 +377,7 @@ void DataBaseUpdater::readRepository(const QString &url)
             ui->labelDownloadStatus->hide();
             QString filepath = tmpPath + "/" + urlInfo.fileName();
             QFile file(filepath);
-//          qDebug()<<"urlInfo.fileName="<<urlInfo.fileName()<<"full="<<tmpPath+"/"+urlInfo.fileName();
-//          qDebug()<<"from file="<<file.fileName();
-//          file.open(QFile::ReadOnly);
-//          QByteArray fileContent = file.readAll();
-//          QBuffer buffer(&fileContent);
-
-            if (read(&file)) { //read(&file))
-                int a;
-                a;
-                //ui->comboBoxRepoList->setItemData(0, fileContent, Qt::UserRole+1+ui->comboBoxRepoList->currentIndex());
-            }
+            read(&file);
             file.remove();
             downDir.rmdir(tmpPath);
         }

@@ -78,9 +78,9 @@ const bool itemsAsTopItem = true;
 QMusicPlayer::QMusicPlayer(QWidget* parent)
     : QToolBar(parent)
     , albumManager(new AlbumManager(this, parent))
+    , m_lyricSyncer(0)
     , m_lyricReader(new LyricsManager(this))
     , m_lastVorder(-2)
-    , m_lyricSyncer(0)
     , m_lyricSyncerRuninng(false)
 {
     setObjectName("QMusicPlayer");

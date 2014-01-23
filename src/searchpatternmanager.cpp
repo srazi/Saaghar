@@ -151,7 +151,7 @@ QVector<QStringList> SearchPatternManager::outputExcludedLlist()
 }
 
 /*static */
-void SearchPatternManager::filterResults(QStringList* resultList)
+void SearchPatternManager::filterResults(QStringList* /*resultList*/)
 {}
 
 /*static */

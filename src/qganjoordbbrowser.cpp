@@ -1979,7 +1979,7 @@ QString QGanjoorDbBrowser::getLongPathName(const QString &fileName)
     retval = GetLongPathName(bufFileName, bufLongFileName, BUFSIZE);
 
     if (retval == 0) {
-        qWarning("GetLongPathName failed (%d)\n", GetLastError());
+        qWarning("GetLongPathName failed (%d)\n", int(GetLastError()));
         QFileInfo file(fileName);
         if (!file.exists()) {
             return fileName;
