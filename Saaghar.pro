@@ -10,8 +10,8 @@ CONFIG(debug, debug|release) {
 } else {
     !build_pass:message("RELEASE BUILD")
 ##un-comment the following two lines for skipping all warning and debug messages.
-#    DEFINES += QT_NO_WARNING_OUTPUT
-#    DEFINES += QT_NO_DEBUG_OUTPUT
+    DEFINES += QT_NO_WARNING_OUTPUT
+    DEFINES += QT_NO_DEBUG_OUTPUT
 }
 
 ##un-comment for static build
@@ -63,7 +63,7 @@ win32-g++{
         $$[QT_INSTALL_BINS]/libssl32.dll \
         $$[QT_INSTALL_BINS]/ssleay32.dll \
         $$[QT_INSTALL_BINS]/msvcp100.dll \
-        $$[QT_INSTALL_BINS]/msvcp100.dll
+        $$[QT_INSTALL_BINS]/msvcr100.dll
 
     sqlPlugins.path = Saaghar-Win/sqldrivers
     sqlPlugins.files = $$[QT_INSTALL_PLUGINS]/sqldrivers/qsqlite4.dll

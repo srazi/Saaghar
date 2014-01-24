@@ -82,8 +82,7 @@ poetsImage.files = \
     $$PWD/poets_images/54.png \
     $$PWD/poets_images/56.png \
     $$PWD/poets_images/512.png \
-    $$PWD/poets_images/514.png \
-    $$PWD/poets_images/50001.png
+    $$PWD/poets_images/514.png
 
 backgrounds.path = $${RESOURCES_PATH}/themes/backgrounds
 backgrounds.files = \

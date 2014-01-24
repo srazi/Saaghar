@@ -176,6 +176,14 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
     connect(this, SIGNAL(verseSelected(int)), SaagharWidget::musicPlayer, SIGNAL(verseSelectedByUser(int)));
 #endif
 
+    //loading application fonts
+    //QString applicationFontsPath = resourcesPath + "/fonts/";
+    QDir fontsDir(resourcesPath + "/fonts/");
+    QStringList fontsList = fontsDir.entryList(QDir::Files | QDir::NoDotAndDotDot);
+    for (int i = 0; i < fontsList.size(); ++i) {
+        QFontDatabase::addApplicationFont(resourcesPath + "/fonts/" + fontsList.at(i));
+    }
+
     loadGlobalSettings();
 
     if (m_splash && !fresh) {
@@ -209,14 +217,6 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
     skipContextMenu = false;
 
     SaagharWidget::poetsImagesDir = resourcesPath + "/poets_images/";
-
-    //loading application fonts
-    //QString applicationFontsPath = resourcesPath + "/fonts/";
-    QDir fontsDir(resourcesPath + "/fonts/");
-    QStringList fontsList = fontsDir.entryList(QDir::Files | QDir::NoDotAndDotDot);
-    for (int i = 0; i < fontsList.size(); ++i) {
-        QFontDatabase::addApplicationFont(resourcesPath + "/fonts/" + fontsList.at(i));
-    }
 
     ui->setupUi(this);
 
