@@ -64,11 +64,9 @@ DataBaseUpdater::DataBaseUpdater(QWidget* parent, Qt::WindowFlags f)
     ui->refreshPushButton->setIcon(QIcon(ICON_PATH + "/refresh.png"));
     downloaderObject = new Downloader(this, ui->downloadProgressBar, ui->labelDownloadStatus);
     setupUi();
-    //readRepository("");
 
     connect(ui->refreshPushButton, SIGNAL(clicked()), this, SLOT(readRepository()));
     connect(ui->comboBoxRepoList, SIGNAL(currentIndexChanged(QString)), this, SLOT(readRepository(QString)));
-    //connect(ui->repoSelectTree, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(doubleClicked(QTreeWidgetItem*,int)));
     connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
     connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
     connect(ui->pushButtonBrowse, SIGNAL(clicked()), this, SLOT(getDownloadLocation()));
@@ -128,19 +126,13 @@ void DataBaseUpdater::parseElement(const QDomElement &element)
     int fileSize = element.firstChildElement("FileSizeInByte").text().toInt();
     fileSize = fileSize / 1024;
     QString fileSizeKB = QString::number(fileSize) == "0" ? "" : QString::number(fileSize) + " " + tr("KB");
-    //QStringList pubDateYMD = element.firstChildElement("PubDate").text().split("-",QString::SkipEmptyParts);
     QLocale persainLocale(QLocale::Persian, QLocale::Iran);
     QDate pubDate = persainLocale.toDate(element.firstChildElement("PubDate").text(), "yyyy-MM-dd");
-//  if (PubDate.size() == 3)
-//  {
-//      QDate pubDate(pubDateYMD.at(0).toInt(), pubDateYMD.at(1).toInt(), pubDateYMD.at(2).toInt());
-//      QLocale
-//  }
 
     QStringList visibleInfo = QStringList() << CatName
                               << fileSizeKB
                               << pubDate.toString("yyyy-MM-dd");
-    //<< tr("Go to Release Information");//BlogUrl;//<< DownloadUrl
+
 //meta data
     QString PoetID = element.firstChildElement("PoetID").text();
     int CatID = element.firstChildElement("CatID").text().toInt();
@@ -219,15 +211,9 @@ void DataBaseUpdater::setupUi()
     ui->groupBoxKeepDownload->setChecked(keepDownloadedFiles);
     ui->downloadProgressBar->hide();
     ui->labelDownloadStatus->hide();
-    //ui->hButtonsLayout->addWidget(downloaderObject->downloadProgressBar(this));
-    //downloaderObject->downloadProgressBar(this)->hide();
-//  ui->downloadProgressBar->hide();
-//  repoSelectTree = new QTreeWidget(parent);
-//  repoSelectTree->setObjectName("repoSelectTree");
-//  repoSelectTree->setColumnCount(5);
+
     ui->repoSelectTree->setLayoutDirection(Qt::RightToLeft);
     ui->repoSelectTree->setTextElideMode(Qt::ElideMiddle);
-    //setupTreeRootItems();
 }
 
 void DataBaseUpdater::setupTreeRootItems()
@@ -254,12 +240,6 @@ void DataBaseUpdater::setupTreeRootItems()
 
 void DataBaseUpdater::readRepository(const QString &url)
 {
-//  disconnect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
-//  //clear tree
-//  delete newRootItem;
-//  delete oldRootItem;
-//  setupTreeRootItems();
-//  connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
     disconnect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
     ui->pushButtonDownload->setEnabled(false);
 
@@ -272,19 +252,8 @@ void DataBaseUpdater::readRepository(const QString &url)
         return;
     }
 
-    //clear tree
-    //delete newRootItem;
-    //delete oldRootItem;
-//  QTreeWidgetItem *itm0 = ui->repoSelectTree->takeTopLevelItem(0);
-//  QTreeWidgetItem *itm1 = ui->repoSelectTree->takeTopLevelItem(1);
-//  qDebug() << "REMOOOOOOOOOVE->0"<<itm0<<itm1;
-//  delete itm0;
-//  delete itm1;
     ui->repoSelectTree->takeTopLevelItem(1);
     ui->repoSelectTree->takeTopLevelItem(0);
-
-    //itm1 = ui->repoSelectTree->takeTopLevelItem(1);
-    //delete oldRootItem;
 
     QUrl repoUrl = QUrl::fromUserInput(ui->comboBoxRepoList->currentText());
     if (!repoUrl.isValid()) {
@@ -297,106 +266,75 @@ void DataBaseUpdater::readRepository(const QString &url)
     ui->refreshPushButton->setEnabled(true);
 
     if (!url.isEmpty()) {
-        //ui->pushButtonDownload->setEnabled(false);
-//      //QFile file("D:/Z[Work]/Saaghar/OTHERS/repositories-XML/sitegdbs.xml");
-//  //  file.open(QFile::ReadOnly);
-//  //  QByteArray fileContent = file.readAll();
-////        QBuffer buffer(&fileContent);
-//  //ui->comboBoxRepoList->setItemData(ui->comboBoxRepoList->currentIndex(), fileContent, Qt::UserRole);
-
-//      QByteArray currentData = ui->comboBoxRepoList->itemData(0, Qt::UserRole+1+ui->comboBoxRepoList->currentIndex()).toByteArray();
-//      qDebug()<<"url.isEmpty()=="<<url<<"----------------------------\ncurrentData="<<currentData;
-//      if (!currentData.isEmpty())
-//      {
-//          //QBuffer buffer(&currentData);
-//          //buffer.open(QIODevice::ReadOnly);
-//      //  qDebug()<<"#####################################\nbuffer.readAll==\n"<<buffer.readAll()<<"#####################################\n";
-//          //if (fileContent == buffer.readAll())
-//      //      qDebug()<< "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-//          read(currentData);
-//          return;
-//      }
-        //if (itemsCache.contains(ui->comboBoxRepoList->currentIndex()))
-        {
-            QPair<QTreeWidgetItem*, QTreeWidgetItem*> cachedItems = itemsCache.value(ui->comboBoxRepoList->currentText(), QPair<QTreeWidgetItem*, QTreeWidgetItem*>());
-            if (cachedItems.first && cachedItems.second) {
-                ui->repoSelectTree->takeTopLevelItem(1);
-                ui->repoSelectTree->takeTopLevelItem(0);
-                newRootItem = cachedItems.first;
-                oldRootItem = cachedItems.second;
-                ui->repoSelectTree->addTopLevelItem(oldRootItem);
-                ui->repoSelectTree->addTopLevelItem(newRootItem);
-                resizeColumnsToContents();
-                newRootItem->setExpanded(true);
-                itemDataChanged(0, 0);
-                connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
-                return;
-            }
+        QPair<QTreeWidgetItem*, QTreeWidgetItem*> cachedItems = itemsCache.value(ui->comboBoxRepoList->currentText(), QPair<QTreeWidgetItem*, QTreeWidgetItem*>());
+        if (cachedItems.first && cachedItems.second) {
+            ui->repoSelectTree->takeTopLevelItem(1);
+            ui->repoSelectTree->takeTopLevelItem(0);
+            newRootItem = cachedItems.first;
+            oldRootItem = cachedItems.second;
+            ui->repoSelectTree->addTopLevelItem(oldRootItem);
+            ui->repoSelectTree->addTopLevelItem(newRootItem);
+            resizeColumnsToContents();
+            newRootItem->setExpanded(true);
+            itemDataChanged(0, 0);
+            connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
+            return;
         }
     }
     else {
         itemsCache.insert(ui->comboBoxRepoList->currentText(), QPair<QTreeWidgetItem*, QTreeWidgetItem*>());
-        //ui->comboBoxRepoList->setItemData(0, "", Qt::UserRole+1+ui->comboBoxRepoList->currentIndex());
     }
 
-    //if (repositoriesUrls.isEmpty()) return;
-    //repositoriesUrls.clear();
+    bool isRemote = false;
+    QString urlStr = repoUrl.toString();
+    qDebug() << "url====" << urlStr;
+    setupTreeRootItems();
+    if (!urlStr.contains("file:///")) {
+        isRemote = true;
+        QString tmpPath = getTempDir();
+        QDir downDir(tmpPath);
+        if (!downDir.exists() && !downDir.mkpath(tmpPath)) {
+            QMessageBox::information(this, tr("Error!"), tr("Can not create temp path."));
+            return;//continue;
+        }
 
-    //for (int i=0;i<repositoriesUrls.size();++i)
-    {
-        //QString urlStr = repositoriesUrls.at(i);
-        bool isRemote = false;
-        //url.remove("http://");
-        //qDebug()<<"repoUrl=="<<repoUrl.toString();
-        QString urlStr = repoUrl.toString();
-        qDebug() << "url====" << urlStr;
-        setupTreeRootItems();
-        if (!urlStr.contains("file:///")) {
-            isRemote = true;
-            QString tmpPath = getTempDir();
-            QDir downDir(tmpPath);
-            if (!downDir.exists() && !downDir.mkpath(tmpPath)) {
-                QMessageBox::information(this, tr("Error!"), tr("Can not create temp path."));
-                return;//continue;
-            }
-
-            QFileInfo urlInfo(urlStr);
-            ui->comboBoxRepoList->setEnabled(false);
-            ui->refreshPushButton->setEnabled(false);
-            downloadAboutToStart = downloadStarted = true;
-            downloaderObject->downloadFile(repoUrl, tmpPath, urlInfo.fileName());
-            downloadAboutToStart = downloadStarted = false;
-            ui->comboBoxRepoList->setEnabled(true);
-            if (!downloaderObject->hasError()) {
-                ui->refreshPushButton->setEnabled(true);
-            }
-            else {
-                ui->comboBoxRepoList->setCurrentIndex(-1);//maybe a bug in older Qt, set to '0' does not work!
-                ui->comboBoxRepoList->setCurrentIndex(0);
-            }
-            ui->labelDownloadStatus->hide();
-            QString filepath = tmpPath + "/" + urlInfo.fileName();
-            QFile file(filepath);
-            read(&file);
-            file.remove();
-            downDir.rmdir(tmpPath);
+        QFileInfo urlInfo(urlStr);
+        ui->comboBoxRepoList->setEnabled(false);
+        ui->refreshPushButton->setEnabled(false);
+        downloadAboutToStart = downloadStarted = true;
+        downloaderObject->downloadFile(repoUrl, tmpPath, urlInfo.fileName());
+        downloadAboutToStart = downloadStarted = false;
+        ui->comboBoxRepoList->setEnabled(true);
+        if (!downloaderObject->hasError()) {
+            ui->refreshPushButton->setEnabled(true);
         }
         else {
-            urlStr.remove("file:///");
-            QFile file(urlStr);
-            read(&file);
+            //maybe a bug in older Qt, set to '0' does not work!
+            ui->comboBoxRepoList->setCurrentIndex(-1);
+            ui->comboBoxRepoList->setCurrentIndex(0);
         }
-
-        newRootItem->setDisabled(newRootItem->childCount() == 0);
-        oldRootItem->setDisabled(oldRootItem->childCount() == 0);
-        if (newRootItem->childCount() == 0 && oldRootItem->childCount() == 0) {
-            ui->repoSelectTree->clear();
-            newRootItem = 0;
-            oldRootItem = 0;
-        }
-        itemsCache.insert(ui->comboBoxRepoList->currentText(), QPair<QTreeWidgetItem*, QTreeWidgetItem*>(newRootItem, oldRootItem));
-        connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
+        ui->labelDownloadStatus->hide();
+        QString filepath = tmpPath + "/" + urlInfo.fileName();
+        QFile file(filepath);
+        read(&file);
+        file.remove();
+        downDir.rmdir(tmpPath);
     }
+    else {
+        urlStr.remove("file:///");
+        QFile file(urlStr);
+        read(&file);
+    }
+
+    newRootItem->setDisabled(newRootItem->childCount() == 0);
+    oldRootItem->setDisabled(oldRootItem->childCount() == 0);
+    if (newRootItem->childCount() == 0 && oldRootItem->childCount() == 0) {
+        ui->repoSelectTree->clear();
+        newRootItem = 0;
+        oldRootItem = 0;
+    }
+    itemsCache.insert(ui->comboBoxRepoList->currentText(), QPair<QTreeWidgetItem*, QTreeWidgetItem*>(newRootItem, oldRootItem));
+    connect(ui->repoSelectTree, SIGNAL(itemChanged(QTreeWidgetItem*,int)), this, SLOT(itemDataChanged(QTreeWidgetItem*,int)));
 }
 
 void DataBaseUpdater::itemDataChanged(QTreeWidgetItem* /*item*/, int /*column*/)
@@ -429,21 +367,12 @@ void DataBaseUpdater::initDownload()
         }
     }
     else {
-//      sessionDownloadFolder = QDir::tempPath()+"/~tmp_saaghar_"+QString::number(qrand());
-//      downDir.setPath(sessionDownloadFolder);
-//      while (downDir.exists())
-//      {
-//          sessionDownloadFolder+=QString::number(qrand());
-//          downDir.setPath(sessionDownloadFolder);
-//      }
         randomFolder = sessionDownloadFolder = getTempDir();
-        qDebug() << "randomFolder=" << randomFolder;
     }
 
     downDir.setPath(sessionDownloadFolder);
     if (!downDir.exists() && !downDir.mkpath(sessionDownloadFolder)) {
         QMessageBox::information(this, tr("Error!"), tr("Can not create download path."));
-        qDebug() << "sessionDownloadFolder=" << sessionDownloadFolder;
         doStopDownload();
         return;
     }
@@ -486,9 +415,10 @@ void DataBaseUpdater::initDownload()
     }
 
     if (!ui->groupBoxKeepDownload->isChecked()) {
-        //qDebug() <<"remove down File--"<< QFile::remove(sessionDownloadFolder+"/"+fileName);
-        QDir downDir(sessionDownloadFolder);
-        qDebug() << "remove down Dir--" << downDir.rmdir(sessionDownloadFolder);
+        QFile::remove(sessionDownloadFolder+"/"+fileName);
+        //TODO: Fix me!
+        //QDir downDir(sessionDownloadFolder);
+        //downDir.rmdir(sessionDownloadFolder);
     }
 
     ui->labelDownloadStatus->setText(tr("Finished!"));
@@ -510,15 +440,16 @@ bool DataBaseUpdater::doStopDownload()
     }
 
     if (downloadStarted) {
-        if (QMessageBox::question(this, tr("Warning!"), tr("Download in progress! Are you sure to stop downloading?"), QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
-                ==
+        if (QMessageBox::question(this, tr("Warning!"),
+             tr("Download in progress! Are you sure to stop downloading?"),
+             QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ==
                 QMessageBox::No) {
             return false;
         }
     }
     downloaderObject->cancelDownload();
     forceStopDownload();
-    qDebug() << "doStopDownload!!!!!!";
+
     return true;
 }
 
@@ -539,9 +470,7 @@ void DataBaseUpdater::downloadItem(QTreeWidgetItem* item, bool install)
     item->treeWidget()->setCurrentItem(item);
     bool keepDownlaodedFiles = ui->groupBoxKeepDownload->isChecked();
     downloadStarted = true;
-    qDebug() << "downloadItem-sessionDownloadFolder=" << sessionDownloadFolder;
     QString urlStr = item->data(0, DownloadUrl_DATA).toString();
-    qDebug() << "urlStr=" << urlStr;
     QUrl downloadUrl(urlStr);
     downloaderObject->downloadFile(downloadUrl, sessionDownloadFolder, item->text(0));
 
@@ -559,9 +488,10 @@ void DataBaseUpdater::downloadItem(QTreeWidgetItem* item, bool install)
     }
 
     if (!keepDownlaodedFiles) {
-        qDebug() << "remove down File--" << QFile::remove(sessionDownloadFolder + "/" + fileName);
+        QFile::remove(sessionDownloadFolder + "/" + fileName);
+        //TODO: Fix me!
         //QDir downDir(sessionDownloadFolder);
-        //qDebug() <<"remove down Dir--"<< downDir.rmdir(sessionDownloadFolder);
+        //downDir.rmdir(sessionDownloadFolder);
     }
 }
 
@@ -575,7 +505,7 @@ void DataBaseUpdater::forceStopDownload()
     disconnect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
 
     QDir tmpDir(randomFolder);
-    qDebug() << "emit downloadStopped!!!!!!rmDir-randomFolder=" << randomFolder << "bool=" << tmpDir.rmdir(randomFolder);
+    tmpDir.rmdir(randomFolder);
 }
 
 QString DataBaseUpdater::getTempDir(const QString &path, bool makeDir)
@@ -594,7 +524,7 @@ QString DataBaseUpdater::getTempDir(const QString &path, bool makeDir)
     if (makeDir) {
         tmpDir.mkpath(tmpPath);
     }
-    qDebug() << "getTempDir()=" << tmpPath;
+
     return tmpPath;
 }
 
@@ -629,8 +559,6 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
 
     QString file = path + "/" + fileName;
 
-    qDebug() << "fileName=" << fileName << "type=" << type << "path=" << path;
-
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
     if (type == "zip") {
@@ -649,15 +577,14 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
             qDebug() << "Unable to open archive: " << uz.formatError(ec);
             uz.closeArchive();
             installCompleted = false;
-            installItemToDB(fileName, path, "s3db");//try open it as SQLite database!
+            //try open it as SQLite database!
+            installItemToDB(fileName, path, "s3db");
             QApplication::restoreOverrideCursor();
             return;
         }
         else {
-            //qDebug() <<"ziiiiiiip file list"<< uz.fileList();
             QList<UnZip::ZipEntry> list = uz.entryList();
             if (list.isEmpty()) {
-                qDebug() << "Empty archive.";
                 installCompleted = false;
                 QApplication::restoreOverrideCursor();
                 return;
@@ -668,7 +595,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
                 QString extractPath = tmpExtractPath;
                 const UnZip::ZipEntry &entry = list.at(i);
                 QString entryFileName = entry.filename;
-                qDebug() << "entryFileName=" << entryFileName;
+
                 if (entry.type == UnZip::Directory ||
                         (!entryFileName.endsWith(".png") &&
                          !entryFileName.endsWith(".gdb") &&
@@ -679,7 +606,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
                 if (entryFileName.endsWith(".png")) {
                     extractPath = SaagharWidget::poetsImagesDir;
                     QDir photoDir(extractPath);
-                    qDebug() << "make photo dir" << photoDir.mkpath(extractPath);
+                    qDebug() << "make photo dir =>" << photoDir.mkpath(extractPath);
                     qDebug() << "The author's photo =>" << extractPath + "/" + entryFileName;
                 }
 
@@ -687,15 +614,13 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
                 qDebug() << "extract-ErrorCode=" << uz.formatError(ec) << entryFileName << extractPath;
 
                 if (entryFileName.endsWith(".gdb") || entryFileName.endsWith(".s3db")) {
-                    qDebug() << "emit installRequest=" << extractPath + "/" + entryFileName;
                     s_saagharWindow->importDataBase(extractPath + "/" + entryFileName, &installCompleted);
-                    qDebug() << "remove Extract File--" << QFile::remove(extractPath + "/" + entryFileName);
+                    QFile::remove(extractPath + "/" + entryFileName);
                     QDir extractDir(extractPath);
-                    qDebug() << "remove Extract Dir--" << extractDir.rmdir(extractPath);
+                    extractDir.rmdir(extractPath);
                 }
-
-                //qDebug() <<"remove Extract File--"<<QFile::remove(extractPath+"/"+entryFileName);
             }
+            //TODO: Fix me!
             //QDir extractDir(extractPath);
             //qDebug() <<"remove Extract Dir--"<<extractDir.rmdir(extractPath);
 
@@ -739,9 +664,7 @@ void DataBaseUpdater::addRemoveRepository()
     QLabel label(tr("Insert each address in a separate line!"));
     QTextEdit textEdit;
     textEdit.setPlainText(repositoriesUrls.join("\n"));
-    //QHBoxLayout hLayout(this);
     QDialogButtonBox buttonBox;
-    //QPushButton
     addRemove.setObjectName(QString::fromUtf8("addRemove"));
     addRemove.resize(400, 300);
 

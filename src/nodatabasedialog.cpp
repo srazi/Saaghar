@@ -43,7 +43,7 @@ NoDataBaseDialog::~NoDataBaseDialog()
 void NoDataBaseDialog::buttonCheckStateToggled()
 {
     QPushButton* senderButton = qobject_cast<QPushButton*>(sender());
-    if (senderButton /*&& senderButton->isChecked()*/) {
+    if (senderButton) {
         _clickedButton = senderButton;
     }
 
@@ -51,10 +51,6 @@ void NoDataBaseDialog::buttonCheckStateToggled()
         this->accept();
     }
 
-//  if (_clickedButton)
-//      ui->buttonBox->setEnabled(true);
-//  else
-//      ui->buttonBox->setEnabled(false);
 }
 
 QPushButton* NoDataBaseDialog::clickedButton()

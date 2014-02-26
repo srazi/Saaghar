@@ -52,7 +52,6 @@ int main(int argc, char* argv[])
     splash.finish(&w);
 
     w.checkRegistration();
-//  w.emitReSizeEvent();//maybe a Qt BUG//before 'QMainWindow::show()' the computation of width of QMainWindow is not correct!
 
     return a.exec();
 }

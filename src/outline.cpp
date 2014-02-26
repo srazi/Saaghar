@@ -141,7 +141,8 @@ bool OutLineTree::filterItems(const QString &str, QTreeWidgetItem* parentItem)
         text = QGanjoorDbBrowser::cleanString(text);
         QString cleanStr = QGanjoorDbBrowser::cleanString(str);
         if (!cleanStr.isEmpty() && !text.contains(cleanStr)) {
-            if (ithChild->childCount() > 0) { //if all its children are hidden it should be hidden, too.
+            // if all its children are hidden it should be hidden, too.
+            if (ithChild->childCount() > 0) {
                 bool tmp = filterItems(cleanStr, ithChild);
                 if (!tmp) {
                     ithChild->setExpanded(true);
@@ -152,13 +153,15 @@ bool OutLineTree::filterItems(const QString &str, QTreeWidgetItem* parentItem)
             }
             else {
                 ithChild->setHidden(true);
-                result = result && true;//return true when all children are hidden
+                //return true when all children are hidden
+                result = result && true;
             }
         }
         else {
             recursivelyUnHide(ithChild);
             ithChild->setExpanded(false);
-            result = result && false;//return false when at least one child is visible
+            //return false when at least one child is visible
+            result = result && false;
         }
     }
     return result;
