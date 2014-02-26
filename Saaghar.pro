@@ -140,7 +140,6 @@ INSTALLS += target
 
 mac {
     QMAKE_BUNDLE_DATA += utilities \
-        poetsImage \
         backgrounds \
         classicIcons \
         lightGrayIcons \
@@ -148,7 +147,6 @@ mac {
 }
 else {
     INSTALLS += utilities \
-        poetsImage \
         backgrounds \
         classicIcons \
         lightGrayIcons \
