@@ -31,8 +31,10 @@
 #include <QPushButton>
 
 #include "unzip.h"
+#include "settings.h"
 #include "downloader.h"
 #include "databaseupdater.h"
+#include "databasebrowser.h"
 #include "saagharwidget.h"
 #include "saagharwindow.h"
 

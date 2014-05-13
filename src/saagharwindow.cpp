@@ -29,6 +29,8 @@
 #include "outline.h"
 #include "searchoptionsdialog.h"
 #include "mactoolbutton.h"
+#include "databasebrowser.h"
+#include "settings.h"
 #include "tools.h"
 
 #include <QTextBrowserDialog>
@@ -261,7 +263,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
 
     //searching database-path for database-file
     //following lines are for support old default data-base pathes.
-    QStringList dataBaseCompatibilityPath(QGanjoorDbBrowser::dataBasePath);
+    QStringList dataBaseCompatibilityPath(DatabaseBrowser::dataBasePath);
     dataBaseCompatibilityPath   << resourcesPath
                                 << QDir::homePath() + "/Pojh/Saaghar/"
                                 << QDir::homePath() + "/Library/Saaghar/";
@@ -272,7 +274,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
         }
     }
     //create ganjoor DataBase browser
-    SaagharWidget::ganjoorDataBase = new QGanjoorDbBrowser(dataBaseCompleteName, splashScreen);
+    SaagharWidget::ganjoorDataBase = new DatabaseBrowser(dataBaseCompleteName, splashScreen);
     SaagharWidget::ganjoorDataBase->setObjectName(QString::fromUtf8("ganjoorDataBaseBrowser"));
 
     loadTabWidgetSettings();
@@ -1597,12 +1599,12 @@ void SaagharWindow::actionImportNewSet()
 {
     QStringList fileList = QFileDialog::getOpenFileNames(this, tr("Browse for a new set"), QDir::homePath(), "Supported Files (*.gdb *.s3db *.zip);;Ganjoor DataBase (*.gdb *.s3db);;Compressed Data Sets (*.zip);;All Files (*.*)");
     if (!fileList.isEmpty()) {
-        if (!QGanjoorDbBrowser::dbUpdater) {
-            QGanjoorDbBrowser::dbUpdater = new DataBaseUpdater(this);
+        if (!DatabaseBrowser::dbUpdater) {
+            DatabaseBrowser::dbUpdater = new DataBaseUpdater(this);
         }
 
         foreach (const QString &file, fileList) {
-            QGanjoorDbBrowser::dbUpdater->installItemToDB(file);
+            DatabaseBrowser::dbUpdater->installItemToDB(file);
             QApplication::processEvents();
         }
     }
@@ -2224,7 +2226,7 @@ void SaagharWindow::showSettingsDialog()
     m_settingsDialog->ui->checkBoxAutoUpdates->setChecked(SaagharWindow::autoCheckForUpdatesState);
 
     //database
-    m_settingsDialog->ui->lineEditDataBasePath->setText(QGanjoorDbBrowser::dataBasePath.join(";"));
+    m_settingsDialog->ui->lineEditDataBasePath->setText(DatabaseBrowser::dataBasePath.join(";"));
     connect(m_settingsDialog->ui->pushButtonDataBasePath, SIGNAL(clicked()), m_settingsDialog, SLOT(browseForDataBasePath()));
 
     m_settingsDialog->ui->checkBoxBeytNumbers->setChecked(SaagharWidget::showBeytNumbers);
@@ -2276,7 +2278,7 @@ void SaagharWindow::applySettings()
     SaagharWindow::autoCheckForUpdatesState = m_settingsDialog->ui->checkBoxAutoUpdates->isChecked();
 
     //database path
-    QGanjoorDbBrowser::dataBasePath = m_settingsDialog->ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
+    DatabaseBrowser::dataBasePath = m_settingsDialog->ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
 
     SaagharWidget::showBeytNumbers = m_settingsDialog->ui->checkBoxBeytNumbers->isChecked();
 
@@ -2412,7 +2414,7 @@ void SaagharWindow::loadGlobalSettings()
     SaagharWidget::backgroundImageState = Settings::READ("Background State", true).toBool();
     SaagharWidget::backgroundImagePath = Settings::READ("Background Path", resourcesPath + "/themes/backgrounds/saaghar-pattern_1.png").toString();
 
-    QGanjoorDbBrowser::dataBasePath = config->value("DataBase Path", "").toString().split(";", QString::SkipEmptyParts);
+    DatabaseBrowser::dataBasePath = config->value("DataBase Path", "").toString().split(";", QString::SkipEmptyParts);
 
 
     SaagharWidget::showBeytNumbers = config->value("Show Beyt Numbers", true).toBool();
@@ -2571,7 +2573,7 @@ void SaagharWindow::saveSettings()
     Settings::WRITE("Opened tabs from last session", openedTabs);
 
     //database path
-    config->setValue("DataBase Path", QDir::toNativeSeparators(QGanjoorDbBrowser::dataBasePath.join(";")));
+    config->setValue("DataBase Path", QDir::toNativeSeparators(DatabaseBrowser::dataBasePath.join(";")));
 
     //search options
     config->setValue("Max Search Results Per Page", SearchResultWidget::maxItemPerPage);
@@ -2907,7 +2909,7 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
 
 void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
 {
-    QSqlDatabase dataBaseObject = QSqlDatabase::database(QGanjoorDbBrowser::dBName);
+    QSqlDatabase dataBaseObject = QSqlDatabase::database(DatabaseBrowser::dBName);
     QFileInfo dataBaseFile(dataBaseObject.databaseName());
     if (!dataBaseFile.isWritable()) {
         QMessageBox::warning(this, tr("Error!"), tr("You have not write permission to database file, the import procedure can not proceed.\nDataBase Path: %2").arg(dataBaseFile.fileName()));
@@ -2969,7 +2971,7 @@ void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
         }
         dataBaseObject.rollback();
         QMessageBox warning(QMessageBox::Warning, tr("Error!"), tr("There are some errors, the import procedure was not completed"), QMessageBox::Ok
-                            , QGanjoorDbBrowser::dbUpdater, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+                            , DatabaseBrowser::dbUpdater, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
         warning.exec();
     }
     //QApplication::restoreOverrideCursor();
@@ -3319,13 +3321,13 @@ void SaagharWindow::namedActionTriggered(bool checked)
         }
     }
     else if (actionName == "DownloadRepositories") {
-        if (!QGanjoorDbBrowser::dbUpdater) {
-            QGanjoorDbBrowser::dbUpdater = new DataBaseUpdater(this);
+        if (!DatabaseBrowser::dbUpdater) {
+            DatabaseBrowser::dbUpdater = new DataBaseUpdater(this);
         }
 
-        QtWin::easyBlurUnBlur(QGanjoorDbBrowser::dbUpdater, Settings::READ("UseTransparecy").toBool());
+        QtWin::easyBlurUnBlur(DatabaseBrowser::dbUpdater, Settings::READ("UseTransparecy").toBool());
 
-        QGanjoorDbBrowser::dbUpdater->exec();
+        DatabaseBrowser::dbUpdater->exec();
     }
     else if (actionName == "actionFaal") {
         openRandomPoem(24, randomOpenInNewTab);// '24' is for Hafez!

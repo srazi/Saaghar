@@ -47,7 +47,7 @@
 #include <QDebug>
 
 #include "bookmarks.h"
-#include "qganjoordbbrowser.h"
+#include "settings.h"
 #include "tools.h"
 
 const int ID_DATA = Qt::UserRole + 1;

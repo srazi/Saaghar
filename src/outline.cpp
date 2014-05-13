@@ -52,7 +52,6 @@
 #include <QSearchLineEdit>
 
 #include "outline.h"
-#include "qganjoordbbrowser.h"
 #include "searchitemdelegate.h"
 #include "tools.h"
 

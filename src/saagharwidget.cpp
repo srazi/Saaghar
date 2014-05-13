@@ -21,8 +21,10 @@
 
 #include "searchpatternmanager.h"
 #include "searchitemdelegate.h"
+#include "databasebrowser.h"
 #include "saagharwidget.h"
 #include "commands.h"
+#include "settings.h"
 #include "tools.h"
 
 #include <QSearchLineEdit>
@@ -60,7 +62,7 @@ Bookmarks* SaagharWidget::bookmarks = 0;
 //search field object
 QSearchLineEdit* SaagharWidget::lineEditSearchText = 0;
 //ganjoor data base browser
-QGanjoorDbBrowser* SaagharWidget::ganjoorDataBase = NULL;
+DatabaseBrowser* SaagharWidget::ganjoorDataBase = NULL;
 
 //Constants
 const int ITEM_BOOKMARKED_STATE = Qt::UserRole + 20;

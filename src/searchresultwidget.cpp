@@ -21,7 +21,6 @@
 
 #include "searchresultwidget.h"
 #include "searchitemdelegate.h"
-#include "qganjoordbbrowser.h"
 #include "tools.h"
 
 #include <QSearchLineEdit>

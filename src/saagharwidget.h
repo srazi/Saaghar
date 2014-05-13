@@ -34,11 +34,10 @@
 #include <QToolBar>
 #include <QUndoStack>
 
-#include "qganjoordbbrowser.h"
-//#include "settings.h"
-
+#include "databaseelements.h"
 #include "bookmarks.h"
 
+class DatabaseBrowser;
 class QSearchLineEdit;
 class QTextEdit;
 class QSplitter;
@@ -122,7 +121,7 @@ public:
     static QSearchLineEdit* lineEditSearchText;
 
     //DataBase
-    static QGanjoorDbBrowser* ganjoorDataBase;
+    static DatabaseBrowser* ganjoorDataBase;
     static int computeRowHeight(const QFontMetrics &fontMetric, int textWidth, int width, int height = 0);
 
     static QHash<int, QPair<QString, qint64> > mediaInfoCash;

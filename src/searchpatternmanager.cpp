@@ -20,7 +20,6 @@
  ***************************************************************************/
 
 #include "searchpatternmanager.h"
-#include "qganjoordbbrowser.h"
 #include "tools.h"
 
 #include <QDebug>

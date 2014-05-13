@@ -19,8 +19,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef QGANJOORDBSTUFF_H
-#define QGANJOORDBSTUFF_H
+#ifndef DATABASEELEMENTS_H
+#define DATABASEELEMENTS_H
 
 #include <QString>
 
@@ -176,4 +176,4 @@ public:
         _Url = Url;
     }
 };
-#endif // QGANJOORDBSTUFF_H
+#endif // DATABASEELEMENTS_H

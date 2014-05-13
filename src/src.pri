@@ -8,8 +8,8 @@ HEADERS += \
     $$PWD/saagharwindow.h \
     $$PWD/searchitemdelegate.h \
     $$PWD/saagharwidget.h \
-    $$PWD/qganjoordbbrowser.h \
-    $$PWD/qganjoordbstuff.h \
+    $$PWD/databasebrowser.h \
+    $$PWD/databaseelements.h \
     $$PWD/settings.h \
     $$PWD/searchresultwidget.h \
     $$PWD/searchpatternmanager.h \
@@ -37,7 +37,7 @@ SOURCES += \
     $$PWD/saagharwindow.cpp \
     $$PWD/searchitemdelegate.cpp \
     $$PWD/saagharwidget.cpp \
-    $$PWD/qganjoordbbrowser.cpp \
+    $$PWD/databasebrowser.cpp \
     $$PWD/settings.cpp \
     $$PWD/searchresultwidget.cpp \
     $$PWD/searchpatternmanager.cpp \

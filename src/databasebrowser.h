@@ -19,8 +19,8 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef QGANJOORDBBROWSER_H
-#define QGANJOORDBBROWSER_H
+#ifndef DATABASEBROWSER_H
+#define DATABASEBROWSER_H
 
 #include <QObject>
 #include <QWidget>
@@ -33,7 +33,7 @@
 #include <QVariant>
 
 #include "databaseupdater.h"
-#include "qganjoordbstuff.h"
+#include "databaseelements.h"
 #include "settings.h"
 #include "qtwin.h"
 
@@ -46,12 +46,12 @@
 
 class QTreeWidgetItem;
 
-class QGanjoorDbBrowser : public QObject
+class DatabaseBrowser : public QObject
 {
     Q_OBJECT
 public:
-    QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db", QWidget* splashScreen = 0);
-    ~QGanjoorDbBrowser();
+    DatabaseBrowser(QString sqliteDbCompletePath = "ganjoor.s3db", QWidget* splashScreen = 0);
+    ~DatabaseBrowser();
 
     bool isConnected(const QString &connectionID = "");
     bool isValid(QString connectionID = "");
@@ -132,4 +132,4 @@ private:
     static QSQLiteDriver* sqlDriver;
 #endif
 };
-#endif // QGANJOORDBBROWSER_H
+#endif // DATABASEBROWSER_H

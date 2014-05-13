@@ -21,10 +21,11 @@
 
 #include "searchpatternmanager.h"
 #include "searchitemdelegate.h"
-#include "qganjoordbstuff.h"
+#include "databaseelements.h"
 #include "saagharwidget.h"
 #include "tools.h"
 
+#include <QApplication>
 #include <qmath.h>
 #include <QPainter>
 #include <QIcon>

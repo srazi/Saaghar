@@ -19,7 +19,7 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "qganjoordbbrowser.h"
+#include "databasebrowser.h"
 #include "nodatabasedialog.h"
 #include "searchresultwidget.h"
 #include "tools.h"
@@ -34,9 +34,9 @@
 #include <QTimer>
 #include <QTreeWidgetItem>
 
-DataBaseUpdater* QGanjoorDbBrowser::dbUpdater = 0;
-QString QGanjoorDbBrowser::dBName = QString();
-QStringList QGanjoorDbBrowser::dataBasePath = QStringList();
+DataBaseUpdater* DatabaseBrowser::dbUpdater = 0;
+QString DatabaseBrowser::dBName = QString();
+QStringList DatabaseBrowser::dataBasePath = QStringList();
 
 const int minNewPoetID = 1001;
 const int minNewCatID = 10001;
@@ -45,12 +45,12 @@ const int minNewPoemID = 100001;
 const int DatabaseVersion = 1;
 
 #ifdef EMBEDDED_SQLITE
-QSQLiteDriver* QGanjoorDbBrowser::sqlDriver = 0;
+QSQLiteDriver* DatabaseBrowser::sqlDriver = 0;
 #else
 const QString sqlDriver = "QSQLITE";
 #endif
 
-QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* splashScreen)
+DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath, QWidget* splashScreen)
 {
     bool flagSelectNewPath = false;
     QString newPath = "";
@@ -176,18 +176,18 @@ QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* spla
 
     if (flagSelectNewPath) {
         //in this version Saaghar just use its first search path
-        QGanjoorDbBrowser::dataBasePath.clear();
-        QGanjoorDbBrowser::dataBasePath << newPath;
+        DatabaseBrowser::dataBasePath.clear();
+        DatabaseBrowser::dataBasePath << newPath;
     }
 
     cachedMaxCatID = cachedMaxPoemID = 0;
 }
 
-QGanjoorDbBrowser::~QGanjoorDbBrowser()
+DatabaseBrowser::~DatabaseBrowser()
 {
 }
 
-bool QGanjoorDbBrowser::isConnected(const QString &connectionID)
+bool DatabaseBrowser::isConnected(const QString &connectionID)
 {
     QString connectionName = dBName;
     if (!connectionID.isEmpty()) {
@@ -197,7 +197,7 @@ bool QGanjoorDbBrowser::isConnected(const QString &connectionID)
     return dBConnection.isOpen();
 }
 
-bool QGanjoorDbBrowser::isValid(QString connectionID)
+bool DatabaseBrowser::isValid(QString connectionID)
 {
     if (connectionID.isEmpty()) {
         connectionID = dBName;
@@ -210,7 +210,7 @@ bool QGanjoorDbBrowser::isValid(QString connectionID)
     return false;
 }
 
-QList<GanjoorPoet*> QGanjoorDbBrowser::getPoets(const QString &connectionID, bool sort)
+QList<GanjoorPoet*> DatabaseBrowser::getPoets(const QString &connectionID, bool sort)
 {
     QList<GanjoorPoet*> poets;
     if (isConnected(connectionID)) {
@@ -249,12 +249,12 @@ QList<GanjoorPoet*> QGanjoorDbBrowser::getPoets(const QString &connectionID, boo
     return poets;
 }
 
-bool QGanjoorDbBrowser::comparePoetsByName(GanjoorPoet* poet1, GanjoorPoet* poet2)
+bool DatabaseBrowser::comparePoetsByName(GanjoorPoet* poet1, GanjoorPoet* poet2)
 {
     return (QString::localeAwareCompare(poet1->_Name, poet2->_Name) < 0);
 }
 
-GanjoorCat QGanjoorDbBrowser::getCategory(int CatID)
+GanjoorCat DatabaseBrowser::getCategory(int CatID)
 {
     GanjoorCat gCat;
     gCat.init();
@@ -276,12 +276,12 @@ GanjoorCat QGanjoorDbBrowser::getCategory(int CatID)
     return gCat;
 }
 
-bool QGanjoorDbBrowser::compareCategoriesByName(GanjoorCat* cat1, GanjoorCat* cat2)
+bool DatabaseBrowser::compareCategoriesByName(GanjoorCat* cat1, GanjoorCat* cat2)
 {
     return (QString::localeAwareCompare(cat1->_Text, cat2->_Text) < 0);
 }
 
-QList<GanjoorCat*> QGanjoorDbBrowser::getSubCategories(int CatID)
+QList<GanjoorCat*> DatabaseBrowser::getSubCategories(int CatID)
 {
     QList<GanjoorCat*> lst;
     if (isConnected()) {
@@ -304,7 +304,7 @@ QList<GanjoorCat*> QGanjoorDbBrowser::getSubCategories(int CatID)
     return lst;
 }
 
-QList<GanjoorCat> QGanjoorDbBrowser::getParentCategories(GanjoorCat Cat)
+QList<GanjoorCat> DatabaseBrowser::getParentCategories(GanjoorCat Cat)
 {
     QList<GanjoorCat> lst;
     if (isConnected()) {
@@ -319,7 +319,7 @@ QList<GanjoorCat> QGanjoorDbBrowser::getParentCategories(GanjoorCat Cat)
     return lst;
 }
 
-QList<GanjoorPoem*> QGanjoorDbBrowser::getPoems(int CatID)
+QList<GanjoorPoem*> DatabaseBrowser::getPoems(int CatID)
 {
     QList<GanjoorPoem*> lst;
     if (isConnected()) {
@@ -341,12 +341,12 @@ QList<GanjoorPoem*> QGanjoorDbBrowser::getPoems(int CatID)
     return lst;
 }
 
-QList<GanjoorVerse*> QGanjoorDbBrowser::getVerses(int PoemID)
+QList<GanjoorVerse*> DatabaseBrowser::getVerses(int PoemID)
 {
     return getVerses(PoemID, 0);
 }
 
-QString QGanjoorDbBrowser::getFirstMesra(int PoemID) //just first Mesra
+QString DatabaseBrowser::getFirstMesra(int PoemID) //just first Mesra
 {
     if (isConnected()) {
         QSqlQuery q(dBConnection);
@@ -360,7 +360,7 @@ QString QGanjoorDbBrowser::getFirstMesra(int PoemID) //just first Mesra
     return "";
 }
 
-QList<GanjoorVerse*> QGanjoorDbBrowser::getVerses(int PoemID, int Count)
+QList<GanjoorVerse*> DatabaseBrowser::getVerses(int PoemID, int Count)
 {
     QList<GanjoorVerse*> lst;
     if (isConnected()) {
@@ -381,7 +381,7 @@ QList<GanjoorVerse*> QGanjoorDbBrowser::getVerses(int PoemID, int Count)
     return lst;
 }
 
-GanjoorPoem QGanjoorDbBrowser::getPoem(int PoemID)
+GanjoorPoem DatabaseBrowser::getPoem(int PoemID)
 {
     GanjoorPoem gPoem;
     gPoem.init();
@@ -398,7 +398,7 @@ GanjoorPoem QGanjoorDbBrowser::getPoem(int PoemID)
     return gPoem;
 }
 
-GanjoorPoem QGanjoorDbBrowser::getNextPoem(int PoemID, int CatID)
+GanjoorPoem DatabaseBrowser::getNextPoem(int PoemID, int CatID)
 {
     GanjoorPoem gPoem;
     gPoem.init();
@@ -415,12 +415,12 @@ GanjoorPoem QGanjoorDbBrowser::getNextPoem(int PoemID, int CatID)
     return gPoem;
 }
 
-GanjoorPoem QGanjoorDbBrowser::getNextPoem(GanjoorPoem poem)
+GanjoorPoem DatabaseBrowser::getNextPoem(GanjoorPoem poem)
 {
     return getNextPoem(poem._ID, poem._CatID);
 }
 
-GanjoorPoem QGanjoorDbBrowser::getPreviousPoem(int PoemID, int CatID)
+GanjoorPoem DatabaseBrowser::getPreviousPoem(int PoemID, int CatID)
 {
     GanjoorPoem gPoem;
     gPoem.init();
@@ -437,12 +437,12 @@ GanjoorPoem QGanjoorDbBrowser::getPreviousPoem(int PoemID, int CatID)
     return gPoem;
 }
 
-GanjoorPoem QGanjoorDbBrowser::getPreviousPoem(GanjoorPoem poem)
+GanjoorPoem DatabaseBrowser::getPreviousPoem(GanjoorPoem poem)
 {
     return getPreviousPoem(poem._ID, poem._CatID);
 }
 
-GanjoorPoet QGanjoorDbBrowser::getPoetForCat(int CatID)
+GanjoorPoet DatabaseBrowser::getPoetForCat(int CatID)
 {
     GanjoorPoet gPoet;
     gPoet.init();
@@ -462,7 +462,7 @@ GanjoorPoet QGanjoorDbBrowser::getPoetForCat(int CatID)
     return gPoet;
 }
 
-GanjoorPoet QGanjoorDbBrowser::getPoet(int PoetID)
+GanjoorPoet DatabaseBrowser::getPoet(int PoetID)
 {
     GanjoorPoet gPoet;
     gPoet.init();
@@ -497,7 +497,7 @@ GanjoorPoet QGanjoorDbBrowser::getPoet(int PoetID)
     return gPoet;
 }
 
-QString QGanjoorDbBrowser::getPoetDescription(int PoetID)
+QString DatabaseBrowser::getPoetDescription(int PoetID)
 {
     if (PoetID <= 0) {
         return "";
@@ -514,7 +514,7 @@ QString QGanjoorDbBrowser::getPoetDescription(int PoetID)
     return "";
 }
 
-QString QGanjoorDbBrowser::getPoemMediaSource(int PoemID)
+QString DatabaseBrowser::getPoemMediaSource(int PoemID)
 {
     if (PoemID <= 0) {
         return "";
@@ -531,7 +531,7 @@ QString QGanjoorDbBrowser::getPoemMediaSource(int PoemID)
     return "";
 }
 
-void QGanjoorDbBrowser::setPoemMediaSource(int PoemID, const QString &fileName)
+void DatabaseBrowser::setPoemMediaSource(int PoemID, const QString &fileName)
 {
     if (PoemID <= 0) {
         return;
@@ -562,7 +562,7 @@ void QGanjoorDbBrowser::setPoemMediaSource(int PoemID, const QString &fileName)
     return;
 }
 
-GanjoorPoet QGanjoorDbBrowser::getPoet(QString PoetName)
+GanjoorPoet DatabaseBrowser::getPoet(QString PoetName)
 {
     GanjoorPoet gPoet;
     gPoet.init();
@@ -593,7 +593,7 @@ GanjoorPoet QGanjoorDbBrowser::getPoet(QString PoetName)
     return gPoet;
 }
 
-int QGanjoorDbBrowser::getRandomPoemID(int* CatID)
+int DatabaseBrowser::getRandomPoemID(int* CatID)
 {
     if (isConnected()) {
         QList<GanjoorCat*> subCats = getSubCategories(*CatID);
@@ -625,7 +625,7 @@ int QGanjoorDbBrowser::getRandomPoemID(int* CatID)
     return -1;
 }
 
-QList<GanjoorPoet*> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
+QList<GanjoorPoet*> DatabaseBrowser::getDataBasePoets(const QString fileName)
 {
     QList<GanjoorPoet*> poetsInDataBase;
 
@@ -649,7 +649,7 @@ QList<GanjoorPoet*> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
     return poetsInDataBase;
 }
 
-QString QGanjoorDbBrowser::getIdForDataBase(const QString &sqliteDataBaseName)
+QString DatabaseBrowser::getIdForDataBase(const QString &sqliteDataBaseName)
 {
     //QFileInfo dataBaseFile(sqliteDataBaseName);
     //QString connectionID = dataBaseFile.fileName();//we need to be sure this name is unique
@@ -663,7 +663,7 @@ QString QGanjoorDbBrowser::getIdForDataBase(const QString &sqliteDataBaseName)
     return connectionID;
 }
 
-QList<GanjoorPoet*> QGanjoorDbBrowser::getConflictingPoets(const QString fileName)
+QList<GanjoorPoet*> DatabaseBrowser::getConflictingPoets(const QString fileName)
 {
     QList<GanjoorPoet*> conflictList;
     if (isConnected()) {
@@ -682,7 +682,7 @@ QList<GanjoorPoet*> QGanjoorDbBrowser::getConflictingPoets(const QString fileNam
     return conflictList;
 }
 
-void QGanjoorDbBrowser::removePoetFromDataBase(int PoetID)
+void DatabaseBrowser::removePoetFromDataBase(int PoetID)
 {
     if (isConnected()) {
         QString strQuery;
@@ -695,7 +695,7 @@ void QGanjoorDbBrowser::removePoetFromDataBase(int PoetID)
     }
 }
 
-void QGanjoorDbBrowser::removeCatFromDataBase(const GanjoorCat &gCat)
+void DatabaseBrowser::removeCatFromDataBase(const GanjoorCat &gCat)
 {
     if (gCat.isNull()) {
         return;
@@ -716,7 +716,7 @@ void QGanjoorDbBrowser::removeCatFromDataBase(const GanjoorCat &gCat)
     }
 }
 
-int QGanjoorDbBrowser::getNewPoetID()
+int DatabaseBrowser::getNewPoetID()
 {
     int newPoetID = -1;
 
@@ -740,7 +740,7 @@ int QGanjoorDbBrowser::getNewPoetID()
 
     return newPoetID;
 }
-int QGanjoorDbBrowser::getNewPoemID()
+int DatabaseBrowser::getNewPoemID()
 {
     int newPoemID = -1;
 
@@ -772,7 +772,7 @@ int QGanjoorDbBrowser::getNewPoemID()
     return newPoemID;
 }
 
-int QGanjoorDbBrowser::getNewCatID()
+int DatabaseBrowser::getNewCatID()
 {
     int newCatID = -1;
 
@@ -804,7 +804,7 @@ int QGanjoorDbBrowser::getNewCatID()
     return newCatID;
 }
 
-bool QGanjoorDbBrowser::importDataBase(const QString fileName)
+bool DatabaseBrowser::importDataBase(const QString fileName)
 {
     if (!QFile::exists(fileName)) {
         return false;
@@ -1002,7 +1002,7 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
     return true;
 }
 
-QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList,
+QMap<int, QString> DatabaseBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList,
         bool* Canceled, int resultCount, bool slowSearch)
 {
     QMap<int, QString> idList;
@@ -1097,7 +1097,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
             ++numOfNearResult;
             if (numOfNearResult > nextStep) {
                 nextStep += stepLenght; //500
-                emit searchStatusChanged(QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
+                emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
                 QApplication::processEvents(QEventLoop::AllEvents);
             }
 
@@ -1212,7 +1212,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
         }
 
         //for the last result
-        emit searchStatusChanged(QGanjoorDbBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
+        emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
 
         int versesSize = verses.size();
         for (int j = 0; j < versesSize; ++j) {
@@ -1225,7 +1225,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
     return idList;
 }
 
-bool QGanjoorDbBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder)
+bool DatabaseBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder)
 {
     //verseOrder starts from 1 to verses.size()
     if (verseOrder <= 0 || verseOrder > verses.size()) {
@@ -1319,7 +1319,7 @@ bool QGanjoorDbBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QStrin
     return false;
 }
 
-bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder)
+bool DatabaseBrowser::isRhyme(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder)
 {
     //verseOrder starts from 1 to verses.size()
     if (verseOrder <= 0 || verseOrder > verses.size()) {
@@ -1426,7 +1426,7 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse*> &verses, const QStrin
     return false;
 }
 
-QVariantList QGanjoorDbBrowser::importGanjoorBookmarks()
+QVariantList DatabaseBrowser::importGanjoorBookmarks()
 {
     QVariantList lst;
     if (isConnected()) {
@@ -1454,7 +1454,7 @@ QVariantList QGanjoorDbBrowser::importGanjoorBookmarks()
     return lst;
 }
 
-QString QGanjoorDbBrowser::getBeyt(int poemID, int firstMesraID, const QString &separator)
+QString DatabaseBrowser::getBeyt(int poemID, int firstMesraID, const QString &separator)
 {
     QStringList mesras;
     if (isConnected()) {
@@ -1504,7 +1504,7 @@ QString QGanjoorDbBrowser::getBeyt(int poemID, int firstMesraID, const QString &
     return "";
 }
 
-bool QGanjoorDbBrowser::poetHasSubCats(int poetID, const QString &connectionID)
+bool DatabaseBrowser::poetHasSubCats(int poetID, const QString &connectionID)
 {
     if (isConnected(connectionID)) {
         QSqlDatabase dataBaseObject = dBConnection;
@@ -1525,7 +1525,7 @@ bool QGanjoorDbBrowser::poetHasSubCats(int poetID, const QString &connectionID)
     return false;
 }
 
-QList<QTreeWidgetItem*> QGanjoorDbBrowser::loadOutlineFromDataBase(int parentID)
+QList<QTreeWidgetItem*> DatabaseBrowser::loadOutlineFromDataBase(int parentID)
 {
     QList<QTreeWidgetItem*> items;
     QList<GanjoorCat*> parents = getSubCategories(parentID);
@@ -1545,10 +1545,10 @@ QList<QTreeWidgetItem*> QGanjoorDbBrowser::loadOutlineFromDataBase(int parentID)
     return items;
 }
 
-void QGanjoorDbBrowser::addDataSets()
+void DatabaseBrowser::addDataSets()
 {
-    if (!QGanjoorDbBrowser::dbUpdater) {
-        QGanjoorDbBrowser::dbUpdater = new DataBaseUpdater(0, Qt::WindowStaysOnTopHint);
+    if (!DatabaseBrowser::dbUpdater) {
+        DatabaseBrowser::dbUpdater = new DataBaseUpdater(0, Qt::WindowStaysOnTopHint);
     }
 
     if (!m_addRemoteDataSet) {
@@ -1556,19 +1556,19 @@ void QGanjoorDbBrowser::addDataSets()
         QStringList fileList = QFileDialog::getOpenFileNames(0, tr("Select data sets to install"), QDir::homePath(), "Supported Files (*.gdb *.s3db *.zip);;Ganjoor DataBase (*.gdb *.s3db);;Compressed Data Sets (*.zip);;All Files (*.*)");
         if (!fileList.isEmpty()) {
             foreach (const QString &file, fileList) {
-                QGanjoorDbBrowser::dbUpdater->installItemToDB(file);
+                DatabaseBrowser::dbUpdater->installItemToDB(file);
                 QApplication::processEvents();
             }
         }
     }
     else if (m_addRemoteDataSet) {
         //download dialog
-        QtWin::easyBlurUnBlur(QGanjoorDbBrowser::dbUpdater, Settings::READ("UseTransparecy").toBool());
-        QGanjoorDbBrowser::dbUpdater->exec();
+        QtWin::easyBlurUnBlur(DatabaseBrowser::dbUpdater, Settings::READ("UseTransparecy").toBool());
+        DatabaseBrowser::dbUpdater->exec();
     }
 }
 
-bool QGanjoorDbBrowser::createEmptyDataBase(const QString &connectionID)
+bool DatabaseBrowser::createEmptyDataBase(const QString &connectionID)
 {
     if (isConnected(connectionID)) {
         QSqlDatabase dataBaseObject = dBConnection;
