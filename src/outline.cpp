@@ -54,6 +54,7 @@
 #include "outline.h"
 #include "qganjoordbbrowser.h"
 #include "searchitemdelegate.h"
+#include "tools.h"
 
 OutLineTree::OutLineTree(QWidget* parent)
     : QWidget(parent)
@@ -138,8 +139,8 @@ bool OutLineTree::filterItems(const QString &str, QTreeWidgetItem* parentItem)
         }
 
         QString text = ithChild->text(0);
-        text = QGanjoorDbBrowser::cleanString(text);
-        QString cleanStr = QGanjoorDbBrowser::cleanString(str);
+        text = Tools::cleanString(text);
+        QString cleanStr = Tools::cleanString(str);
         if (!cleanStr.isEmpty() && !text.contains(cleanStr)) {
             // if all its children are hidden it should be hidden, too.
             if (ithChild->childCount() > 0) {

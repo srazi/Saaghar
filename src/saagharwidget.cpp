@@ -23,6 +23,7 @@
 #include "searchitemdelegate.h"
 #include "saagharwidget.h"
 #include "commands.h"
+#include "tools.h"
 
 #include <QSearchLineEdit>
 #include <QApplication>
@@ -673,7 +674,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
     emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(currentCaption), (poems.size() + subcatsSize) / (step + 1));
 
     for (int i = 0; i < subcatsSize; ++i) {
-        QString catText = QGanjoorDbBrowser::simpleCleanString(subcats.at(i)->_Text);
+        QString catText = Tools::simpleCleanString(subcats.at(i)->_Text);
 
         if (catText.isRightToLeft()) {
             ++betterRightToLeft;
@@ -715,11 +716,11 @@ void SaagharWidget::showCategory(GanjoorCat category)
     }
 
     for (int i = 0; i < poems.size(); i++) {
-        QString itemText = QGanjoorDbBrowser::snippedText(QGanjoorDbBrowser::simpleCleanString(poems.at(i)->_Title), "", 0, 15, true);
+        QString itemText = Tools::snippedText(Tools::simpleCleanString(poems.at(i)->_Title), "", 0, 15, true);
         if (subcatsSize > 0) {
             itemText.prepend("       ");    //7 spaces
         }
-        itemText += " : " + QGanjoorDbBrowser::simpleCleanString(ganjoorDataBase->getFirstMesra(poems.at(i)->_ID));
+        itemText += " : " + Tools::simpleCleanString(ganjoorDataBase->getFirstMesra(poems.at(i)->_ID));
 
         if (itemText.isRightToLeft()) {
             ++betterRightToLeft;
@@ -923,7 +924,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     tableViewWidget->setItem(0, 0, flagItem);
 
     //Title of Poem
-    QTableWidgetItem* poemTitle = new QTableWidgetItem(QGanjoorDbBrowser::simpleCleanString(poem._Title));
+    QTableWidgetItem* poemTitle = new QTableWidgetItem(Tools::simpleCleanString(poem._Title));
     poemTitle->setFlags(poemsTitleItemFlag);
     poemTitle->setData(Qt::UserRole, "PoemID=" + QString::number(poem._ID));
 
@@ -984,7 +985,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     //temp and tricky way for some database problems!!(second Mesra when there is no a defined first Mesra)
     bool rightVerseFlag = false;
     int step = 99;
-    emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)), numberOfVerses / (step + 1));
+    emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(Tools::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)), numberOfVerses / (step + 1));
 
     QStringList bookmarkedVerses("");
     if (SaagharWidget::bookmarks) {
@@ -1000,12 +1001,12 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
         }
 
         if (i >= step) {
-            emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(QGanjoorDbBrowser::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)));
+            emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(Tools::snippedText(poem._Title, "", 0, 6, false, Qt::ElideRight)));
             step = step + 100;
         }
 //#ifndef Q_OS_MAC //Qt Bug when inserting TATWEEl character
         if (justified) {
-            currentVerseText = QGanjoorDbBrowser::justifiedText(currentVerseText, poemFontMetric, maxWidth);
+            currentVerseText = Tools::justifiedText(currentVerseText, poemFontMetric, maxWidth);
         }
 //#endif
 
@@ -1420,7 +1421,7 @@ QTableWidgetItem* SaagharWidget::scrollToFirstItemContains(const QString &phrase
     keyword.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
 
     if (!pharseIsList) { //TODO: maybe when using list mode this create a bug
-        keyword = QGanjoorDbBrowser::cleanString(keyword);
+        keyword = Tools::cleanString(keyword);
     }
 
     if (keyword.isEmpty()) {
@@ -1449,7 +1450,7 @@ QTableWidgetItem* SaagharWidget::scrollToFirstItemContains(const QString &phrase
                         text = textEdit->toPlainText();
                     }
                 }
-                text =  QGanjoorDbBrowser::cleanString(text);
+                text =  Tools::cleanString(text);
                 text.remove(".");//remove because of elided text
                 text.replace(QChar(0x0640), "", Qt::CaseInsensitive);//replace TATWEEL by ""
                 text = text.simplified();
@@ -1573,7 +1574,7 @@ void SaagharWidget::clickedOnItem(int row, int column)
                 QTextEdit* textEdit = qobject_cast<QTextEdit*>(tableViewWidget->cellWidget(row, 1));
                 if (textEdit) {
                     verseText = textEdit->toPlainText().simplified();
-                    verseText = QGanjoorDbBrowser::snippedText(verseText, "", 0, 20);
+                    verseText = Tools::snippedText(verseText, "", 0, 20);
                 }
             }
 

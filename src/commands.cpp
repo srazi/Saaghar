@@ -21,6 +21,7 @@
 
 #include "commands.h"
 #include "saagharwidget.h"
+#include "tools.h"
 
 #include <QTimer>
 
@@ -34,7 +35,7 @@ NavigateToPage::NavigateToPage(SaagharWidget* saagharWidget, const QString &type
 
         m_previousText = m_saagharWidget->currentLocationList.join("-");
         if (!m_saagharWidget->currentPoemTitle.isEmpty()) {
-            m_previousText += "-" + QGanjoorDbBrowser::snippedText(m_saagharWidget->currentPoemTitle, QString(), 0, 10, true, Qt::ElideMiddle);
+            m_previousText += "-" + Tools::snippedText(m_saagharWidget->currentPoemTitle, QString(), 0, 10, true, Qt::ElideMiddle);
         }
         if (m_previousText.isEmpty()) {
             m_previousText = QObject::tr("Home");
@@ -109,7 +110,7 @@ void NavigateToPage::redo()
         m_newText = m_saagharWidget->currentLocationList.at(m_saagharWidget->currentLocationList.size() - 1);    //join("-");
     }
     if (!m_saagharWidget->currentPoemTitle.isEmpty()) {
-        m_newText = QGanjoorDbBrowser::snippedText(m_saagharWidget->currentPoemTitle, QString(), 0, 10, true, Qt::ElideMiddle);
+        m_newText = Tools::snippedText(m_saagharWidget->currentPoemTitle, QString(), 0, 10, true, Qt::ElideMiddle);
     }
 
     if (m_newText.isEmpty()) {

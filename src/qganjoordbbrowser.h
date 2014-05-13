@@ -52,14 +52,6 @@ class QGanjoorDbBrowser : public QObject
 public:
     QGanjoorDbBrowser(QString sqliteDbCompletePath = "ganjoor.s3db", QWidget* splashScreen = 0);
     ~QGanjoorDbBrowser();
-//      static QString qStringMacHelper(const QString &str);
-    static QString getLongPathName(const QString &fileName);
-    static QString simpleCleanString(const QString &text);
-    static QString cleanString(const QString &text, const QStringList &excludeList = QStringList() << " ");
-    static QString cleanStringFast(const QString &text, const QStringList &excludeList = QStringList() << " ");
-    static QString justifiedText(const QString &text, const QFontMetrics &fontmetric, int width);
-    static QString snippedText(const QString &text, const QString &str, int from = 0, int maxNumOfWords = 10, bool elided = true, Qt::TextElideMode elideMode = Qt::ElideRight);
-    static int getRandomNumber(int minBound, int maxBound);
 
     bool isConnected(const QString &connectionID = "");
     bool isValid(QString connectionID = "");
@@ -113,12 +105,6 @@ public:
     static QString dBName;
     static DataBaseUpdater* dbUpdater;
     static QStringList dataBasePath;
-    static const QStringList someSymbols;
-    static const QStringList Ve_Variant;
-    static const QStringList Ye_Variant;
-    static const QStringList AE_Variant;
-    static const QStringList He_Variant;
-    static const QString &OTHER_GLYPHS;
 
 public slots:
     void addDataSets();

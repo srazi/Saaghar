@@ -48,6 +48,7 @@
 
 #include "bookmarks.h"
 #include "qganjoordbbrowser.h"
+#include "tools.h"
 
 const int ID_DATA = Qt::UserRole + 1;
 
@@ -438,8 +439,8 @@ void Bookmarks::filterItems(const QString &str)
         for (int j = 0; j < childCount; ++j) {
             QTreeWidgetItem* child = ithRootChild->child(j);
             QString text = child->text(0) + child->text(1);
-            text = QGanjoorDbBrowser::cleanString(text);
-            QString cleanedStr = QGanjoorDbBrowser::cleanString(str);
+            text = Tools::cleanString(text);
+            QString cleanedStr = Tools::cleanString(str);
             if (!cleanedStr.isEmpty() && !text.contains(cleanedStr)) {
                 child->setHidden(true);
             }

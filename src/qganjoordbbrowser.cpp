@@ -22,6 +22,7 @@
 #include "qganjoordbbrowser.h"
 #include "nodatabasedialog.h"
 #include "searchresultwidget.h"
+#include "tools.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -48,68 +49,6 @@ QSQLiteDriver* QGanjoorDbBrowser::sqlDriver = 0;
 #else
 const QString sqlDriver = "QSQLITE";
 #endif
-
-//#include <QStringList>
-/***************************/
-//from unicode table:
-//  "»" cell= 187 row= 0
-//  "«" cell= 171 row= 0
-//  "." cell= 46 row= 0
-//  "؟" cell= 31 row= 6
-//  "،" cell= 12 row= 6
-//  "؛" cell= 27 row= 6
-const QStringList QGanjoorDbBrowser::someSymbols = QStringList()
-        << QChar(31, 6) << QChar(12, 6) << QChar(27, 6)
-        << QChar(187, 0) << QChar(171, 0) << QChar(46, 0)
-        << ")" << "(" << "[" << "]" << ":" << "!" << "-" << "." << "?";
-
-//the zero index of following stringlists is equipped by expected variant!
-//  "ؤ" cell= 36 row= 6
-//  "و" cell= 72 row= 6
-const QStringList QGanjoorDbBrowser::Ve_Variant = QStringList()
-        << QChar(72, 6) << QChar(36, 6);
-
-//  "ى" cell= 73 row= 6 //ALEF MAKSURA
-//  "ي" cell= 74 row= 6 //Arabic Ye
-//  "ئ" cell= 38 row= 6
-//  "ی" cell= 204 row= 6 //Persian Ye
-const QStringList QGanjoorDbBrowser::Ye_Variant = QStringList()
-        << QChar(204, 6) << QChar(38, 6) << QChar(74, 6) << QChar(73, 6);
-
-//  "آ" cell= 34 row= 6
-//  "أ" cell= 35 row= 6
-//  "إ" cell= 37 row= 6
-//  "ا" cell= 39 row= 6
-const QStringList QGanjoorDbBrowser::AE_Variant = QStringList()
-        << QChar(39, 6) << QChar(37, 6) << QChar(35, 6) << QChar(34, 6);
-
-//  "ة" cell= 41 row= 6
-//  "ۀ" cell=192 row= 6
-//  "ه" cell= 71 row= 6
-const QStringList QGanjoorDbBrowser::He_Variant = QStringList()
-        << QChar(71, 6) << QChar(41, 6) << QChar(192, 6);
-
-// tashdid+keshide+o+a+e+an+en+on+saaken+zwnj
-const QString &QGanjoorDbBrowser::OTHER_GLYPHS = QString(QChar(78, 6)) +
-        QChar(79, 6) + QChar(80, 6) + QChar(81, 6) + QChar(64, 6) +
-        QChar(75, 6) + QChar(76, 6) + QChar(77, 6) + QChar(82, 6) + QChar(0x200C);
-////////////////////////////
-const QRegExp Ve_EXP = QRegExp("[" +
-                               QGanjoorDbBrowser::Ve_Variant.join("").remove(QGanjoorDbBrowser::Ve_Variant.at(0))
-                               + "]");
-const QRegExp Ye_EXP = QRegExp("[" +
-                               QGanjoorDbBrowser::Ye_Variant.join("").remove(QGanjoorDbBrowser::Ye_Variant.at(0))
-                               + "]");
-const QRegExp AE_EXP = QRegExp("[" +
-                               QGanjoorDbBrowser::AE_Variant.join("").remove(QGanjoorDbBrowser::AE_Variant.at(0))
-                               + "]");
-const QRegExp He_EXP = QRegExp("[" +
-                               QGanjoorDbBrowser::He_Variant.join("").remove(QGanjoorDbBrowser::He_Variant.at(0))
-                               + "]");
-const QRegExp SomeSymbol_EXP = QRegExp("[" +
-                                       QGanjoorDbBrowser::someSymbols.join("")
-                                       + "]+");
-/***************************/
 
 QGanjoorDbBrowser::QGanjoorDbBrowser(QString sqliteDbCompletePath, QWidget* splashScreen)
 {
@@ -415,7 +354,7 @@ QString QGanjoorDbBrowser::getFirstMesra(int PoemID) //just first Mesra
         q.exec(selectQuery);
         q.first();
         while (q.isValid() && q.isActive()) {
-            return snippedText(q.record().value(1).toString(), "", 0, 12, true);
+            return Tools::snippedText(q.record().value(1).toString(), "", 0, 12, true);
         }
     }
     return "";
@@ -658,7 +597,7 @@ int QGanjoorDbBrowser::getRandomPoemID(int* CatID)
 {
     if (isConnected()) {
         QList<GanjoorCat*> subCats = getSubCategories(*CatID);
-        int randIndex = QGanjoorDbBrowser::getRandomNumber(0, subCats.size());
+        int randIndex = Tools::getRandomNumber(0, subCats.size());
         if (randIndex >= 0 && randIndex != subCats.size()) { // '==' is when we want to continue with current 'CatID'. notice maybe 'randIndex == subCats.size() == 0'.
             *CatID = subCats.at(randIndex)->_ID;
             return getRandomPoemID(CatID);
@@ -677,62 +616,13 @@ int QGanjoorDbBrowser::getRandomPoemID(int* CatID)
 
             if (maxID <= 0 || minID < 0) {
                 QList<GanjoorCat*> subCats = getSubCategories(*CatID);
-                *CatID = subCats.at(QGanjoorDbBrowser::getRandomNumber(0, subCats.size() - 1))->_ID;
+                *CatID = subCats.at(Tools::getRandomNumber(0, subCats.size() - 1))->_ID;
                 return getRandomPoemID(CatID);
             }
-            return QGanjoorDbBrowser::getRandomNumber(minID, maxID);
+            return Tools::getRandomNumber(minID, maxID);
         }
     }
     return -1;
-}
-
-int QGanjoorDbBrowser::getRandomNumber(int minBound, int maxBound)
-{
-    if ((maxBound < minBound) || (minBound < 0)) {
-        return -1;
-    }
-    if (minBound == maxBound) {
-        return minBound;
-    }
-
-    //Generate a random number in the range [0.5f, 1.0f).
-    unsigned int ret = 0x3F000000 | (0x7FFFFF & ((qrand() << 8) ^ qrand()));
-    unsigned short coinFlips;
-
-    //If the coin is tails, return the number, otherwise
-    //divide the random number by two by decrementing the
-    //exponent and keep going. The exponent starts at 63.
-    //Each loop represents 15 random bits, a.k.a. 'coin flips'.
-#define RND_INNER_LOOP() \
-    if( coinFlips & 1 ) break; \
-    coinFlips >>= 1; \
-    ret -= 0x800000
-    for (;;) {
-        coinFlips = qrand();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        //At this point, the exponent is 60, 45, 30, 15, or 0.
-        //If the exponent is 0, then the number equals 0.0f.
-        if (!(ret & 0x3F800000)) {
-            return 0.0f;
-        }
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-        RND_INNER_LOOP();
-    }
-
-    float rand = *((float*)(&ret));
-    return (int)(rand * (maxBound - minBound + 1) + minBound);
 }
 
 QList<GanjoorPoet*> QGanjoorDbBrowser::getDataBasePoets(const QString fileName)
@@ -763,7 +653,7 @@ QString QGanjoorDbBrowser::getIdForDataBase(const QString &sqliteDataBaseName)
 {
     //QFileInfo dataBaseFile(sqliteDataBaseName);
     //QString connectionID = dataBaseFile.fileName();//we need to be sure this name is unique
-    QString connectionID = QGanjoorDbBrowser::getLongPathName(sqliteDataBaseName);
+    QString connectionID = Tools::getLongPathName(sqliteDataBaseName);
 
     if (!QSqlDatabase::contains(connectionID)) {
         QSqlDatabase db = QSqlDatabase::addDatabase(sqlDriver, connectionID);
@@ -1112,74 +1002,6 @@ bool QGanjoorDbBrowser::importDataBase(const QString fileName)
     return true;
 }
 
-QString QGanjoorDbBrowser::cleanString(const QString &text, const QStringList &excludeList)
-{
-    QString cleanedText = text;
-
-    cleanedText.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-
-    // 14s-->10s
-    if (SearchResultWidget::skipVowelLetters) {
-        cleanedText.replace(Ve_EXP, QChar(72, 6) /*Ve_Variant.at(0)*/);
-        cleanedText.replace(Ye_EXP, QChar(204, 6) /*Ye_Variant.at(0)*/);
-        cleanedText.replace(AE_EXP, QChar(39, 6) /*AE_Variant.at(0)*/);
-        cleanedText.replace(He_EXP, QChar(71, 6) /*He_Variant.at(0)*/);
-    }
-
-    for (int i = 0; i < cleanedText.size(); ++i) {
-        QChar tmpChar = cleanedText.at(i);
-
-        if (excludeList.contains(tmpChar)) {
-            continue;
-        }
-
-        QChar::Direction chDir = tmpChar.direction();
-
-        //someSymbols.contains(tmpChar) consumes lots of time, 8s --> 10s
-        if ((SearchResultWidget::skipVowelSigns && chDir == QChar::DirNSM) ||
-                tmpChar.isSpace() || someSymbols.contains(tmpChar)) {
-            cleanedText.remove(tmpChar);
-            --i;
-            continue;
-        }
-    }
-    return cleanedText;
-}
-
-QString QGanjoorDbBrowser::cleanStringFast(const QString &text, const QStringList &excludeList)
-{
-    QString cleanedText = text;
-
-    cleanedText.remove(QChar(0x200C));//.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-
-    // 14s-->10s
-    if (SearchResultWidget::skipVowelLetters) {
-        cleanedText.replace(Ve_EXP, QChar(72, 6) /*Ve_Variant.at(0)*/);
-        cleanedText.replace(Ye_EXP, QChar(204, 6) /*Ye_Variant.at(0)*/);
-        cleanedText.replace(AE_EXP, QChar(39, 6) /*AE_Variant.at(0)*/);
-        cleanedText.replace(He_EXP, QChar(71, 6) /*He_Variant.at(0)*/);
-    }
-    cleanedText.remove(SomeSymbol_EXP);
-
-    for (int i = 0; i < cleanedText.size(); ++i) {
-        QChar tmpChar = cleanedText.at(i);
-
-        if (excludeList.contains(tmpChar)) {
-            continue;
-        }
-
-        QChar::Direction chDir = tmpChar.direction();
-
-        //someSymbols.contains(tmpChar) consumes lots of time, 8s --> 10s
-        if ((SearchResultWidget::skipVowelSigns && chDir == QChar::DirNSM) || tmpChar.isSpace()) {
-            cleanedText.remove(tmpChar);
-            --i;
-            continue;
-        }
-    }
-    return cleanedText;
-}
-
 QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList,
         bool* Canceled, int resultCount, bool slowSearch)
 {
@@ -1214,7 +1036,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
         //we have not to worry about this replacement, because phraseList.at(0) is tested again!
         bool variantPresent = false;
         if (SearchResultWidget::skipVowelLetters) {
-            QRegExp variantEXP("[" + Ve_Variant.join("") + AE_Variant.join("") + He_Variant.join("") + Ye_Variant.join("") + "]+");
+            QRegExp variantEXP("[" + Tools::Ve_Variant.join("") + Tools::AE_Variant.join("") + Tools::He_Variant.join("") + Tools::Ye_Variant.join("") + "]+");
             if (firstPhrase.contains(variantEXP)) {
                 firstPhrase.replace(variantEXP, "%");
                 variantPresent = true;
@@ -1231,7 +1053,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
             //search for firstPhrase then go for other ones
             subPhrase = subPhrase.simplified();
             if (!subPhrase.contains(" ") || variantPresent) {
-                subPhrase = QGanjoorDbBrowser::cleanString(subPhrase, excludeWhenCleaning).split("", QString::SkipEmptyParts).join(joiner);
+                subPhrase = Tools::cleanString(subPhrase, excludeWhenCleaning).split("", QString::SkipEmptyParts).join(joiner);
             }
             subPhrase.replace("% %", "%");
             anyWordedList[i] = subPhrase;
@@ -1288,7 +1110,7 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
             // assume title's order is zero!
             int verseOrder = (PoetID == -1000 ? 0 : qrec.value(2).toInt());
 
-            QString foundedVerse = QGanjoorDbBrowser::cleanStringFast(verseText, excludeWhenCleaning);
+            QString foundedVerse = Tools::cleanStringFast(verseText, excludeWhenCleaning);
             // for whole word option when word is in the start or end of verse
             foundedVerse = " " + foundedVerse + " ";
 
@@ -1403,170 +1225,6 @@ QMap<int, QString> QGanjoorDbBrowser::getPoemIDsByPhrase(int PoetID, const QStri
     return idList;
 }
 
-QString QGanjoorDbBrowser::justifiedText(const QString &text, const QFontMetrics &fontmetric, int width)
-{
-    int textWidth = fontmetric.width(text);
-    QChar tatweel = QChar(0x0640);
-    int tatweelWidth = fontmetric.width(tatweel);
-    if (tatweel == QChar(QChar::ReplacementCharacter)) { //Current font has not a TATWEEL character
-        tatweel = QChar(QChar::Null);
-        tatweelWidth = 0;
-    }
-
-//force justification by space on MacOSX
-#ifdef Q_OS_MAC
-    tatweel = QChar(QChar::Null);
-    tatweelWidth = 0;
-#endif
-
-    int spaceWidth = fontmetric.width(" ");
-
-    if (textWidth >= width || width <= 0) {
-        return text;
-    }
-
-    int numOfTatweels = tatweelWidth ? (width - textWidth) / tatweelWidth : 0;
-    int numOfSpaces = (width - (textWidth + numOfTatweels * tatweelWidth)) / spaceWidth;
-
-    QList<int> tatweelPositions;
-    QList<int> spacePositions;
-    QStringList charsOfText = text.split("", QString::SkipEmptyParts);
-
-    //founding suitable position for inserting TATWEEL or SPACE characters.
-    for (int i = 0; i < charsOfText.size(); ++i) {
-        if (i > 0 && i < charsOfText.size() - 1 && charsOfText.at(i) == " ") {
-            spacePositions << i;
-            continue;
-        }
-
-        if (charsOfText.at(i).at(0).joining() != QChar::Dual) {
-            continue;
-        }
-
-        if (i < charsOfText.size() - 1 && ((charsOfText.at(i + 1).at(0).joining() == QChar::Dual) ||
-                                           (charsOfText.at(i + 1).at(0).joining() == QChar::Right))) {
-            tatweelPositions << i;
-            continue;
-        }
-    }
-
-    if (tatweelPositions.isEmpty()) {
-        numOfTatweels = 0;
-        numOfSpaces = (width - textWidth) / spaceWidth;
-    }
-
-    if (numOfTatweels > 0) {
-        ++numOfTatweels;
-        width = numOfSpaces * spaceWidth + numOfTatweels * tatweelWidth + textWidth;
-    }
-    else {
-        ++numOfSpaces;
-        width = numOfSpaces * spaceWidth + numOfTatweels * tatweelWidth + textWidth;
-    }
-
-    for (int i = 0; i < tatweelPositions.size(); ++i) {
-        if (numOfTatweels <= 0) {
-            break;
-        }
-        charsOfText[tatweelPositions.at(i)] = charsOfText.at(tatweelPositions.at(i)) + tatweel;
-        --numOfTatweels;
-        if (i == tatweelPositions.size() - 1) {
-            i = -1;
-        }
-    }
-    for (int i = 0; i < spacePositions.size(); ++i) {
-        if (numOfSpaces <= 0) {
-            break;
-        }
-        charsOfText[spacePositions.at(i)] = charsOfText.at(spacePositions.at(i)) + " ";
-        --numOfSpaces;
-        if (i == spacePositions.size() - 1) {
-            i = -1;
-        }
-    }
-    return charsOfText.join("");
-}
-
-QString QGanjoorDbBrowser::snippedText(const QString &text, const QString &str, int from, int maxNumOfWords, bool elided, Qt::TextElideMode elideMode)
-{
-    if (!str.isEmpty() && !text.contains(str)) {
-        return "";
-    }
-
-    QString elideString = "";
-    if (elided) {
-        elideString = "...";
-    }
-
-    if (!str.isEmpty() && text.contains(str)) {
-        int index = text.indexOf(str, from);
-        if (index == -1) {
-            return "";    //it's not possible
-        }
-        int partMaxNumOfWords = maxNumOfWords / 2;
-        if (text.right(text.size() - str.size() - index).split(" ", QString::SkipEmptyParts).size() < partMaxNumOfWords) {
-            partMaxNumOfWords = maxNumOfWords - text.right(text.size() - str.size() - index).split(" ", QString::SkipEmptyParts).size();
-        }
-        QString leftPart = QGanjoorDbBrowser::snippedText(text.left(index), "", 0, partMaxNumOfWords, elided, Qt::ElideLeft);
-        //int rightPartMaxNumOfWords = maxNumOfWords/2;
-        if (leftPart.split(" ", QString::SkipEmptyParts).size() < maxNumOfWords / 2) {
-            partMaxNumOfWords = maxNumOfWords - leftPart.split(" ", QString::SkipEmptyParts).size();
-        }
-        QString rightPart = QGanjoorDbBrowser::snippedText(text.right(text.size() - str.size() - index), "", 0, partMaxNumOfWords, elided, Qt::ElideRight);
-        /*if (index == text.size()-1)
-            return elideString+leftPart+str+rightPart;
-        else if (index == 0)
-            return leftPart+str+rightPart+elideString;
-        else
-            return elideString+leftPart+str+rightPart+elideString;*/
-        return leftPart + str + rightPart;
-    }
-
-    QStringList words = text.split(QRegExp("\\b"), QString::SkipEmptyParts);
-    int textWordCount = words.size();
-    if (textWordCount < maxNumOfWords || maxNumOfWords <= 0) {
-        return text;
-    }
-
-    QStringList snippedList;
-    int numOfInserted = 0;
-    for (int i = 0; i < textWordCount; ++i) {
-        if (numOfInserted >= maxNumOfWords) {
-            break;
-        }
-
-        if (elideMode == Qt::ElideLeft) {
-            //words = words.mid(words.size()-maxNumOfWords, maxNumOfWords);
-            snippedList.prepend(words.at(textWordCount - 1 - i));
-            if (words.at(i) != " ") {
-                ++numOfInserted;
-            }
-        }
-        else {
-            snippedList << words.at(i);
-            if (words.at(i) != " ") {
-                ++numOfInserted;
-            }
-        }
-    }
-    /*if (elideMode == Qt::ElideLeft)
-    {
-        words = words.mid(words.size()-maxNumOfWords, maxNumOfWords);
-    }
-    else
-        words = words.mid(0, maxNumOfWords);*/
-    QString snippedString = snippedList.join("");
-    if (snippedString == text) {
-        return text;
-    }
-    if (elideMode == Qt::ElideLeft) {
-        return elideString + snippedList.join("");
-    }
-    else {
-        return snippedList.join("") + elideString;
-    }
-}
-
 bool QGanjoorDbBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder)
 {
     //verseOrder starts from 1 to verses.size()
@@ -1576,9 +1234,9 @@ bool QGanjoorDbBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QStrin
 
     //QList<GanjoorVerse *> verses = getVerses(PoemID);
 
-    QString cleanedVerse = QGanjoorDbBrowser::cleanStringFast(verses.at(verseOrder - 1)->_Text, QStringList(""));
+    QString cleanedVerse = Tools::cleanStringFast(verses.at(verseOrder - 1)->_Text, QStringList(""));
     //cleanedVerse = " "+cleanedVerse+" ";//just needed for whole word
-    QString cleanedPhrase = QGanjoorDbBrowser::cleanStringFast(phrase, QStringList(""));
+    QString cleanedPhrase = Tools::cleanStringFast(phrase, QStringList(""));
 
     if (!cleanedVerse.contains(cleanedPhrase)) {
         //verses.clear();
@@ -1635,7 +1293,7 @@ bool QGanjoorDbBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QStrin
         if (secondMesraOrder == -1) {
             continue;
         }
-        secondMesra = QGanjoorDbBrowser::cleanStringFast(verses.at(secondMesraOrder)->_Text, QStringList(""));
+        secondMesra = Tools::cleanStringFast(verses.at(secondMesraOrder)->_Text, QStringList(""));
 
         if (!secondMesra.contains(cleanedPhrase)) {
             //verses.clear();
@@ -1668,8 +1326,8 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse*> &verses, const QStrin
         return false;
     }
 
-    QString cleanedVerse = QGanjoorDbBrowser::cleanStringFast(verses.at(verseOrder - 1)->_Text, QStringList(""));
-    QString cleanedPhrase = QGanjoorDbBrowser::cleanStringFast(phrase, QStringList(""));
+    QString cleanedVerse = Tools::cleanStringFast(verses.at(verseOrder - 1)->_Text, QStringList(""));
+    QString cleanedPhrase = Tools::cleanStringFast(phrase, QStringList(""));
 
     if (!cleanedVerse.contains(cleanedPhrase)) {
         //verses.clear();
@@ -1726,7 +1384,7 @@ bool QGanjoorDbBrowser::isRhyme(const QList<GanjoorVerse*> &verses, const QStrin
         if (secondMesraOrder == -1) {
             continue;
         }
-        secondMesra = QGanjoorDbBrowser::cleanStringFast(verses.at(secondMesraOrder)->_Text, QStringList(""));
+        secondMesra = Tools::cleanStringFast(verses.at(secondMesraOrder)->_Text, QStringList(""));
 
         int indexInSecondMesra = secondMesra.lastIndexOf(cleanedPhrase);
         int offset = cleanedPhrase.size();
@@ -1910,15 +1568,6 @@ void QGanjoorDbBrowser::addDataSets()
     }
 }
 
-QString QGanjoorDbBrowser::simpleCleanString(const QString &text)
-{
-    QString simpleCleaned = text.simplified();
-    QChar tatweel = QChar(0x0640);
-    simpleCleaned.remove(tatweel);
-
-    return simpleCleaned;
-}
-
 bool QGanjoorDbBrowser::createEmptyDataBase(const QString &connectionID)
 {
     if (isConnected(connectionID)) {
@@ -1943,56 +1592,4 @@ bool QGanjoorDbBrowser::createEmptyDataBase(const QString &connectionID)
         return dataBaseObject.commit();
     }
     return false;
-}
-
-#ifdef Q_OS_WIN
-#define BUFSIZE 4096
-#define _WIN32_WINNT 0x0500
-#include <windows.h>
-#include <tchar.h>
-#endif
-/*static*/
-QString QGanjoorDbBrowser::getLongPathName(const QString &fileName)
-{
-#ifndef Q_OS_WIN
-    QFileInfo file(fileName);
-    if (!file.exists()) {
-        return fileName;
-    }
-    else {
-        return file.canonicalFilePath();
-    }
-#else
-    DWORD  retval = 0;
-#ifdef D_MSVC_CC
-    TCHAR  bufLongFileName[BUFSIZE] = TEXT("");
-    TCHAR  bufFileName[BUFSIZE] = TEXT("");
-#else
-    TCHAR  bufLongFileName[BUFSIZE] = TEXT(L"");
-    TCHAR  bufFileName[BUFSIZE] = TEXT(L"");
-#endif
-
-    QString winFileName = fileName;
-    winFileName.replace("/", "\\");
-    winFileName.toWCharArray(bufFileName);
-
-    retval = GetLongPathName(bufFileName, bufLongFileName, BUFSIZE);
-
-    if (retval == 0) {
-        qWarning("GetLongPathName failed (%d)\n", int(GetLastError()));
-        QFileInfo file(fileName);
-        if (!file.exists()) {
-            return fileName;
-        }
-        else {
-            return file.canonicalFilePath();
-        }
-    }
-    else {
-        QString longFileName = QString::fromWCharArray(bufLongFileName);
-        longFileName.replace("\\", "/");
-
-        return longFileName;
-    }
-#endif
 }

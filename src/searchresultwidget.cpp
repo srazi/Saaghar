@@ -22,6 +22,7 @@
 #include "searchresultwidget.h"
 #include "searchitemdelegate.h"
 #include "qganjoordbbrowser.h"
+#include "tools.h"
 
 #include <QSearchLineEdit>
 #include <QMessageBox>
@@ -383,7 +384,7 @@ void SearchResultWidget::showSearchResult(int start)
         }
 
         //add Items
-        QString snippedPoemTitle = QGanjoorDbBrowser::snippedText(poemTiltle, "", 0, 5, true);
+        QString snippedPoemTitle = Tools::snippedText(poemTiltle, "", 0, 5, true);
         if (sectionName == tr("All") || sectionName == tr("Titles")) {
             snippedPoemTitle.prepend(poetName + ": ");
         }
@@ -396,15 +397,15 @@ void SearchResultWidget::showSearchResult(int start)
             maxPoemWidth = tmpWidth;
         }
 
-//      QString cleanedFirstVerse = QGanjoorDbBrowser::cleanString(firstVerse/*, false*/);
-//      QString snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, phrase, 0, 8, true);
+//      QString cleanedFirstVerse = Tools::cleanString(firstVerse/*, false*/);
+//      QString snippedFirstVerse = Tools::snippedText(cleanedFirstVerse, phrase, 0, 8, true);
 //      if (snippedFirstVerse.isEmpty())
-//          snippedFirstVerse = QGanjoorDbBrowser::snippedText(cleanedFirstVerse, "", 0, 8, true);
+//          snippedFirstVerse = Tools::snippedText(cleanedFirstVerse, "", 0, 8, true);
 
         //change 'cleanedFirstVerse' to 'firstVerse' maybe this conflicts with 'snippedText()' algorithm!
-        QString snippedFirstVerse = QGanjoorDbBrowser::snippedText(firstVerse, phrase, 0, 8, true);
+        QString snippedFirstVerse = Tools::snippedText(firstVerse, phrase, 0, 8, true);
         if (snippedFirstVerse.isEmpty()) {
-            snippedFirstVerse = QGanjoorDbBrowser::snippedText(firstVerse, "", 0, 8, true);
+            snippedFirstVerse = Tools::snippedText(firstVerse, "", 0, 8, true);
         }
 
         QTableWidgetItem* verseItem = new QTableWidgetItem(snippedFirstVerse);
@@ -506,7 +507,7 @@ void SearchResultWidget::maxItemPerPageChange()
 
 void SearchResultWidget::filterResults(const QString &text)
 {
-    QString str = QGanjoorDbBrowser::cleanString(text);
+    QString str = Tools::cleanString(text);
     if (str.isEmpty()) {
         resultList = copyResultList;
         emit searchFiltered(phrase);
@@ -524,7 +525,7 @@ void SearchResultWidget::filterResults(const QString &text)
     const QMap<int, QString>::const_iterator endIterator = copyResultList.constEnd();
     while (it != endIterator) {
         QString value = it.value();
-        value = QGanjoorDbBrowser::cleanString(value);
+        value = Tools::cleanString(value);
         if (value.contains(str, Qt::CaseInsensitive)) {
             resultList.insertMulti(it.key(), it.value());
         }

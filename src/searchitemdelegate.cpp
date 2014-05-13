@@ -23,6 +23,7 @@
 #include "searchitemdelegate.h"
 #include "qganjoordbstuff.h"
 #include "saagharwidget.h"
+#include "tools.h"
 
 #include <qmath.h>
 #include <QPainter>
@@ -79,8 +80,8 @@ void SaagharItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
             iconWidth = icon.pixmap(100, 100).width() + 5;
         }
 
-        cleanedText = QGanjoorDbBrowser::cleanString(text);
-        text = QGanjoorDbBrowser::cleanString(text, QStringList() << " " << QGanjoorDbBrowser::someSymbols);
+        cleanedText = Tools::cleanString(text);
+        text = Tools::cleanString(text, QStringList() << " " << Tools::someSymbols);
     }
 
     Qt::Alignment itemAlignment = 0;
@@ -356,12 +357,12 @@ void SaagharItemDelegate::updateAdditionalFormats() const
             continue;
         }
 
-        keyword = keyword.split("", QString::SkipEmptyParts).join("[" + QGanjoorDbBrowser::OTHER_GLYPHS + "]*") + "[" + QGanjoorDbBrowser::OTHER_GLYPHS + "]*";
-        keyword.replace("@[" + QGanjoorDbBrowser::OTHER_GLYPHS + "]*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
-        keyword.replace(QGanjoorDbBrowser::AE_Variant.at(0), "(" + QGanjoorDbBrowser::AE_Variant.join("|") + ")");
-        keyword.replace(QGanjoorDbBrowser::Ye_Variant.at(0), "(" + QGanjoorDbBrowser::Ye_Variant.join("|") + ")");
-        keyword.replace(QGanjoorDbBrowser::He_Variant.at(0), "(" + QGanjoorDbBrowser::He_Variant.join("|") + ")");
-        keyword.replace(QGanjoorDbBrowser::Ve_Variant.at(0), "(" + QGanjoorDbBrowser::Ve_Variant.join("|") + ")");
+        keyword = keyword.split("", QString::SkipEmptyParts).join("[" + Tools::OTHER_GLYPHS + "]*") + "[" + Tools::OTHER_GLYPHS + "]*";
+        keyword.replace("@[" + Tools::OTHER_GLYPHS + "]*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
+        keyword.replace(Tools::AE_Variant.at(0), "(" + Tools::AE_Variant.join("|") + ")");
+        keyword.replace(Tools::Ye_Variant.at(0), "(" + Tools::Ye_Variant.join("|") + ")");
+        keyword.replace(Tools::He_Variant.at(0), "(" + Tools::He_Variant.join("|") + ")");
+        keyword.replace(Tools::Ve_Variant.at(0), "(" + Tools::Ve_Variant.join("|") + ")");
         QRegExp maybeOthers(keyword, Qt::CaseInsensitive);
 
         int pos = 0;
@@ -452,12 +453,12 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
     for (int i = 0; i < keywordsCount; ++i) {
         QString keyword = keywordList.at(i);
 
-        keyword = keyword.split("", QString::SkipEmptyParts).join("[" + QGanjoorDbBrowser::OTHER_GLYPHS + "]*") + "[" + QGanjoorDbBrowser::OTHER_GLYPHS + "]*";
-        keyword.replace("@[" + QGanjoorDbBrowser::OTHER_GLYPHS + "]*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
-        keyword.replace(QGanjoorDbBrowser::AE_Variant.at(0), "(" + QGanjoorDbBrowser::AE_Variant.join("|") + ")");
-        keyword.replace(QGanjoorDbBrowser::Ye_Variant.at(0), "(" + QGanjoorDbBrowser::Ye_Variant.join("|") + ")");
-        keyword.replace(QGanjoorDbBrowser::He_Variant.at(0), "(" + QGanjoorDbBrowser::He_Variant.join("|") + ")");
-        keyword.replace(QGanjoorDbBrowser::Ve_Variant.at(0), "(" + QGanjoorDbBrowser::Ve_Variant.join("|") + ")");
+        keyword = keyword.split("", QString::SkipEmptyParts).join("[" + Tools::OTHER_GLYPHS + "]*") + "[" + Tools::OTHER_GLYPHS + "]*";
+        keyword.replace("@[" + Tools::OTHER_GLYPHS + "]*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
+        keyword.replace(Tools::AE_Variant.at(0), "(" + Tools::AE_Variant.join("|") + ")");
+        keyword.replace(Tools::Ye_Variant.at(0), "(" + Tools::Ye_Variant.join("|") + ")");
+        keyword.replace(Tools::He_Variant.at(0), "(" + Tools::He_Variant.join("|") + ")");
+        keyword.replace(Tools::Ve_Variant.at(0), "(" + Tools::Ve_Variant.join("|") + ")");
         QRegExp maybeOthers(keyword, Qt::CaseInsensitive);
         int index = maybeOthers.indexIn(text);
         while (index >= 0) {

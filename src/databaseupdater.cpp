@@ -415,10 +415,10 @@ void DataBaseUpdater::initDownload()
     }
 
     if (!ui->groupBoxKeepDownload->isChecked()) {
-        QFile::remove(sessionDownloadFolder+"/"+fileName);
         //TODO: Fix me!
-        //QDir downDir(sessionDownloadFolder);
-        //downDir.rmdir(sessionDownloadFolder);
+        //QFile::remove(sessionDownloadFolder+"/"+fileName);
+        QDir downDir(sessionDownloadFolder);
+        downDir.rmdir(sessionDownloadFolder);
     }
 
     ui->labelDownloadStatus->setText(tr("Finished!"));

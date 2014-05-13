@@ -22,7 +22,8 @@ HEADERS += \
     $$PWD/qtwin.h \
     $$PWD/searchoptionsdialog.h \
     $$PWD/tabwidget.h \
-    $$PWD/mactoolbutton.h
+    $$PWD/mactoolbutton.h \
+    $$PWD/tools.h
 
 FORMS += \
     $$PWD/saagharwindow.ui \
@@ -48,7 +49,8 @@ SOURCES += \
     $$PWD/qtwin.cpp \
     $$PWD/searchoptionsdialog.cpp \
     $$PWD/tabwidget.cpp \
-    $$PWD/mactoolbutton.cpp
+    $$PWD/mactoolbutton.cpp \
+    $$PWD/tools.cpp
 
 include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)

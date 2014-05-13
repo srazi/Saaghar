@@ -29,6 +29,7 @@
 #include "outline.h"
 #include "searchoptionsdialog.h"
 #include "mactoolbutton.h"
+#include "tools.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -424,7 +425,7 @@ void SaagharWindow::searchStart()
         //  }
         //}
         else {
-            //phrase = QGanjoorDbBrowser::cleanString(SaagharWidget::lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
+            //phrase = Tools::cleanString(SaagharWidget::lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
             //int poetID = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt();
             SearchPatternManager::setInputPhrase(phrase);
             SearchPatternManager::init();
@@ -462,7 +463,7 @@ void SaagharWindow::searchStart()
             searchResultContents->setAttribute(Qt::WA_DeleteOnClose, true);
             //searchResultContents->setLayoutDirection(Qt::RightToLeft);
 
-            phrase = QGanjoorDbBrowser::cleanString(phrase);
+            phrase = Tools::cleanString(phrase);
             SearchResultWidget* searchResultWidget = new SearchResultWidget(searchResultContents, phrase, poetName);
 
             /////////////////////////////////////
@@ -1034,7 +1035,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
 void SaagharWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack)
 {
     insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, type, noError, pushToStack);
-    showStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(QGanjoorDbBrowser::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":") + 1), "", 0, 6, false, Qt::ElideRight)));
+    showStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(Tools::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":") + 1), "", 0, 6, false, Qt::ElideRight)));
 }
 
 void SaagharWindow::updateCaption()
@@ -1044,7 +1045,7 @@ void SaagharWindow::updateCaption()
     }
     SaagharWidget* sw = getSaagharWidget(mainTabWidget->currentIndex());
 
-    QString newTabCaption = QGanjoorDbBrowser::snippedText(sw->currentCaption, "", 0, 6, true, Qt::ElideRight) + QString(QChar(0x200F));
+    QString newTabCaption = Tools::snippedText(sw->currentCaption, "", 0, 6, true, Qt::ElideRight) + QString(QChar(0x200F));
     mainTabWidget->setTabText(mainTabWidget->currentIndex(), newTabCaption);
     mainTabWidget->setTabToolTip(mainTabWidget->currentIndex(), "<p>" + sw->currentCaption + "</p>");
     setWindowTitle(QString(QChar(0x202B)) + tr("Saaghar: ") + sw->currentCaption + QString(QChar(0x202C)));
@@ -3352,7 +3353,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
                 id = 0;    //all
             }
             else {
-                int randIndex = QGanjoorDbBrowser::getRandomNumber(0, selectedRandomRange.size() - 1);
+                int randIndex = Tools::getRandomNumber(0, selectedRandomRange.size() - 1);
                 id = SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex).toInt())._CatID;
             }
         }
