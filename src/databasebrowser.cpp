@@ -34,6 +34,8 @@
 #include <QTimer>
 #include <QTreeWidgetItem>
 
+DatabaseBrowser* DatabaseBrowser::s_instance = 0;
+
 DataBaseUpdater* DatabaseBrowser::dbUpdater = 0;
 QString DatabaseBrowser::s_defaultDatabaseName;
 QStringList DatabaseBrowser::dataBasePath;
@@ -52,6 +54,8 @@ const QString sqlDriver = "QSQLITE";
 
 DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath, QWidget* splashScreen)
 {
+    setObjectName(QLatin1String("DatabaseBrowser"));
+
     bool flagSelectNewPath = false;
     QString newPath = "";
 
@@ -174,10 +178,25 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath, QWidget* splashSc
     }
 
     cachedMaxCatID = cachedMaxPoemID = 0;
+
+    if (s_instance) {
+        qFatal("DatabaseBrowser duplicated!");
+    }
+
+    s_instance = this;
 }
 
 DatabaseBrowser::~DatabaseBrowser()
 {
+}
+
+DatabaseBrowser* DatabaseBrowser::instance()
+{
+    if (!s_instance) {
+        s_instance = new DatabaseBrowser(s_defaultDatabaseName);
+    }
+
+    return s_instance;
 }
 
 QSqlDatabase DatabaseBrowser::database(const QString &connectionID, bool open)

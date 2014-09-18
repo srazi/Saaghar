@@ -274,12 +274,11 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
         }
     }
     //create ganjoor DataBase browser
-    SaagharWidget::ganjoorDataBase = new DatabaseBrowser(dataBaseCompleteName, splashScreen);
-    SaagharWidget::ganjoorDataBase->setObjectName(QString::fromUtf8("ganjoorDataBaseBrowser"));
+    DatabaseBrowser::setDefaultDatabasename(dataBaseCompleteName);
 
     loadTabWidgetSettings();
 
-    outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
+    outlineTree->setItems(dbBrowser->loadOutlineFromDataBase(0));
     connect(outlineTree, SIGNAL(openParentRequested(int)), this, SLOT(openParentPage(int)));
     connect(outlineTree, SIGNAL(newParentRequested(int)), this, SLOT(newTabForItem(int)));
     connect(outlineTree, SIGNAL(openRandomRequested(int,bool)), this, SLOT(openRandomPoem(int,bool)));
@@ -357,7 +356,7 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
 
 SaagharWindow::~SaagharWindow()
 {
-    delete SaagharWidget::ganjoorDataBase;
+    delete dbBrowser;
     delete ui;
 }
 
@@ -457,7 +456,6 @@ void SaagharWindow::searchStart()
             else {
                 //because of 'ok == true' we know this is  poet name
                 poetName = selectList.at(i)->text();
-                //SaagharWidget::ganjoorDataBase->getPoet(poetID)._Name;
             }
 
             QWidget* searchResultContents = new QWidget(this);
@@ -479,8 +477,8 @@ void SaagharWindow::searchStart()
 //          //searchProgress.show();
 
             SaagharWidget::lineEditSearchText->searchStart(&searchCanceled);
-            connect(SaagharWidget::ganjoorDataBase, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));
-            //emit SaagharWidget::ganjoorDataBase->searchStatusChanged(tr("Searching Data Base..."));
+            connect(dbBrowser, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));
+
             SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(poetName));
             QApplication::processEvents();
             int resultCount = 0;
@@ -490,7 +488,7 @@ void SaagharWindow::searchStart()
 #ifdef SAAGHAR_DEBUG
                 int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
 #endif
-                QMap<int, QString> mapResult = SaagharWidget::ganjoorDataBase->getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, resultCount, slowSearch);
+                QMap<int, QString> mapResult = dbBrowser->getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, resultCount, slowSearch);
 #ifdef SAAGHAR_DEBUG
                 int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
                 int miliSec = end - start;
@@ -555,7 +553,7 @@ void SaagharWindow::searchStart()
 void SaagharWindow::multiSelectObjectInitialize(QMultiSelectWidget* multiSelectWidget, const QStringList &selectedData, int insertIndex)
 {
     QListWidgetItem* rootItem = multiSelectWidget->insertRow(insertIndex, tr("All"), true, "0", Qt::UserRole);
-    QList<GanjoorPoet*> poets = SaagharWidget::ganjoorDataBase->getPoets();
+    QList<GanjoorPoet*> poets = dbBrowser->getPoets();
 
     for (int i = 0; i < poets.size(); ++i) {
         multiSelectWidget->insertRow(i + 1 + insertIndex, poets.at(i)->_Name, true,
@@ -574,7 +572,7 @@ void SaagharWindow::actionRemovePoet()
     bool ok = false;
     QStringList items;
     items << tr("Select a name...");
-    QList<GanjoorPoet*> poets = SaagharWidget::ganjoorDataBase->getPoets();
+    QList<GanjoorPoet*> poets = dbBrowser->getPoets();
     for (int i = 0; i < poets.size(); ++i) {
         items << poets.at(i)->_Name + "(" + tr("poet's code=") + QString::number(poets.at(i)->_ID) + ")";
     }
@@ -585,7 +583,7 @@ void SaagharWindow::actionRemovePoet()
             QMessageBox warnAboutDelete(this);
             warnAboutDelete.setWindowTitle(tr("Please Notice!"));
             warnAboutDelete.setIcon(QMessageBox::Warning);
-            warnAboutDelete.setText(tr("Are you sure for removing \"%1\", from database?").arg(SaagharWidget::ganjoorDataBase->getPoet(poetID)._Name));
+            warnAboutDelete.setText(tr("Are you sure for removing \"%1\", from database?").arg(dbBrowser->getPoet(poetID)._Name));
             warnAboutDelete.addButton(tr("Continue"), QMessageBox::AcceptRole);
             warnAboutDelete.setStandardButtons(QMessageBox::Cancel);
             warnAboutDelete.setEscapeButton(QMessageBox::Cancel);
@@ -596,8 +594,8 @@ void SaagharWindow::actionRemovePoet()
             }
 
             QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-            SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poetID);
-            outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
+            dbBrowser->removePoetFromDataBase(poetID);
+            outlineTree->setItems(dbBrowser->loadOutlineFromDataBase(0));
 
             selectSearchRange->clear();
             QListWidgetItem* item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
@@ -625,7 +623,7 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         if (saagharWidget->isDirty()) {
             saagharWidget->refresh();
         }
-        saagharWidget->showParentCategory(SaagharWidget::ganjoorDataBase->getCategory(saagharWidget->currentCat));//just update parentCatsToolbar
+        saagharWidget->showParentCategory(dbBrowser->getCategory(saagharWidget->currentCat));//just update parentCatsToolbar
         saagharWidget->resizeTable(saagharWidget->tableViewWidget);
 
         connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(QString)), saagharWidget, SLOT(scrollToFirstItemContains(QString)));
@@ -673,7 +671,7 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         }
         else if (SaagharWidget::maxPoetsPerGroup != 0 &&
                  saagharWidget->currentCat == 0 && saagharWidget->currentPoem == 0) {
-            QList<GanjoorPoet*> poets = SaagharWidget::ganjoorDataBase->getPoets();
+            QList<GanjoorPoet*> poets = dbBrowser->getPoets();
             int numOfPoets = poets.size();
             if (numOfPoets > SaagharWidget::maxPoetsPerGroup) {
                 if (SaagharWidget::maxPoetsPerGroup != 1) {
@@ -686,8 +684,8 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         updateCaption();
         updateTabsSubMenus();
 
-        actionInstance("actionPreviousPoem")->setEnabled(!SaagharWidget::ganjoorDataBase->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
-        actionInstance("actionNextPoem")->setEnabled(!SaagharWidget::ganjoorDataBase->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
+        actionInstance("actionPreviousPoem")->setEnabled(!dbBrowser->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
+        actionInstance("actionNextPoem")->setEnabled(!dbBrowser->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
 
         loadAudioForCurrentTab(old_saagharWidget);
 
@@ -983,8 +981,8 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         //\Enable/Disable navigation actions
         connect(saagharWidget, SIGNAL(navPreviousActionState(bool)),    actionInstance("actionPreviousPoem"), SLOT(setEnabled(bool)));
         connect(saagharWidget, SIGNAL(navNextActionState(bool)),    actionInstance("actionNextPoem"), SLOT(setEnabled(bool)));
-        actionInstance("actionPreviousPoem")->setEnabled(!SaagharWidget::ganjoorDataBase->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
-        actionInstance("actionNextPoem")->setEnabled(!SaagharWidget::ganjoorDataBase->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
+        actionInstance("actionPreviousPoem")->setEnabled(!dbBrowser->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
+        actionInstance("actionNextPoem")->setEnabled(!dbBrowser->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
 
         // Updating table on changing of selection
         connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
@@ -1284,7 +1282,7 @@ void SaagharWindow::printPreview(QPrinter* printer)
 
 QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
 {
-    GanjoorPoem curPoem = SaagharWidget::ganjoorDataBase->getPoem(saagharObject->currentPoem);
+    GanjoorPoem curPoem = dbBrowser->getPoem(saagharObject->currentPoem);
     if (curPoem.isNull()) {
         return "";
     }
@@ -1397,7 +1395,7 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
 
 QString SaagharWindow::convertToTeX(SaagharWidget* saagharObject)
 {
-    GanjoorPoem curPoem = SaagharWidget::ganjoorDataBase->getPoem(saagharObject->currentPoem);
+    GanjoorPoem curPoem = dbBrowser->getPoem(saagharObject->currentPoem);
     if (curPoem.isNull()) {
         return "";
     }
@@ -1538,8 +1536,8 @@ void SaagharWindow::openRandomPoem(int parentID, bool newPage)
 {
     int actionData = parentID;
 
-    int PoemID = SaagharWidget::ganjoorDataBase->getRandomPoemID(&actionData);
-    GanjoorPoem poem = SaagharWidget::ganjoorDataBase->getPoem(PoemID);
+    int PoemID = dbBrowser->getRandomPoemID(&actionData);
+    GanjoorPoem poem = dbBrowser->getPoem(PoemID);
     if (!poem.isNull() && poem._CatID == actionData)
         if (newPage || !saagharWidget) {
             newTabForItem(poem._ID, "PoemID", true);
@@ -2860,7 +2858,7 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
     int idData = itemData.at(1).toInt(&OK);
     bool noError = false;
 
-    if (OK && SaagharWidget::ganjoorDataBase) {
+    if (OK && dbBrowser) {
         noError = true;
     }
 
@@ -2918,7 +2916,7 @@ void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
         }
         return;
     }
-    QList<GanjoorPoet*> poetsConflictList = SaagharWidget::ganjoorDataBase->getConflictingPoets(fileName);
+    QList<GanjoorPoet*> poetsConflictList = dbBrowser->getConflictingPoets(fileName);
 
     dataBaseObject.transaction();
 
@@ -2944,19 +2942,19 @@ void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
         }
 
         foreach (GanjoorPoet* poet, poetsConflictList) {
-            SaagharWidget::ganjoorDataBase->removePoetFromDataBase(poet->_ID);
+            dbBrowser->removePoetFromDataBase(poet->_ID);
         }
     }
 
     //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-    if (SaagharWidget::ganjoorDataBase->importDataBase(fileName)) {
+    if (dbBrowser->importDataBase(fileName)) {
         dataBaseObject.commit();
         if (ok) {
             *ok = true;
         }
 
-        outlineTree->setItems(SaagharWidget::ganjoorDataBase->loadOutlineFromDataBase(0));
+        outlineTree->setItems(dbBrowser->loadOutlineFromDataBase(0));
         selectSearchRange->clear();
         QListWidgetItem* item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
         QListWidgetItem* titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
@@ -3300,7 +3298,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
     else if (actionName == "ImportGanjoorBookmarks") {
         if (SaagharWidget::bookmarks) {
             QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-            SaagharWidget::bookmarks->insertBookmarkList(SaagharWidget::ganjoorDataBase->importGanjoorBookmarks());
+            SaagharWidget::bookmarks->insertBookmarkList(dbBrowser->importGanjoorBookmarks());
             QApplication::restoreOverrideCursor();
         }
     }
@@ -3337,7 +3335,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
         if (selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS")) {
             if (saagharWidget) {
                 if (saagharWidget->currentPoem != 0) {
-                    id = SaagharWidget::ganjoorDataBase->getPoem(saagharWidget->currentPoem)._CatID;
+                    id = dbBrowser->getPoem(saagharWidget->currentPoem)._CatID;
                 }
                 else {
                     id = saagharWidget->currentCat;
@@ -3356,7 +3354,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
             }
             else {
                 int randIndex = Tools::getRandomNumber(0, selectedRandomRange.size() - 1);
-                id = SaagharWidget::ganjoorDataBase->getPoet(selectedRandomRange.at(randIndex).toInt())._CatID;
+                id = dbBrowser->getPoet(selectedRandomRange.at(randIndex).toInt())._CatID;
             }
         }
 

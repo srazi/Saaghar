@@ -121,7 +121,6 @@ public:
     static QSearchLineEdit* lineEditSearchText;
 
     //DataBase
-    static DatabaseBrowser* ganjoorDataBase;
     static int computeRowHeight(const QFontMetrics &fontMetric, int textWidth, int width, int height = 0);
 
     static QHash<int, QPair<QString, qint64> > mediaInfoCash;

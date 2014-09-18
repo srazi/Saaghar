@@ -142,7 +142,7 @@ void DataBaseUpdater::parseElement(const QDomElement &element)
     QString ImageUrl = element.firstChildElement("ImageUrl").text();
     QString LowestPoemID = element.firstChildElement("LowestPoemID").text();
 
-    bool isNew = SaagharWidget::ganjoorDataBase->getCategory(CatID).isNull();
+    bool isNew = dbBrowser->getCategory(CatID).isNull();
 
     if (insertedToList.contains(CatID) && insertedToList.value(CatID) == DownloadUrl) {
         return;

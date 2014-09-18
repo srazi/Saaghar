@@ -22,6 +22,8 @@
 #ifndef DATABASEBROWSER_H
 #define DATABASEBROWSER_H
 
+#define dbBrowser DatabaseBrowser::instance()
+
 #include <QObject>
 #include <QWidget>
 #include <QString>
@@ -54,6 +56,8 @@ class DatabaseBrowser : public QObject
 public:
     DatabaseBrowser(QString sqliteDbCompletePath = "ganjoor.s3db", QWidget* splashScreen = 0);
     ~DatabaseBrowser();
+
+    static DatabaseBrowser* instance();
 
     static QSqlDatabase database(const QString &connectionID = s_defaultDatabaseName, bool open = true);
 
@@ -135,6 +139,8 @@ private:
 
 
     static QString s_defaultDatabaseName;
+
+    static DatabaseBrowser* s_instance;
 
 signals:
     void searchStatusChanged(const QString &);
