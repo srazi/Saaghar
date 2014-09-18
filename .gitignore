@@ -8,7 +8,7 @@ OTHERS/*
 .hg
 Saaghar-Win
 Saaghar-Win/*
-saaghar.pro.*
+*.pro.user*
 sqlite-driver
 sqlite-driver/*
 *.autosave

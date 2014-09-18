@@ -187,7 +187,7 @@ QString Tools::cleanStringFast(const QString &text, const QStringList &excludeLi
 {
     QString cleanedText = text;
 
-    cleanedText.remove(QChar(0x200C));//.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
+    cleanedText.remove(QChar(0x200C));//remove ZWNJ by ""
 
     // 14s-->10s
     if (SearchResultWidget::skipVowelLetters) {
@@ -222,7 +222,9 @@ QString Tools::justifiedText(const QString &text, const QFontMetrics &fontmetric
     int textWidth = fontmetric.width(text);
     QChar tatweel = QChar(0x0640);
     int tatweelWidth = fontmetric.width(tatweel);
-    if (tatweel == QChar(QChar::ReplacementCharacter)) { //Current font has not a TATWEEL character
+
+    //Current font has not a TATWEEL character
+    if (tatweel == QChar(QChar::ReplacementCharacter)) {
         tatweel = QChar(QChar::Null);
         tatweelWidth = 0;
     }
@@ -307,9 +309,9 @@ QString Tools::snippedText(const QString &text, const QString &str, int from, in
         return "";
     }
 
-    QString elideString = "";
+    QString elideString;
     if (elided) {
-        elideString = "...";
+        elideString = QLatin1String("...");
     }
 
     if (!str.isEmpty() && text.contains(str)) {
@@ -322,17 +324,12 @@ QString Tools::snippedText(const QString &text, const QString &str, int from, in
             partMaxNumOfWords = maxNumOfWords - text.right(text.size() - str.size() - index).split(" ", QString::SkipEmptyParts).size();
         }
         QString leftPart = Tools::snippedText(text.left(index), "", 0, partMaxNumOfWords, elided, Qt::ElideLeft);
-        //int rightPartMaxNumOfWords = maxNumOfWords/2;
+
         if (leftPart.split(" ", QString::SkipEmptyParts).size() < maxNumOfWords / 2) {
             partMaxNumOfWords = maxNumOfWords - leftPart.split(" ", QString::SkipEmptyParts).size();
         }
         QString rightPart = Tools::snippedText(text.right(text.size() - str.size() - index), "", 0, partMaxNumOfWords, elided, Qt::ElideRight);
-        /*if (index == text.size()-1)
-            return elideString+leftPart+str+rightPart;
-        else if (index == 0)
-            return leftPart+str+rightPart+elideString;
-        else
-            return elideString+leftPart+str+rightPart+elideString;*/
+
         return leftPart + str + rightPart;
     }
 
@@ -350,7 +347,6 @@ QString Tools::snippedText(const QString &text, const QString &str, int from, in
         }
 
         if (elideMode == Qt::ElideLeft) {
-            //words = words.mid(words.size()-maxNumOfWords, maxNumOfWords);
             snippedList.prepend(words.at(textWordCount - 1 - i));
             if (words.at(i) != " ") {
                 ++numOfInserted;
@@ -363,12 +359,7 @@ QString Tools::snippedText(const QString &text, const QString &str, int from, in
             }
         }
     }
-    /*if (elideMode == Qt::ElideLeft)
-    {
-        words = words.mid(words.size()-maxNumOfWords, maxNumOfWords);
-    }
-    else
-        words = words.mid(0, maxNumOfWords);*/
+
     QString snippedString = snippedList.join("");
     if (snippedString == text) {
         return text;
