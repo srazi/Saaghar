@@ -24,6 +24,7 @@
 
 #include <QExtendedSplashScreen>
 #include "saagharwindow.h"
+#include "tools.h"
 
 #ifdef Q_OS_WIN
 #ifdef STATIC
@@ -45,8 +46,9 @@ int main(int argc, char* argv[])
     splash.setMessageOptions(QRect(QPoint(120, 525), QSize(310, qMin(splash.fontMetrics().height() + 2, 18))),
                              Qt::AlignLeft | Qt::AlignVCenter, QColor(7, 12, 150));
     splash.setProgressBar(mask, 0, 10, Qt::Vertical);
+    Tools::setSplashScreen(&splash);
 
-    SaagharWindow w(0, &splash);
+    SaagharWindow w;
     w.show();
 
     splash.finish(&w);

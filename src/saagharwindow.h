@@ -32,7 +32,6 @@
 #include <QComboBox>
 class QPrinter;
 
-class QExtendedSplashScreen;
 class QMultiSelectWidget;
 class OutLineTree;
 class Settings;
@@ -48,7 +47,7 @@ class SaagharWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit SaagharWindow(QWidget* parent = 0, QExtendedSplashScreen* splashScreen = 0);
+    explicit SaagharWindow(QWidget* parent = 0);
     ~SaagharWindow();
 
     enum TabType {
@@ -143,7 +142,6 @@ private:
     QAction* globalRedoAction;
     QAction* globalUndoAction;
     Settings* m_settingsDialog;
-    QExtendedSplashScreen* m_splash;
 
     QString m_compareSettings;
     QDockWidget* m_outlineDock;

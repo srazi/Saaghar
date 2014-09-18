@@ -52,7 +52,7 @@ QSQLiteDriver* DatabaseBrowser::sqlDriver = 0;
 const QString sqlDriver = "QSQLITE";
 #endif
 
-DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath, QWidget* splashScreen)
+DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
 {
     setObjectName(QLatin1String("DatabaseBrowser"));
 
@@ -69,11 +69,10 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath, QWidget* splashSc
 
     s_defaultDatabaseName = sqliteDbCompletePath;
     QSqlDatabase::addDatabase(sqlDriver, s_defaultDatabaseName).setDatabaseName(sqliteDbCompletePath);
-
-    while (!dBFile.exists() || !database().open()) {
-        if (splashScreen) {
-            splashScreen->close();
-            splashScreen = 0;
+    while (!dBFile.exists() || !database().open() || !isValid(s_defaultDatabaseName)) {
+        if (splashScreen(QWidget)) {
+            splashScreen(QWidget)->close();
+            Tools::setSplashScreen(0);
         }
         QString errorString = database().lastError().text();
 

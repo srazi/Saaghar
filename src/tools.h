@@ -22,6 +22,8 @@
 #ifndef TOOLS_H
 #define TOOLS_H
 
+#define splashScreen(T) (static_cast<T*>(Tools::s_splashScreen))
+
 #include <QFontMetrics>
 #include <QStringList>
 
@@ -42,6 +44,9 @@ public:
     static const QStringList AE_Variant;
     static const QStringList He_Variant;
     static const QString &OTHER_GLYPHS;
+
+    static void setSplashScreen(QObject* splash);
+    static QObject* s_splashScreen;
 };
 
 #endif // TOOLS_H

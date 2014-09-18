@@ -24,13 +24,14 @@
 
 #include <QFileInfo>
 
-
 #ifdef Q_OS_WIN
 #define BUFSIZE 4096
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
 #include <tchar.h>
 #endif
+
+QObject* Tools::s_splashScreen = 0;
 
 ////////////////////////////
 //from unicode table:
@@ -420,4 +421,9 @@ int Tools::getRandomNumber(int minBound, int maxBound)
 
     float rand = *((float*)(&ret));
     return (int)(rand * (maxBound - minBound + 1) + minBound);
+}
+
+void Tools::setSplashScreen(QObject* splash)
+{
+    s_splashScreen = splash;
 }

@@ -54,7 +54,7 @@ class DatabaseBrowser : public QObject
 {
     Q_OBJECT
 public:
-    DatabaseBrowser(QString sqliteDbCompletePath = "ganjoor.s3db", QWidget* splashScreen = 0);
+    DatabaseBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
     ~DatabaseBrowser();
 
     static DatabaseBrowser* instance();

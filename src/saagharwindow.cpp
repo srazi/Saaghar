@@ -74,13 +74,12 @@ QString SaagharWindow::userHomePath;
 bool SaagharWindow::autoCheckForUpdatesState = true;
 bool SaagharWindow::isPortable = false;
 
-SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScreen)
+SaagharWindow::SaagharWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::SaagharWindow)
     , menuBookmarks(0)
     , m_cornerMenu(0)
     , m_settingsDialog(0)
-    , m_splash(splashScreen)
 {
     setObjectName("SaagharMainWindow");
 
@@ -189,13 +188,13 @@ SaagharWindow::SaagharWindow(QWidget* parent, QExtendedSplashScreen* splashScree
 
     loadGlobalSettings();
 
-    if (m_splash && !fresh) {
+    if (splashScreen(QExtendedSplashScreen) && !fresh) {
         if (Settings::READ("Display Splash Screen", true).toBool()) {
-            m_splash->show();
+            splashScreen(QExtendedSplashScreen)->show();
             showStatusText(QObject::tr("<i><b>Loading...</b></i>"));
         }
         else {
-            m_splash->finish(this);
+            splashScreen(QExtendedSplashScreen)->finish(this);
         }
     }
 
@@ -2102,12 +2101,12 @@ void SaagharWindow::showSearchTips()
 
 void SaagharWindow::showStatusText(const QString &message, int newLevelsCount)
 {
-    if (!m_splash || m_splash->isFinished()) {
+    if (!splashScreen(QExtendedSplashScreen) || splashScreen(QExtendedSplashScreen)->isFinished()) {
         return;
     }
 
-    m_splash->addToMaximum(newLevelsCount, false);
-    m_splash->showMessage(message);
+    splashScreen(QExtendedSplashScreen)->addToMaximum(newLevelsCount, false);
+    splashScreen(QExtendedSplashScreen)->showMessage(message);
 }
 
 QAction* SaagharWindow::actionInstance(const QString &actionObjectName, QString iconPath, QString displayName)
