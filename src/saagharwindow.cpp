@@ -2909,7 +2909,7 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
 
 void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
 {
-    QSqlDatabase dataBaseObject = QSqlDatabase::database(DatabaseBrowser::dBName);
+    QSqlDatabase dataBaseObject = DatabaseBrowser::database();
     QFileInfo dataBaseFile(dataBaseObject.databaseName());
     if (!dataBaseFile.isWritable()) {
         QMessageBox::warning(this, tr("Error!"), tr("You have not write permission to database file, the import procedure can not proceed.\nDataBase Path: %2").arg(dataBaseFile.fileName()));

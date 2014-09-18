@@ -35,8 +35,8 @@
 #include <QTreeWidgetItem>
 
 DataBaseUpdater* DatabaseBrowser::dbUpdater = 0;
-QString DatabaseBrowser::dBName = QString();
-QStringList DatabaseBrowser::dataBasePath = QStringList();
+QString DatabaseBrowser::s_defaultDatabaseName;
+QStringList DatabaseBrowser::dataBasePath;
 
 const int minNewPoetID = 1001;
 const int minNewCatID = 10001;
@@ -63,22 +63,17 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath, QWidget* splashSc
     sqlDriver = new QSQLiteDriver(connection);
 #endif
 
-    //dBName = getIdForDataBase(sqliteDbCompletePath);
-    //dBConnection = QSqlDatabase::database(dBName, false);//don't open! we won't it created if not exists
-    //dBName = dBFile.fileName();
-    dBName = sqliteDbCompletePath;
-    dBConnection = QSqlDatabase::addDatabase(sqlDriver, dBName);
+    s_defaultDatabaseName = sqliteDbCompletePath;
+    QSqlDatabase::addDatabase(sqlDriver, s_defaultDatabaseName).setDatabaseName(sqliteDbCompletePath);
 
-    dBConnection.setDatabaseName(sqliteDbCompletePath);
-    while (!dBFile.exists() || !dBConnection.open()) {
+    while (!dBFile.exists() || !database().open()) {
         if (splashScreen) {
             splashScreen->close();
             splashScreen = 0;
         }
-        QString errorString = dBConnection.lastError().text();
+        QString errorString = database().lastError().text();
 
-        dBConnection = QSqlDatabase();
-        QSqlDatabase::removeDatabase(dBName);
+        QSqlDatabase::removeDatabase(s_defaultDatabaseName);
 
         NoDataBaseDialog noDataBaseDialog(0, Qt::WindowStaysOnTopHint);
         noDataBaseDialog.ui->pathLabel->setText(tr("Data Base Path:") + " " + sqliteDbCompletePath);
@@ -100,9 +95,8 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath, QWidget* splashSc
                     dBFile.setFile(dir + "/ganjoor.s3db");
 
                     //don't open it here!
-                    dBName = dir + "/ganjoor.s3db";
-                    dBConnection = QSqlDatabase::addDatabase(sqlDriver, dBName);
-                    dBConnection.setDatabaseName(dir + "/ganjoor.s3db");
+                    s_defaultDatabaseName = dir + "/ganjoor.s3db";
+                    QSqlDatabase::addDatabase(sqlDriver, s_defaultDatabaseName).setDatabaseName(dir + "/ganjoor.s3db");
 
                     flagSelectNewPath = true;
                     newPath = dir;
@@ -140,15 +134,15 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath, QWidget* splashSc
                 }
                 dBFile.setFile(dir + "/ganjoor.s3db");
 
-                dBName = dir + "/ganjoor.s3db";
-                dBConnection = QSqlDatabase::addDatabase(sqlDriver, dBName);
-                dBConnection.setDatabaseName(dir + "/ganjoor.s3db");
-                if (!dBConnection.open()) {
+                s_defaultDatabaseName = dir + "/ganjoor.s3db";
+                QSqlDatabase::addDatabase(sqlDriver, s_defaultDatabaseName).setDatabaseName(dir + "/ganjoor.s3db");
+
+                if (!database().open()) {
                     QMessageBox::information(0, tr("Cannot open Database File!"), tr("Cannot open database file, please check if you have write permisson.\nError: %1\nDataBase Path=%2").arg(errorString).arg(dir));
                     exit(1);
                 }
                 //insert main tables
-                bool tablesInserted = createEmptyDataBase(dBName);
+                bool tablesInserted = createEmptyDataBase(s_defaultDatabaseName);
                 qDebug() << "insert main tables: " << tablesInserted;
                 if (!tablesInserted) {
                     QFile::remove(dir + "/ganjoor.s3db");
@@ -165,14 +159,13 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath, QWidget* splashSc
         }
     }
 
-    dBConnection.close();
-    QString name = dBConnection.databaseName();
-    dBConnection = QSqlDatabase();
+    database().close();
 
+    const QString defaultDatabaseName = database().databaseName();
     // use getIdForDataBase for adding database
-    QSqlDatabase::removeDatabase(dBName);
-    dBName = getIdForDataBase(name);
-    dBConnection = QSqlDatabase::database(dBName, true);
+    QSqlDatabase::removeDatabase(s_defaultDatabaseName);
+    s_defaultDatabaseName = getIdForDataBase(defaultDatabaseName);
+    database().open();
 
     if (flagSelectNewPath) {
         //in this version Saaghar just use its first search path
@@ -187,22 +180,30 @@ DatabaseBrowser::~DatabaseBrowser()
 {
 }
 
+QSqlDatabase DatabaseBrowser::database(const QString &connectionID, bool open)
+{
+    return QSqlDatabase::database(connectionID, open);
+}
+
+QString DatabaseBrowser::defaultDatabasename()
+{
+     return s_defaultDatabaseName;
+}
+
+void DatabaseBrowser::setDefaultDatabasename(const QString &databaseaName)
+{
+    s_defaultDatabaseName = databaseaName;
+}
+
 bool DatabaseBrowser::isConnected(const QString &connectionID)
 {
-    QString connectionName = dBName;
-    if (!connectionID.isEmpty()) {
-        connectionName = connectionID;
-    }
-    dBConnection = QSqlDatabase::database(connectionName, true);//dBName
-    return dBConnection.isOpen();
+    return database(connectionID, true).isOpen();
 }
 
 bool DatabaseBrowser::isValid(QString connectionID)
 {
-    if (connectionID.isEmpty()) {
-        connectionID = dBName;
-    }
-    QSqlDatabase db = QSqlDatabase::database(connectionID);
+    QSqlDatabase db = database(connectionID);
+
     if (db.open()) {
         return db.tables().contains("cat");
     }
@@ -214,11 +215,9 @@ QList<GanjoorPoet*> DatabaseBrowser::getPoets(const QString &connectionID, bool 
 {
     QList<GanjoorPoet*> poets;
     if (isConnected(connectionID)) {
-        QSqlDatabase dataBaseObject = dBConnection;
-        if (!connectionID.isEmpty()) {
-            dataBaseObject = QSqlDatabase::database(connectionID);
-        }
-        QSqlQuery q(dataBaseObject);
+        QSqlDatabase databaseObject = database(connectionID);
+
+        QSqlQuery q(databaseObject);
         bool descriptionExists = false;
         if (q.exec("SELECT id, name, cat_id, description FROM poet")) {
             descriptionExists = true;
@@ -232,10 +231,10 @@ QList<GanjoorPoet*> DatabaseBrowser::getPoets(const QString &connectionID, bool 
             GanjoorPoet* gPoet = new GanjoorPoet();
             QSqlRecord qrec = q.record();
             if (descriptionExists) {
-                gPoet->init(qrec.value(0).toInt(),    qrec.value(1).toString(), qrec.value(2).toInt(), qrec.value(3).toString());
+                gPoet->init(qrec.value(0).toInt(), qrec.value(1).toString(), qrec.value(2).toInt(), qrec.value(3).toString());
             }
             else {
-                gPoet->init(qrec.value(0).toInt(),    qrec.value(1).toString(), qrec.value(2).toInt(), "");
+                gPoet->init(qrec.value(0).toInt(), qrec.value(1).toString(), qrec.value(2).toInt(), "");
             }
             poets.append(gPoet);
             if (!q.next()) {
@@ -246,6 +245,7 @@ QList<GanjoorPoet*> DatabaseBrowser::getPoets(const QString &connectionID, bool 
             qSort(poets.begin(), poets.end(), comparePoetsByName);
         }
     }
+
     return poets;
 }
 
@@ -259,7 +259,7 @@ GanjoorCat DatabaseBrowser::getCategory(int CatID)
     GanjoorCat gCat;
     gCat.init();
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec("SELECT poet_id, text, parent_id, url FROM cat WHERE id = " + QString::number(CatID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -285,7 +285,7 @@ QList<GanjoorCat*> DatabaseBrowser::getSubCategories(int CatID)
 {
     QList<GanjoorCat*> lst;
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec("SELECT poet_id, text, url, ID FROM cat WHERE parent_id = " + QString::number(CatID));
         q.first();
         while (q.isValid() && q.isActive()) {
@@ -324,7 +324,7 @@ QList<GanjoorPoem*> DatabaseBrowser::getPoems(int CatID)
     QList<GanjoorPoem*> lst;
     if (isConnected()) {
         QString selectQuery = QString("SELECT ID, title, url FROM poem WHERE cat_id = %1 ORDER BY ID").arg(CatID);
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec(selectQuery);
         q.first();
         QSqlRecord qrec;
@@ -349,7 +349,7 @@ QList<GanjoorVerse*> DatabaseBrowser::getVerses(int PoemID)
 QString DatabaseBrowser::getFirstMesra(int PoemID) //just first Mesra
 {
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         QString selectQuery = QString("SELECT vorder, text FROM verse WHERE poem_id = %1 order by vorder LIMIT 1").arg(PoemID);
         q.exec(selectQuery);
         q.first();
@@ -364,7 +364,7 @@ QList<GanjoorVerse*> DatabaseBrowser::getVerses(int PoemID, int Count)
 {
     QList<GanjoorVerse*> lst;
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         QString selectQuery = QString("SELECT vorder, position, text FROM verse WHERE poem_id = %1 order by vorder" + (Count > 0 ? " LIMIT " + QString::number(Count) : "")).arg(PoemID);
         q.exec(selectQuery);
         q.first();
@@ -386,7 +386,7 @@ GanjoorPoem DatabaseBrowser::getPoem(int PoemID)
     GanjoorPoem gPoem;
     gPoem.init();
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec("SELECT cat_id, title, url FROM poem WHERE ID = " + QString::number(PoemID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -403,7 +403,7 @@ GanjoorPoem DatabaseBrowser::getNextPoem(int PoemID, int CatID)
     GanjoorPoem gPoem;
     gPoem.init();
     if (isConnected() && PoemID != -1) { // PoemID==-1 when getNextPoem(GanjoorPoem poem) pass null poem
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec(QString("SELECT ID FROM poem WHERE cat_id = %1 AND id>%2 LIMIT 1").arg(CatID).arg(PoemID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -425,7 +425,7 @@ GanjoorPoem DatabaseBrowser::getPreviousPoem(int PoemID, int CatID)
     GanjoorPoem gPoem;
     gPoem.init();
     if (isConnected() && PoemID != -1) { // PoemID==-1 when getPreviousPoem(GanjoorPoem poem) pass null poem
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec(QString("SELECT ID FROM poem WHERE cat_id = %1 AND id<%2 ORDER BY ID DESC LIMIT 1").arg(CatID).arg(PoemID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -451,7 +451,7 @@ GanjoorPoet DatabaseBrowser::getPoetForCat(int CatID)
         return gPoet;
     }
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec("SELECT poet_id FROM cat WHERE id = " + QString::number(CatID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -471,7 +471,7 @@ GanjoorPoet DatabaseBrowser::getPoet(int PoetID)
         return gPoet;
     }
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
 
         bool descriptionExists = false;
         if (q.exec("SELECT id, name, cat_id, description FROM poet WHERE id = " + QString::number(PoetID))) {
@@ -503,7 +503,7 @@ QString DatabaseBrowser::getPoetDescription(int PoetID)
         return "";
     }
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec("SELECT description FROM poet WHERE id = " + QString::number(PoetID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -520,7 +520,7 @@ QString DatabaseBrowser::getPoemMediaSource(int PoemID)
         return "";
     }
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec("SELECT mediasource FROM poem WHERE id = " + QString::number(PoemID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -537,9 +537,9 @@ void DatabaseBrowser::setPoemMediaSource(int PoemID, const QString &fileName)
         return;
     }
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         QString strQuery = "";
-        if (!dBConnection.record("poem").contains("mediasource")) {
+        if (!database().record("poem").contains("mediasource")) {
             strQuery = QString("ALTER TABLE %1 ADD COLUMN %2 %3").arg("poem").arg("mediasource").arg("NVARCHAR(255)");
             q.exec(strQuery);
             //q.finish();
@@ -567,7 +567,7 @@ GanjoorPoet DatabaseBrowser::getPoet(QString PoetName)
     GanjoorPoet gPoet;
     gPoet.init();
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
 
         bool descriptionExists = false;
         if (q.exec("SELECT id, name, cat_id, description FROM poet WHERE name = \'" + PoetName + "\'")) {
@@ -607,7 +607,7 @@ int DatabaseBrowser::getRandomPoemID(int* CatID)
         if (*CatID != 0) {
             strQuery += " WHERE cat_id=" + QString::number(*CatID);
         }
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec(strQuery);
         if (q.next()) {
             QSqlRecord qrec = q.record();
@@ -627,26 +627,18 @@ int DatabaseBrowser::getRandomPoemID(int* CatID)
 
 QList<GanjoorPoet*> DatabaseBrowser::getDataBasePoets(const QString fileName)
 {
-    QList<GanjoorPoet*> poetsInDataBase;
-
     if (!QFile::exists(fileName)) {
-        return poetsInDataBase;
+        return QList<GanjoorPoet*>();
     }
 
     QString dataBaseID = getIdForDataBase(fileName);
-    QSqlDatabase databaseObject = QSqlDatabase::database(dataBaseID);
-    if (!databaseObject.open()) {
+
+    if (!database(dataBaseID).open()) {
         QSqlDatabase::removeDatabase(dataBaseID);
-        return poetsInDataBase;
+        return QList<GanjoorPoet*>();
     }
 
-    poetsInDataBase = getPoets(dataBaseID, false);
-    QSqlQuery q(databaseObject);
-
-    databaseObject.close();
-    QSqlDatabase::removeDatabase(dataBaseID);
-
-    return poetsInDataBase;
+    return getPoets(dataBaseID, false);
 }
 
 QString DatabaseBrowser::getIdForDataBase(const QString &sqliteDataBaseName)
@@ -686,7 +678,7 @@ void DatabaseBrowser::removePoetFromDataBase(int PoetID)
 {
     if (isConnected()) {
         QString strQuery;
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
 
         removeCatFromDataBase(getCategory(getPoet(PoetID)._CatID));
 
@@ -706,7 +698,7 @@ void DatabaseBrowser::removeCatFromDataBase(const GanjoorCat &gCat)
     }
     if (isConnected()) {
         QString strQuery;
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         strQuery = "DELETE FROM verse WHERE poem_id IN (SELECT id FROM poem WHERE cat_id=" + QString::number(gCat._ID) + ")";
         q.exec(strQuery);
         strQuery = "DELETE FROM poem WHERE cat_id=" + QString::number(gCat._ID);
@@ -722,7 +714,7 @@ int DatabaseBrowser::getNewPoetID()
 
     if (isConnected()) {
         QString strQuery = "SELECT MAX(id) FROM poet";
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec(strQuery);
 
         if (q.first()) {
@@ -747,7 +739,7 @@ int DatabaseBrowser::getNewPoemID()
     if (cachedMaxPoemID == 0) {
         if (isConnected()) {
             QString strQuery = "SELECT MAX(id) FROM poem";
-            QSqlQuery q(dBConnection);
+            QSqlQuery q(database());
             q.exec(strQuery);
 
             if (q.first()) {
@@ -779,7 +771,7 @@ int DatabaseBrowser::getNewCatID()
     if (cachedMaxCatID == 0) {
         if (isConnected()) {
             QString strQuery = "SELECT MAX(id) FROM cat";
-            QSqlQuery q(dBConnection);
+            QSqlQuery q(database());
             q.exec(strQuery);
 
             if (q.first()) {
@@ -811,17 +803,17 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
     }
 
     QString connectionID = getIdForDataBase(fileName);
-    {
-        QSqlDatabase dataBaseObject = QSqlDatabase::database(connectionID);
-        if (!dataBaseObject.open() || !isValid(connectionID)) {
-            QSqlDatabase::removeDatabase(connectionID);
-            return false;
-        }
 
+    if (!database(connectionID).open() || !isValid(connectionID)) {
+        QSqlDatabase::removeDatabase(connectionID);
+        return false;
+    }
+
+    { // start of block
         QList<GanjoorPoet*> poets = getPoets(connectionID, false);
 
         QString strQuery;
-        QSqlQuery queryObject(dataBaseObject);
+        QSqlQuery queryObject(database(connectionID));
         QMap<int, int> mapPoets;
         QMap<int, int> mapCats;
 
@@ -882,7 +874,7 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
 
             if (insertNewPoet && isConnected()) {
                 strQuery = QString("INSERT INTO poet (id, name, cat_id, description) VALUES (%1, \"%2\", %3, \"%4\");").arg(newPoet->_ID).arg(newPoet->_Name).arg(newPoet->_CatID).arg(newPoet->_Description);
-                QSqlQuery q(dBConnection);
+                QSqlQuery q(database());
                 q.exec(strQuery);
             }
         }
@@ -925,7 +917,7 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
 
             if (insertNewCategory && isConnected()) {
                 strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id, url) VALUES (%1, %2, \"%3\", %4, \"%5\");").arg(newCat->_ID).arg(newCat->_PoetID).arg(newCat->_Text).arg(newCat->_ParentID).arg(newCat->_Url);
-                QSqlQuery q(dBConnection);
+                QSqlQuery q(database());
                 q.exec(strQuery);
             }
 
@@ -966,7 +958,7 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
 
             if (isConnected()) {
                 strQuery = QString("INSERT INTO poem (id, cat_id, title, url) VALUES (%1, %2, \"%3\", \"%4\");").arg(newPoem->_ID).arg(newPoem->_CatID).arg(newPoem->_Title).arg(newPoem->_Url);
-                QSqlQuery q(dBConnection);
+                QSqlQuery q(database());
                 q.exec(strQuery);
             }
         }
@@ -983,7 +975,7 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
 
         if (isConnected()) {
             strQuery = "INSERT INTO verse (poem_id, vorder, position, text) VALUES (:poem_id,:vorder,:position,:text)";
-            QSqlQuery q(dBConnection);
+            QSqlQuery q(database());
             q.prepare(strQuery);
 
             foreach (GanjoorVerse* newVerse, verseList) {
@@ -995,7 +987,7 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
                 q.exec();
             }
         }
-    }
+    } // end of block
 
     QSqlDatabase::removeDatabase(connectionID);
 
@@ -1071,7 +1063,7 @@ SearchResults DatabaseBrowser::getPoemIDsByPhrase(int PoetID, const QStringList 
     }
 }
 
-    return startSearch(strQuery, dBConnection, PoetID, phraseList, excludedList, excludeWhenCleaning,
+    return startSearch(strQuery, database(), PoetID, phraseList, excludedList, excludeWhenCleaning,
                        Canceled, resultCount, slowSearch);
 }
 
@@ -1281,7 +1273,7 @@ QVariantList DatabaseBrowser::importGanjoorBookmarks()
     QVariantList lst;
     if (isConnected()) {
         QString selectQuery = QString("SELECT poem_id, verse_id FROM fav");
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         q.exec(selectQuery);
         QSqlRecord qrec;
         while (q.next()) {
@@ -1308,7 +1300,7 @@ QString DatabaseBrowser::getBeyt(int poemID, int firstMesraID, const QString &se
 {
     QStringList mesras;
     if (isConnected()) {
-        QSqlQuery q(dBConnection);
+        QSqlQuery q(database());
         QString selectQuery = QString("SELECT vorder, position, text FROM verse WHERE poem_id = %1 and vorder >= %2 ORDER BY vorder LIMIT 2").arg(poemID).arg(firstMesraID);
         q.exec(selectQuery);
         QSqlRecord qrec;
@@ -1357,10 +1349,8 @@ QString DatabaseBrowser::getBeyt(int poemID, int firstMesraID, const QString &se
 bool DatabaseBrowser::poetHasSubCats(int poetID, const QString &connectionID)
 {
     if (isConnected(connectionID)) {
-        QSqlDatabase dataBaseObject = dBConnection;
-        if (!connectionID.isEmpty()) {
-            dataBaseObject = QSqlDatabase::database(connectionID);
-        }
+        QSqlDatabase dataBaseObject = database(connectionID);
+
         QSqlQuery q(dataBaseObject);
         q.exec("SELECT id, text FROM cat WHERE poet_id = " + QString::number(poetID));
 
@@ -1580,10 +1570,8 @@ void DatabaseBrowser::addDataSets()
 bool DatabaseBrowser::createEmptyDataBase(const QString &connectionID)
 {
     if (isConnected(connectionID)) {
-        QSqlDatabase dataBaseObject = dBConnection;
-        if (!connectionID.isEmpty()) {
-            dataBaseObject = QSqlDatabase::database(connectionID);
-        }
+        QSqlDatabase dataBaseObject = database(connectionID);
+
         qDebug() << "tabels==" << dataBaseObject.tables(QSql::Tables);
         if (!dataBaseObject.tables(QSql::Tables).isEmpty()) {
             qWarning() << "The Data Base is NOT empty: " << dataBaseObject.databaseName();
