@@ -1002,227 +1002,77 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
     return true;
 }
 
-QMap<int, QString> DatabaseBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList,
+SearchResults DatabaseBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList,
         bool* Canceled, int resultCount, bool slowSearch)
 {
-    QMap<int, QString> idList;
-    if (isConnected()) {
-        QString strQuery;
-
-        if (phraseList.isEmpty()) {
-            return idList;
-        }
-
-        bool findRhyme = false;
-        if (phraseList.contains("=", Qt::CaseInsensitive)) {
-            findRhyme = true;
-        }
-
-        QString firstPhrase = phraseList.at(0);
-
-        QStringList excludeWhenCleaning("");
-        if (!firstPhrase.contains("=")) {
-            excludeWhenCleaning << " ";
-        }
-        else {
-            firstPhrase.remove("=");
-        }
-
-        QString joiner;
-        if (SearchResultWidget::skipVowelSigns) {
-            joiner = QLatin1String("%");
-        }
-        //replace characters that have some variants with anyWord replaceholder!
-        //we have not to worry about this replacement, because phraseList.at(0) is tested again!
-        bool variantPresent = false;
-        if (SearchResultWidget::skipVowelLetters) {
-            QRegExp variantEXP("[" + Tools::Ve_Variant.join("") + Tools::AE_Variant.join("") + Tools::He_Variant.join("") + Tools::Ye_Variant.join("") + "]+");
-            if (firstPhrase.contains(variantEXP)) {
-                firstPhrase.replace(variantEXP, "%");
-                variantPresent = true;
-            }
-        }
-
-        QStringList anyWordedList = firstPhrase.split("%%", QString::SkipEmptyParts);
-        for (int i = 0; i < anyWordedList.size(); ++i) {
-            QString subPhrase = anyWordedList.at(i);
-            if (SearchResultWidget::skipVowelSigns) {
-                subPhrase.remove("%");
-            }
-            //TODO: remove skipNonAlphabet and replace it with NEAR operator
-            //search for firstPhrase then go for other ones
-            subPhrase = subPhrase.simplified();
-            if (!subPhrase.contains(" ") || variantPresent) {
-                subPhrase = Tools::cleanString(subPhrase, excludeWhenCleaning).split("", QString::SkipEmptyParts).join(joiner);
-            }
-            subPhrase.replace("% %", "%");
-            anyWordedList[i] = subPhrase;
-        }
-
-        QString searchQueryPhrase = anyWordedList.join("%");
-
-        int andedPhraseCount = phraseList.size();
-        int excludedCount = excludedList.size();
-        int numOfFounded = 0;
-
-        if (PoetID == 0) {
-            strQuery = QString("SELECT poem_id, text, vorder FROM verse WHERE text LIKE \'%" + searchQueryPhrase + "%\' ORDER BY poem_id");
-        }
-        else if (PoetID == -1000) { //reserved for titles!!!
-            strQuery = QString("SELECT id, title FROM poem WHERE title LIKE \'%" + searchQueryPhrase + "%\' ORDER BY id");
-        }
-        else {
-            strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + searchQueryPhrase + "%\' AND poet_id=" + QString::number(PoetID) + " ORDER BY poem_id");
-        }
-
-        QSqlQuery q(dBConnection);
-#ifdef SAAGHAR_DEBUG
-        int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
-#endif
-        q.exec(strQuery);
-#ifdef SAAGHAR_DEBUG
-        int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
-        int miliSec = end - start;
-        qDebug() << "duration=" << miliSec;
-#endif
-        int numOfNearResult = 0, nextStep = 0, stepLenght = 300;
-        if (slowSearch) {
-            stepLenght = 30;
-        }
-
-        int lastPoemID = -1;
-        QList<GanjoorVerse*> verses;
-
-        while (q.next()) {
-            ++numOfNearResult;
-            if (numOfNearResult > nextStep) {
-                nextStep += stepLenght; //500
-                emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
-                QApplication::processEvents(QEventLoop::AllEvents);
-            }
-
-            QSqlRecord qrec = q.record();
-            int poemID = qrec.value(0).toInt();
-//          if (idList.contains(poemID))
-//              continue;//we need just first result
-
-            QString verseText = qrec.value(1).toString();
-            // assume title's order is zero!
-            int verseOrder = (PoetID == -1000 ? 0 : qrec.value(2).toInt());
-
-            QString foundedVerse = Tools::cleanStringFast(verseText, excludeWhenCleaning);
-            // for whole word option when word is in the start or end of verse
-            foundedVerse = " " + foundedVerse + " ";
-
-            //excluded list
-            bool excludeCurrentVerse = false;
-            for (int t = 0; t < excludedCount; ++t) {
-                if (foundedVerse.contains(excludedList.at(t))) {
-                    excludeCurrentVerse = true;
-                    break;
-                }
-            }
-
-            if (!excludeCurrentVerse) {
-                for (int t = 0; t < andedPhraseCount; ++t) {
-                    QString tphrase = phraseList.at(t);
-                    if (tphrase.contains("==")) {
-                        tphrase.remove("==");
-                        if (lastPoemID != poemID/* && findRhyme*/) {
-                            lastPoemID = poemID;
-                            int versesSize = verses.size();
-                            for (int j = 0; j < versesSize; ++j) {
-                                delete verses[j];
-                                verses[j] = 0;
-                            }
-                            verses = getVerses(poemID);
-                        }
-                        excludeCurrentVerse = !isRadif(verses, tphrase, verseOrder);
-                        break;
-                    }
-                    if (tphrase.contains("=")) {
-                        tphrase.remove("=");
-                        if (lastPoemID != poemID/* && findRhyme*/) {
-                            lastPoemID = poemID;
-                            int versesSize = verses.size();
-                            for (int j = 0; j < versesSize; ++j) {
-                                delete verses[j];
-                                verses[j] = 0;
-                            }
-                            verses = getVerses(poemID);
-                        }
-                        excludeCurrentVerse = !isRhyme(verses, tphrase, verseOrder);
-                        break;
-                    }
-                    if (!tphrase.contains("%")) {
-                        //QChar(71,6): Simple He
-                        //QChar(204,6): Persian Ye
-                        QString YeAsKasre = QString(QChar(71, 6)) + " ";
-                        if (tphrase.contains(YeAsKasre)) {
-                            tphrase.replace(YeAsKasre, QString(QChar(71, 6)) + "\\s*" + QString(QChar(204, 6)) +
-                                            "{0,2}\\s+");
-
-                            QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
-
-                            if (!anySearch.exactMatch(foundedVerse)) {
-                                excludeCurrentVerse = true;
-                                break;
-                            }
-                        }
-                        else {
-                            if (!foundedVerse.contains(tphrase))
-                                //the verse doesn't contain an ANDed phrase
-                                //maybe for ++ and +++ this should be removed
-                            {
-                                excludeCurrentVerse = true;
-                                break;
-                            }
-                        }
-                    }
-                    else {
-                        tphrase = tphrase.replace("%%", ".*");
-                        tphrase = tphrase.replace("%", "\\S*");
-                        QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
-                        if (!anySearch.exactMatch(foundedVerse)) {
-                            excludeCurrentVerse = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (Canceled && *Canceled) {
-                break;
-            }
-
-            if (excludeCurrentVerse) {
-#ifdef Q_OS_X11
-                QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
-#endif
-                continue;
-            }
-
-            ++numOfFounded;
-            GanjoorPoem gPoem = getPoem(poemID);
-            idList.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + getPoetForCat(gPoem._CatID)._Name);
-#ifdef Q_OS_X11
-            QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
-#endif
-
-        }
-
-        //for the last result
-        emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
-
-        int versesSize = verses.size();
-        for (int j = 0; j < versesSize; ++j) {
-            delete verses[j];
-            verses[j] = 0;
-        }
-
-        return idList;
+    if (phraseList.isEmpty()) {
+        return SearchResults();
     }
-    return idList;
+
+    QString strQuery;
+    QStringList excludeWhenCleaning;
+{
+    QString searchQueryPhrase;
+    bool findRhyme = false;
+    if (phraseList.contains("=", Qt::CaseInsensitive)) {
+        findRhyme = true;
+    }
+
+    QString firstPhrase = phraseList.at(0);
+
+    if (!firstPhrase.contains("=")) {
+        excludeWhenCleaning << " ";
+    }
+    else {
+        firstPhrase.remove("=");
+    }
+
+    QString joiner;
+    if (SearchResultWidget::skipVowelSigns) {
+        joiner = QLatin1String("%");
+    }
+    //replace characters that have some variants with anyWord replaceholder!
+    //we have not to worry about this replacement, because phraseList.at(0) is tested again!
+    bool variantPresent = false;
+    if (SearchResultWidget::skipVowelLetters) {
+        QRegExp variantEXP("[" + Tools::Ve_Variant.join("") + Tools::AE_Variant.join("") + Tools::He_Variant.join("") + Tools::Ye_Variant.join("") + "]+");
+        if (firstPhrase.contains(variantEXP)) {
+            firstPhrase.replace(variantEXP, "%");
+            variantPresent = true;
+        }
+    }
+
+    QStringList anyWordedList = firstPhrase.split("%%", QString::SkipEmptyParts);
+    for (int i = 0; i < anyWordedList.size(); ++i) {
+        QString subPhrase = anyWordedList.at(i);
+        if (SearchResultWidget::skipVowelSigns) {
+            subPhrase.remove("%");
+        }
+        //TODO: remove skipNonAlphabet and replace it with NEAR operator
+        //search for firstPhrase then go for other ones
+        subPhrase = subPhrase.simplified();
+        if (!subPhrase.contains(" ") || variantPresent) {
+            subPhrase = Tools::cleanString(subPhrase, excludeWhenCleaning).split("", QString::SkipEmptyParts).join(joiner);
+        }
+        subPhrase.replace("% %", "%");
+        anyWordedList[i] = subPhrase;
+    }
+
+    searchQueryPhrase = anyWordedList.join("%");
+
+    if (PoetID == 0) {
+        strQuery = QString("SELECT poem_id, text, vorder FROM verse WHERE text LIKE \'%" + searchQueryPhrase + "%\' ORDER BY poem_id");
+    }
+    else if (PoetID == -1000) { //reserved for titles!!!
+        strQuery = QString("SELECT id, title FROM poem WHERE title LIKE \'%" + searchQueryPhrase + "%\' ORDER BY id");
+    }
+    else {
+        strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + searchQueryPhrase + "%\' AND poet_id=" + QString::number(PoetID) + " ORDER BY poem_id");
+    }
+}
+
+    return startSearch(strQuery, dBConnection, PoetID, phraseList, excludedList, excludeWhenCleaning,
+                       Canceled, resultCount, slowSearch);
 }
 
 bool DatabaseBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder)
@@ -1523,6 +1373,165 @@ bool DatabaseBrowser::poetHasSubCats(int poetID, const QString &connectionID)
         }
     }
     return false;
+}
+
+SearchResults DatabaseBrowser::startSearch(const QString &strQuery, const QSqlDatabase &db,
+                                           int PoetID, const QStringList &phraseList,
+                                           const QStringList &excludedList, const QStringList &excludeWhenCleaning,
+                                           bool* Canceled, int resultCount, bool slowSearch)
+{
+    SearchResults searchResults;
+
+    if (!isConnected()) {
+        return searchResults;
+    }
+
+    int andedPhraseCount = phraseList.size();
+    int excludedCount = excludedList.size();
+    int numOfFounded = 0;
+
+    QSqlQuery q(db);
+#ifdef SAAGHAR_DEBUG
+    int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+#endif
+    q.exec(strQuery);
+#ifdef SAAGHAR_DEBUG
+    int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+    int miliSec = end - start;
+    qDebug() << "duration=" << miliSec;
+#endif
+    int numOfNearResult = 0, nextStep = 0, stepLenght = 300;
+    if (slowSearch) {
+        stepLenght = 30;
+    }
+
+    int lastPoemID = -1;
+    QList<GanjoorVerse*> verses;
+
+    while (q.next()) {
+        ++numOfNearResult;
+        if (numOfNearResult > nextStep) {
+            nextStep += stepLenght; //500
+            emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
+            QApplication::processEvents(QEventLoop::AllEvents);
+        }
+
+        QSqlRecord qrec = q.record();
+        int poemID = qrec.value(0).toInt();
+//          if (idList.contains(poemID))
+//              continue;//we need just first result
+
+        QString verseText = qrec.value(1).toString();
+        // assume title's order is zero!
+        int verseOrder = (PoetID == -1000 ? 0 : qrec.value(2).toInt());
+
+        QString foundedVerse = Tools::cleanStringFast(verseText, excludeWhenCleaning);
+        // for whole word option when word is in the start or end of verse
+        foundedVerse = " " + foundedVerse + " ";
+
+        //excluded list
+        bool excludeCurrentVerse = false;
+        for (int t = 0; t < excludedCount; ++t) {
+            if (foundedVerse.contains(excludedList.at(t))) {
+                excludeCurrentVerse = true;
+                break;
+            }
+        }
+
+        if (!excludeCurrentVerse) {
+            for (int t = 0; t < andedPhraseCount; ++t) {
+                QString tphrase = phraseList.at(t);
+                if (tphrase.contains("==")) {
+                    tphrase.remove("==");
+                    if (lastPoemID != poemID/* && findRhyme*/) {
+                        lastPoemID = poemID;
+                        int versesSize = verses.size();
+                        for (int j = 0; j < versesSize; ++j) {
+                            delete verses[j];
+                            verses[j] = 0;
+                        }
+                        verses = getVerses(poemID);
+                    }
+                    excludeCurrentVerse = !isRadif(verses, tphrase, verseOrder);
+                    break;
+                }
+                if (tphrase.contains("=")) {
+                    tphrase.remove("=");
+                    if (lastPoemID != poemID/* && findRhyme*/) {
+                        lastPoemID = poemID;
+                        int versesSize = verses.size();
+                        for (int j = 0; j < versesSize; ++j) {
+                            delete verses[j];
+                            verses[j] = 0;
+                        }
+                        verses = getVerses(poemID);
+                    }
+                    excludeCurrentVerse = !isRhyme(verses, tphrase, verseOrder);
+                    break;
+                }
+                if (!tphrase.contains("%")) {
+                    //QChar(71,6): Simple He
+                    //QChar(204,6): Persian Ye
+                    QString YeAsKasre = QString(QChar(71, 6)) + " ";
+                    if (tphrase.contains(YeAsKasre)) {
+                        tphrase.replace(YeAsKasre, QString(QChar(71, 6)) + "\\s*" + QString(QChar(204, 6)) +
+                                        "{0,2}\\s+");
+
+                        QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
+
+                        if (!anySearch.exactMatch(foundedVerse)) {
+                            excludeCurrentVerse = true;
+                            break;
+                        }
+                    }
+                    else {
+                        if (!foundedVerse.contains(tphrase))
+                            //the verse doesn't contain an ANDed phrase
+                            //maybe for ++ and +++ this should be removed
+                        {
+                            excludeCurrentVerse = true;
+                            break;
+                        }
+                    }
+                }
+                else {
+                    tphrase = tphrase.replace("%%", ".*");
+                    tphrase = tphrase.replace("%", "\\S*");
+                    QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
+                    if (!anySearch.exactMatch(foundedVerse)) {
+                        excludeCurrentVerse = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (Canceled && *Canceled) {
+            break;
+        }
+
+        if (excludeCurrentVerse) {
+#ifdef Q_OS_X11
+            QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
+#endif
+            continue;
+        }
+
+        ++numOfFounded;
+        GanjoorPoem gPoem = getPoem(poemID);
+        searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + getPoetForCat(gPoem._CatID)._Name);
+#ifdef Q_OS_X11
+        QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
+#endif
+
+    }
+
+    //for the last result
+    emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
+
+    qDeleteAll(verses);
+
+    return searchResults;
 }
 
 QList<QTreeWidgetItem*> DatabaseBrowser::loadOutlineFromDataBase(int parentID)
