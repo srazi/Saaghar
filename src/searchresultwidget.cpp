@@ -22,6 +22,7 @@
 #include "searchresultwidget.h"
 #include "searchitemdelegate.h"
 #include "tools.h"
+#include "databasebrowser.h"
 
 #include <QSearchLineEdit>
 #include <QMessageBox>
@@ -38,13 +39,22 @@ bool SearchResultWidget::nonPagedSearch = false;
 bool SearchResultWidget::skipVowelSigns = false;
 bool SearchResultWidget::skipVowelLetters = false;
 
-SearchResultWidget::SearchResultWidget(QWidget* parent, const QString &searchPhrase, const QString &poetName)
-    : QWidget(parent), searchResultContents(parent)
+SearchResultWidget::SearchResultWidget(QMainWindow* qmw, const QString &iconThemePath, QWidget* parent, const QString &searchPhrase, const QString &poetName)
+    : QWidget(parent)
+    , searchResultContents(parent)
+    , actSearchNextPage(0)
+    , actSearchPreviousPage(0)
+    , m_phrase(searchPhrase)
+    , m_sectionName(poetName)
+    , searchResultWidget(0)
 {
-    actSearchNextPage = 0;
-    actSearchPreviousPage = 0;
-    phrase = searchPhrase;
-    sectionName = poetName;
+    setupUi(qmw, iconThemePath);
+
+    QString dockTitle = m_sectionName + ":" + m_phrase;
+    dockTitle.replace("==", tr("Radifs that contain: "));
+    dockTitle.replace("=", tr("Rhymed by: "));
+    searchResultWidget->setWindowTitle(dockTitle);
+
     maxItemPerPageChange();
 }
 
@@ -56,22 +66,19 @@ SearchResultWidget::~SearchResultWidget()
 void SearchResultWidget::setResultList(const QMap<int, QString> &map)
 {
     copyResultList = resultList = map;
-}
 
-bool SearchResultWidget::init(QMainWindow* qmw, const QString &iconThemePath)
-{
-    if (resultList.isEmpty()) {
-        return false;
+    if (map.isEmpty()) {
+        deleteLater();
+        searchResultWidget->deleteLater();
+        return;
     }
 
     moreThanOnePage = SearchResultWidget::maxItemPerPage > 0 && resultList.size() >= SearchResultWidget::maxItemPerPage + 1;
-    navButtonsNeeded = false;
-    searchResultWidget = 0;
 
-    setupUi(qmw, iconThemePath);
     showSearchResult(0);
 
-    return true;
+    searchResultWidget->show();
+    searchResultWidget->raise();
 }
 
 void SearchResultWidget::setupUi(QMainWindow* qmw, const QString &iconThemePath)
@@ -81,6 +88,7 @@ void SearchResultWidget::setupUi(QMainWindow* qmw, const QString &iconThemePath)
     //searchResultWidget->setLayoutDirection(Qt::RightToLeft);
     searchResultWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
     searchResultWidget->setAttribute(Qt::WA_DeleteOnClose, true);
+    searchResultWidget->hide();
 
     searchResultWidget->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
                                       "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
@@ -137,13 +145,13 @@ void SearchResultWidget::setupUi(QMainWindow* qmw, const QString &iconThemePath)
     searchTable->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
     searchTable->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     searchTable->verticalHeader()->setVisible(false);
-    //searchTable->horizontalHeader()->setVisible(false);
+    searchTable->horizontalHeader()->setVisible(false);
     searchTable->horizontalHeader()->setHighlightSections(false);
     searchTable->horizontalHeader()->setStretchLastSection(true);
     connect(searchTable, SIGNAL(currentCellChanged(int,int,int,int)), this, SLOT(currentRowColumnChanged(int,int,int,int)));
 
     //install delagate on third column
-    SaagharItemDelegate* searchDelegate = new SaagharItemDelegate(searchTable, searchTable->style(), phrase);
+    SaagharItemDelegate* searchDelegate = new SaagharItemDelegate(searchTable, searchTable->style(), m_phrase);
     searchTable->setItemDelegateForColumn(2, searchDelegate);
     connect(this, SIGNAL(searchFiltered(QString)), searchDelegate, SLOT(keywordChanged(QString)));
 
@@ -231,9 +239,6 @@ void SearchResultWidget::setupUi(QMainWindow* qmw, const QString &iconThemePath)
 
 
     searchResultWidget->setObjectName("searchResultWidget_old");
-
-    searchResultWidget->show();
-    searchResultWidget->raise();
 }
 
 void SearchResultWidget::showSearchResult(int start)
@@ -284,10 +289,9 @@ void SearchResultWidget::showSearchResult(int start)
             }
         }
     }
-    //updatePageLabel(pageCount, pageNumber;
-//  pageLabel->setText(tr("page %1 of %2 page(s)").arg(pageNumber).arg(pageCount));
+
     pageLabel->setText(tr("All: %1 - Filered: %2").arg(copyResultList.size()).arg(resultList.size()));
-    QString dockTitle = sectionName + ":" + phrase;
+    QString dockTitle = m_sectionName + ":" + m_phrase;
     dockTitle.replace("==", tr("Radifs that contain: "));
     dockTitle.replace("=", tr("Rhymed by: "));
     dockTitle.append(" (" + tr("p: %1 of %2").arg(pageNumber).arg(pageCount) + ")");
@@ -296,11 +300,8 @@ void SearchResultWidget::showSearchResult(int start)
     int count = end - start + 1;
     searchTable->clear();
     searchTable->setRowCount(count);
-    searchTable->setHorizontalHeaderLabels(QStringList() << tr("#") << tr("Title") << tr("Verse"));
 
-    navButtonsNeeded = moreThanOnePage;
-
-    if (navButtonsNeeded) {
+    if (moreThanOnePage) {
         //almost one of navigation button needs to be enabled
         searchNextPage->show();
         searchPreviousPage->show();
@@ -384,7 +385,7 @@ void SearchResultWidget::showSearchResult(int start)
 
         //add Items
         QString snippedPoemTitle = Tools::snippedText(poemTiltle, "", 0, 5, true);
-        if (sectionName == tr("All") || sectionName == tr("Titles")) {
+        if (m_sectionName == tr("All") || m_sectionName == tr("Titles")) {
             snippedPoemTitle.prepend(poetName + ": ");
         }
         QTableWidgetItem* poemItem = new QTableWidgetItem(snippedPoemTitle);
@@ -402,7 +403,7 @@ void SearchResultWidget::showSearchResult(int start)
 //          snippedFirstVerse = Tools::snippedText(cleanedFirstVerse, "", 0, 8, true);
 
         //change 'cleanedFirstVerse' to 'firstVerse' maybe this conflicts with 'snippedText()' algorithm!
-        QString snippedFirstVerse = Tools::snippedText(firstVerse, phrase, 0, 8, true);
+        QString snippedFirstVerse = Tools::snippedText(firstVerse, m_phrase, 0, 8, true);
         if (snippedFirstVerse.isEmpty()) {
             snippedFirstVerse = Tools::snippedText(firstVerse, "", 0, 8, true);
         }
@@ -411,8 +412,8 @@ void SearchResultWidget::showSearchResult(int start)
         verseItem->setFlags(Qt::ItemIsEnabled);
         verseItem->setData(Qt::UserRole, "PoemID=" + QString::number(poemId));
         //set search data
-        verseItem->setData(ITEM_SEARCH_DATA, QStringList() << phrase << firstVerse);
-        poemItem->setData(ITEM_SEARCH_DATA, QStringList() << phrase << firstVerse);
+        verseItem->setData(ITEM_SEARCH_DATA, QStringList() << m_phrase << firstVerse);
+        poemItem->setData(ITEM_SEARCH_DATA, QStringList() << m_phrase << firstVerse);
 
         if (viewedItems.contains(snippedFirstVerse)) {
             numItem->setBackgroundColor(QColor(Qt::green).lighter(170));
@@ -467,6 +468,10 @@ void SearchResultWidget::showSearchResult(int start)
         searchNextPage->setEnabled(false);
     }
 
+
+    searchTable->horizontalHeader()->setVisible(true);
+    searchTable->setHorizontalHeaderLabels(QStringList() << tr("#") << tr("Title") << tr("Verse"));
+
     QApplication::restoreOverrideCursor();
 }
 
@@ -509,14 +514,14 @@ void SearchResultWidget::filterResults(const QString &text)
     QString str = Tools::cleanString(text);
     if (str.isEmpty()) {
         resultList = copyResultList;
-        emit searchFiltered(phrase);
+        emit searchFiltered(m_phrase);
         showSearchResult(0);
         return;
     }//searchTable->setItemDelegateForColumn(2, new SaagharItemDelegate());
 
     //SaagharItemDelegate *itemDelegate = searchTable->itemDelegateForColumn(2);
     //itemDelegate->
-    emit searchFiltered(phrase + " " + str);
+    emit searchFiltered(m_phrase + " " + str);
     //QMap<int, QString> tmpList;
 
     resultList.clear();
@@ -540,6 +545,19 @@ void SearchResultWidget::filterResults(const QString &text)
     else {
         showSearchResult(0);
     }
+}
+
+void SearchResultWidget::onConcurrentResultReady(const QString &type, const QVariant &results)
+{
+    if (type != "SEARCH") {
+        qFatal("Wrong connection!");
+        return;
+    }
+
+
+    SearchResults searchResults = results.value<SearchResults>();
+
+    setResultList(searchResults);
 }
 
 void SearchResultWidget::currentRowColumnChanged(int currentRow, int /*currentColumn*/, int previousRow, int /*previousColumn*/)

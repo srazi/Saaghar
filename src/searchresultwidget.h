@@ -39,10 +39,9 @@ class SearchResultWidget : public QWidget
     Q_OBJECT
 
 public:
-    SearchResultWidget(QWidget* parent = 0, const QString &searchPhrase = "", const QString &poetName = "");
+    SearchResultWidget(QMainWindow* qmw, const QString &iconThemePath, QWidget* parent = 0, const QString &searchPhrase = "", const QString &poetName = "");
     ~SearchResultWidget();
 
-    bool init(QMainWindow* qmw, const QString &iconThemePath);
     void setResultList(const QMap<int, QString> &map);
     //static void setMaxItemPerPage(int max);
     QTableWidget* searchTable;
@@ -56,10 +55,10 @@ private:
     QWidget* searchResultContents;
     void setupUi(QMainWindow* qmw, const QString &iconThemePath);
     void showSearchResult(int start);
-    QString phrase;
-    bool navButtonsNeeded;
+    QString m_phrase;
+
     bool moreThanOnePage;
-    QString sectionName;
+    QString m_sectionName;
     QToolButton* searchNextPage, *searchPreviousPage;
     QAction* actSearchNextPage, *actSearchPreviousPage;
     int pageNumber, pageCount;
@@ -74,6 +73,7 @@ private slots:
     void searchPageNavigationClicked(QAction* action);
     void maxItemPerPageChange();
     void filterResults(const QString &text);
+    void onConcurrentResultReady(const QString &type, const QVariant &results);
 
 signals:
     void searchFiltered(const QString &);

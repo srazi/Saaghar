@@ -24,6 +24,7 @@
 
 #include <QString>
 
+
 inline QString qStringMacHelper(const QString &str)
 {
     QString tmp = str;

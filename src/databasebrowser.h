@@ -24,6 +24,7 @@
 
 #define dbBrowser DatabaseBrowser::instance()
 
+#include <QMap>
 #include <QObject>
 #include <QWidget>
 #include <QString>
@@ -49,6 +50,7 @@
 class QTreeWidgetItem;
 
 typedef QMap<int,QString> SearchResults;
+
 
 class DatabaseBrowser : public QObject
 {
@@ -102,7 +104,7 @@ public:
     //QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
     //QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
     //another new approch
-    SearchResults getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList = QStringList(), bool* canceled = 0, int resultCount = 0, bool slowSearch = false);
+    bool getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList = QStringList(), bool* canceled = 0, bool slowSearch = false);
 
     //Faal
     int getRandomPoemID(int* CatID);
@@ -124,7 +126,7 @@ private:
 
     SearchResults startSearch(const QString &strQuery, const QSqlDatabase &db, int PoetID, const QStringList &phraseList,
                               const QStringList &excludedList = QStringList(), const QStringList &excludeWhenCleaning = QStringList(),
-                              bool* Canceled = 0, int resultCount = 0, bool slowSearch = false);
+                              bool* Canceled = 0, bool slowSearch = false);
 
     int cachedMaxCatID, cachedMaxPoemID;
     int getNewPoemID();
@@ -144,10 +146,14 @@ private:
 
 signals:
     void searchStatusChanged(const QString &);
+    void concurrentResultReady(const QString &type, const QVariant &results);
 
 #ifdef EMBEDDED_SQLITE
 private:
     static QSQLiteDriver* sqlDriver;
 #endif
 };
+
+Q_DECLARE_METATYPE(SearchResults)
+
 #endif // DATABASEBROWSER_H

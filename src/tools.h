@@ -27,6 +27,7 @@
 #include <QFontMetrics>
 #include <QStringList>
 
+
 class Tools
 {
 public:

@@ -386,7 +386,6 @@ void SaagharWindow::searchStart()
 
     QList<QListWidgetItem*> selectList = selectSearchRange->getSelectedItemList();
 
-    int numOfResults = 0;
     bool searchCanceled = false;
     bool slowSearch = false;//more calls of 'processEvents'
     if (selectList.size() > 1) {
@@ -463,10 +462,13 @@ void SaagharWindow::searchStart()
             //searchResultContents->setLayoutDirection(Qt::RightToLeft);
 
             phrase = Tools::cleanString(phrase);
-            SearchResultWidget* searchResultWidget = new SearchResultWidget(searchResultContents, phrase, poetName);
+            SearchResultWidget* searchResultWidget = new SearchResultWidget(this, ICON_PATH, searchResultContents,
+                                                                            phrase, poetName);
+
+            disconnect(dbBrowser, SIGNAL(concurrentResultReady(QString,QVariant)), 0, 0);
+            connect(dbBrowser, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
 
             /////////////////////////////////////
-            QMap<int, QString> finalResult;
 //          QProgressDialog searchProgress(tr("Searching Data Base..."),  tr("Cancel"), 0, 0, this);
 //          connect( &searchProgress, SIGNAL(canceled()), &searchProgress, SLOT(hide()) );
 //          searchProgress.setWindowModality(Qt::WindowModal);
@@ -480,14 +482,18 @@ void SaagharWindow::searchStart()
 
             SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(poetName));
             QApplication::processEvents();
-            int resultCount = 0;
+
+            bool success = false;
+
             for (int j = 0; j < vectorSize; ++j) {
                 QStringList phrases = phraseVectorList.at(j);
                 QStringList excluded = excludedVectorList.at(j);
 #ifdef SAAGHAR_DEBUG
                 int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
 #endif
-                QMap<int, QString> mapResult = dbBrowser->getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, resultCount, slowSearch);
+
+                success |= dbBrowser->getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, slowSearch);
+
 #ifdef SAAGHAR_DEBUG
                 int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
                 int miliSec = end - start;
@@ -495,14 +501,6 @@ void SaagharWindow::searchStart()
                          << phrases << "\tsearch-duration=" << miliSec
                          << "\n------------------------------------------------\n";
 #endif
-                QMap<int, QString>::const_iterator it = mapResult.constBegin();
-
-                while (it != mapResult.constEnd()) {
-                    // insertMulti for more than one result from a poem
-                    finalResult.insertMulti(it.key(), it.value());
-                    ++it;
-                }
-                resultCount = finalResult.size();
 
                 QApplication::processEvents();
 
@@ -511,15 +509,13 @@ void SaagharWindow::searchStart()
                 }
             }
 
-            numOfResults += resultCount;
-
             if (i == selectList.size() - 1) {
                 SaagharWidget::lineEditSearchText->searchStop();
             }
 
-            searchResultWidget->setResultList(finalResult);
-            if (!searchResultWidget->init(this, ICON_PATH)) {
-                if (numOfResults == 0 && (i == selectList.size() - 1)) {
+            // searchResultWidget->setResultList(finalResult);
+            if (!success) {
+                if (i == selectList.size() - 1) {
                     SaagharWidget::lineEditSearchText->notFound();
                     connect(selectSearchRange, SIGNAL(itemCheckStateChanged(QListWidgetItem*)), SaagharWidget::lineEditSearchText, SLOT(resetNotFound()));
                     SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(selectSearchRange->getSelectedStringList().join("-")));

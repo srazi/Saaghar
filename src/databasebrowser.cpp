@@ -54,6 +54,8 @@ const QString sqlDriver = "QSQLITE";
 
 DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
 {
+    qRegisterMetaType<SearchResults>("SearchResults");
+
     setObjectName(QLatin1String("DatabaseBrowser"));
 
     bool flagSelectNewPath = false;
@@ -1012,18 +1014,18 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
     return true;
 }
 
-SearchResults DatabaseBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList,
-        bool* Canceled, int resultCount, bool slowSearch)
+bool DatabaseBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList,
+        bool* Canceled, bool slowSearch)
 {
     if (phraseList.isEmpty()) {
-        return SearchResults();
+        return false;
     }
 
     QString strQuery;
     QStringList excludeWhenCleaning;
-{
     QString searchQueryPhrase;
     bool findRhyme = false;
+
     if (phraseList.contains("=", Qt::CaseInsensitive)) {
         findRhyme = true;
     }
@@ -1079,10 +1081,13 @@ SearchResults DatabaseBrowser::getPoemIDsByPhrase(int PoetID, const QStringList 
     else {
         strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + searchQueryPhrase + "%\' AND poet_id=" + QString::number(PoetID) + " ORDER BY poem_id");
     }
-}
 
-    return startSearch(strQuery, database(), PoetID, phraseList, excludedList, excludeWhenCleaning,
-                       Canceled, resultCount, slowSearch);
+    SearchResults results = startSearch(strQuery, database(), PoetID, phraseList, excludedList, excludeWhenCleaning,
+                       Canceled, slowSearch);
+
+    emit concurrentResultReady("SEARCH", QVariant::fromValue(results));
+
+    return true;
 }
 
 bool DatabaseBrowser::isRadif(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder)
@@ -1386,7 +1391,7 @@ bool DatabaseBrowser::poetHasSubCats(int poetID, const QString &connectionID)
 SearchResults DatabaseBrowser::startSearch(const QString &strQuery, const QSqlDatabase &db,
                                            int PoetID, const QStringList &phraseList,
                                            const QStringList &excludedList, const QStringList &excludeWhenCleaning,
-                                           bool* Canceled, int resultCount, bool slowSearch)
+                                           bool* Canceled, bool slowSearch)
 {
     SearchResults searchResults;
 
@@ -1420,7 +1425,7 @@ SearchResults DatabaseBrowser::startSearch(const QString &strQuery, const QSqlDa
         ++numOfNearResult;
         if (numOfNearResult > nextStep) {
             nextStep += stepLenght; //500
-            emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
+            emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
             QApplication::processEvents(QEventLoop::AllEvents);
         }
 
@@ -1535,7 +1540,7 @@ SearchResults DatabaseBrowser::startSearch(const QString &strQuery, const QSqlDa
     }
 
     //for the last result
-    emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded + resultCount));
+    emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
 
     qDeleteAll(verses);
 
