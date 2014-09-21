@@ -68,12 +68,15 @@ private:
     QMap<int, QString> copyResultList;
     QStringList viewedItems;
 
+    Qt::DockWidgetArea m_dockWidgetArea;
+
 private slots:
     void currentRowColumnChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);
     void searchPageNavigationClicked(QAction* action);
     void maxItemPerPageChange();
     void filterResults(const QString &text);
     void onConcurrentResultReady(const QString &type, const QVariant &results);
+    void onDockLocationChanged(Qt::DockWidgetArea area);
 
 signals:
     void searchFiltered(const QString &);

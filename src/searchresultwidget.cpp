@@ -77,6 +77,10 @@ void SearchResultWidget::setResultList(const QMap<int, QString> &map)
 
     showSearchResult(0);
 
+    searchTable->horizontalHeader()->setVisible(true);
+    searchTable->setHorizontalHeaderLabels(QStringList() << tr("#") << tr("Title") << tr("Verse"));
+    onDockLocationChanged(m_dockWidgetArea);
+
     searchResultWidget->show();
     searchResultWidget->raise();
 }
@@ -86,12 +90,11 @@ void SearchResultWidget::setupUi(QMainWindow* qmw, const QString &iconThemePath)
     searchResultWidget = new QDockWidget(qmw);
     searchResultWidget->setObjectName(QString::fromUtf8("searchResultWidget_new"));//object name for created instance, it renames to 'searchResultWidget_old'
     //searchResultWidget->setLayoutDirection(Qt::RightToLeft);
-    searchResultWidget->setFeatures(QDockWidget::AllDockWidgetFeatures);
+    searchResultWidget->setFeatures(QDockWidget::AllDockWidgetFeatures | QDockWidget::DockWidgetVerticalTitleBar);
     searchResultWidget->setAttribute(Qt::WA_DeleteOnClose, true);
     searchResultWidget->hide();
 
-    searchResultWidget->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
-                                      "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
+    connect(searchResultWidget, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), this, SLOT(onDockLocationChanged(Qt::DockWidgetArea)));
 
     QGridLayout* searchGridLayout = new QGridLayout(searchResultContents);
     searchGridLayout->setSpacing(6);
@@ -468,10 +471,6 @@ void SearchResultWidget::showSearchResult(int start)
         searchNextPage->setEnabled(false);
     }
 
-
-    searchTable->horizontalHeader()->setVisible(true);
-    searchTable->setHorizontalHeaderLabels(QStringList() << tr("#") << tr("Title") << tr("Verse"));
-
     QApplication::restoreOverrideCursor();
 }
 
@@ -558,6 +557,23 @@ void SearchResultWidget::onConcurrentResultReady(const QString &type, const QVar
     SearchResults searchResults = results.value<SearchResults>();
 
     setResultList(searchResults);
+}
+
+void SearchResultWidget::onDockLocationChanged(Qt::DockWidgetArea area)
+{
+    m_dockWidgetArea = area;
+
+    if (area == Qt::BottomDockWidgetArea || area == Qt::TopDockWidgetArea) {
+        searchResultWidget->setFeatures(searchResultWidget->features() | QDockWidget::DockWidgetVerticalTitleBar);
+        searchResultWidget->setStyleSheet(QString("QDockWidget::title { background: transparent; padding: 0 %1 0 10; }"
+                                                  "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}")
+                                          .arg(-10 - searchResultWidget->fontMetrics().width(searchResultWidget->windowTitle())));
+    }
+    else {
+        searchResultWidget->setFeatures(searchResultWidget->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
+        searchResultWidget->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
+                                          "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
+    }
 }
 
 void SearchResultWidget::currentRowColumnChanged(int currentRow, int /*currentColumn*/, int previousRow, int /*previousColumn*/)
