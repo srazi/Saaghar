@@ -1,4 +1,10 @@
-QT        += phonon
+isEqual(QT_MAJOR_VERSION, 5) {
+    CONFIG(USE_PHONON4_QT5) {
+        QT += phonon4qt5
+    }
+} else {
+    QT += phonon
+}
 
 INCLUDEPATH += $$PWD
 

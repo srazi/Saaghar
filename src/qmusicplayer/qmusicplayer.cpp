@@ -45,7 +45,6 @@
 #include "qmusicplayer.h"
 #include "lyricsmanager.h"
 
-#include <QDesktopServices>
 #include <QLCDNumber>
 #include <QFile>
 #include <QFileInfo>
@@ -68,6 +67,12 @@
 #include <QCryptographicHash>
 
 #define TICK_INTERVAL 100
+
+#if QT_VERSION < 0x050000
+#include <QDesktopServices>
+#else
+#include <QStandardPaths>
+#endif
 
 QHash<QString, QVariant> QMusicPlayer::albumsPathList = QHash<QString, QVariant>();
 QHash<QString, QMusicPlayer::SaagharAlbum*> QMusicPlayer::albumsMediaHash = QHash<QString, QMusicPlayer::SaagharAlbum*>();
@@ -95,7 +100,12 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
 
     _newTime = -1;
 
+#if QT_VERSION < 0x050000
     startDir = QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
+#else
+    startDir = QStandardPaths::standardLocations(QStandardPaths::MusicLocation).isEmpty() ?
+                QDir::homePath() : QStandardPaths::standardLocations(QStandardPaths::MusicLocation).at(0);
+#endif
     audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
     QList<Phonon::AudioOutputDevice> audioOutputDevices = Phonon::BackendCapabilities::availableAudioOutputDevices();
     foreach (const Phonon::AudioOutputDevice newAudioOutput, audioOutputDevices) {

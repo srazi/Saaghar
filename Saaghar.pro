@@ -17,6 +17,9 @@ CONFIG(debug, debug|release) {
 ##un-comment for static build
 #CONFIG += static
 
+##un-comment for support phonon on Qt5, it needs phonon4qt5
+#CONFIG += USE_PHONON4_QT5
+
 CONFIG(static) {
     !build_pass:message("STATIC BUILD")
     DEFINES += STATIC
@@ -25,7 +28,11 @@ CONFIG(static) {
 
 isEqual(QT_MAJOR_VERSION, 5) {
     QT += network widgets printsupport sql xml
-    DEFINES += NO_PHONON_LIB
+
+    !CONFIG(USE_PHONON4_QT5) {
+        DEFINES += NO_PHONON_LIB
+    }
+
 } else {
     QT += sql network xml
 }
