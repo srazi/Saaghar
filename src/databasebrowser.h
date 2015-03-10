@@ -48,6 +48,7 @@
 #endif
 
 class QTreeWidgetItem;
+class ConcurrentTask;
 
 typedef QMap<int,QString> SearchResults;
 
@@ -104,7 +105,7 @@ public:
     //QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
     //QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
     //another new approch
-    bool getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList = QStringList(), bool* canceled = 0, bool slowSearch = false);
+    bool getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID, const QStringList &phraseList, const QStringList &excludedList = QStringList(), bool* canceled = 0, bool slowSearch = false);
 
     //Faal
     int getRandomPoemID(int* CatID);
@@ -155,5 +156,6 @@ private:
 };
 
 Q_DECLARE_METATYPE(SearchResults)
+Q_DECLARE_METATYPE(bool*)
 
 #endif // DATABASEBROWSER_H

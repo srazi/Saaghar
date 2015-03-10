@@ -23,6 +23,7 @@
 #include "nodatabasedialog.h"
 #include "searchresultwidget.h"
 #include "tools.h"
+#include "concurrenttasks.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -1014,7 +1015,7 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
     return true;
 }
 
-bool DatabaseBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseList, const QStringList &excludedList,
+bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID, const QStringList &phraseList, const QStringList &excludedList,
         bool* Canceled, bool slowSearch)
 {
     if (phraseList.isEmpty()) {
@@ -1082,10 +1083,16 @@ bool DatabaseBrowser::getPoemIDsByPhrase(int PoetID, const QStringList &phraseLi
         strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + searchQueryPhrase + "%\' AND poet_id=" + QString::number(PoetID) + " ORDER BY poem_id");
     }
 
-    SearchResults results = startSearch(strQuery, database(), PoetID, phraseList, excludedList, excludeWhenCleaning,
-                       Canceled, slowSearch);
+    QVariantHash arguments;
+    VAR_ADD(arguments, strQuery);
+    VAR_ADD(arguments, PoetID);
+    VAR_ADD(arguments, phraseList);
+    VAR_ADD(arguments, excludedList);
+    VAR_ADD(arguments, excludeWhenCleaning);
+    VAR_ADD(arguments, Canceled);
+    VAR_ADD(arguments, slowSearch);
 
-    emit concurrentResultReady("SEARCH", QVariant::fromValue(results));
+    searchTask->start("SEARCH", arguments);
 
     return true;
 }

@@ -548,6 +548,11 @@ void SearchResultWidget::filterResults(const QString &text)
 
 void SearchResultWidget::onConcurrentResultReady(const QString &type, const QVariant &results)
 {
+    // deleting ConcurrentTask object
+    if (sender()) {
+        sender()->deleteLater();
+    }
+
     if (type != "SEARCH") {
         qFatal("Wrong connection!");
         return;

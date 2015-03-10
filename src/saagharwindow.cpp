@@ -32,6 +32,7 @@
 #include "databasebrowser.h"
 #include "settings.h"
 #include "tools.h"
+#include "concurrenttasks.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -357,6 +358,8 @@ SaagharWindow::~SaagharWindow()
 {
     delete dbBrowser;
     delete ui;
+
+    ConcurrentTask::finish();
 }
 
 void SaagharWindow::searchStart()
@@ -465,8 +468,9 @@ void SaagharWindow::searchStart()
             SearchResultWidget* searchResultWidget = new SearchResultWidget(this, ICON_PATH, searchResultContents,
                                                                             phrase, poetName);
 
-            disconnect(dbBrowser, SIGNAL(concurrentResultReady(QString,QVariant)), 0, 0);
-            connect(dbBrowser, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
+            ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget);
+            connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
+            connect(searchTask, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));
 
             /////////////////////////////////////
 //          QProgressDialog searchProgress(tr("Searching Data Base..."),  tr("Cancel"), 0, 0, this);
@@ -478,7 +482,6 @@ void SaagharWindow::searchStart()
 //          //searchProgress.show();
 
             SaagharWidget::lineEditSearchText->searchStart(&searchCanceled);
-            connect(dbBrowser, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));
 
             SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(poetName));
             QApplication::processEvents();
@@ -492,7 +495,7 @@ void SaagharWindow::searchStart()
                 int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
 #endif
 
-                success |= dbBrowser->getPoemIDsByPhrase(poetID, phrases, excluded, &searchCanceled, slowSearch);
+                success |= dbBrowser->getPoemIDsByPhrase(searchTask, poetID, phrases, excluded, &searchCanceled, slowSearch);
 
 #ifdef SAAGHAR_DEBUG
                 int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
@@ -501,8 +504,6 @@ void SaagharWindow::searchStart()
                          << phrases << "\tsearch-duration=" << miliSec
                          << "\n------------------------------------------------\n";
 #endif
-
-                QApplication::processEvents();
 
                 if (searchCanceled) {
                     break;
@@ -1597,6 +1598,11 @@ void SaagharWindow::actionImportNewSet()
         }
 
         foreach (const QString &file, fileList) {
+
+#ifdef SAAGHAR_DEBUG
+            QMessageBox::information(0, "DEBUG!", QString("%1\n%2\n%3\n%4\n%5").arg(file, QFile::encodeName(file), file.toUtf8(), file.toLocal8Bit(), QTextCodec::codecForName("Windows-1256")->fromUnicode(file)) );
+#endif
+
             DatabaseBrowser::dbUpdater->installItemToDB(file);
             QApplication::processEvents();
         }
