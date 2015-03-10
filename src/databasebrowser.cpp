@@ -67,10 +67,8 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
 
     setObjectName(QLatin1String("DatabaseBrowser"));
 
-    bool flagSelectNewPath = false;
-    QString newPath = "";
-
     QFileInfo dBFile(sqliteDbCompletePath);
+    QString pathOfDatabase = dBFile.absolutePath();
 
 #ifdef EMBEDDED_SQLITE
     sqlite3* connection;
@@ -112,8 +110,7 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
                     //don't open it here!
                     defaultConnectionId = getIdForDataBase(dir + "/ganjoor.s3db");
 
-                    flagSelectNewPath = true;
-                    newPath = dir;
+                    pathOfDatabase = dir;
                 }
                 else {
                     exit(1);
@@ -163,8 +160,8 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
                 }
                 m_addRemoteDataSet = noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromRemote;
                 QTimer::singleShot(0, this, SLOT(addDataSets()));
-                flagSelectNewPath = true;
-                newPath = dir;
+
+                pathOfDatabase = dir;
             }
         }
         else {
@@ -174,11 +171,9 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
 
     s_defaultConnectionId = defaultConnectionId;
 
-    if (flagSelectNewPath) {
-        //in this version Saaghar just use its first search path
-        DatabaseBrowser::dataBasePath.clear();
-        DatabaseBrowser::dataBasePath << newPath;
-    }
+    // Saaghar just uses its first search path
+    DatabaseBrowser::dataBasePath.clear();
+    DatabaseBrowser::dataBasePath << QDir::toNativeSeparators(pathOfDatabase);
 
     cachedMaxCatID = cachedMaxPoemID = 0;
 }
