@@ -36,7 +36,6 @@
 #endif
 
 QThreadPool* ConcurrentTask::s_concurrentTasksPool = 0;
-QHash<QThread*, QSqlDatabase> ConcurrentTask::s_databases = QHash<QThread*, QSqlDatabase>();
 bool ConcurrentTask::s_cancel = false;
 
 ConcurrentTask::ConcurrentTask(QObject *parent) :
@@ -57,7 +56,7 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
     m_options = argumants;
     s_cancel = false;
 
-    concurrentTasksPool()->start(this, 5);
+    concurrentTasksPool()->start(this);
 }
 
 #ifdef SAAGHAR_DEBUG
@@ -73,9 +72,6 @@ void ConcurrentTask::directStart(const QString &type, const QVariantHash &arguma
     qDebug() << __LINE__ << __FUNCTION__ << (end - start) << "NON THREADED" ;
 
     emit concurrentResultReady(m_type, result);
-
-
-    concurrentTasksPool()->start(this);
 }
 #endif
 
@@ -134,8 +130,9 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
     TEST_CANCEL;
 
-    QSqlDatabase threadDatabase = databaseForThread(QThread::currentThread());
+    QSqlDatabase threadDatabase = dbBrowser->databaseForThread(QThread::currentThread());
     if (!threadDatabase.isOpen()) {
+        qDebug() << QString("ConcurrentTask::startSearch: A database for thread %1 could not be opened!").arg(QString::number((quintptr)QThread::currentThread()));
         return QVariant();
     }
 
@@ -145,7 +142,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
     TEST_CANCEL;
 
-    QSqlQuery q(databaseForThread(QThread::currentThread()));
+    QSqlQuery q(threadDatabase);
 
 #ifdef SAAGHAR_DEBUG
     int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
@@ -302,20 +299,4 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
     qDeleteAll(verses);
 
     return QVariant::fromValue(searchResults);
-}
-
-QSqlDatabase ConcurrentTask::databaseForThread(QThread* thread)
-{
-    QMutexLocker lock(&m_mutex);
-
-    if (!s_databases.contains(thread)) {
-        const QString threadStr = QString::number((quintptr) thread);
-
-        s_databases[thread] = QSqlDatabase::cloneDatabase(dbBrowser->database(), threadStr + "/" + dbBrowser->database().connectionName());
-        s_databases[thread].open();
-    }
-
-    Q_ASSERT(s_databases.value(thread).isOpen());
-
-    return s_databases.value(thread);
 }

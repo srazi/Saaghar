@@ -34,11 +34,14 @@
 #include <QPushButton>
 #include <QTimer>
 #include <QTreeWidgetItem>
+#include <QThread>
 
 DatabaseBrowser* DatabaseBrowser::s_instance = 0;
+QMultiHash<QThread*, QString> DatabaseBrowser::s_threadConnections;
 
 DataBaseUpdater* DatabaseBrowser::dbUpdater = 0;
-QString DatabaseBrowser::s_defaultDatabaseName;
+QString DatabaseBrowser::s_defaultConnectionId;
+QString DatabaseBrowser::s_defaultDatabaseFileName;
 QStringList DatabaseBrowser::dataBasePath;
 
 const int minNewPoetID = 1001;
@@ -52,6 +55,11 @@ QSQLiteDriver* DatabaseBrowser::sqlDriver = 0;
 #else
 const QString sqlDriver = "QSQLITE";
 #endif
+
+static QString threadToString(QThread* thread = 0)
+{
+    return QString::number((quintptr) (thread ? thread : QThread::currentThread()));
+}
 
 DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
 {
@@ -70,16 +78,17 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
     sqlDriver = new QSQLiteDriver(connection);
 #endif
 
-    s_defaultDatabaseName = sqliteDbCompletePath;
-    QSqlDatabase::addDatabase(sqlDriver, s_defaultDatabaseName).setDatabaseName(sqliteDbCompletePath);
-    while (!dBFile.exists() || !database().open() || !isValid(s_defaultDatabaseName)) {
+    QString defaultConnectionId = getIdForDataBase(sqliteDbCompletePath);
+
+    while (!dBFile.exists() || !database(defaultConnectionId).open() || !isValid(defaultConnectionId)) {
         if (splashScreen(QWidget)) {
             splashScreen(QWidget)->close();
             Tools::setSplashScreen(0);
         }
-        QString errorString = database().lastError().text();
 
-        QSqlDatabase::removeDatabase(s_defaultDatabaseName);
+        QString errorString = database(defaultConnectionId).lastError().text();
+
+        removeDatabase(defaultConnectionId);
 
         NoDataBaseDialog noDataBaseDialog(0, Qt::WindowStaysOnTopHint);
         noDataBaseDialog.ui->pathLabel->setText(tr("Data Base Path:") + " " + sqliteDbCompletePath);
@@ -101,8 +110,7 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
                     dBFile.setFile(dir + "/ganjoor.s3db");
 
                     //don't open it here!
-                    s_defaultDatabaseName = dir + "/ganjoor.s3db";
-                    QSqlDatabase::addDatabase(sqlDriver, s_defaultDatabaseName).setDatabaseName(dir + "/ganjoor.s3db");
+                    defaultConnectionId = getIdForDataBase(dir + "/ganjoor.s3db");
 
                     flagSelectNewPath = true;
                     newPath = dir;
@@ -140,15 +148,14 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
                 }
                 dBFile.setFile(dir + "/ganjoor.s3db");
 
-                s_defaultDatabaseName = dir + "/ganjoor.s3db";
-                QSqlDatabase::addDatabase(sqlDriver, s_defaultDatabaseName).setDatabaseName(dir + "/ganjoor.s3db");
+                defaultConnectionId = getIdForDataBase(dir + "/ganjoor.s3db");
 
                 if (!database().open()) {
                     QMessageBox::information(0, tr("Cannot open Database File!"), tr("Cannot open database file, please check if you have write permisson.\nError: %1\nDataBase Path=%2").arg(errorString).arg(dir));
                     exit(1);
                 }
                 //insert main tables
-                bool tablesInserted = createEmptyDataBase(s_defaultDatabaseName);
+                bool tablesInserted = createEmptyDataBase(defaultConnectionId);
                 qDebug() << "insert main tables: " << tablesInserted;
                 if (!tablesInserted) {
                     QFile::remove(dir + "/ganjoor.s3db");
@@ -165,13 +172,7 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
         }
     }
 
-    database().close();
-
-    const QString defaultDatabaseName = database().databaseName();
-    // use getIdForDataBase for adding database
-    QSqlDatabase::removeDatabase(s_defaultDatabaseName);
-    s_defaultDatabaseName = getIdForDataBase(defaultDatabaseName);
-    database().open();
+    s_defaultConnectionId = defaultConnectionId;
 
     if (flagSelectNewPath) {
         //in this version Saaghar just use its first search path
@@ -180,12 +181,6 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
     }
 
     cachedMaxCatID = cachedMaxPoemID = 0;
-
-    if (s_instance) {
-        qFatal("DatabaseBrowser duplicated!");
-    }
-
-    s_instance = this;
 }
 
 DatabaseBrowser::~DatabaseBrowser()
@@ -195,7 +190,11 @@ DatabaseBrowser::~DatabaseBrowser()
 DatabaseBrowser* DatabaseBrowser::instance()
 {
     if (!s_instance) {
-        s_instance = new DatabaseBrowser(s_defaultDatabaseName);
+        if (s_defaultDatabaseFileName.isEmpty()) {
+            qFatal("In first place you have to use DatabaseBrowser::setDefaultDatabasename() to set default database.");
+            exit(1);
+        }
+        s_instance = new DatabaseBrowser(s_defaultDatabaseFileName);
     }
 
     return s_instance;
@@ -208,12 +207,12 @@ QSqlDatabase DatabaseBrowser::database(const QString &connectionID, bool open)
 
 QString DatabaseBrowser::defaultDatabasename()
 {
-     return s_defaultDatabaseName;
+     return s_defaultDatabaseFileName;
 }
 
-void DatabaseBrowser::setDefaultDatabasename(const QString &databaseaName)
+void DatabaseBrowser::setDefaultDatabasename(const QString &databaseName)
 {
-    s_defaultDatabaseName = databaseaName;
+    s_defaultDatabaseFileName = databaseName;
 }
 
 bool DatabaseBrowser::isConnected(const QString &connectionID)
@@ -300,6 +299,23 @@ GanjoorCat DatabaseBrowser::getCategory(int CatID)
 bool DatabaseBrowser::compareCategoriesByName(GanjoorCat* cat1, GanjoorCat* cat2)
 {
     return (QString::localeAwareCompare(cat1->_Text, cat2->_Text) < 0);
+}
+
+void DatabaseBrowser::removeThreadsConnections(QObject* obj)
+{
+    QThread* thread = qobject_cast<QThread*>(obj);
+
+    if (thread) {
+        QStringList connections = s_threadConnections.values(thread);
+
+        foreach (const QString &connection, connections) {
+            QSqlDatabase::removeDatabase(connection);
+        }
+
+#ifdef SAAGHAR_DEBUG
+        qDebug() << "thread destroyed:" << thread;
+#endif
+    }
 }
 
 QList<GanjoorCat*> DatabaseBrowser::getSubCategories(int CatID)
@@ -662,18 +678,54 @@ QList<GanjoorPoet*> DatabaseBrowser::getDataBasePoets(const QString fileName)
     return getPoets(dataBaseID, false);
 }
 
-QString DatabaseBrowser::getIdForDataBase(const QString &sqliteDataBaseName)
+QString DatabaseBrowser::getIdForDataBase(const QString &fileName, QThread* thread)
 {
-    //QFileInfo dataBaseFile(sqliteDataBaseName);
-    //QString connectionID = dataBaseFile.fileName();//we need to be sure this name is unique
-    QString connectionID = Tools::getLongPathName(sqliteDataBaseName);
+    if (thread == 0) {
+        thread = QThread::currentThread();
+    }
+
+    bool clone = false;
+    const QString &longName = Tools::getLongPathName(fileName);
+    const QString &connectionID = longName + QLatin1String("/thread:") + threadToString(thread);
 
     if (!QSqlDatabase::contains(connectionID)) {
-        QSqlDatabase db = QSqlDatabase::addDatabase(sqlDriver, connectionID);
-        db.setDatabaseName(sqliteDataBaseName);
+        const QStringList &allConnections = QSqlDatabase::connectionNames();
+
+        QString id;
+        foreach (id, allConnections) {
+            if (id.startsWith(longName)) {
+                clone = true;
+                break;
+            }
+        }
+
+        QSqlDatabase db = clone
+                ? QSqlDatabase::cloneDatabase(QSqlDatabase::database(id, false), connectionID)
+                : QSqlDatabase::addDatabase(sqlDriver, connectionID);
+
+        db.setDatabaseName(fileName);
+        db.open();
+
+        s_threadConnections.insert(thread, connectionID);
+        connect(thread, SIGNAL(destroyed(QObject*)), dbBrowser, SLOT(removeThreadsConnections(QObject*)));
     }
 
     return connectionID;
+}
+
+void DatabaseBrowser::removeDatabase(const QString &fileName, QThread *thread)
+{
+    if (thread == 0) {
+        thread = QThread::currentThread();
+    }
+
+    QString connectionID = Tools::getLongPathName(fileName) + QLatin1String("/") + threadToString(thread);
+
+    if (QSqlDatabase::contains(connectionID)) {
+        QSqlDatabase::removeDatabase(connectionID);
+
+        s_threadConnections.remove(thread, connectionID);
+    }
 }
 
 QList<GanjoorPoet*> DatabaseBrowser::getConflictingPoets(const QString fileName)
@@ -727,6 +779,18 @@ void DatabaseBrowser::removeCatFromDataBase(const GanjoorCat &gCat)
         strQuery = "DELETE FROM cat WHERE id=" + QString::number(gCat._ID);
         q.exec(strQuery);
     }
+}
+
+QString DatabaseBrowser::defaultConnectionId()
+{
+    if (s_defaultConnectionId.isEmpty()) {
+        qFatal("There is no a default connection!");
+        exit(1);
+    }
+
+    const QString &id = s_defaultConnectionId.left(s_defaultConnectionId.lastIndexOf(QLatin1String("/thread:")));
+
+    return getIdForDataBase(id, QThread::currentThread());
 }
 
 int DatabaseBrowser::getNewPoetID()
@@ -1619,4 +1683,14 @@ bool DatabaseBrowser::createEmptyDataBase(const QString &connectionID)
         return dataBaseObject.commit();
     }
     return false;
+}
+
+QSqlDatabase DatabaseBrowser::databaseForThread(QThread* thread, const QString &baseConnectionID)
+{
+    QMutexLocker lock(&m_mutex);
+
+    QString id = baseConnectionID.left(baseConnectionID.lastIndexOf(QLatin1String("/thread:")));
+    id = getIdForDataBase(id, thread);
+
+    return database(id);
 }

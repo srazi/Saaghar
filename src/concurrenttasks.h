@@ -26,10 +26,8 @@
 #include <QRunnable>
 #include <QVariant>
 #include <QStringList>
-#include <QMutex>
 
 class QThreadPool;
-class QSqlDatabase;
 
 class ConcurrentTask : public QObject, QRunnable
 {
@@ -49,18 +47,11 @@ public:
 
     static void finish();
 
-
     QVariant startSearch(const QVariantHash &options);
-
-    // Returns database connection for thread, creates new connection if not exists
-    QSqlDatabase databaseForThread(QThread* thread);
 
 private:
     QString m_type;
     QVariantHash m_options;
-
-    static QHash<QThread*, QSqlDatabase> s_databases;
-    QMutex m_mutex;
 
     static bool s_cancel;
 
