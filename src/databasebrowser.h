@@ -57,10 +57,8 @@ class DatabaseBrowser : public QObject
 {
     Q_OBJECT
 public:
-    DatabaseBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
-    ~DatabaseBrowser();
-
     static DatabaseBrowser* instance();
+    ~DatabaseBrowser();
 
     static QSqlDatabase database(const QString &connectionID = s_defaultDatabaseName, bool open = true);
 
@@ -122,6 +120,9 @@ public slots:
     void addDataSets();
 
 private:
+    Q_DISABLE_COPY(DatabaseBrowser)
+    DatabaseBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
+
     bool createEmptyDataBase(const QString &connectionID = s_defaultDatabaseName);
     bool poetHasSubCats(int poetID, const QString &connectionID = s_defaultDatabaseName);
 
