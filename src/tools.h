@@ -24,6 +24,10 @@
 
 #define splashScreen(T) (static_cast<T*>(Tools::s_splashScreen))
 
+// x is variant-hash
+#define VAR_ADD(x, y) x.insert(#y, QVariant::fromValue(y))
+#define VAR_GET(x, y) x.value(#y)
+
 #include <QFontMetrics>
 #include <QStringList>
 
