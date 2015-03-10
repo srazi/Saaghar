@@ -13,3 +13,4 @@ sqlite-driver
 sqlite-driver/*
 *.autosave
 gh-pages
+scripts/pngcrush*
