@@ -42,7 +42,7 @@ class QSearchLineEdit;
 class QTextEdit;
 class QSplitter;
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
 class QMusicPlayer;
 #endif
 
@@ -54,7 +54,7 @@ public:
     SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidget* tableWidget);
     ~SaagharWidget();
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     static QMusicPlayer* musicPlayer;
 #endif
 

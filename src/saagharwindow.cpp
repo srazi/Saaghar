@@ -66,7 +66,7 @@
 #include <QActionGroup>
 #include <QTranslator>
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
 #include "qmusicplayer.h"
 #endif
 
@@ -154,7 +154,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
         saagharUserPath.mkpath(userHomePath);
     }
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     SaagharWidget::musicPlayer = new QMusicPlayer(this);
     SaagharWidget::musicPlayer->setWindowTitle(tr("Audio Player"));
     addDockWidget(Qt::RightDockWidgetArea, SaagharWidget::musicPlayer->albumManagerDock());
@@ -703,7 +703,7 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         globalUndoAction->setEnabled(false);
         actionInstance("fixedNameRedoAction")->setEnabled(false);
         actionInstance("fixedNameUndoAction")->setEnabled(false);
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
         if (SaagharWidget::musicPlayer) {
             SaagharWidget::musicPlayer->setEnabled(false);
             SaagharWidget::musicPlayer->stop();
@@ -1611,7 +1611,7 @@ void SaagharWindow::actionImportNewSet()
 
 void SaagharWindow::setupUi()
 {
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     if (SaagharWidget::musicPlayer) {
         allActionMap.insert("albumDockAction", SaagharWidget::musicPlayer->albumManagerDock()->toggleViewAction());
         actionInstance("albumDockAction")->setObjectName(QString::fromUtf8("albumDockAction"));
@@ -1764,7 +1764,7 @@ void SaagharWindow::setupUi()
     ui->searchToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
     parentCatsToolBar->setMovable(!Settings::READ("Lock ToolBars").toBool());
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     SaagharWidget::musicPlayer->setMovable(!Settings::READ("Lock ToolBars").toBool());
 #endif
 
@@ -1919,7 +1919,7 @@ void SaagharWindow::setupUi()
     toolbarsView->addAction(ui->searchToolBar->toggleViewAction());
     toolbarsView->addAction(parentCatsToolBar->toggleViewAction());
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     toolbarsView->addAction(actionInstance("toggleMusicPlayer"));
 #endif
 
@@ -1929,7 +1929,7 @@ void SaagharWindow::setupUi()
 
     QMenu* panelsView = new QMenu(tr("Panels"), menuView);
     panelsView->addAction(actionInstance("outlineDockAction"));
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     panelsView->addAction(actionInstance("albumDockAction"));
 #endif
     panelsView->addAction(actionInstance("bookmarkManagerDockAction"));
@@ -1989,7 +1989,7 @@ void SaagharWindow::setupUi()
     if (ui->menuToolBar) {
         insertToolBar(parentCatsToolBar, ui->menuToolBar);
     }
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     if (SaagharWidget::musicPlayer) {
         insertToolBar(SaagharWidget::musicPlayer, ui->searchToolBar);
     }
@@ -2036,7 +2036,7 @@ QMenu* SaagharWindow::cornerMenu()
 
 void SaagharWindow::loadAudioForCurrentTab(SaagharWidget* old_saagharWidget)
 {
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     if (!SaagharWidget::musicPlayer) {
         return;
     }
@@ -2061,7 +2061,7 @@ void SaagharWindow::loadAudioForCurrentTab(SaagharWidget* old_saagharWidget)
     if (!isEnabled) {
         SaagharWidget::musicPlayer->stop();
     }
-#endif //NO_PHONON_LIB
+#endif // MEDIA_PLAYER
 }
 
 void SaagharWindow::showSearchOptionMenu()
@@ -2483,7 +2483,7 @@ void SaagharWindow::loadGlobalSettings()
     defaultActions << "outlineDockAction" << sepStr << "actionPreviousPoem" << "actionNextPoem"
                    << "fixedNameUndoAction" << sepStr << "actionFaal" << "actionRandom"
                    << sepStr << "searchToolbarAction" << "bookmarkManagerDockAction"
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
                    << "albumDockAction" << "toggleMusicPlayer"
 #endif
                    << sepStr << "actionSettings";
@@ -2508,7 +2508,7 @@ void SaagharWindow::loadTabWidgetSettings()
 
 void SaagharWindow::saveSettings()
 {
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     if (SaagharWidget::musicPlayer) {
         SaagharWidget::musicPlayer->saveAllAlbums();
     }
@@ -2530,7 +2530,7 @@ void SaagharWindow::saveSettings()
 
     config->setValue("UI Language", Settings::READ("UI Language", "fa"));
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     SaagharWidget::musicPlayer->savePlayerSettings(config);
 #endif
 
@@ -3275,7 +3275,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
         }
         ui->searchToolBar->setMovable(!checked);
         parentCatsToolBar->setMovable(!checked);
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
         SaagharWidget::musicPlayer->setMovable(!checked);
 #endif
     }
@@ -3377,7 +3377,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
             SaagharWidget::lineEditSearchText->setFocus();
         }
     }
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     else if (actionName == "albumDockAction") {
         if (action->isChecked()) {
             SaagharWidget::musicPlayer->albumManagerDock()->show();
@@ -3659,7 +3659,7 @@ void SaagharWindow::ensureVisibleBookmarkedItem(const QString &type, const QStri
     }
 }
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
 void SaagharWindow::mediaInfoChanged(const QString &fileName, const QString &title, int id)
 {
     if (!saagharWidget) {

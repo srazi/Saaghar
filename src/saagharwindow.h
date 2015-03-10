@@ -160,7 +160,7 @@ private slots:
     void openPage(int id, SaagharWidget::PageType type, bool newPage = false);
     void createCustomContextMenu(const QPoint &pos);
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     void mediaInfoChanged(const QString &fileName, const QString &title = "", int id = -1);
 #endif
 

@@ -10,8 +10,8 @@ CONFIG(debug, debug|release) {
 } else {
     !build_pass:message("RELEASE BUILD")
 ##un-comment the following two lines for skipping all warning and debug messages.
-    DEFINES += QT_NO_WARNING_OUTPUT
-    DEFINES += QT_NO_DEBUG_OUTPUT
+#    DEFINES += QT_NO_WARNING_OUTPUT
+#    DEFINES += QT_NO_DEBUG_OUTPUT
 }
 
 ##un-comment for static build
@@ -23,17 +23,16 @@ CONFIG(debug, debug|release) {
 CONFIG(static) {
     !build_pass:message("STATIC BUILD")
     DEFINES += STATIC
-    DEFINES += NO_PHONON_LIB
 }
 
 isEqual(QT_MAJOR_VERSION, 5) {
     QT += network widgets printsupport sql xml
 
-    !CONFIG(USE_PHONON4_QT5) {
-        DEFINES += NO_PHONON_LIB
-    }
+    DEFINES += MEDIA_PLAYER
 
 } else {
+    DEFINES += MEDIA_PLAYER
+
     QT += sql network xml
 }
 

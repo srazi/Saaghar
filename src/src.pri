@@ -58,7 +58,7 @@ include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)
 include(OSDaB-Zip/osdabzip.pri)
 
-!contains( DEFINES, NO_PHONON_LIB ) {
+contains( DEFINES, MEDIA_PLAYER ) {
     include(qmusicplayer/qmusicplayer.pri)
 }
 

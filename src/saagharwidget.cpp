@@ -70,7 +70,7 @@ const Qt::ItemFlags poemsItemFlag = Qt::ItemIsEnabled;
 const Qt::ItemFlags versesItemFlag = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 const Qt::ItemFlags poemsTitleItemFlag = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
 #include "qmusicplayer.h"
 QMusicPlayer* SaagharWidget::musicPlayer = NULL;
 #endif
@@ -221,7 +221,7 @@ void SaagharWidget::navigateToPage(QString type, int id, bool noError)
         showCategory(category);
     }
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     if (SaagharWidget::musicPlayer) {
         bool isEnabled = (pageMetaInfo.type == SaagharWidget::PoemViewerPage);
         SaagharWidget::musicPlayer->setEnabled(isEnabled);
@@ -1217,7 +1217,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
     QApplication::restoreOverrideCursor();
 
-#ifndef NO_PHONON_LIB
+#ifdef MEDIA_PLAYER
     if (SaagharWidget::musicPlayer) {
         pageMetaInfo.id = currentPoem;
         pageMetaInfo.type = SaagharWidget::PoemViewerPage;
@@ -1235,7 +1235,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
             SaagharWidget::musicPlayer->setSource("", currentLocationList.join(">") + ">" + currentPoemTitle, currentPoem);
         }
     }
-#endif //NO_PHONON_LIB
+#endif // MEDIA_PLAYER
 
     emit navPreviousActionState(!dbBrowser->getPreviousPoem(currentPoem, currentCat).isNull());
     emit navNextActionState(!dbBrowser->getNextPoem(currentPoem, currentCat).isNull());
