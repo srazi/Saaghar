@@ -149,7 +149,6 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 #endif
 
     q.exec(strQuery);
-    q.first();
 
 #ifdef SAAGHAR_DEBUG
     int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
