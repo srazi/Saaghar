@@ -1,6 +1,6 @@
 Saaghar, a Persian poetry software
 ----------------------------------------------------------------------------------------
-**Copyright (C) 2010-2014, Razi Alavizadeh**
+**Copyright (C) 2010-2015, Razi Alavizadeh**
 
 Homepage (in English): [http://en.saaghar.pozh.org](http://en.saaghar.pozh.org)
 
