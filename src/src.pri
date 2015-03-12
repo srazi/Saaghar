@@ -24,7 +24,8 @@ HEADERS += \
     $$PWD/tabwidget.h \
     $$PWD/mactoolbutton.h \
     $$PWD/tools.h \
-    $$PWD/concurrenttasks.h
+    $$PWD/concurrenttasks.h \
+    $$PWD/saagharapplication.h
 
 FORMS += \
     $$PWD/saagharwindow.ui \
@@ -52,7 +53,8 @@ SOURCES += \
     $$PWD/tabwidget.cpp \
     $$PWD/mactoolbutton.cpp \
     $$PWD/tools.cpp \
-    $$PWD/concurrenttasks.cpp
+    $$PWD/concurrenttasks.cpp \
+    $$PWD/saagharapplication.cpp
 
 include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)

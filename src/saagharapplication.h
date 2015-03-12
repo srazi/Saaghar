@@ -1,7 +1,7 @@
 /***************************************************************************
  *  This file is part of Saaghar, a Persian poetry software                *
  *                                                                         *
- *  Copyright (C) 2010-2014 by S. Razi Alavizadeh                          *
+ *  Copyright (C) 2010-2015 by S. Razi Alavizadeh                          *
  *  E-Mail: <s.r.alavizadeh@gmail.com>, WWW: <http://pozh.org>             *
  *                                                                         *
  *  This program is free software; you can redistribute it and/or modify   *
@@ -19,11 +19,27 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "saagharapplication.h"
+#ifndef SAAGHARAPPLICATION_H
+#define SAAGHARAPPLICATION_H
 
-int main(int argc, char* argv[])
+#define sApp SaagharApplication::instance()
+
+#include <QApplication>
+
+class SaagharWindow;
+
+class SaagharApplication : public QApplication
 {
-    SaagharApplication a(argc, argv);
+public:
+    SaagharApplication(int &argc, char **argv);
+    ~SaagharApplication();
 
-    return a.exec();
-}
+    static SaagharApplication* instance();
+
+private:
+    void init();
+
+    SaagharWindow* m_mainWindow;
+};
+
+#endif // SAAGHARAPPLICATION_H
