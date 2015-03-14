@@ -4,31 +4,17 @@
 
 INCLUDEPATH += $${PWD}/
 
-#HEADERS += $$PWD/progressbar.h \
-#    $$PWD/stylehelper.h
-
-#SOURCES += $$PWD/progressbar.cpp \
-#    $$PWD/stylehelper.cpp
-
 HEADERS += $$PWD/futureprogress.h \
            $$PWD/progressbar.h \
            $$PWD/progressmanager.h \
            $$PWD/progressmanager_p.h \
-           $$PWD/progressview.h \
-           $$PWD/stylehelper.h \
-           $$PWD/id.h \
-           $$PWD/icontext.h \
-           $$PWD/statusbarwidget.h
+           $$PWD/progressview.h
 
 
 SOURCES += $$PWD/futureprogress.cpp \
            $$PWD/progressbar.cpp \
            $$PWD/progressmanager.cpp \
-           $$PWD/progressview.cpp \
-           $$PWD/stylehelper.cpp \
-           $$PWD/id.cpp \
-           $$PWD/icontext.cpp \
-           $$PWD/statusbarwidget.cpp
+           $$PWD/progressview.cpp
 
 win32 {
     SOURCES += $$PWD/progressmanager_win.cpp
@@ -43,4 +29,4 @@ else:unix {
     SOURCES += $$PWD/progressmanager_x11.cpp
 }
 
-
+RESOURCES += $$PWD/progressmanager.qrc

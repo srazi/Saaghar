@@ -63,16 +63,11 @@
 #include <QTimer>
 #include <QToolButton>
 
-namespace Core {
-
-class StatusBarWidget;
-
-namespace Internal {
 
 class ProgressBar;
 class ProgressView;
 
-class ProgressManagerPrivate : public Core::ProgressManager
+class ProgressManagerPrivate : public ProgressManager
 {
     Q_OBJECT
 public:
@@ -81,14 +76,14 @@ public:
     void init();
     void cleanup();
 
-    FutureProgress *doAddTask(const QFuture<void> &future, const QString &title, Id type,
+    FutureProgress *doAddTask(const QFuture<void> &future, const QString &title, const QString &type,
                             ProgressFlags flags);
 
     void doSetApplicationLabel(const QString &text);
     ProgressView *progressView();
 
 public slots:
-    void doCancelTasks(Core::Id type);
+    void doCancelTasks(const QString &type);
 
 protected:
     bool eventFilter(QObject *obj, QEvent *event);
@@ -117,16 +112,15 @@ private:
     bool hasError() const;
     bool isLastFading() const;
 
-    void removeOldTasks(Id type, bool keepOne = false);
+    void removeOldTasks(const QString &type, bool keepOne = false);
     void removeOneOldTask();
     void removeTask(FutureProgress *task);
     void deleteTask(FutureProgress *task);
 
     QPointer<ProgressView> m_progressView;
     QList<FutureProgress *> m_taskList;
-    QMap<QFutureWatcher<void> *, Id> m_runningTasks;
+    QMap<QFutureWatcher<void> *, QString> m_runningTasks;
     QFutureWatcher<void> *m_applicationTask;
-    StatusBarWidget *m_statusBarWidgetContainer;
     QWidget *m_statusBarWidget;
     QWidget *m_summaryProgressWidget;
     QHBoxLayout *m_summaryProgressLayout;
@@ -165,8 +159,5 @@ private:
     int m_expectedTime;
     int m_currentTime;
 };
-
-} // namespace Internal
-} // namespace Core
 
 #endif // PROGRESSMANAGER_P_H

@@ -51,11 +51,11 @@
 
 #include "progressmanager_p.h"
 
-void Core::Internal::ProgressManagerPrivate::initInternal()
+void ProgressManagerPrivate::initInternal()
 {
 }
 
-void Core::Internal::ProgressManagerPrivate::cleanup()
+void ProgressManagerPrivate::cleanup()
 {
 }
 
@@ -147,24 +147,24 @@ static ApplicationProgressView *sharedProgressView = nil;
 
 @end
 
-void Core::Internal::ProgressManagerPrivate::doSetApplicationLabel(const QString &text)
+void ProgressManagerPrivate::doSetApplicationLabel(const QString &text)
 {
     NSString *cocoaString = [[NSString alloc] initWithUTF8String:text.toUtf8().constData()];
     [[NSApp dockTile] setBadgeLabel:cocoaString];
     [cocoaString release];
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressRange(int min, int max)
+void ProgressManagerPrivate::setApplicationProgressRange(int min, int max)
 {
     [[ApplicationProgressView sharedProgressView] setRangeMin:min max:max];
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressValue(int value)
+void ProgressManagerPrivate::setApplicationProgressValue(int value)
 {
     [[ApplicationProgressView sharedProgressView] setValue:value];
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressVisible(bool visible)
+void ProgressManagerPrivate::setApplicationProgressVisible(bool visible)
 {
     if (visible) {
         [[NSApp dockTile] setContentView:[ApplicationProgressView sharedProgressView]];
@@ -176,23 +176,23 @@ void Core::Internal::ProgressManagerPrivate::setApplicationProgressVisible(bool 
 
 #else
 
-void Core::Internal::ProgressManagerPrivate::setApplicationLabel(const QString &text)
+void ProgressManagerPrivate::setApplicationLabel(const QString &text)
 {
     Q_UNUSED(text)
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressRange(int min, int max)
+void ProgressManagerPrivate::setApplicationProgressRange(int min, int max)
 {
     Q_UNUSED(min)
     Q_UNUSED(max)
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressValue(int value)
+void ProgressManagerPrivate::setApplicationProgressValue(int value)
 {
     Q_UNUSED(value)
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressVisible(bool visible)
+void ProgressManagerPrivate::setApplicationProgressVisible(bool visible)
 {
     Q_UNUSED(visible)
 }

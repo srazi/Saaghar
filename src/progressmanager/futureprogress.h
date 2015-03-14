@@ -52,15 +52,14 @@
 #ifndef FUTUREPROGRESS_H
 #define FUTUREPROGRESS_H
 
-//#include <coreplugin/core_global.h>
-
 #include <QString>
 #include <QFuture>
 #include <QWidget>
 
-namespace Core {
-class Id;
+class QString;
 class FutureProgressPrivate;
+
+static const int ProgressFadeAnimationDuration = 600;
 
 class FutureProgress : public QWidget
 {
@@ -83,8 +82,8 @@ public:
     void setTitle(const QString &title);
     QString title() const;
 
-    void setType(Id type);
-    Id type() const;
+    void setType(const QString &type);
+    QString type() const;
 
     void setKeepOnFinish(KeepOnFinishType keepType);
     bool keepOnFinish() const;
@@ -128,7 +127,5 @@ private:
     friend class FutureProgressPrivate; // for sending signal
     FutureProgressPrivate *d;
 };
-
-} // namespace Core
 
 #endif // FUTUREPROGRESS_H

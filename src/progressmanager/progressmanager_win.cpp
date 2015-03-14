@@ -64,8 +64,6 @@
 #    include <qpa/qplatformnativeinterface.h>
 #endif
 
-#include <stylehelper.h>
-
 #include "progressmanager_p.h"
 
 // for windows progress bar
@@ -112,7 +110,7 @@ static inline HWND hwndOfWidget(const QWidget *w)
 }
 #endif
 
-void Core::Internal::ProgressManagerPrivate::initInternal()
+void ProgressManagerPrivate::initInternal()
 {
     CoInitialize(NULL);
     HRESULT hRes = CoCreateInstance(CLSID_TaskbarList,
@@ -129,7 +127,7 @@ void Core::Internal::ProgressManagerPrivate::initInternal()
      return;
 }
 
-void Core::Internal::ProgressManagerPrivate::cleanup()
+void ProgressManagerPrivate::cleanup()
 {
     if (pITask) {
     pITask->Release();
@@ -138,7 +136,7 @@ void Core::Internal::ProgressManagerPrivate::cleanup()
     }
 }
 
-void Core::Internal::ProgressManagerPrivate::doSetApplicationLabel(const QString &text)
+void ProgressManagerPrivate::doSetApplicationLabel(const QString &text)
 {
     if (!pITask)
         return;
@@ -147,7 +145,7 @@ void Core::Internal::ProgressManagerPrivate::doSetApplicationLabel(const QString
     if (text.isEmpty()) {
         pITask->SetOverlayIcon(winId, NULL, NULL);
     } else {
-        QPixmap pix(QLatin1String(":/core/images/compile_error_taskbar.png"));
+        QPixmap pix(QLatin1String(":/progressmanager/images/compile_error_taskbar.png"));
 #if QT_VERSION >= 0x050000
         pix.setDevicePixelRatio(1); // We want device-pixel sized font depending on the pix.height
 #endif
@@ -167,12 +165,12 @@ void Core::Internal::ProgressManagerPrivate::doSetApplicationLabel(const QString
     }
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressRange(int min, int max)
+void ProgressManagerPrivate::setApplicationProgressRange(int min, int max)
 {
     total = max-min;
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressValue(int value)
+void ProgressManagerPrivate::setApplicationProgressValue(int value)
 {
     if (pITask) {
         const HWND winId = hwndOfWidget(qApp->activeWindow());
@@ -180,7 +178,7 @@ void Core::Internal::ProgressManagerPrivate::setApplicationProgressValue(int val
     }
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressVisible(bool visible)
+void ProgressManagerPrivate::setApplicationProgressVisible(bool visible)
 {
     if (!pITask)
         return;
@@ -194,31 +192,31 @@ void Core::Internal::ProgressManagerPrivate::setApplicationProgressVisible(bool 
 
 #else
 
-void Core::Internal::ProgressManagerPrivate::initInternal()
+void ProgressManagerPrivate::initInternal()
 {
 }
 
-void Core::Internal::ProgressManagerPrivate::cleanup()
+void ProgressManagerPrivate::cleanup()
 {
 }
 
-void Core::Internal::ProgressManagerPrivate::doSetApplicationLabel(const QString &text)
+void ProgressManagerPrivate::doSetApplicationLabel(const QString &text)
 {
     Q_UNUSED(text)
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressRange(int min, int max)
+void ProgressManagerPrivate::setApplicationProgressRange(int min, int max)
 {
     Q_UNUSED(min)
     Q_UNUSED(max)
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressValue(int value)
+void ProgressManagerPrivate::setApplicationProgressValue(int value)
 {
     Q_UNUSED(value)
 }
 
-void Core::Internal::ProgressManagerPrivate::setApplicationProgressVisible(bool visible)
+void ProgressManagerPrivate::setApplicationProgressVisible(bool visible)
 {
     Q_UNUSED(visible)
 }

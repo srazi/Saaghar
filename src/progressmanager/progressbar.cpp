@@ -51,22 +51,57 @@
 
 #include "progressbar.h"
 
-#include <stylehelper.h>
-//#include <utils/theme/theme.h>
-
 #include <QPropertyAnimation>
 #include <QPainter>
 #include <QFont>
 #include <QColor>
 #include <QMouseEvent>
 
-using namespace Core;
-using namespace Core::Internal;
-using namespace Utils;
-
 static const int PROGRESSBAR_HEIGHT = 13;
 static const int CANCELBUTTON_WIDTH = 16;
 static const int SEPARATOR_HEIGHT = 2;
+
+// Draws a CSS-like border image where the defined borders are not stretched
+static void drawCornerImage(const QImage &img, QPainter *painter, const QRect &rect,
+                                  int left, int top, int right, int bottom)
+{
+    QSize size = img.size();
+    if (top > 0) { //top
+        painter->drawImage(QRect(rect.left() + left, rect.top(), rect.width() -right - left, top), img,
+                           QRect(left, 0, size.width() -right - left, top));
+        if (left > 0) //top-left
+            painter->drawImage(QRect(rect.left(), rect.top(), left, top), img,
+                               QRect(0, 0, left, top));
+        if (right > 0) //top-right
+            painter->drawImage(QRect(rect.left() + rect.width() - right, rect.top(), right, top), img,
+                               QRect(size.width() - right, 0, right, top));
+    }
+    //left
+    if (left > 0)
+        painter->drawImage(QRect(rect.left(), rect.top()+top, left, rect.height() - top - bottom), img,
+                           QRect(0, top, left, size.height() - bottom - top));
+    //center
+    painter->drawImage(QRect(rect.left() + left, rect.top()+top, rect.width() -right - left,
+                             rect.height() - bottom - top), img,
+                       QRect(left, top, size.width() -right -left,
+                             size.height() - bottom - top));
+    if (right > 0) //right
+        painter->drawImage(QRect(rect.left() +rect.width() - right, rect.top()+top, right, rect.height() - top - bottom), img,
+                           QRect(size.width() - right, top, right, size.height() - bottom - top));
+    if (bottom > 0) { //bottom
+        painter->drawImage(QRect(rect.left() +left, rect.top() + rect.height() - bottom,
+                                 rect.width() - right - left, bottom), img,
+                           QRect(left, size.height() - bottom,
+                                 size.width() - right - left, bottom));
+    if (left > 0) //bottom-left
+        painter->drawImage(QRect(rect.left(), rect.top() + rect.height() - bottom, left, bottom), img,
+                           QRect(0, size.height() - bottom, left, bottom));
+    if (right > 0) //bottom-right
+        painter->drawImage(QRect(rect.left() + rect.width() - right, rect.top() + rect.height() - bottom, right, bottom), img,
+                           QRect(size.width() - right, size.height() - bottom, right, bottom));
+    }
+}
+
 
 ProgressBar::ProgressBar(QWidget *parent)
     : QWidget(parent), m_titleVisible(true), m_separatorVisible(true), m_cancelEnabled(true),
@@ -236,8 +271,14 @@ void ProgressBar::mousePressEvent(QMouseEvent *event)
 
 QFont ProgressBar::titleFont() const
 {
+#if defined(Q_OS_MAC)
+    qreal fontSize = 10.0;
+#else
+    qreal fontSize = 7.5;
+#endif
+
     QFont boldFont(font());
-    boldFont.setPointSizeF(StyleHelper::sidebarFontSize());
+    boldFont.setPointSizeF(fontSize);
     boldFont.setBold(true);
     return boldFont;
 }
@@ -249,11 +290,8 @@ void ProgressBar::mouseMoveEvent(QMouseEvent *)
 
 void ProgressBar::paintEvent(QPaintEvent *)
 {
-    // TODO move font into Utils::StyleHelper
-    // TODO use Utils::StyleHelper white
-
     if (bar.isNull())
-        bar.load(QLatin1String(":/core/images/progressbar.png"));
+        bar.load(QLatin1String(":/progressmanager/images/progressbar.png"));
 
     double range = maximum() - minimum();
     double percent = 0.;
@@ -277,10 +315,10 @@ void ProgressBar::paintEvent(QPaintEvent *)
     // Draw separator
     int separatorHeight = m_separatorVisible ? SEPARATOR_HEIGHT : 0;
     if (m_separatorVisible) {
-        p.setPen(StyleHelper::sidebarShadow());
+        p.setPen(QColor(0, 0, 0, 40));
         p.drawLine(0,0, size().width(), 0);
 
-        p.setPen(StyleHelper::sidebarHighlight());
+        p.setPen(QColor(255, 255, 255, 40));
         p.drawLine(1, 1, size().width(), 1);
     }
 
@@ -300,7 +338,7 @@ void ProgressBar::paintEvent(QPaintEvent *)
         p.setPen(QColor(0, 0, 0, 120));
         p.drawText(textRect, alignment | Qt::AlignBottom, elidedtitle);
         p.translate(0, -1);
-        p.setPen(StyleHelper::panelTextColor());
+        p.setPen(Qt::white);
         p.drawText(textRect, alignment | Qt::AlignBottom, elidedtitle);
         p.translate(0, 1);
     }
@@ -311,10 +349,10 @@ void ProgressBar::paintEvent(QPaintEvent *)
     const QRect rect(INDENT - 1, titleHeight + separatorHeight + (m_titleVisible ? 4 : 3),
                      size().width() - 2 * INDENT + 1, m_progressHeight);
 
-    StyleHelper::drawCornerImage(bar, &p, rect, 3, 3, 3, 3);
+    drawCornerImage(bar, &p, rect, 3, 3, 3, 3);
 
     // draw inner rect
-    QColor c = StyleHelper::panelTextColor();
+    QColor c(Qt::white);
     p.setPen(Qt::NoPen);
 
     QRectF inner = rect.adjusted(2, 2, -2, -2);
@@ -375,7 +413,7 @@ void ProgressBar::paintEvent(QPaintEvent *)
             p.drawLine(cancelVisualRect.topLeft() + QPointF(0.5, 0.5), cancelVisualRect.bottomLeft() + QPointF(0.5, -0.5));
             p.setPen(QPen(QColor(255, 255, 255, 30)));
             p.drawLine(cancelVisualRect.topLeft() + QPointF(1.5, 0.5), cancelVisualRect.bottomLeft() + QPointF(1.5, -0.5));
-            p.setPen(QPen(hover ? StyleHelper::panelTextColor() : QColor(180, 180, 180), 1.2, Qt::SolidLine, Qt::FlatCap));
+            p.setPen(QPen(hover ? Qt::white : QColor(180, 180, 180), 1.2, Qt::SolidLine, Qt::FlatCap));
             p.setRenderHint(QPainter::Antialiasing, true);
             p.drawLine(cancelVisualRect.topLeft() + QPointF(4.0, 2.0), cancelVisualRect.bottomRight() + QPointF(-3.0, -2.0));
             p.drawLine(cancelVisualRect.bottomLeft() + QPointF(4.0, -2.0), cancelVisualRect.topRight() + QPointF(-3.0, 2.0));

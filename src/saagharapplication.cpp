@@ -22,6 +22,8 @@
 #include "saagharapplication.h"
 #include "saagharwindow.h"
 #include "tools.h"
+#include "progressmanager_p.h"
+#include "progressmanager.h"
 #include <QExtendedSplashScreen>
 
 //#include<QMessageBox>
@@ -52,10 +54,10 @@ SaagharApplication *SaagharApplication::instance()
     return static_cast<SaagharApplication*>(QCoreApplication::instance());
 }
 
-Core::ProgressManager* SaagharApplication::progressManager()
+ProgressManager* SaagharApplication::progressManager()
 {
     if (!m_progressManager) {
-        m_progressManager = new Core::Internal::ProgressManagerPrivate;
+        m_progressManager = new ProgressManagerPrivate;
 
         m_progressManager->init();
     }

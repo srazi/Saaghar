@@ -53,19 +53,6 @@
 #include "progressmanager_p.h"
 #include "progressbar.h"
 #include "progressview.h"
-//#include "../actionmanager/actionmanager.h"
-//#include "../actionmanager/command.h"
-#include "icontext.h"
-//#include "../coreconstants.h"
-//#include "../icore.h"
-#include "statusbarwidget.h"
-
-
-//#include <extensionsystem/pluginmanager.h>
-//#include <utils/hostosinfo.h>
-//#include <utils/qtcassert.h>
-//#include <utils/theme/theme.h>
-#include "stylehelper.h"
 
 #include <QApplication>
 #include <QAction>
@@ -74,6 +61,7 @@
 #include <QHBoxLayout>
 #include <QMouseEvent>
 #include <QPainter>
+#include <QPixmapCache>
 #include <QPropertyAnimation>
 #include <QStyle>
 #include <QStyleOption>
@@ -85,13 +73,9 @@
 static const char kSettingsGroup[] = "Progress";
 static const char kDetailsPinned[] = "DetailsPinned";
 
-using namespace Core;
-using namespace Core::Internal;
-using namespace Utils;
-
 /*!
     \mainclass
-    \class Core::ProgressManager
+    \class ProgressManager
     \brief The ProgressManager class is used to show a user interface
     for running tasks in Qt Creator.
 
@@ -140,9 +124,9 @@ using namespace Utils;
 
     To register a task you create your \c QFuture<void> object, and call
     addTask(). This function returns a
-    \l{Core::FutureProgress}{FutureProgress}
+    \l{FutureProgress}{FutureProgress}
     object that you can use to further customize the progress bar's appearance.
-    See the \l{Core::FutureProgress}{FutureProgress} documentation for
+    See the \l{FutureProgress}{FutureProgress} documentation for
     details.
 
     In the following you will learn about two common patterns how to
@@ -158,7 +142,7 @@ using namespace Utils;
     \c QFuture object. This is what you want to give the
     ProgressManager in the addTask() function.
 
-    Have a look at e.g Core::ILocatorFilter. Locator filters implement
+    Have a look at e.g ILocatorFilter. Locator filters implement
     a function \c refresh which takes a \c QFutureInterface object
     as a parameter. These functions look something like:
     \code
@@ -178,7 +162,7 @@ using namespace Utils;
     in a different thread, looks like this:
     \code
     QFuture<void> task = QtConcurrent::run(&ILocatorFilter::refresh, filters);
-    Core::FutureProgress *progress = Core::ProgressManager::addTask(task, tr("Indexing"),
+    FutureProgress *progress = ProgressManager::addTask(task, tr("Indexing"),
                                                                     Locator::Constants::TASK_INDEX);
     \endcode
     First, we tell QtConcurrent to start a thread which calls all the filters'
@@ -194,7 +178,7 @@ using namespace Utils;
     // We are already running in a different thread here
     QFutureInterface<void> *progressObject = new QFutureInterface<void>;
     progressObject->setProgressRange(0, MAX);
-    Core::ProgressManager::addTask(progressObject->future(), tr("DoIt"), MYTASKTYPE);
+    ProgressManager::addTask(progressObject->future(), tr("DoIt"), MYTASKTYPE);
     progressObject->reportStarted();
     // Do something
     ...
@@ -224,7 +208,7 @@ using namespace Utils;
 */
 
 /*!
-    \enum Core::ProgressManager::ProgressFlag
+    \enum ProgressManager::ProgressFlag
     Additional flags that specify details in behavior. The
     default for a task is to not have any of these flags set.
     \value KeepOnFinish
@@ -236,17 +220,17 @@ using namespace Utils;
 */
 
 /*!
-    \fn Core::ProgressManager::ProgressManager(QObject *parent = 0)
+    \fn ProgressManager::ProgressManager(QObject *parent = 0)
     \internal
 */
 
 /*!
-    \fn Core::ProgressManager::~ProgressManager()
+    \fn ProgressManager::~ProgressManager()
     \internal
 */
 
 /*!
-    \fn FutureProgress *Core::ProgressManager::addTask(const QFuture<void> &future, const QString &title, const QString &type, ProgressFlags flags = 0)
+    \fn FutureProgress *ProgressManager::addTask(const QFuture<void> &future, const QString &title, const QString &type, ProgressFlags flags = 0)
 
     Shows a progress indicator for task given by the QFuture object \a future.
     The progress indicator shows the specified \a title along with the progress bar.
@@ -263,7 +247,7 @@ using namespace Utils;
 */
 
 /*!
-    \fn void Core::ProgressManager::setApplicationLabel(const QString &text)
+    \fn void ProgressManager::setApplicationLabel(const QString &text)
 
     Shows the given \a text in a platform dependent way in the application
     icon in the system's task bar or dock. This is used
@@ -271,7 +255,7 @@ using namespace Utils;
 */
 
 /*!
-    \fn void Core::ProgressManager::cancelTasks(Core::Id type)
+    \fn void ProgressManager::cancelTasks(Id type)
 
     Schedules a cancel for all running tasks of the given \a type.
     Please note that the cancel functionality depends on the
@@ -280,16 +264,94 @@ using namespace Utils;
 */
 
 /*!
-    \fn void Core::ProgressManager::taskStarted(Core::Id type)
+    \fn void ProgressManager::taskStarted(Id type)
 
     Sent whenever a task of a given \a type is started.
 */
 
 /*!
-    \fn void Core::ProgressManager::allTasksFinished(Core::Id type)
+    \fn void ProgressManager::allTasksFinished(Id type)
 
     Sent when all tasks of a \a type have finished.
 */
+
+static void drawArrow(QStyle::PrimitiveElement element, QPainter *painter, const QStyleOption *option)
+{
+    // From windowsstyle but modified to enable AA
+    if (option->rect.width() <= 1 || option->rect.height() <= 1)
+        return;
+
+    QRect r = option->rect;
+    int size = qMin(r.height(), r.width());
+    QPixmap pixmap;
+    QString pixmapName;
+    pixmapName.sprintf("arrow-%s-%d-%d-%d-%lld",
+                       "$qt_ia",
+                       uint(option->state), element,
+                       size, option->palette.cacheKey());
+    if (!QPixmapCache::find(pixmapName, pixmap)) {
+        int border = size/5;
+        int sqsize = 2*(size/2);
+        QImage image(sqsize, sqsize, QImage::Format_ARGB32);
+        image.fill(Qt::transparent);
+        QPainter imagePainter(&image);
+        imagePainter.setRenderHint(QPainter::Antialiasing, true);
+        imagePainter.translate(0.5, 0.5);
+        QPolygon a;
+        switch (element) {
+            case QStyle::PE_IndicatorArrowUp:
+                a.setPoints(3, border, sqsize/2,  sqsize/2, border,  sqsize - border, sqsize/2);
+                break;
+            case QStyle::PE_IndicatorArrowDown:
+                a.setPoints(3, border, sqsize/2,  sqsize/2, sqsize - border,  sqsize - border, sqsize/2);
+                break;
+            case QStyle::PE_IndicatorArrowRight:
+                a.setPoints(3, sqsize - border, sqsize/2,  sqsize/2, border,  sqsize/2, sqsize - border);
+                break;
+            case QStyle::PE_IndicatorArrowLeft:
+                a.setPoints(3, border, sqsize/2,  sqsize/2, border,  sqsize/2, sqsize - border);
+                break;
+            default:
+                break;
+        }
+
+        int bsx = 0;
+        int bsy = 0;
+
+        if (option->state & QStyle::State_Sunken) {
+            bsx = qApp->style()->pixelMetric(QStyle::PM_ButtonShiftHorizontal);
+            bsy = qApp->style()->pixelMetric(QStyle::PM_ButtonShiftVertical);
+        }
+
+        QRect bounds = a.boundingRect();
+        int sx = sqsize / 2 - bounds.center().x() - 1;
+        int sy = sqsize / 2 - bounds.center().y() - 1;
+        imagePainter.translate(sx + bsx, sy + bsy);
+
+        if (!(option->state & QStyle::State_Enabled)) {
+            QColor foreGround(150, 150, 150, 150);
+            imagePainter.setBrush(option->palette.mid().color());
+            imagePainter.setPen(option->palette.mid().color());
+        } else {
+            QColor shadow(0, 0, 0, 100);
+            imagePainter.translate(0, 1);
+            imagePainter.setPen(shadow);
+            imagePainter.setBrush(shadow);
+            QColor foreGround(255, 255, 255, 210);
+            imagePainter.drawPolygon(a);
+            imagePainter.translate(0, -1);
+            imagePainter.setPen(foreGround);
+            imagePainter.setBrush(foreGround);
+        }
+        imagePainter.drawPolygon(a);
+        imagePainter.end();
+        pixmap = QPixmap::fromImage(image);
+        QPixmapCache::insert(pixmapName, pixmap);
+    }
+    int xOffset = r.x() + (r.width() - size)/2;
+    int yOffset = r.y() + (r.height() - size)/2;
+    painter->drawPixmap(xOffset, yOffset, pixmap);
+}
 
 static ProgressManagerPrivate *m_instance = 0;
 
@@ -313,24 +375,20 @@ ProgressManagerPrivate::~ProgressManagerPrivate()
     qDeleteAll(m_taskList);
     m_taskList.clear();
 
-    delete m_statusBarWidgetContainer;
+    delete m_statusBarWidget;
+
     cleanup();
     m_instance = 0;
 }
 
 void ProgressManagerPrivate::readSettings()
 {
-//    QSettings *settings = ICore::settings();
-//    settings->beginGroup(QLatin1String(kSettingsGroup));
-//    m_progressViewPinned = settings->value(QLatin1String(kDetailsPinned), true).toBool();
-//    settings->endGroup();
 }
 
 void ProgressManagerPrivate::init()
 {
     readSettings();
 
-    m_statusBarWidgetContainer = new StatusBarWidget;
     m_statusBarWidget = new QWidget;
     QHBoxLayout *layout = new QHBoxLayout(m_statusBarWidget);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -352,35 +410,20 @@ void ProgressManagerPrivate::init()
     layout->addWidget(m_summaryProgressWidget);
     ToggleButton *toggleButton = new ToggleButton(m_statusBarWidget);
     layout->addWidget(toggleButton);
-    m_statusBarWidgetContainer->setWidget(m_statusBarWidget);
-    m_statusBarWidgetContainer->setPosition(StatusBarWidget::RightCorner);
 
     m_statusBarWidget->installEventFilter(this);
 
-//    QAction *toggleProgressView = new QAction(tr("Toggle Progress Details"), this);
-//    toggleProgressView->setCheckable(true);
-//    toggleProgressView->setChecked(m_progressViewPinned);
-//    // we have to set an transparent icon to prevent the tool button to show text
-//    QPixmap p(1, 1);
-//    p.fill(Qt::transparent);
-//    toggleProgressView->setIcon(QIcon(p));
-//    Command *cmd = ActionManager::registerAction(toggleProgressView,
-//                                                 "QtCreator.ToggleProgressDetails");
-//    cmd->setDefaultKeySequence(QKeySequence(HostOsInfo::isMacHost()
-//                                               ? tr("Ctrl+Shift+0")
-//                                               : tr("Alt+Shift+0")));
-//    connect(toggleProgressView, SIGNAL(toggled(bool)), this, SLOT(progressDetailsToggled(bool)));
-//    toggleButton->setDefaultAction(cmd->action());
-
     m_progressView->setVisible(m_progressViewPinned);
+//    m_statusBarWidget->show();
+//    m_summaryProgressWidget->show();
 
     initInternal();
 }
 
-void ProgressManagerPrivate::doCancelTasks(Id type)
+void ProgressManagerPrivate::doCancelTasks(const QString &type)
 {
     bool found = false;
-    QMap<QFutureWatcher<void> *, Id>::iterator task = m_runningTasks.begin();
+    QMap<QFutureWatcher<void> *, QString>::iterator task = m_runningTasks.begin();
     while (task != m_runningTasks.end()) {
         if (task.value() != type) {
             ++task;
@@ -427,8 +470,8 @@ bool ProgressManagerPrivate::eventFilter(QObject *obj, QEvent *event)
 }
 
 void ProgressManagerPrivate::cancelAllRunningTasks()
-{qDebug() << __LINE__ << __FUNCTION__;
-    QMap<QFutureWatcher<void> *, Id>::const_iterator task = m_runningTasks.constBegin();
+{
+    QMap<QFutureWatcher<void> *, QString>::const_iterator task = m_runningTasks.constBegin();
     while (task != m_runningTasks.constEnd()) {
         disconnect(task.key(), SIGNAL(finished()), this, SLOT(taskFinished()));
         if (m_applicationTask == task.key())
@@ -442,7 +485,7 @@ void ProgressManagerPrivate::cancelAllRunningTasks()
 }
 
 FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, const QString &title,
-                                                Id type, ProgressFlags flags)
+                                                const QString &type, ProgressFlags flags)
 {
     // watch
     QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
@@ -503,7 +546,7 @@ void ProgressManagerPrivate::taskFinished()
     QFutureWatcher<void> *task = static_cast<QFutureWatcher<void> *>(taskObject);
     if (m_applicationTask == task)
         disconnectApplicationTask();
-    Id type = m_runningTasks.value(task);
+    const QString &type = m_runningTasks.value(task);
     m_runningTasks.remove(task);
     delete task;
     updateSummaryProgressBar();
@@ -536,7 +579,7 @@ void ProgressManagerPrivate::updateSummaryProgressBar()
     stopFadeOfSummaryProgress();
 
     m_summaryProgressBar->setFinished(false);
-    QMapIterator<QFutureWatcher<void> *, Id> it(m_runningTasks);
+    QMapIterator<QFutureWatcher<void> *, QString> it(m_runningTasks);
     static const int TASK_RANGE = 100;
     int value = 0;
     while (it.hasNext()) {
@@ -555,7 +598,7 @@ void ProgressManagerPrivate::fadeAwaySummaryProgress()
 {
     stopFadeOfSummaryProgress();
     m_opacityAnimation = new QPropertyAnimation(m_opacityEffect, "opacity");
-    m_opacityAnimation->setDuration(StyleHelper::progressFadeAnimationDuration);
+    m_opacityAnimation->setDuration(ProgressFadeAnimationDuration);
     m_opacityAnimation->setEndValue(0.);
     connect(m_opacityAnimation, SIGNAL(finished()), this, SLOT(summaryProgressFinishedFading()));
     m_opacityAnimation->start(QAbstractAnimation::DeleteWhenStopped);
@@ -593,12 +636,12 @@ void ProgressManagerPrivate::slotRemoveTask()
 {
     FutureProgress *progress = qobject_cast<FutureProgress *>(sender());
     Q_ASSERT(progress);
-    Id type = progress->type();
+    const QString &type = progress->type();
     removeTask(progress);
     removeOldTasks(type, true);
 }
 
-void ProgressManagerPrivate::removeOldTasks(const Id type, bool keepOne)
+void ProgressManagerPrivate::removeOldTasks(const QString &type, bool keepOne)
 {
     bool firstFound = !keepOne; // start with false if we want to keep one
     QList<FutureProgress *>::iterator i = m_taskList.end();
@@ -630,7 +673,7 @@ void ProgressManagerPrivate::removeOneOldTask()
     }
     // no ended process, look for a task type with multiple running tasks and remove the oldest one
     for (QList<FutureProgress *>::iterator i = m_taskList.begin(); i != m_taskList.end(); ++i) {
-        Id type = (*i)->type();
+        const QString &type = (*i)->type();
 
         int taskCount = 0;
         foreach (FutureProgress *p, m_taskList)
@@ -718,22 +761,12 @@ void ProgressManagerPrivate::progressDetailsToggled(bool checked)
 {
     m_progressViewPinned = checked;
     updateVisibility();
-
-//    QSettings *settings = ICore::settings();
-//    settings->beginGroup(QLatin1String(kSettingsGroup));
-//    settings->setValue(QLatin1String(kDetailsPinned), m_progressViewPinned);
-//    settings->endGroup();
 }
 
 ToggleButton::ToggleButton(QWidget *parent)
     : QToolButton(parent)
 {
     setToolButtonStyle(Qt::ToolButtonIconOnly);
-//    if (creatorTheme()->widgetStyle() == Theme::StyleFlat) {
-//        QPalette p = palette();
-//        p.setBrush(QPalette::Base, creatorTheme()->color(Theme::ToggleButtonBackgroundColor));
-//        setPalette(p);
-//    }
 }
 
 QSize ToggleButton::sizeHint() const
@@ -748,7 +781,8 @@ void ToggleButton::paintEvent(QPaintEvent *event)
     QStyleOption arrowOpt;
     arrowOpt.initFrom(this);
     arrowOpt.rect.adjust(2, 0, -1, -2);
-    StyleHelper::drawArrow(QStyle::PE_IndicatorArrowUp, &p, &arrowOpt);
+
+    drawArrow(QStyle::PE_IndicatorArrowUp, &p, &arrowOpt);
 }
 
 
@@ -765,7 +799,7 @@ ProgressManager *ProgressManager::instance()
     return m_instance;
 }
 
-FutureProgress *ProgressManager::addTask(const QFuture<void> &future, const QString &title, Id type, ProgressFlags flags)
+FutureProgress *ProgressManager::addTask(const QFuture<void> &future, const QString &title, const QString &type, ProgressFlags flags)
 {
     return m_instance->doAddTask(future, title, type, flags);
 }
@@ -781,7 +815,7 @@ FutureProgress *ProgressManager::addTask(const QFuture<void> &future, const QStr
 */
 
 FutureProgress *ProgressManager::addTimedTask(const QFutureInterface<void> &futureInterface, const QString &title,
-                                              Id type, int expectedSeconds, ProgressFlags flags)
+                                              const QString &type, int expectedSeconds, ProgressFlags flags)
 {
     QFutureInterface<void> dummy(futureInterface); // Need mutable to access .future()
     FutureProgress *fp = m_instance->doAddTask(dummy.future(), title, type, flags);
@@ -794,7 +828,7 @@ void ProgressManager::setApplicationLabel(const QString &text)
     m_instance->doSetApplicationLabel(text);
 }
 
-void ProgressManager::cancelTasks(Id type)
+void ProgressManager::cancelTasks(const QString &type)
 {
     if (m_instance)
         m_instance->doCancelTasks(type);

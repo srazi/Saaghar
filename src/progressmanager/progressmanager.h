@@ -52,15 +52,11 @@
 #ifndef PROGRESSMANAGER_H
 #define PROGRESSMANAGER_H
 
-#include <id.h>
-
 #include <QObject>
 #include <QFuture>
 
-namespace Core {
 class FutureProgress;
-
-namespace Internal { class ProgressManagerPrivate; }
+class ProgressManagerPrivate;
 
 class ProgressManager : public QObject
 {
@@ -75,27 +71,25 @@ public:
     static ProgressManager *instance();
 
     static FutureProgress *addTask(const QFuture<void> &future, const QString &title,
-                                   Id type, ProgressFlags flags = 0);
+                                   const QString &type, ProgressFlags flags = 0);
     static FutureProgress *addTimedTask(const QFutureInterface<void> &fi, const QString &title,
-                                   Id type, int expectedSeconds, ProgressFlags flags = 0);
+                                   const QString &type, int expectedSeconds, ProgressFlags flags = 0);
     static void setApplicationLabel(const QString &text);
 
 public slots:
-    static void cancelTasks(Id type);
+    static void cancelTasks(const QString &type);
 
 signals:
-    void taskStarted(Core::Id type);
-    void allTasksFinished(Core::Id type);
+    void taskStarted(const QString &type);
+    void allTasksFinished(const QString &type);
 
 private:
     ProgressManager();
     ~ProgressManager();
 
-    friend class Core::Internal::ProgressManagerPrivate;
+    friend class ProgressManagerPrivate;
 };
 
-} // namespace Core
-
-Q_DECLARE_OPERATORS_FOR_FLAGS(Core::ProgressManager::ProgressFlags)
+Q_DECLARE_OPERATORS_FOR_FLAGS(ProgressManager::ProgressFlags)
 
 #endif //PROGRESSMANAGER_H

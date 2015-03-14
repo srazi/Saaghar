@@ -52,11 +52,6 @@
 #include "futureprogress.h"
 #include "progressbar.h"
 
-#include <id.h>
-
-#include <stylehelper.h>
-//#include <utils/theme/theme.h>
-
 #include <QCoreApplication>
 #include <QFutureWatcher>
 #include <QGraphicsOpacityEffect>
@@ -72,9 +67,35 @@
 const int notificationTimeout = 8000;
 const int shortNotificationTimeout = 1000;
 
-using namespace Utils;
+static QColor baseColor()
+{
+    return QColor(127,127,127);
+}
 
-namespace Core {
+static int clamp(float x)
+{
+    const int val = x > 255 ? 255 : static_cast<int>(x);
+    return val < 0 ? 0 : val;
+}
+
+static QColor shadowColor()
+{
+    QColor result = baseColor();
+    result.setHsv(result.hue(),
+                  clamp(result.saturation() * 1.1),
+                  clamp(result.value() * 0.70));
+    return result;
+}
+
+static QLinearGradient statusBarGradient(const QRect &statusBarRect)
+{
+    QLinearGradient grad(statusBarRect.topLeft(), QPoint(statusBarRect.center().x(), statusBarRect.bottom()));
+    QColor startColor = shadowColor().darker(164);
+    QColor endColor = baseColor().darker(130);
+    grad.setColorAt(0, startColor);
+    grad.setColorAt(1, endColor);
+    return grad;
+}
 
 class FutureProgressPrivate : public QObject
 {
@@ -89,11 +110,11 @@ public:
     void tryToFadeAway();
 
     QFutureWatcher<void> m_watcher;
-    Internal::ProgressBar *m_progress;
+    ProgressBar *m_progress;
     QWidget *m_widget;
     QHBoxLayout *m_widgetLayout;
     QWidget *m_statusBarWidget;
-    Id m_type;
+    QString m_type;
     FutureProgress::KeepOnFinishType m_keep;
     bool m_waitingForUserInteraction;
     FutureProgress *m_q;
@@ -102,7 +123,7 @@ public:
 };
 
 FutureProgressPrivate::FutureProgressPrivate(FutureProgress *q) :
-    m_progress(new Internal::ProgressBar), m_widget(0), m_widgetLayout(new QHBoxLayout),
+    m_progress(new ProgressBar), m_widget(0), m_widgetLayout(new QHBoxLayout),
     m_statusBarWidget(0),
     m_keep(FutureProgress::HideOnFinish), m_waitingForUserInteraction(false),
     m_q(q), m_fadeStarting(false), m_isFading(false)
@@ -111,7 +132,7 @@ FutureProgressPrivate::FutureProgressPrivate(FutureProgress *q) :
 
 /*!
     \mainclass
-    \class Core::FutureProgress
+    \class FutureProgress
     \brief The FutureProgress class is used to adapt the appearance of
     progress indicators that were created through the ProgressManager class.
 
@@ -321,12 +342,8 @@ void FutureProgress::mousePressEvent(QMouseEvent *event)
 void FutureProgress::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
-    /*if (creatorTheme()->widgetStyle() == Theme::StyleFlat) {
-        p.fillRect(rect(), creatorTheme()->color(Theme::FutureProgressBackgroundColor));
-    } else*/ {
-      QLinearGradient grad = StyleHelper::statusBarGradient(rect());
-        p.fillRect(rect(), grad);
-    }
+
+    p.fillRect(rect(), statusBarGradient(rect()));
 }
 
 /*!
@@ -337,12 +354,12 @@ bool FutureProgress::hasError() const
     return d->m_progress->hasError();
 }
 
-void FutureProgress::setType(Id type)
+void FutureProgress::setType(const QString &type)
 {
     d->m_type = type;
 }
 
-Id FutureProgress::type() const
+QString FutureProgress::type() const
 {
     return d->m_type;
 }
@@ -402,7 +419,7 @@ void FutureProgressPrivate::fadeAway()
 
     QSequentialAnimationGroup *group = new QSequentialAnimationGroup(this);
     QPropertyAnimation *animation = new QPropertyAnimation(opacityEffect, "opacity");
-    animation->setDuration(StyleHelper::progressFadeAnimationDuration);
+    animation->setDuration(ProgressFadeAnimationDuration);
     animation->setEndValue(0.);
     group->addAnimation(animation);
     animation = new QPropertyAnimation(m_q, "maximumHeight");
@@ -416,7 +433,5 @@ void FutureProgressPrivate::fadeAway()
     group->start(QAbstractAnimation::DeleteWhenStopped);
     emit m_q->fadeStarted();
 }
-
-} // namespace Core
 
 #include "futureprogress.moc"

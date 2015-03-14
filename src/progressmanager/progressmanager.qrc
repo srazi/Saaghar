@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/progressmanager">
+        <file>images/compile_error_taskbar.png</file>
+        <file>images/progressbar.png</file>
+    </qresource>
+</RCC>

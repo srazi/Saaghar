@@ -54,9 +54,6 @@
 #include <QEvent>
 #include <QVBoxLayout>
 
-using namespace Core;
-using namespace Core::Internal;
-
 ProgressView::ProgressView(QWidget *parent)
     : QWidget(parent), m_referenceWidget(0), m_hovered(false)
 {
