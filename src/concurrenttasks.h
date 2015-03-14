@@ -22,10 +22,10 @@
 #ifndef CONCURRENTTASKS_H
 #define CONCURRENTTASKS_H
 
-#include <QMetaType>
+#include <QMutex>
 #include <QRunnable>
 #include <QVariant>
-#include <QStringList>
+#include <QWeakPointer>
 
 class QThreadPool;
 
@@ -50,13 +50,18 @@ public:
     QVariant startSearch(const QVariantHash &options);
 
 private:
+    bool isCanceled();
+    void setCanceled();
+
+    QMutex m_mutex;
     QString m_type;
     QVariantHash m_options;
-
-    static bool s_cancel;
+    bool m_cancel;
 
     static QThreadPool* concurrentTasksPool();
     static QThreadPool* s_concurrentTasksPool;
+
+    static QList<QWeakPointer<ConcurrentTask> > s_tasks;
 
 signals:
     void concurrentResultReady(const QString &type, const QVariant &results);

@@ -20,26 +20,26 @@
  ***************************************************************************/
 
 #include "concurrenttasks.h"
-#include "tools.h"
-#include "databaseelements.h"
 #include "databasebrowser.h"
+#include "tools.h"
 
-#include <QDebug>
-#include <QApplication>
+#include <QMetaType>
+#include <QThread>
 #include <QThreadPool>
-#include <QSqlQuery>
-#include <QSqlRecord>
-#include <QMutexLocker>
 
 #ifdef SAAGHAR_DEBUG
 #include <QDateTime>
 #endif
 
-QThreadPool* ConcurrentTask::s_concurrentTasksPool = 0;
-bool ConcurrentTask::s_cancel = false;
+#define TASK_CANCELED if (isCanceled()) return QVariant();
 
-ConcurrentTask::ConcurrentTask(QObject *parent) :
-    QObject(parent), QRunnable()
+QThreadPool* ConcurrentTask::s_concurrentTasksPool = 0;
+QList<QWeakPointer<ConcurrentTask> > ConcurrentTask::s_tasks;
+
+ConcurrentTask::ConcurrentTask(QObject *parent)
+    : QObject(parent),
+      QRunnable(),
+      m_cancel(false)
 {
     // deleted by parent/child system of Qt
     setAutoDelete(false);
@@ -54,8 +54,8 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
 {
     m_type = type;
     m_options = argumants;
-    s_cancel = false;
 
+    s_tasks.append(this);
     concurrentTasksPool()->start(this);
 }
 
@@ -81,11 +81,13 @@ void ConcurrentTask::run()
     qint64 start = QDateTime::currentMSecsSinceEpoch();
 #endif
 
-    if (ConcurrentTask::s_cancel) {
-        return;
-    }
+    QThread::Priority prio = QThread::currentThread()->priority();
+    prio = prio == QThread::InheritPriority ? QThread::NormalPriority : prio;
+    QThread::currentThread()->setPriority(QThread::LowPriority);
 
     QVariant result = startSearch(m_options);
+
+    QThread::currentThread()->setPriority(prio);
 
 #ifdef SAAGHAR_DEBUG
     qint64 end = QDateTime::currentMSecsSinceEpoch();
@@ -97,9 +99,15 @@ void ConcurrentTask::run()
 
 void ConcurrentTask::finish()
 {
+    foreach (QWeakPointer<ConcurrentTask> wp, s_tasks) {
+        if (wp && wp.data()) {
+            wp.data()->setCanceled();
+        }
+    }
+
     if (s_concurrentTasksPool) {
-        s_cancel = true;
         s_concurrentTasksPool->waitForDone();
+
         delete s_concurrentTasksPool;
         s_concurrentTasksPool = 0;
     }
@@ -110,16 +118,16 @@ QThreadPool *ConcurrentTask::concurrentTasksPool()
     if (!s_concurrentTasksPool) {
         s_concurrentTasksPool = new QThreadPool(QThreadPool::globalInstance());
 
-        s_concurrentTasksPool->setMaxThreadCount(QThread::idealThreadCount() > 1 ? QThread::idealThreadCount() - 1 : 1);
+        s_concurrentTasksPool->setMaxThreadCount(qBound(2, QThread::idealThreadCount() * 2, 12));
     }
 
     return s_concurrentTasksPool;
 }
 
-#define TEST_CANCEL if (ConcurrentTask::s_cancel) return QVariant()
-
 QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 {
+    TASK_CANCELED;
+
     const QString &strQuery = VAR_GET(options, strQuery).toString();
     int PoetID = VAR_GET(options, PoetID).toInt();
     const QStringList &phraseList = VAR_GET(options, phraseList).toStringList();
@@ -127,8 +135,6 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
     const QStringList &excludeWhenCleaning = VAR_GET(options, excludeWhenCleaning).toStringList();
 
     SearchResults searchResults;
-
-    TEST_CANCEL;
 
     QSqlDatabase threadDatabase = dbBrowser->databaseForThread(QThread::currentThread());
     if (!threadDatabase.isOpen()) {
@@ -140,7 +146,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
     int excludedCount = excludedList.size();
     int numOfFounded = 0;
 
-    TEST_CANCEL;
+    TASK_CANCELED;
 
     QSqlQuery q(threadDatabase);
 
@@ -163,7 +169,11 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
     int lastPoemID = -1;
     QList<GanjoorVerse*> verses;
 
+    TASK_CANCELED
+
     while (q.next()) {
+        TASK_CANCELED
+
         ++numOfNearResult;
 
         QSqlRecord qrec = q.record();
@@ -204,12 +214,12 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
                             verses[j] = 0;
                         }
 
-                        TEST_CANCEL;
+                        TASK_CANCELED;
 
                         verses = dbBrowser->getVerses(poemID);
                     }
 
-                    TEST_CANCEL;
+                    TASK_CANCELED;
 
                     excludeCurrentVerse = !dbBrowser->isRadif(verses, tphrase, verseOrder);
                     break;
@@ -224,12 +234,12 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
                             verses[j] = 0;
                         }
 
-                        TEST_CANCEL;
+                        TASK_CANCELED;
 
                         verses = dbBrowser->getVerses(poemID);
                     }
 
-                    TEST_CANCEL;
+                    TASK_CANCELED;
 
                     excludeCurrentVerse = !dbBrowser->isRhyme(verses, tphrase, verseOrder);
                     break;
@@ -271,13 +281,11 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
             }
         }
 
-//        if (Canceled && *Canceled) {
-//            break;
-//        }
-
         if (excludeCurrentVerse) {
             continue;
         }
+
+        TASK_CANCELED;
 
         ++numOfFounded;
 
@@ -285,8 +293,6 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
             nextStep += updateLenght;
             emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
         }
-
-        TEST_CANCEL;
 
         GanjoorPoem gPoem = dbBrowser->getPoem(poemID);
         searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + dbBrowser->getPoetForCat(gPoem._CatID)._Name);
@@ -297,5 +303,19 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
     qDeleteAll(verses);
 
+    TASK_CANCELED;
+
     return QVariant::fromValue(searchResults);
+}
+
+bool ConcurrentTask::isCanceled()
+{
+    return m_cancel;
+}
+
+void ConcurrentTask::setCanceled()
+{
+    m_mutex.lock();
+    m_cancel = true;
+    m_mutex.unlock();
 }

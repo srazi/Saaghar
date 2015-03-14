@@ -33,6 +33,7 @@
 #include "settings.h"
 #include "tools.h"
 #include "concurrenttasks.h"
+#include "saagharapplication.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -356,10 +357,8 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
 SaagharWindow::~SaagharWindow()
 {
-    delete dbBrowser;
     delete ui;
-
-    ConcurrentTask::finish();
+    delete dbBrowser;
 }
 
 void SaagharWindow::searchStart()
@@ -2733,12 +2732,16 @@ void SaagharWindow::actionGanjoorSiteClicked()
 
 void SaagharWindow::closeEvent(QCloseEvent* event)
 {
+    ConcurrentTask::finish();
+
     QFontDatabase::removeAllApplicationFonts();
     if (SaagharWidget::lineEditSearchText) {
         SaagharWidget::lineEditSearchText->searchStop();
     }
     saveSettings();
     event->accept();
+
+    sApp->quit();
 }
 
 #if QT_VERSION >= 0x050000

@@ -79,11 +79,9 @@ void SearchPatternManager::init()
                 continue;
             }
             //str = str.replace(OP(WholeWord), " ");//moved to the first
-            qDebug() << "str=" << str;
             //str = wildcardCharacter+str+wildcardCharacter;
             str = Tools::cleanString(subAndList.at(j));
             computedPhraseList.insertMulti(i, str);
-            qDebug() << "str2=" << computedPhraseList.value(i);
         }
     }
 
@@ -120,9 +118,7 @@ QVector<QStringList> SearchPatternManager::outputPhrases(/*int i*/)
     QVector<QStringList> vector(lsize, QStringList());
     for (int i = 0; i < lsize; ++i) {
         QStringList ithSubPhrase = computedPhraseList.values(keys.at(i));
-        //QStringList ithSubExclude = relatedExcludeList.values(keys.at(i));
-        qDebug() << keys.at(i) << "-thSubPhrase=" << ithSubPhrase.join("|");
-        //qDebug() << keys.at(i)<< "-thSubExclude=" << ithSubExclude.join("|");
+        ithSubPhrase.join("|");
         vector.replace(i, ithSubPhrase);
     }
     return vector;
@@ -141,10 +137,8 @@ QVector<QStringList> SearchPatternManager::outputExcludedLlist()
     int lsize = keys.size();
     QVector<QStringList> vector(lsize, QStringList());
     for (int i = 0; i < lsize; ++i) {
-        //QStringList ithSubPhrase = computedPhraseList.values(keys.at(i));
         QStringList ithSubExclude = relatedExcludeList.values(keys.at(i));
-        //qDebug() << keys.at(i)<< "-thSubPhrase=" << ithSubPhrase.join("|");
-        qDebug() << keys.at(i) << "-thSubExclude=" << ithSubExclude.join("|");
+        ithSubExclude.join("|");
         vector.replace(i, ithSubExclude);
     }
     return vector;
