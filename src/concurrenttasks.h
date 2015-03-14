@@ -24,6 +24,7 @@
 
 #include <QMutex>
 #include <QRunnable>
+#include <QtConcurrentRun>
 #include <QVariant>
 #include <QWeakPointer>
 
@@ -57,6 +58,8 @@ private:
     QString m_type;
     QVariantHash m_options;
     bool m_cancel;
+
+    QFutureInterface<void> *m_progressObject;
 
     static QThreadPool* concurrentTasksPool();
     static QThreadPool* s_concurrentTasksPool;

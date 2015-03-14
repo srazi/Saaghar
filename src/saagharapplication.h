@@ -24,6 +24,9 @@
 
 #define sApp SaagharApplication::instance()
 
+#include "progressmanager_p.h"
+#include "progressmanager.h"
+
 #include <QApplication>
 
 class SaagharWindow;
@@ -36,10 +39,14 @@ public:
 
     static SaagharApplication* instance();
 
+    Core::ProgressManager* progressManager();
+
 private:
     void init();
 
     SaagharWindow* m_mainWindow;
+
+    Core::Internal::ProgressManagerPrivate* m_progressManager;
 };
 
 #endif // SAAGHARAPPLICATION_H

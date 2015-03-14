@@ -22,6 +22,8 @@
 #include "concurrenttasks.h"
 #include "databasebrowser.h"
 #include "tools.h"
+#include "progressmanager.h"
+#include "saagharapplication.h"
 
 #include <QMetaType>
 #include <QThread>
@@ -39,7 +41,8 @@ QList<QWeakPointer<ConcurrentTask> > ConcurrentTask::s_tasks;
 ConcurrentTask::ConcurrentTask(QObject *parent)
     : QObject(parent),
       QRunnable(),
-      m_cancel(false)
+      m_cancel(false),
+      m_progressObject(0)
 {
     // deleted by parent/child system of Qt
     setAutoDelete(false);
@@ -54,6 +57,12 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
 {
     m_type = type;
     m_options = argumants;
+
+    m_progressObject = new QFutureInterface<void>;
+
+    sApp->progressManager()->addTimedTask(*m_progressObject, QString::number(VAR_GET(m_options, PoetID).toInt()),
+                                          Core::Id::fromString(m_type), 5,
+                                          Core::ProgressManager::ShowInApplicationIcon);
 
     s_tasks.append(this);
     concurrentTasksPool()->start(this);
@@ -85,7 +94,13 @@ void ConcurrentTask::run()
     prio = prio == QThread::InheritPriority ? QThread::NormalPriority : prio;
     QThread::currentThread()->setPriority(QThread::LowPriority);
 
+    m_progressObject->reportStarted();
+
     QVariant result = startSearch(m_options);
+
+    m_progressObject->reportFinished();
+    delete m_progressObject;
+    m_progressObject = 0;
 
     QThread::currentThread()->setPriority(prio);
 

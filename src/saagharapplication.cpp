@@ -34,7 +34,9 @@ Q_IMPORT_PLUGIN(qsqlite)
 #endif
 
 SaagharApplication::SaagharApplication(int &argc, char **argv)
-    : QApplication(argc, argv, true)
+    : QApplication(argc, argv, true),
+      m_mainWindow(0),
+      m_progressManager (0)
 {
     init();
 }
@@ -42,11 +44,23 @@ SaagharApplication::SaagharApplication(int &argc, char **argv)
 SaagharApplication::~SaagharApplication()
 {
     delete m_mainWindow;
+    delete m_progressManager;
 }
 
 SaagharApplication *SaagharApplication::instance()
 {
     return static_cast<SaagharApplication*>(QCoreApplication::instance());
+}
+
+Core::ProgressManager* SaagharApplication::progressManager()
+{
+    if (!m_progressManager) {
+        m_progressManager = new Core::Internal::ProgressManagerPrivate;
+
+        m_progressManager->init();
+    }
+
+    return m_progressManager;
 }
 
 void SaagharApplication::init()
