@@ -511,13 +511,18 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
 
     // create FutureProgress and manage task list
     removeOldTasks(type);
-    if (m_taskList.size() == 10)
-        removeOneOldTask();
+
     FutureProgress *progress = new FutureProgress;
     progress->setTitle(title);
     progress->setFuture(future);
 
-    m_progressView->addProgressWidget(progress);
+    if (m_progressView->layout()->count() >= 10) {
+        m_queuedTaskList.append(progress);
+    }
+    else {
+        m_progressView->addProgressWidget(progress);
+    }
+
     m_taskList.append(progress);
     progress->setType(type);
     if (flags.testFlag(ProgressManager::KeepOnFinish))
@@ -639,6 +644,14 @@ void ProgressManagerPrivate::slotRemoveTask()
     const QString &type = progress->type();
     removeTask(progress);
     removeOldTasks(type, true);
+
+    while (!m_queuedTaskList.isEmpty() && m_progressView->layout()->count() < 10) {
+        progress = m_queuedTaskList.takeFirst();
+
+        if (progress) {
+            m_progressView->addProgressWidget(progress);
+        }
+    }
 }
 
 void ProgressManagerPrivate::removeOldTasks(const QString &type, bool keepOne)
