@@ -38,6 +38,7 @@
 
 QThreadPool* ConcurrentTask::s_concurrentTasksPool = 0;
 QList<QWeakPointer<ConcurrentTask> > ConcurrentTask::s_tasks;
+bool ConcurrentTask::s_cancel = false;
 
 ConcurrentTask::ConcurrentTask(QObject *parent)
     : QObject(parent),
@@ -56,6 +57,10 @@ ConcurrentTask::~ConcurrentTask()
 
 void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
 {
+    if (s_cancel) {
+        return;
+    }
+
     m_type = type;
     m_options = argumants;
 
@@ -117,6 +122,8 @@ void ConcurrentTask::run()
 
 void ConcurrentTask::finish()
 {
+    s_cancel = true;
+
     foreach (QWeakPointer<ConcurrentTask> wp, s_tasks) {
         if (wp && wp.data()) {
             wp.data()->setCanceled();

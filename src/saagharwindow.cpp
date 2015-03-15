@@ -2732,8 +2732,6 @@ void SaagharWindow::actionGanjoorSiteClicked()
 
 void SaagharWindow::closeEvent(QCloseEvent* event)
 {
-    ConcurrentTask::finish();
-
     QFontDatabase::removeAllApplicationFonts();
     if (SaagharWidget::lineEditSearchText) {
         SaagharWidget::lineEditSearchText->searchStop();
@@ -2741,6 +2739,7 @@ void SaagharWindow::closeEvent(QCloseEvent* event)
     saveSettings();
     event->accept();
 
+    ConcurrentTask::finish();
     sApp->quit();
 }
 

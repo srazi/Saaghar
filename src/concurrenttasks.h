@@ -67,6 +67,7 @@ private:
     static QThreadPool* s_concurrentTasksPool;
 
     static QList<QWeakPointer<ConcurrentTask> > s_tasks;
+    static bool s_cancel;
 
 signals:
     void concurrentResultReady(const QString &type, const QVariant &results);
