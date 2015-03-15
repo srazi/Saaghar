@@ -50,9 +50,11 @@ public:
 
     QVariant startSearch(const QVariantHash &options);
 
+private slots:
+    void setCanceled();
+
 private:
     bool isCanceled();
-    void setCanceled();
 
     QMutex m_mutex;
     QString m_type;

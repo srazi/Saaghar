@@ -24,6 +24,7 @@
 #include "tools.h"
 #include "progressmanager.h"
 #include "saagharapplication.h"
+#include "futureprogress.h"
 
 #include <QMetaType>
 #include <QThread>
@@ -60,9 +61,11 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
 
     m_progressObject = new QFutureInterface<void>;
 
-    sApp->progressManager()->addTimedTask(*m_progressObject, QString::number(VAR_GET(m_options, PoetID).toInt()),
+    FutureProgress* fp = sApp->progressManager()->addTimedTask(*m_progressObject, QString::number(VAR_GET(m_options, PoetID).toInt()),
                                           m_type, 5,
                                           ProgressManager::ShowInApplicationIcon);
+
+    connect(fp, SIGNAL(canceled()), this, SLOT(setCanceled()));
 
     s_tasks.append(this);
     concurrentTasksPool()->start(this);
