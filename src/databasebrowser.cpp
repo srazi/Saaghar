@@ -1132,15 +1132,25 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID,
 
     searchQueryPhrase = anyWordedList.join("%");
 
+    QString taskTitle;
+
     if (PoetID == 0) {
+        taskTitle = tr("All");
         strQuery = QString("SELECT poem_id, text, vorder FROM verse WHERE text LIKE \'%" + searchQueryPhrase + "%\' ORDER BY poem_id");
     }
     else if (PoetID == -1000) { //reserved for titles!!!
+        taskTitle = tr("Titles");
         strQuery = QString("SELECT id, title FROM poem WHERE title LIKE \'%" + searchQueryPhrase + "%\' ORDER BY id");
     }
     else {
         strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + searchQueryPhrase + "%\' AND poet_id=" + QString::number(PoetID) + " ORDER BY poem_id");
     }
+
+    if (taskTitle.isEmpty()) {
+        taskTitle = getPoet(PoetID)._Name;
+    }
+
+    taskTitle.prepend(tr("Search in: "));
 
     QVariantHash arguments;
     VAR_ADD(arguments, strQuery);
@@ -1150,6 +1160,7 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID,
     VAR_ADD(arguments, excludeWhenCleaning);
     VAR_ADD(arguments, Canceled);
     VAR_ADD(arguments, slowSearch);
+    VAR_ADD(arguments, taskTitle);
 
     searchTask->start("SEARCH", arguments);
 

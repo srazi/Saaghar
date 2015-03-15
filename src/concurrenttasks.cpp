@@ -61,7 +61,7 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
 
     m_progressObject = new QFutureInterface<void>;
 
-    FutureProgress* fp = sApp->progressManager()->addTimedTask(*m_progressObject, QString::number(VAR_GET(m_options, PoetID).toInt()),
+    FutureProgress* fp = sApp->progressManager()->addTimedTask(*m_progressObject, VAR_GET(m_options, taskTitle).toString(),
                                           m_type, 5,
                                           ProgressManager::ShowInApplicationIcon);
 
