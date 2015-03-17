@@ -62,6 +62,7 @@ ProgressView::ProgressView(QWidget *parent)
       m_referenceWidget(0),
       m_hovered(false),
       m_lastVisibleState(true),
+      m_forceHidden(false),
       m_repositioning(false)
 {
     m_progressWidget = new QWidget(this);
@@ -108,6 +109,21 @@ void ProgressView::setPosition(const ProgressManager::Position &position)
     }
 }
 
+int ProgressView::progressCount() const
+{
+    return m_layout->count();
+}
+
+void ProgressView::addSummeryProgressWidget(QWidget *widget)
+{
+    m_topLayout->insertWidget(1, widget);
+}
+
+void ProgressView::removeSummeryProgressWidget(QWidget *widget)
+{
+    m_topLayout->removeWidget(widget);
+}
+
 bool ProgressView::isHovered() const
 {
     return m_hovered;
@@ -124,14 +140,25 @@ void ProgressView::setReferenceWidget(QWidget *widget)
     doReposition();
 }
 
+void ProgressView::setVisible(bool visible)
+{
+    if (m_forceHidden) {
+        QWidget::setVisible(false);
+        return;
+    }
+
+    QWidget::setVisible(visible);
+}
+
 bool ProgressView::event(QEvent *event)
 {
-    if (event->type() == QEvent::ParentAboutToChange && parentWidget()) {
-        parentWidget()->removeEventFilter(this);
-    } else if (event->type() == QEvent::ParentChange && parentWidget()) {
-        parentWidget()->installEventFilter(this);
-    } else if (event->type() == QEvent::Resize) {
-        reposition();
+//    if (event->type() == QEvent::ParentAboutToChange && parentWidget()) {
+//        parentWidget()->removeEventFilter(this);
+//    } else if (event->type() == QEvent::ParentChange && parentWidget()) {
+//        parentWidget()->installEventFilter(this);
+//    } else
+    if (event->type() == QEvent::Resize) {
+        doReposition();
     } else if (event->type() == QEvent::Enter) {
         m_hovered = true;
         emit hoveredChanged(m_hovered);
@@ -144,19 +171,101 @@ bool ProgressView::event(QEvent *event)
 
 bool ProgressView::eventFilter(QObject *obj, QEvent *event)
 {
-    if ((obj == parentWidget() || obj == m_referenceWidget) && event->type() == QEvent::Resize)
-        reposition();
+    if (m_position == ProgressManager::AppBottomLeft || m_position == ProgressManager::AppBottomRight) {
+        if (obj == m_referenceWidget && m_referenceWidget) {
+            if (event->type() == QEvent::Resize || event->type() == QEvent::Move) {
+                doReposition();
+            }
+            else if (event->type() == QEvent::WindowStateChange) {
+                if (!m_referenceWidget->isVisible() || m_referenceWidget->isMinimized()) {
+                    //QTimer::singleShot(100, this, SLOT(hide()));
+                    m_forceHidden = true;
+                    QTimer::singleShot(100, this, SLOT(hide()));
+                }
+                else {
+                    m_forceHidden = false;
+                    QTimer::singleShot(100, this, SLOT(show()));
+                }
+            }
+        }
+    }
     return false;
+}
+
+void ProgressView::toggleAllProgressView()
+{
+    setProgressWidgetVisible(!m_progressWidget->isVisible());
 }
 
 void ProgressView::reposition()
 {
     m_repositioning = false;
-    if (!parentWidget() || !m_referenceWidget)
+
+    if (m_referenceWidget && m_referenceWidget->isMinimized()) {
         return;
-    QPoint topRightReferenceInParent =
-            m_referenceWidget->mapTo(parentWidget(), m_referenceWidget->rect().topRight());
-    move(topRightReferenceInParent - rect().bottomRight());
+    }
+
+    static int frameWidth = -1;
+    static int titleBarHeight;
+
+    if (frameWidth == -1 && m_referenceWidget) {
+        frameWidth = qMax(0, (m_referenceWidget->frameGeometry().width() - m_referenceWidget->width()) / 2);
+        titleBarHeight = qMax(0, m_referenceWidget->frameGeometry().height() - m_referenceWidget->height() - frameWidth);
+    }
+
+    const QRect screenRect = qApp->desktop()->availableGeometry(this);
+    QRect geoRect = this->rect();
+    // for now we always assume parent is 0
+    switch (m_position) {
+    case ProgressManager::AppBottomLeft: {
+        if (!m_referenceWidget)
+            return;
+        int width = geoRect.width();
+        int height = geoRect.height();
+        geoRect.setRect(m_referenceWidget->x() + frameWidth,
+                        m_referenceWidget->y() + m_referenceWidget->frameGeometry().height() - height - frameWidth,
+                        width, height);
+        if (height > m_referenceWidget->height()) {
+            m_progressWidget->hide();
+        }
+        else if (m_lastVisibleState && height < m_progressWidget->height() + m_referenceWidget->height() - 10) {
+            m_progressWidget->show();
+        }
+    }
+        break;
+    case ProgressManager::AppBottomRight: {
+        if (!m_referenceWidget)
+            return;
+        int width = geoRect.width();
+        int height = geoRect.height();
+        geoRect.setRect(m_referenceWidget->x() + m_referenceWidget->frameGeometry().width() - width - frameWidth,
+                        m_referenceWidget->y() + m_referenceWidget->frameGeometry().height() - height - frameWidth,
+                        width, height);
+        if (height > m_referenceWidget->height()) {
+            m_progressWidget->hide();
+        }
+        else if (m_lastVisibleState && height < m_progressWidget->height() + m_referenceWidget->height() - 10) {
+            m_progressWidget->show();
+        }
+    }
+        break;
+    case ProgressManager::DesktopBottomRight:
+        geoRect.setRect(screenRect.x() + screenRect.width() - geoRect.width(),
+                        screenRect.height() - geoRect.height(),
+                        qMin(geoRect.width(), m_referenceWidget->width()),
+                        geoRect.height());
+        break;
+    case ProgressManager::DesktopTopRight:
+        geoRect.setRect(screenRect.x() + screenRect.width() - geoRect.width(),
+                        screenRect.y(),
+                        geoRect.width(),
+                        geoRect.height());
+        break;
+    default:
+        return;
+    }
+
+    setGeometry(geoRect);
 }
 
 void ProgressView::doReposition()

@@ -74,15 +74,25 @@ public:
 
     void setProgressWidgetVisible(bool visible);
     void setPosition(const ProgressManager::Position &position);
+
+    int progressCount() const;
+
+    void addSummeryProgressWidget(QWidget *widget);
+    void removeSummeryProgressWidget(QWidget *widget);
+
     bool isHovered() const;
 
     void setReferenceWidget(QWidget *widget);
+
+public slots:
+    void setVisible(bool visible);
 
 protected:
     bool event(QEvent *event);
     bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
+    void toggleAllProgressView();
     void reposition();
 
 signals:
@@ -97,6 +107,7 @@ private:
     QWidget* m_progressWidget;
     bool m_hovered;
     bool m_lastVisibleState;
+    bool m_forceHidden;
     bool m_repositioning;
 
     ProgressManager::Position m_position;

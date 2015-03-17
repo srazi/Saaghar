@@ -401,21 +401,30 @@ void ProgressManagerPrivate::init()
     m_summaryProgressLayout->setContentsMargins(0, 0, 0, 0);
     m_summaryProgressLayout->setSpacing(0);
     m_summaryProgressWidget->setLayout(m_summaryProgressLayout);
+
     m_summaryProgressBar = new ProgressBar(m_summaryProgressWidget);
     m_summaryProgressBar->setMinimumWidth(70);
-    m_summaryProgressBar->setTitleVisible(false);
-    m_summaryProgressBar->setSeparatorVisible(false);
-    m_summaryProgressBar->setCancelEnabled(false);
+    m_summaryProgressBar->setTitleVisible(true);
+    m_summaryProgressBar->setSeparatorVisible(true);
+    m_summaryProgressBar->setCancelEnabled(true);
+    connect(m_summaryProgressBar, SIGNAL(clicked()), this, SLOT(cancelAllRunningTasks()));
+    connect(m_summaryProgressBar, SIGNAL(barClicked()), m_progressView, SLOT(toggleAllProgressView()));
+    m_summaryProgressBar->setTitle(tr("All Tasks:"));
+
     m_summaryProgressLayout->addWidget(m_summaryProgressBar);
     layout->addWidget(m_summaryProgressWidget);
     ToggleButton *toggleButton = new ToggleButton(m_statusBarWidget);
     layout->addWidget(toggleButton);
 
     m_statusBarWidget->installEventFilter(this);
+    //m_summaryProgressWidget->installEventFilter(this);
+
+    toggleButton->hide();
+    m_progressView->addSummeryProgressWidget(m_statusBarWidget);
 
     m_progressView->setVisible(m_progressViewPinned);
-//    m_statusBarWidget->show();
-//    m_summaryProgressWidget->show();
+    m_statusBarWidget->show();
+    m_summaryProgressWidget->show();
 
     initInternal();
 }
@@ -445,25 +454,31 @@ void ProgressManagerPrivate::doCancelTasks(const QString &type)
 
 bool ProgressManagerPrivate::eventFilter(QObject *obj, QEvent *event)
 {
-    if (obj == m_statusBarWidget && event->type() == QEvent::Enter) {
-        m_hovered = true;
-        updateVisibility();
-    } else if (obj == m_statusBarWidget && event->type() == QEvent::Leave) {
-        m_hovered = false;
-        // give the progress view the chance to get the mouse enter event
-        updateVisibilityWithDelay();
-    } else if (obj == m_statusBarWidget && event->type() == QEvent::MouseButtonPress
-               && !m_taskList.isEmpty()) {
-        QMouseEvent *me = static_cast<QMouseEvent *>(event);
-        if (me->button() == Qt::LeftButton && !me->modifiers()) {
-            FutureProgress *progress = m_currentStatusDetailsProgress;
-            if (!progress)
-                progress = m_taskList.last();
-            // don't send signal directly from an event filter, event filters should
-            // do as little a possible
-            QTimer::singleShot(0, progress, SIGNAL(clicked()));
-            event->accept();
-            return true;
+    if (obj == m_statusBarWidget) {
+        if (event->type() == QEvent::Enter) {
+            m_hovered = true;
+            updateVisibility();
+        } else if (event->type() == QEvent::Leave) {
+            m_hovered = false;
+            // give the progress view the chance to get the mouse enter event
+            updateVisibilityWithDelay();
+        } else if (event->type() == QEvent::MouseButtonPress && !m_taskList.isEmpty()) {
+            QMouseEvent *me = static_cast<QMouseEvent *>(event);
+            if (me->button() == Qt::LeftButton && !me->modifiers()) {
+                FutureProgress *progress = m_currentStatusDetailsProgress;
+                if (!progress)
+                    progress = m_taskList.last();
+                // don't send signal directly from an event filter, event filters should
+                // do as little a possible
+                QTimer::singleShot(0, progress, SIGNAL(clicked()));
+                event->accept();
+                return true;
+            }
+        } else if (event->type() == QEvent::Paint) {
+            QPainter p(m_statusBarWidget);
+            const QRect fillRect = m_statusBarWidget->rect();
+
+            p.fillRect(fillRect, FutureProgress::statusBarGradient(fillRect));
         }
     }
     return false;
@@ -516,10 +531,10 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
     progress->setTitle(title);
     progress->setFuture(future);
 
-    if (m_progressView->layout()->count() >= 10) {
+    if (m_progressView->progressCount() >= 10 && !progress->isFinshed()) {
         m_queuedTaskList.append(progress);
     }
-    else {
+    else if (!progress->isFinshed()) {
         m_progressView->addProgressWidget(progress);
     }
 
@@ -645,10 +660,10 @@ void ProgressManagerPrivate::slotRemoveTask()
     removeTask(progress);
     removeOldTasks(type, true);
 
-    while (!m_queuedTaskList.isEmpty() && m_progressView->layout()->count() < 10) {
+    while (!m_queuedTaskList.isEmpty() && m_progressView->progressCount() < 10) {
         progress = m_queuedTaskList.takeFirst();
 
-        if (progress) {
+        if (progress && !progress->isFinshed()) {
             m_progressView->addProgressWidget(progress);
         }
     }
@@ -709,8 +724,13 @@ void ProgressManagerPrivate::removeOneOldTask()
 
 void ProgressManagerPrivate::removeTask(FutureProgress *task)
 {
-    m_taskList.removeAll(task);
-    deleteTask(task);
+    if (m_taskList.removeAll(task) > 1) {
+        deleteTask(task);
+    }
+    else {
+        m_queuedTaskList.removeAll(task);
+    }
+
     updateSummaryProgressBar();
     updateStatusDetailsWidget();
 }
@@ -724,9 +744,9 @@ void ProgressManagerPrivate::deleteTask(FutureProgress *progress)
 
 void ProgressManagerPrivate::updateVisibility()
 {
-    m_progressView->setVisible(m_progressViewPinned || m_hovered || m_progressView->isHovered());
+    //m_progressView->setVisible(m_progressViewPinned || m_hovered || m_progressView->isHovered());
     m_summaryProgressWidget->setVisible((!m_runningTasks.isEmpty() || !m_taskList.isEmpty())
-                                     && !m_progressViewPinned);
+                                     && m_progressViewPinned);
 }
 
 void ProgressManagerPrivate::updateVisibilityWithDelay()
