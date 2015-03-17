@@ -97,11 +97,12 @@ public:
         return QVariant(Settings::VariablesHash);
     }
 
+    void applySettings();
+
     static QString currentIconThemePath();
 
 public slots:
     void accept();
-    void applySettings();
 
 private slots:
     void setUnCheckedOtherFontColorGroupBox(bool unChecked);
@@ -117,6 +118,7 @@ private slots:
 
 private:
     void replaceWithNeighbor(int neighbor);
+    void setupTaskManagerUi();
 
     static QHash<QString, QVariant> VariablesHash;
     static QString s_currentIconPath;
@@ -152,8 +154,7 @@ class FontColorSelector : public QWidget
 
 public:
     FontColorSelector(const QFont &defaultFont = QFont(), const QColor &defaultColor = QColor(), QWidget* parent = 0, const QString &sampleText = "");
-    inline QFont sampleFont()
-    {return sampleLabel->font();}
+    inline QFont sampleFont() {return sampleLabel->font();}
     QColor color();
     void setColorSelector(bool colorSelector);
 

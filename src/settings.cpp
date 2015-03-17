@@ -21,6 +21,7 @@
 
 #include "settings.h"
 #include "saagharwindow.h"
+#include "progressmanager.h"
 
 #include <QColorDialog>
 #include <QFileDialog>
@@ -97,7 +98,6 @@ Settings::Settings(SaagharWindow* parent)
     ui->gridLayout_9->addWidget(proseTextFontColor, 4, 1, 1, 1);
 
     connect(ui->pushButtonApply, SIGNAL(clicked()), parent, SLOT(applySettings()));
-    connect(ui->pushButtonApply, SIGNAL(clicked()), this, SLOT(applySettings()));
 
     ui->checkBoxIconTheme->setChecked(Settings::READ("Icon Theme State", false).toBool());
     ui->lineEditIconTheme->setEnabled(Settings::READ("Icon Theme State", false).toBool());
@@ -106,8 +106,6 @@ Settings::Settings(SaagharWindow* parent)
                                    "/themes/iconsets/light-gray/").toString());
     connect(ui->pushButtonIconTheme, SIGNAL(clicked()), this, SLOT(browseForIconTheme()));
 
-
-
     // force emitting toggle signal
     ui->globalFontColorGroupBox->setChecked(!Settings::READ("Global Font", false).toBool());
     ui->globalFontColorGroupBox->setChecked(Settings::READ("Global Font", false).toBool());
@@ -115,6 +113,8 @@ Settings::Settings(SaagharWindow* parent)
     connect(ui->checkBoxBackground, SIGNAL(toggled(bool)), backgroundFontColor, SLOT(disableAll(bool)));
     backgroundFontColor->disableAll(ui->checkBoxBackground->isChecked());
     ui->labelBackgroundColor->setDisabled(ui->checkBoxBackground->isChecked());
+
+    setupTaskManagerUi();
 }
 
 Settings::~Settings()
@@ -196,6 +196,25 @@ void Settings::replaceWithNeighbor(int neighbor)
         ui->tableWidgetToolBarActions->selectRow(row + neighbor);
         ui->tableWidgetToolBarActions->update();
     }
+}
+
+void Settings::setupTaskManagerUi()
+{
+    ui->comboBoxMode->clear();
+    ui->comboBoxMode->insertItem(0, tr("Slow"), "SLOW");
+    ui->comboBoxMode->insertItem(1, tr("Normal (Recommended)"), "NORMAL");
+    ui->comboBoxMode->insertItem(2, tr("Fast"), "FAST");
+
+    ui->comboBoxNotification->clear();
+    ui->comboBoxNotification->insertItem(0, tr("Disabled"), ProgressManager::Disabled);
+    ui->comboBoxNotification->insertItem(1, tr("Saaghar Bottom Right"), ProgressManager::AppBottomRight);
+    ui->comboBoxNotification->insertItem(2, tr("Saaghar Bottom Left"), ProgressManager::AppBottomLeft);
+    ui->comboBoxNotification->insertItem(3, tr("Desktop Bottom Right"), ProgressManager::DesktopBottomRight);
+    ui->comboBoxNotification->insertItem(4, tr("Desktop Top Right"), ProgressManager::DesktopTopRight);
+
+    ui->groupBoxTaskManager->setChecked(Settings::READ("TaskManager", false).toBool());
+    ui->comboBoxMode->setCurrentIndex(ui->comboBoxMode->findData(Settings::READ("TaskManager/Mode", "NORMAL")));
+    ui->comboBoxNotification->setCurrentIndex(ui->comboBoxNotification->findData(Settings::READ("TaskManager/Notification", "APP_BOTTOM_RIGHT")));
 }
 
 void Settings::initializeActionTables(const QMap<QString, QAction*> &actionsMap, const QStringList &toolBarItems)
@@ -427,6 +446,14 @@ void Settings::applySettings()
     Settings::WRITE("Icon Theme State", ui->checkBoxIconTheme->isChecked());
     Settings::WRITE("Icon Theme Path", ui->lineEditIconTheme->text());
     s_currentIconPath.clear();
+
+    bool storeTaskManagerSettings = ui->groupBoxTaskManager->isChecked();
+    Settings::WRITE("TaskManager", storeTaskManagerSettings);
+
+    if (storeTaskManagerSettings) {
+        Settings::WRITE("TaskManager/Mode", ui->comboBoxMode->itemData(ui->comboBoxMode->currentIndex()));
+        Settings::WRITE("TaskManager/Notification", ui->comboBoxNotification->itemData(ui->comboBoxNotification->currentIndex()));
+    }
 }
 
 

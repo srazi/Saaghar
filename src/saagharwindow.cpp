@@ -2369,6 +2369,9 @@ void SaagharWindow::applySettings()
         QMessageBox::information(this, tr("Need to Relaunch!"), tr("Some of changes are applied after relaunch!"));
         m_compareSettings = optionsCompare;
     }
+
+    m_settingsDialog->applySettings();
+    sApp->applySettings();
 }
 
 /*static*/
