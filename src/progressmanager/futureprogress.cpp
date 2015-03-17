@@ -87,7 +87,7 @@ static QColor shadowColor()
     return result;
 }
 
-static QLinearGradient statusBarGradient(const QRect &statusBarRect)
+QLinearGradient FutureProgress::statusBarGradient(const QRect &statusBarRect)
 {
     QLinearGradient grad(statusBarRect.topLeft(), QPoint(statusBarRect.center().x(), statusBarRect.bottom()));
     QColor startColor = shadowColor().darker(164);
@@ -342,8 +342,9 @@ void FutureProgress::mousePressEvent(QMouseEvent *event)
 void FutureProgress::paintEvent(QPaintEvent *)
 {
     QPainter p(this);
+    const QRect fillRect = rect();
 
-    p.fillRect(rect(), statusBarGradient(rect()));
+    p.fillRect(fillRect, FutureProgress::statusBarGradient(fillRect));
 }
 
 /*!
@@ -407,6 +408,11 @@ bool FutureProgress::isFading() const
 QSize FutureProgress::sizeHint() const
 {
     return QSize(QWidget::sizeHint().width(), minimumHeight());
+}
+
+bool FutureProgress::isFinshed() const
+{
+    return d->m_progress->finished();
 }
 
 void FutureProgressPrivate::fadeAway()

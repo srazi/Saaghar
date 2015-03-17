@@ -100,6 +100,10 @@ public:
 
     QSize sizeHint() const;
 
+    bool isFinshed() const;
+
+    static QLinearGradient statusBarGradient(const QRect &statusBarRect);
+
 signals:
     void clicked();
     void finished();
