@@ -209,5 +209,7 @@ void QSearchLineEdit::searchStop()
 
 void QSearchLineEdit::setSearchProgressText(const QString &str)
 {
-    QToolTip::showText(this->mapToGlobal(QPoint(0, this->height())), str /*tr("Searching Data Base...")*/ /*"<p></p><b>Busy</b><p></p>"*/ /*, sPbar*/);
+    if (isVisible() && (!window() || !window()->isMinimized())) {
+        QToolTip::showText(this->mapToGlobal(QPoint(0, this->height())), str /*tr("Searching Data Base...")*/ /*"<p></p><b>Busy</b><p></p>"*/ /*, sPbar*/);
+    }
 }
