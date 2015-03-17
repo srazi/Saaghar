@@ -92,6 +92,7 @@ public:
 
 signals:
     void clicked();
+    void barClicked();
 
 protected:
     void mousePressEvent(QMouseEvent *event);

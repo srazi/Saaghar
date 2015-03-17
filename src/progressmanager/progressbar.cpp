@@ -258,12 +258,14 @@ namespace { const int INDENT = 6; }
 
 void ProgressBar::mousePressEvent(QMouseEvent *event)
 {
-    if (m_cancelEnabled) {
-        if (event->modifiers() == Qt::NoModifier
-            && m_cancelRect.contains(event->pos())) {
+    if (event->modifiers() == Qt::NoModifier) {
+        if (m_cancelEnabled && m_cancelRect.contains(event->pos())) {
             event->accept();
             emit clicked();
             return;
+        }
+        else {
+            emit barClicked();
         }
     }
     QWidget::mousePressEvent(event);
