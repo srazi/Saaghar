@@ -36,7 +36,6 @@
 
 #define TASK_CANCELED if (isCanceled()) return QVariant();
 
-QThreadPool* ConcurrentTask::s_concurrentTasksPool = 0;
 QList<QWeakPointer<ConcurrentTask> > ConcurrentTask::s_tasks;
 bool ConcurrentTask::s_cancel = false;
 
@@ -44,7 +43,8 @@ ConcurrentTask::ConcurrentTask(QObject *parent)
     : QObject(parent),
       QRunnable(),
       m_cancel(false),
-      m_progressObject(0)
+      m_progressObject(0),
+      m_displayFullNotification(sApp->displayFullNotification() && sApp->notificationPosition() != ProgressManager::Disabled)
 {
     // deleted by parent/child system of Qt
     setAutoDelete(false);
@@ -64,16 +64,19 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
     m_type = type;
     m_options = argumants;
 
-    m_progressObject = new QFutureInterface<void>;
+    if (sApp->notificationPosition() != ProgressManager::Disabled) {
+        m_progressObject = new QFutureInterface<void>;
 
-    FutureProgress* fp = sApp->progressManager()->addTimedTask(*m_progressObject, VAR_GET(m_options, taskTitle).toString(),
-                                          m_type, 5,
-                                          ProgressManager::ShowInApplicationIcon);
+        FutureProgress* fp = sApp->progressManager()->addTimedTask(*m_progressObject,
+                                                                   VAR_GET(m_options, taskTitle).toString(),
+                                                                   m_type, 5,
+                                                                   ProgressManager::ShowInApplicationIcon);
 
-    connect(fp, SIGNAL(canceled()), this, SLOT(setCanceled()));
+        connect(fp, SIGNAL(canceled()), this, SLOT(setCanceled()));
+    }
 
     s_tasks.append(this);
-    concurrentTasksPool()->start(this);
+    sApp->tasksThreadPool()->start(this);
 }
 
 #ifdef SAAGHAR_DEBUG
@@ -100,15 +103,19 @@ void ConcurrentTask::run()
 
     QThread::Priority prio = QThread::currentThread()->priority();
     prio = prio == QThread::InheritPriority ? QThread::NormalPriority : prio;
-    QThread::currentThread()->setPriority(QThread::LowPriority);
+    sApp->setPriority(QThread::currentThread());
 
-    m_progressObject->reportStarted();
+    if (m_progressObject) {
+        m_progressObject->reportStarted();
+    }
 
     QVariant result = startSearch(m_options);
 
-    m_progressObject->reportFinished();
-    delete m_progressObject;
-    m_progressObject = 0;
+    if (m_progressObject) {
+        m_progressObject->reportFinished();
+        delete m_progressObject;
+        m_progressObject = 0;
+    }
 
     QThread::currentThread()->setPriority(prio);
 
@@ -130,23 +137,7 @@ void ConcurrentTask::finish()
         }
     }
 
-    if (s_concurrentTasksPool) {
-        s_concurrentTasksPool->waitForDone();
-
-        delete s_concurrentTasksPool;
-        s_concurrentTasksPool = 0;
-    }
-}
-
-QThreadPool *ConcurrentTask::concurrentTasksPool()
-{
-    if (!s_concurrentTasksPool) {
-        s_concurrentTasksPool = new QThreadPool(QThreadPool::globalInstance());
-
-        s_concurrentTasksPool->setMaxThreadCount(qBound(2, QThread::idealThreadCount() * 2, 12));
-    }
-
-    return s_concurrentTasksPool;
+    sApp->tasksThreadPool()->waitForDone();
 }
 
 QVariant ConcurrentTask::startSearch(const QVariantHash &options)
@@ -314,7 +305,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
         ++numOfFounded;
 
-        if (numOfFounded > nextStep) {
+        if (m_displayFullNotification && numOfFounded > nextStep) {
             nextStep += updateLenght;
             emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
         }
@@ -324,7 +315,9 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
     }
 
     //for the last result
-    emit searchStatusChanged(DatabaseBrowser::tr("Last-Search Result(s): %1").arg(numOfFounded));
+    if (m_displayFullNotification) {
+        emit searchStatusChanged(DatabaseBrowser::tr("Last-Search Result(s): %1").arg(numOfFounded));
+    }
 
     qDeleteAll(verses);
 

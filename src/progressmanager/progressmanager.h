@@ -68,6 +68,14 @@ public:
     };
     Q_DECLARE_FLAGS(ProgressFlags, ProgressFlag)
 
+    enum Position {
+        AppBottomRight,
+        AppBottomLeft,
+        DesktopBottomRight,
+        DesktopTopRight,
+        Disabled = -1
+    };
+
     static ProgressManager *instance();
 
     static FutureProgress *addTask(const QFuture<void> &future, const QString &title,

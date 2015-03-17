@@ -72,6 +72,8 @@ public:
     void addProgressWidget(QWidget *widget);
     void removeProgressWidget(QWidget *widget);
 
+    void setProgressWidgetVisible(bool visible);
+    void setPosition(const ProgressManager::Position &position);
     bool isHovered() const;
 
     void setReferenceWidget(QWidget *widget);
@@ -80,15 +82,24 @@ protected:
     bool event(QEvent *event);
     bool eventFilter(QObject *obj, QEvent *event);
 
+private slots:
+    void reposition();
+
 signals:
     void hoveredChanged(bool hovered);
 
 private:
-    void reposition();
+    void doReposition();
 
     QVBoxLayout *m_layout;
+    QVBoxLayout *m_topLayout;
     QWidget *m_referenceWidget;
+    QWidget* m_progressWidget;
     bool m_hovered;
+    bool m_lastVisibleState;
+    bool m_repositioning;
+
+    ProgressManager::Position m_position;
 };
 
 #endif // PROGRESSVIEW_H

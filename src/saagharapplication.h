@@ -24,11 +24,14 @@
 
 #define sApp SaagharApplication::instance()
 
+#include "progressmanager.h"
+
 #include <QApplication>
 
-class ProgressManager;
-class ProgressManagerPrivate;
 class SaagharWindow;
+
+class QThread;
+class QThreadPool;
 
 class SaagharApplication : public QApplication
 {
@@ -39,6 +42,14 @@ public:
     static SaagharApplication* instance();
 
     ProgressManager* progressManager();
+    QThreadPool* tasksThreadPool();
+
+    void applySettings();
+
+    int tasksThreads() { return m_tasksThreads; }
+    void setPriority(QThread* thread);
+    bool displayFullNotification() { return m_displayFullNotification; }
+    ProgressManager::Position notificationPosition() const { return m_notificationPosition; }
 
 private:
     void init();
@@ -46,6 +57,11 @@ private:
     SaagharWindow* m_mainWindow;
 
     ProgressManagerPrivate* m_progressManager;
+    QThreadPool* m_tasksThreadPool;
+
+    int m_tasksThreads;
+    bool m_displayFullNotification;
+    ProgressManager::Position m_notificationPosition;
 };
 
 #endif // SAAGHARAPPLICATION_H

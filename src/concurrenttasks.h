@@ -28,8 +28,6 @@
 #include <QVariant>
 #include <QWeakPointer>
 
-class QThreadPool;
-
 class ConcurrentTask : public QObject, QRunnable
 {
     Q_OBJECT
@@ -61,10 +59,9 @@ private:
     QVariantHash m_options;
     bool m_cancel;
 
-    QFutureInterface<void> *m_progressObject;
+    bool m_displayFullNotification;
 
-    static QThreadPool* concurrentTasksPool();
-    static QThreadPool* s_concurrentTasksPool;
+    QFutureInterface<void> *m_progressObject;
 
     static QList<QWeakPointer<ConcurrentTask> > s_tasks;
     static bool s_cancel;

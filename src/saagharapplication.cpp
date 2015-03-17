@@ -24,9 +24,13 @@
 #include "tools.h"
 #include "progressmanager_p.h"
 #include "progressmanager.h"
+#include "progressview.h"
+#include "settings.h"
 #include <QExtendedSplashScreen>
 
 //#include<QMessageBox>
+#include <QPointer>
+#include <QThreadPool>
 
 #ifdef Q_OS_WIN
 #ifdef STATIC
@@ -35,10 +39,19 @@ Q_IMPORT_PLUGIN(qsqlite)
 #endif
 #endif
 
+namespace {
+    QThread::Priority m_tasksPriority = QThread::LowPriority;
+    static const int NORMAL_TASKS_THREADS = qMax(2, QThread::idealThreadCount() * 2 - QThread::idealThreadCount() / 2);
+}
+
 SaagharApplication::SaagharApplication(int &argc, char **argv)
     : QApplication(argc, argv, true),
       m_mainWindow(0),
-      m_progressManager (0)
+      m_progressManager(0),
+      m_tasksThreadPool(0),
+      m_tasksThreads(NORMAL_TASKS_THREADS),
+      m_displayFullNotification(true),
+      m_notificationPosition(ProgressManager::DesktopTopRight)
 {
     init();
 }
@@ -60,9 +73,67 @@ ProgressManager* SaagharApplication::progressManager()
         m_progressManager = new ProgressManagerPrivate;
 
         m_progressManager->init();
+        m_progressManager->progressView()->setReferenceWidget(m_mainWindow);
+        m_progressManager->progressView()->setProgressWidgetVisible(m_displayFullNotification);
+        m_progressManager->progressView()->setPosition(m_notificationPosition);
     }
 
     return m_progressManager;
+}
+
+QThreadPool *SaagharApplication::tasksThreadPool()
+{
+    if (!m_tasksThreadPool) {
+        m_tasksThreadPool = new QThreadPool(this);
+
+        m_tasksThreadPool->setMaxThreadCount(m_tasksThreads);
+    }
+
+    return m_tasksThreadPool;
+}
+
+void SaagharApplication::applySettings()
+{
+    m_notificationPosition = ProgressManager::Position(Settings::READ("TaskManager/Notification", "APP_BOTTOM_RIGHT").toInt());
+    const QString mode = Settings::READ("TaskManager/Mode", "NORMAL").toString();
+
+    if (mode == "SLOW") {
+        m_tasksThreads = QThread::idealThreadCount() > 1 ? (QThread::idealThreadCount() - 1) : 1;
+        m_tasksPriority = QThread::LowPriority;
+        m_displayFullNotification = true;
+    }
+    else if (mode == "FAST") {
+        m_tasksThreads = 2 * QThread::idealThreadCount();
+        m_tasksPriority = QThread::NormalPriority;
+        m_displayFullNotification = false;
+    }
+    else { // fallback to "NORMAL"
+        m_tasksThreads = NORMAL_TASKS_THREADS;
+        m_tasksPriority = QThread::LowPriority;
+        m_displayFullNotification = true;
+    }
+
+    if (m_tasksThreadPool) {
+        m_tasksThreadPool->setMaxThreadCount(m_tasksThreads);
+    }
+
+    if (m_progressManager) {
+        if (sApp->notificationPosition() == ProgressManager::Disabled) {
+            delete m_progressManager;
+            m_progressManager = 0;
+        }
+        else {
+            m_progressManager->progressView()->setProgressWidgetVisible(m_displayFullNotification);
+            m_progressManager->progressView()->setPosition(m_notificationPosition);
+        }
+    }
+}
+
+void SaagharApplication::setPriority(QThread* thread)
+{
+    if (thread) {
+        thread->setPriority(m_tasksPriority);
+    }
 }
 
 void SaagharApplication::init()

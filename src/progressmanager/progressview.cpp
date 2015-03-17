@@ -51,18 +51,33 @@
 
 #include "progressview.h"
 
+#include <QApplication>
+#include <QDesktopWidget>
 #include <QEvent>
+#include <QTimer>
 #include <QVBoxLayout>
 
 ProgressView::ProgressView(QWidget *parent)
-    : QWidget(parent), m_referenceWidget(0), m_hovered(false)
+    : QWidget(parent),
+      m_referenceWidget(0),
+      m_hovered(false),
+      m_lastVisibleState(true),
+      m_repositioning(false)
 {
+    m_progressWidget = new QWidget(this);
     m_layout = new QVBoxLayout;
-    setLayout(m_layout);
+    m_progressWidget->setLayout(m_layout);
+    m_topLayout = new QVBoxLayout;
+    setLayout(m_topLayout);
+    m_topLayout->setContentsMargins(0, 0, 0, 0);
+    m_topLayout->setSpacing(0);
+    m_topLayout->setSizeConstraint(QLayout::SetFixedSize);
+    m_topLayout->addWidget(m_progressWidget);
     m_layout->setContentsMargins(0, 0, 0, 1);
     m_layout->setSpacing(0);
     m_layout->setSizeConstraint(QLayout::SetFixedSize);
     setWindowTitle(tr("Processes"));
+    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
 }
 
 ProgressView::~ProgressView()
@@ -79,6 +94,20 @@ void ProgressView::removeProgressWidget(QWidget *widget)
     m_layout->removeWidget(widget);
 }
 
+void ProgressView::setProgressWidgetVisible(bool visible)
+{
+    m_lastVisibleState = visible;
+    m_progressWidget->setVisible(visible);
+}
+
+void ProgressView::setPosition(const ProgressManager::Position &position)
+{
+    if (position != m_position) {
+        m_position = position;
+        doReposition();
+    }
+}
+
 bool ProgressView::isHovered() const
 {
     return m_hovered;
@@ -87,11 +116,12 @@ bool ProgressView::isHovered() const
 void ProgressView::setReferenceWidget(QWidget *widget)
 {
     if (m_referenceWidget)
-        removeEventFilter(this);
+        m_referenceWidget->removeEventFilter(this);
     m_referenceWidget = widget;
+
     if (m_referenceWidget)
-        installEventFilter(this);
-    reposition();
+        m_referenceWidget->installEventFilter(this);
+    doReposition();
 }
 
 bool ProgressView::event(QEvent *event)
@@ -121,9 +151,18 @@ bool ProgressView::eventFilter(QObject *obj, QEvent *event)
 
 void ProgressView::reposition()
 {
+    m_repositioning = false;
     if (!parentWidget() || !m_referenceWidget)
         return;
     QPoint topRightReferenceInParent =
             m_referenceWidget->mapTo(parentWidget(), m_referenceWidget->rect().topRight());
     move(topRightReferenceInParent - rect().bottomRight());
+}
+
+void ProgressView::doReposition()
+{
+    if (!m_repositioning) {
+        m_repositioning = true;
+        QTimer::singleShot(100, this, SLOT(reposition()));
+    }
 }
