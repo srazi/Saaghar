@@ -724,12 +724,11 @@ void ProgressManagerPrivate::removeOneOldTask()
 
 void ProgressManagerPrivate::removeTask(FutureProgress *task)
 {
-    if (m_taskList.removeAll(task) > 1) {
-        deleteTask(task);
-    }
-    else {
+    if (m_taskList.removeAll(task) == 0) {
         m_queuedTaskList.removeAll(task);
     }
+
+    deleteTask(task);
 
     updateSummaryProgressBar();
     updateStatusDetailsWidget();
