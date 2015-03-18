@@ -39,6 +39,28 @@
 QList<QWeakPointer<ConcurrentTask> > ConcurrentTask::s_tasks;
 bool ConcurrentTask::s_cancel = false;
 
+
+#ifdef Q_OS_WIN
+#include "qt_windows.h"
+
+static void msleep(unsigned long msecs)
+{
+    ::Sleep(msecs);
+}
+#else
+static void msleep(unsigned long msecs)
+{
+    struct timeval tv;
+    gettimeofday(&tv, 0);
+    struct timespec ti;
+
+    ti.tv_nsec = (tv.tv_usec + (msecs % 1000) * 1000) * 1000;
+    ti.tv_sec = tv.tv_sec + (msecs / 1000) + (ti.tv_nsec / 1000000000);
+    ti.tv_nsec %= 1000000000;
+    thread_sleep(&ti);
+}
+#endif
+
 ConcurrentTask::ConcurrentTask(QObject *parent)
     : QObject(parent),
       QRunnable(),
@@ -125,6 +147,8 @@ void ConcurrentTask::run()
 #endif
 
     emit concurrentResultReady(m_type, result);
+
+    ::msleep(20);
 }
 
 void ConcurrentTask::finish()
