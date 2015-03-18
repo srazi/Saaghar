@@ -132,6 +132,7 @@ private:
     QPointer<QPropertyAnimation> m_opacityAnimation;
     bool m_progressViewPinned;
     bool m_hovered;
+    int m_allTasksCount;
 };
 
 class ToggleButton : public QToolButton

@@ -365,7 +365,8 @@ ProgressManagerPrivate::ProgressManagerPrivate()
     m_currentStatusDetailsWidget(0),
     m_opacityEffect(new QGraphicsOpacityEffect(this)),
     m_progressViewPinned(true),
-    m_hovered(false)
+    m_hovered(false),
+    m_allTasksCount(0)
 {
     m_instance = this;
     m_progressView = new ProgressView;
@@ -509,7 +510,15 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
 {
     // watch
     QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
+
+    // it's the first task or last tasks are finished/canceled
+    if (m_runningTasks.isEmpty()) {
+        m_allTasksCount = 0;
+    }
+
     m_runningTasks.insert(watcher, type);
+    ++m_allTasksCount;
+
     connect(watcher, SIGNAL(progressRangeChanged(int,int)), this, SLOT(updateSummaryProgressBar()));
     connect(watcher, SIGNAL(progressValueChanged(int)), this, SLOT(updateSummaryProgressBar()));
     connect(watcher, SIGNAL(finished()), this, SLOT(taskFinished()));
@@ -615,6 +624,10 @@ void ProgressManagerPrivate::updateSummaryProgressBar()
         if (range > 0)
             value += TASK_RANGE * (watcher->progressValue() - min) / range;
     }
+
+    const int finishedCount = m_allTasksCount - m_runningTasks.size();
+    value += finishedCount > 0 ? (TASK_RANGE * finishedCount) : 0;
+
     m_summaryProgressBar->setRange(0, TASK_RANGE * m_runningTasks.size());
     m_summaryProgressBar->setValue(value);
 }
