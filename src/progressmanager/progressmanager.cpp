@@ -53,8 +53,8 @@
 #include "progressmanager_p.h"
 #include "progressbar.h"
 #include "progressview.h"
+#include "saagharapplication.h"
 
-#include <QApplication>
 #include <QAction>
 #include <QDebug>
 #include <QEvent>
@@ -72,6 +72,11 @@
 
 static const char kSettingsGroup[] = "Progress";
 static const char kDetailsPinned[] = "DetailsPinned";
+
+static int countOfVisibleProgresses()
+{
+    return sApp->tasksThreads() + 1;
+}
 
 /*!
     \mainclass
@@ -531,7 +536,7 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
     progress->setTitle(title);
     progress->setFuture(future);
 
-    if (m_progressView->progressCount() >= 10 && !progress->isFinshed()) {
+    if (m_progressView->progressCount() >= countOfVisibleProgresses() && !progress->isFinshed()) {
         m_queuedTaskList.append(progress);
     }
     else if (!progress->isFinshed()) {
@@ -660,7 +665,8 @@ void ProgressManagerPrivate::slotRemoveTask()
     removeTask(progress);
     removeOldTasks(type, true);
 
-    while (!m_queuedTaskList.isEmpty() && m_progressView->progressCount() < 10) {
+    const int max = ::countOfVisibleProgresses();
+    while (!m_queuedTaskList.isEmpty() && m_progressView->progressCount() < max) {
         progress = m_queuedTaskList.takeFirst();
 
         if (progress && !progress->isFinshed()) {

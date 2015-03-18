@@ -79,6 +79,8 @@ ProgressView::ProgressView(QWidget *parent)
     m_layout->setSizeConstraint(QLayout::SetFixedSize);
     setWindowTitle(tr("Processes"));
     setWindowFlags(Qt::WindowStaysOnTopHint | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+
+    setWindowOpacity(0.75);
 }
 
 ProgressView::~ProgressView()
@@ -87,12 +89,16 @@ ProgressView::~ProgressView()
 
 void ProgressView::addProgressWidget(QWidget *widget)
 {
+    setUpdatesEnabled(false);
     m_layout->insertWidget(0, widget);
+    setUpdatesEnabled(true);
 }
 
 void ProgressView::removeProgressWidget(QWidget *widget)
 {
+    setUpdatesEnabled(false);
     m_layout->removeWidget(widget);
+    setUpdatesEnabled(true);
 }
 
 void ProgressView::setProgressWidgetVisible(bool visible)
@@ -135,35 +141,39 @@ void ProgressView::setReferenceWidget(QWidget *widget)
         m_referenceWidget->removeEventFilter(this);
     m_referenceWidget = widget;
 
-    if (m_referenceWidget)
+    if (m_referenceWidget) {
         m_referenceWidget->installEventFilter(this);
+    }
     doReposition();
 }
 
 void ProgressView::setVisible(bool visible)
 {
     if (m_forceHidden) {
+        m_progressWidget->setVisible(false);
         QWidget::setVisible(false);
         return;
     }
 
+    m_progressWidget->setVisible(visible);
     QWidget::setVisible(visible);
 }
 
 bool ProgressView::event(QEvent *event)
 {
-//    if (event->type() == QEvent::ParentAboutToChange && parentWidget()) {
-//        parentWidget()->removeEventFilter(this);
-//    } else if (event->type() == QEvent::ParentChange && parentWidget()) {
-//        parentWidget()->installEventFilter(this);
-//    } else
-    if (event->type() == QEvent::Resize) {
+    if (event->type() == QEvent::ParentAboutToChange && parentWidget()) {
+        parentWidget()->removeEventFilter(this);
+    } else if (event->type() == QEvent::ParentChange && parentWidget()) {
+        parentWidget()->installEventFilter(this);
+    } else if (event->type() == QEvent::Resize) {
         doReposition();
     } else if (event->type() == QEvent::Enter) {
         m_hovered = true;
+        setWindowOpacity(0.9);
         emit hoveredChanged(m_hovered);
     } else if (event->type() == QEvent::Leave) {
         m_hovered = false;
+        setWindowOpacity(0.75);
         emit hoveredChanged(m_hovered);
     }
     return QWidget::event(event);
@@ -171,24 +181,22 @@ bool ProgressView::event(QEvent *event)
 
 bool ProgressView::eventFilter(QObject *obj, QEvent *event)
 {
-    if (m_position == ProgressManager::AppBottomLeft || m_position == ProgressManager::AppBottomRight) {
-        if (obj == m_referenceWidget && m_referenceWidget) {
-            if (event->type() == QEvent::Resize || event->type() == QEvent::Move) {
-                doReposition();
+    if (obj == m_referenceWidget && m_referenceWidget) {
+        if (event->type() == QEvent::Resize || event->type() == QEvent::Move) {
+            doReposition();
+        }
+        else if (event->type() == QEvent::WindowStateChange) {
+            if (m_referenceWidget->isMinimized()) {
+                m_forceHidden = true;
+                QTimer::singleShot(50, this, SLOT(hide()));
             }
-            else if (event->type() == QEvent::WindowStateChange) {
-                if (!m_referenceWidget->isVisible() || m_referenceWidget->isMinimized()) {
-                    //QTimer::singleShot(100, this, SLOT(hide()));
-                    m_forceHidden = true;
-                    QTimer::singleShot(100, this, SLOT(hide()));
-                }
-                else {
-                    m_forceHidden = false;
-                    QTimer::singleShot(100, this, SLOT(show()));
-                }
+            else {
+                m_forceHidden = false;
+                QTimer::singleShot(50, this, SLOT(show()));
             }
         }
     }
+
     return false;
 }
 
@@ -220,33 +228,33 @@ void ProgressView::reposition()
     case ProgressManager::AppBottomLeft: {
         if (!m_referenceWidget)
             return;
-        int width = geoRect.width();
-        int height = geoRect.height();
+        int w = geoRect.width();
+        int h = geoRect.height();
         geoRect.setRect(m_referenceWidget->x() + frameWidth,
-                        m_referenceWidget->y() + m_referenceWidget->frameGeometry().height() - height - frameWidth,
-                        width, height);
-        if (height > m_referenceWidget->height()) {
-            m_progressWidget->hide();
-        }
-        else if (m_lastVisibleState && height < m_progressWidget->height() + m_referenceWidget->height() - 10) {
-            m_progressWidget->show();
-        }
+                        m_referenceWidget->y() + m_referenceWidget->frameGeometry().height() - h - frameWidth,
+                        w, h);
+//        if (h > m_referenceWidget->height()) {
+//            m_progressWidget->hide();
+//        }
+//        else if (m_lastVisibleState && h < m_progressWidget->sizeHint().height() + height() - 10) {
+//            m_progressWidget->show();
+//        }
     }
         break;
     case ProgressManager::AppBottomRight: {
         if (!m_referenceWidget)
             return;
-        int width = geoRect.width();
-        int height = geoRect.height();
-        geoRect.setRect(m_referenceWidget->x() + m_referenceWidget->frameGeometry().width() - width - frameWidth,
-                        m_referenceWidget->y() + m_referenceWidget->frameGeometry().height() - height - frameWidth,
-                        width, height);
-        if (height > m_referenceWidget->height()) {
-            m_progressWidget->hide();
-        }
-        else if (m_lastVisibleState && height < m_progressWidget->height() + m_referenceWidget->height() - 10) {
-            m_progressWidget->show();
-        }
+        int w = geoRect.width();
+        int h = geoRect.height();
+        geoRect.setRect(m_referenceWidget->x() + m_referenceWidget->frameGeometry().width() - w - frameWidth,
+                        m_referenceWidget->y() + m_referenceWidget->frameGeometry().height() - h - frameWidth,
+                        w, h);
+//        if (h > m_referenceWidget->height()) {
+//            m_progressWidget->hide();
+//        }
+//        else if (m_lastVisibleState && h < m_progressWidget->sizeHint().height() + height() - 10) {
+//            m_progressWidget->show();
+//        }
     }
         break;
     case ProgressManager::DesktopBottomRight:
@@ -272,6 +280,6 @@ void ProgressView::doReposition()
 {
     if (!m_repositioning) {
         m_repositioning = true;
-        QTimer::singleShot(100, this, SLOT(reposition()));
+        QTimer::singleShot(10, this, SLOT(reposition()));
     }
 }
