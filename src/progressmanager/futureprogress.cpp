@@ -410,11 +410,6 @@ QSize FutureProgress::sizeHint() const
     return QSize(QWidget::sizeHint().width(), minimumHeight());
 }
 
-bool FutureProgress::isFinshed() const
-{
-    return d->m_progress->finished();
-}
-
 void FutureProgressPrivate::fadeAway()
 {
     m_isFading = true;

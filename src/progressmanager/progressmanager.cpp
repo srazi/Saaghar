@@ -411,7 +411,7 @@ void ProgressManagerPrivate::init()
     m_summaryProgressBar = new ProgressBar(m_summaryProgressWidget);
     m_summaryProgressBar->setMinimumWidth(70);
     m_summaryProgressBar->setTitleVisible(true);
-    m_summaryProgressBar->setSeparatorVisible(true);
+    m_summaryProgressBar->setSeparatorVisible(false);
     m_summaryProgressBar->setCancelEnabled(true);
     connect(m_summaryProgressBar, SIGNAL(clicked()), this, SLOT(cancelAllRunningTasks()));
     connect(m_summaryProgressBar, SIGNAL(barClicked()), m_progressView, SLOT(toggleAllProgressView()));
@@ -545,10 +545,10 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
     progress->setTitle(title);
     progress->setFuture(future);
 
-    if (m_progressView->progressCount() >= countOfVisibleProgresses() && !progress->isFinshed()) {
+    if (m_progressView->progressCount() >= countOfVisibleProgresses() && !progress->future().isFinished()) {
         m_queuedTaskList.append(progress);
     }
-    else if (!progress->isFinshed()) {
+    else if (!progress->future().isFinished()) {
         m_progressView->addProgressWidget(progress);
     }
 
@@ -682,7 +682,7 @@ void ProgressManagerPrivate::slotRemoveTask()
     while (!m_queuedTaskList.isEmpty() && m_progressView->progressCount() < max) {
         progress = m_queuedTaskList.takeFirst();
 
-        if (progress && !progress->isFinshed()) {
+        if (progress && !progress->future().isFinished()) {
             m_progressView->addProgressWidget(progress);
         }
     }
