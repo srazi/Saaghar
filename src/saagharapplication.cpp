@@ -41,7 +41,7 @@ Q_IMPORT_PLUGIN(qsqlite)
 
 namespace {
     QThread::Priority m_tasksPriority = QThread::LowPriority;
-    static const int NORMAL_TASKS_THREADS = qMax(2, QThread::idealThreadCount() * 2 - QThread::idealThreadCount() / 2);
+    static const int NORMAL_TASKS_THREADS = QThread::idealThreadCount();
 }
 
 SaagharApplication::SaagharApplication(int &argc, char **argv)
@@ -103,7 +103,7 @@ void SaagharApplication::applySettings()
         m_displayFullNotification = true;
     }
     else if (mode == "FAST") {
-        m_tasksThreads = 2 * QThread::idealThreadCount();
+        m_tasksThreads = QThread::idealThreadCount();
         m_tasksPriority = QThread::NormalPriority;
         m_displayFullNotification = false;
     }
