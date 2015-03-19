@@ -415,7 +415,6 @@ void ProgressManagerPrivate::init()
     m_summaryProgressBar->setCancelEnabled(true);
     connect(m_summaryProgressBar, SIGNAL(clicked()), this, SLOT(cancelAllRunningTasks()));
     connect(m_summaryProgressBar, SIGNAL(barClicked()), m_progressView, SLOT(toggleAllProgressView()));
-    m_summaryProgressBar->setTitle(tr("All Tasks:"));
 
     m_summaryProgressLayout->addWidget(m_summaryProgressBar);
     layout->addWidget(m_summaryProgressWidget);
@@ -765,6 +764,8 @@ void ProgressManagerPrivate::updateVisibility()
     //m_progressView->setVisible(m_progressViewPinned || m_hovered || m_progressView->isHovered());
     m_summaryProgressWidget->setVisible((!m_runningTasks.isEmpty() || !m_taskList.isEmpty())
                                      && m_progressViewPinned);
+
+    m_summaryProgressBar->setTitle(tr("All Tasks (%1):").arg(m_runningTasks.size()));
 }
 
 void ProgressManagerPrivate::updateVisibilityWithDelay()
