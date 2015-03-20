@@ -51,9 +51,12 @@ SaagharApplication::SaagharApplication(int &argc, char **argv)
       m_tasksThreadPool(0),
       m_tasksThreads(NORMAL_TASKS_THREADS),
       m_displayFullNotification(true),
-      m_notificationPosition(ProgressManager::DesktopTopRight)
+      m_notificationPosition(ProgressManager::DesktopBottomRight)
 {
     init();
+
+    // TODO: centralize settings loding/saving/applying
+    applySettings();
 }
 
 SaagharApplication::~SaagharApplication()
@@ -94,7 +97,7 @@ QThreadPool *SaagharApplication::tasksThreadPool()
 
 void SaagharApplication::applySettings()
 {
-    m_notificationPosition = ProgressManager::Position(Settings::READ("TaskManager/Notification", "APP_BOTTOM_RIGHT").toInt());
+    m_notificationPosition = ProgressManager::Position(Settings::READ("TaskManager/Notification", ProgressManager::DesktopBottomRight).toInt());
     const QString mode = Settings::READ("TaskManager/Mode", "NORMAL").toString();
 
     if (mode == "SLOW") {

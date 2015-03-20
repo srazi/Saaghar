@@ -214,7 +214,7 @@ void Settings::setupTaskManagerUi()
 
     ui->groupBoxTaskManager->setChecked(Settings::READ("TaskManager", false).toBool());
     ui->comboBoxMode->setCurrentIndex(ui->comboBoxMode->findData(Settings::READ("TaskManager/Mode", "NORMAL")));
-    ui->comboBoxNotification->setCurrentIndex(ui->comboBoxNotification->findData(Settings::READ("TaskManager/Notification", "APP_BOTTOM_RIGHT")));
+    ui->comboBoxNotification->setCurrentIndex(ui->comboBoxNotification->findData(Settings::READ("TaskManager/Notification", ProgressManager::DesktopBottomRight)));
 }
 
 void Settings::initializeActionTables(const QMap<QString, QAction*> &actionsMap, const QStringList &toolBarItems)
