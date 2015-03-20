@@ -78,7 +78,7 @@ ProgressView::ProgressView(QWidget *parent)
     m_layout->setSpacing(0);
     m_layout->setSizeConstraint(QLayout::SetFixedSize);
     setWindowTitle(tr("Processes"));
-    setWindowFlags(Qt::WindowStaysOnTopHint | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+    setWindowFlags(Qt::SubWindow | Qt::WindowStaysOnTopHint | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
 
     setWindowOpacity(0.75);
 }
@@ -188,11 +188,11 @@ bool ProgressView::eventFilter(QObject *obj, QEvent *event)
         else if (event->type() == QEvent::WindowStateChange) {
             if (m_referenceWidget->isMinimized()) {
                 m_forceHidden = true;
-                QTimer::singleShot(50, this, SLOT(hide()));
+                hide();
             }
             else {
                 m_forceHidden = false;
-                QTimer::singleShot(50, this, SLOT(show()));
+                show();
             }
         }
     }
