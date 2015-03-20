@@ -280,6 +280,6 @@ void ProgressView::doReposition()
 {
     if (!m_repositioning) {
         m_repositioning = true;
-        QTimer::singleShot(10, this, SLOT(reposition()));
+        reposition();
     }
 }
