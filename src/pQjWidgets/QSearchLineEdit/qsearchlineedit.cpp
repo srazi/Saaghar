@@ -159,6 +159,7 @@ void QSearchLineEdit::searchStart(bool* canceled, int min, int max)
         setSearchProgressText(tr("Please try with another phrase!"));
     }
 
+#if 0 // disable progress-bar and stop button
     if (!sPbar) {
         sPbar = new QProgressBar(this);
     }
@@ -191,6 +192,7 @@ void QSearchLineEdit::searchStart(bool* canceled, int min, int max)
 //  qDebug() << "lineEdit-Hint-height=" <<sizeHint().height();
 
     connect(stopButton, SIGNAL(clicked()), this, SLOT(searchStop()));
+#endif
 }
 
 void QSearchLineEdit::searchStop()
@@ -209,7 +211,9 @@ void QSearchLineEdit::searchStop()
 
 void QSearchLineEdit::setSearchProgressText(const QString &str)
 {
+#if 0 // disable tooltip
     if (isVisible() && (!window() || !window()->isMinimized())) {
         QToolTip::showText(this->mapToGlobal(QPoint(0, this->height())), str /*tr("Searching Data Base...")*/ /*"<p></p><b>Busy</b><p></p>"*/ /*, sPbar*/);
     }
+#endif
 }
