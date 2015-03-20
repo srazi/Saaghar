@@ -63,6 +63,10 @@ static QString threadToString(QThread* thread = 0)
 
 DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
 {
+    Q_ASSERT(s_instance == 0);
+
+    s_instance = this;
+
     qRegisterMetaType<SearchResults>("SearchResults");
 
     setObjectName(QLatin1String("DatabaseBrowser"));
@@ -189,7 +193,7 @@ DatabaseBrowser* DatabaseBrowser::instance()
             qFatal("In first place you have to use DatabaseBrowser::setDefaultDatabasename() to set default database.");
             exit(1);
         }
-        s_instance = new DatabaseBrowser(s_defaultDatabaseFileName);
+        new DatabaseBrowser(s_defaultDatabaseFileName);
     }
 
     return s_instance;
@@ -702,7 +706,10 @@ QString DatabaseBrowser::getIdForDataBase(const QString &fileName, QThread* thre
         db.open();
 
         s_threadConnections.insert(thread, connectionID);
-        connect(thread, SIGNAL(destroyed(QObject*)), dbBrowser, SLOT(removeThreadsConnections(QObject*)));
+
+        Q_ASSERT(s_instance != 0);
+
+        connect(thread, SIGNAL(destroyed(QObject*)), s_instance, SLOT(removeThreadsConnections(QObject*)));
     }
 
     return connectionID;
