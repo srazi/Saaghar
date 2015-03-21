@@ -36,7 +36,7 @@
 
 #define TASK_CANCELED if (isCanceled()) return QVariant();
 
-QList<QWeakPointer<ConcurrentTask> > ConcurrentTask::s_tasks;
+QList<ConcurrentTask::TaskPointer> ConcurrentTask::s_tasks;
 bool ConcurrentTask::s_cancel = false;
 
 
@@ -97,7 +97,7 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
         connect(fp, SIGNAL(canceled()), this, SLOT(setCanceled()));
     }
 
-    s_tasks.append(this);
+    s_tasks.append(TaskPointer(this));
     sApp->tasksThreadPool()->start(this);
 }
 
@@ -155,7 +155,7 @@ void ConcurrentTask::finish()
 {
     s_cancel = true;
 
-    foreach (QWeakPointer<ConcurrentTask> wp, s_tasks) {
+    foreach (const TaskPointer &wp, s_tasks) {
         if (wp && wp.data()) {
             wp.data()->setCanceled();
         }

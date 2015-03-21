@@ -26,7 +26,12 @@
 #include <QRunnable>
 #include <QtConcurrentRun>
 #include <QVariant>
+
+#if QT_VERSION < 0x050000
 #include <QWeakPointer>
+#else
+#include <QPointer>
+#endif
 
 class ConcurrentTask : public QObject, QRunnable
 {
@@ -63,7 +68,13 @@ private:
 
     QFutureInterface<void> *m_progressObject;
 
-    static QList<QWeakPointer<ConcurrentTask> > s_tasks;
+#if QT_VERSION < 0x050000
+    typedef QWeakPointer<ConcurrentTask> TaskPointer;
+#else
+    typedef QPointer<ConcurrentTask> TaskPointer;
+#endif
+
+    static QList<TaskPointer> s_tasks;
     static bool s_cancel;
 
 signals:

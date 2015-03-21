@@ -26,7 +26,7 @@ CONFIG(static) {
 }
 
 isEqual(QT_MAJOR_VERSION, 5) {
-    QT += network widgets printsupport sql xml
+    QT += network widgets printsupport sql xml concurrent
 
     DEFINES += MEDIA_PLAYER
 
