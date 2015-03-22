@@ -85,8 +85,6 @@ QT_END_NAMESPACE
 
 #if QT_VERSION >= 0x050000
 
-HICON qt_pixmapToWinHICON(const QPixmap &p);
-
 static inline QWindow *windowOfWidget(const QWidget *widget)
 {
     if (QWindow *window = widget->windowHandle())

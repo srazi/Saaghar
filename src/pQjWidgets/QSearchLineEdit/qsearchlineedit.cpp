@@ -143,6 +143,8 @@ QProgressBar* QSearchLineEdit::searchProgressBar()
 
 void QSearchLineEdit::searchStart(bool* canceled, int min, int max)
 {
+    Q_UNUSED(min);
+    Q_UNUSED(max);
 //  if (searchStarted)
 //  {
 //      setSearchProgressText(tr("Another search in progress!"));
@@ -211,6 +213,8 @@ void QSearchLineEdit::searchStop()
 
 void QSearchLineEdit::setSearchProgressText(const QString &str)
 {
+    Q_UNUSED(str);
+
 #if 0 // disable tooltip
     if (isVisible() && (!window() || !window()->isMinimized())) {
         QToolTip::showText(this->mapToGlobal(QPoint(0, this->height())), str /*tr("Searching Data Base...")*/ /*"<p></p><b>Busy</b><p></p>"*/ /*, sPbar*/);
