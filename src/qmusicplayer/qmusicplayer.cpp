@@ -270,8 +270,10 @@ void QMusicPlayer::setSource()
 {
 #ifdef SAAGHAR_DEBUG
     qDebug() << "setSource=" << currentID
+#ifdef USE_PHONON
              << "\n=====================\nAvailable Mime Types=\n"
              << Phonon::BackendCapabilities::availableMimeTypes()
+#endif
              << "\n=====================";
 #endif
 

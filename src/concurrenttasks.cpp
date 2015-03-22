@@ -36,9 +36,6 @@
 
 #define TASK_CANCELED if (isCanceled()) return QVariant();
 
-QList<ConcurrentTask::TaskPointer> ConcurrentTask::s_tasks;
-bool ConcurrentTask::s_cancel = false;
-
 
 #ifdef Q_OS_WIN
 #include "qt_windows.h"
@@ -79,7 +76,7 @@ ConcurrentTask::~ConcurrentTask()
 
 void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
 {
-    if (s_cancel) {
+    if (ConcurrentTaskManager::instance()->isAllTaskCanceled()) {
         return;
     }
 
@@ -97,7 +94,8 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
         connect(fp, SIGNAL(canceled()), this, SLOT(setCanceled()));
     }
 
-    s_tasks.append(TaskPointer(this));
+    ConcurrentTaskManager::instance()->addConcurrentTask(this);
+
     sApp->tasksThreadPool()->start(this);
 }
 
@@ -149,19 +147,6 @@ void ConcurrentTask::run()
     emit concurrentResultReady(m_type, result);
 
     ::msleep(20);
-}
-
-void ConcurrentTask::finish()
-{
-    s_cancel = true;
-
-    foreach (const TaskPointer &wp, s_tasks) {
-        if (wp && wp.data()) {
-            wp.data()->setCanceled();
-        }
-    }
-
-    sApp->tasksThreadPool()->waitForDone();
 }
 
 QVariant ConcurrentTask::startSearch(const QVariantHash &options)
@@ -360,4 +345,60 @@ void ConcurrentTask::setCanceled()
     m_mutex.lock();
     m_cancel = true;
     m_mutex.unlock();
+}
+
+
+ConcurrentTaskManager* ConcurrentTaskManager::s_instance = 0;
+
+ConcurrentTaskManager *ConcurrentTaskManager::instance()
+{
+    if (!s_instance) {
+        s_instance = new ConcurrentTaskManager(sApp);
+    }
+
+    return s_instance;
+}
+
+ConcurrentTaskManager::~ConcurrentTaskManager()
+{
+}
+
+void ConcurrentTaskManager::addConcurrentTask(ConcurrentTask* task)
+{
+    if (m_cancel) {
+        return;
+    }
+
+    m_tasks.append(TaskPointer(task));
+}
+
+void ConcurrentTaskManager::finish()
+{
+    m_cancel = true;
+
+    foreach (const TaskPointer &wp, m_tasks) {
+        if (wp && wp.data()) {
+            wp.data()->setCanceled();
+        }
+    }
+
+    sApp->tasksThreadPool()->waitForDone();
+}
+
+bool ConcurrentTaskManager::isAllTaskCanceled()
+{
+    return m_cancel;
+}
+
+void ConcurrentTaskManager::switchToStartState()
+{
+    m_cancel = false;
+}
+
+ConcurrentTaskManager::ConcurrentTaskManager(QObject* parent)
+    : QObject(parent),
+      m_tasks(),
+      m_cancel(false)
+{
+    connect(sApp->progressManager(), SIGNAL(allTasksCanceled()), this, SLOT(finish()));
 }

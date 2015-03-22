@@ -1700,8 +1700,6 @@ bool DatabaseBrowser::createEmptyDataBase(const QString &connectionID)
 
 QSqlDatabase DatabaseBrowser::databaseForThread(QThread* thread, const QString &baseConnectionID)
 {
-    QMutexLocker lock(&m_mutex);
-
     QString id = baseConnectionID.left(baseConnectionID.lastIndexOf(QLatin1String("/thread:")));
     id = getIdForDataBase(id, thread);
 

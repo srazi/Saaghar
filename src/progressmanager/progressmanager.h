@@ -90,6 +90,7 @@ public slots:
 signals:
     void taskStarted(const QString &type);
     void allTasksFinished(const QString &type);
+    void allTasksCanceled();
 
 private:
     ProgressManager();

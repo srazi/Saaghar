@@ -413,6 +413,7 @@ void ProgressManagerPrivate::init()
     m_summaryProgressBar->setTitleVisible(true);
     m_summaryProgressBar->setSeparatorVisible(false);
     m_summaryProgressBar->setCancelEnabled(true);
+    connect(m_summaryProgressBar, SIGNAL(clicked()), this, SIGNAL(allTasksCanceled()));
     connect(m_summaryProgressBar, SIGNAL(clicked()), this, SLOT(cancelAllRunningTasks()));
     connect(m_summaryProgressBar, SIGNAL(barClicked()), m_progressView, SLOT(toggleAllProgressView()));
 
@@ -545,7 +546,7 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
     progress->setFuture(future);
 
     if (m_progressView->progressCount() >= countOfVisibleProgresses() && !progress->future().isFinished()) {
-        m_queuedTaskList.append(progress);
+        m_queuedTaskList.append(FutureProgressPointer(progress));
     }
     else if (!progress->future().isFinished()) {
         m_progressView->addProgressWidget(progress);
@@ -679,9 +680,10 @@ void ProgressManagerPrivate::slotRemoveTask()
 
     const int max = ::countOfVisibleProgresses();
     while (!m_queuedTaskList.isEmpty() && m_progressView->progressCount() < max) {
-        progress = m_queuedTaskList.takeFirst();
+        FutureProgressPointer progressPointer = m_queuedTaskList.takeFirst();
+        progress = progressPointer.data();
 
-        if (progress && !progress->future().isFinished()) {
+        if (progressPointer && progress && !progress->future().isFinished()) {
             m_progressView->addProgressWidget(progress);
         }
     }

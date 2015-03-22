@@ -49,11 +49,9 @@ public:
 
     void run();
 
-    static void finish();
-
     QVariant startSearch(const QVariantHash &options);
 
-private slots:
+public slots:
     void setCanceled();
 
 private:
@@ -68,18 +66,40 @@ private:
 
     QFutureInterface<void> *m_progressObject;
 
+signals:
+    void concurrentResultReady(const QString &type, const QVariant &results);
+    void searchStatusChanged(const QString &);
+};
+
+class ConcurrentTaskManager : public QObject
+{
+    Q_OBJECT
+
+public:
+    static ConcurrentTaskManager* instance();
+    ~ConcurrentTaskManager();
+
+    void addConcurrentTask(ConcurrentTask* task);
+
+    bool isAllTaskCanceled();
+    void switchToStartState();
+
+public slots:
+    void finish();
+
+private:
+    Q_DISABLE_COPY(ConcurrentTaskManager)
+    ConcurrentTaskManager(QObject* parent = 0);
+    static ConcurrentTaskManager* s_instance;
+
 #if QT_VERSION < 0x050000
     typedef QWeakPointer<ConcurrentTask> TaskPointer;
 #else
     typedef QPointer<ConcurrentTask> TaskPointer;
 #endif
 
-    static QList<TaskPointer> s_tasks;
-    static bool s_cancel;
-
-signals:
-    void concurrentResultReady(const QString &type, const QVariant &results);
-    void searchStatusChanged(const QString &);
+    QList<TaskPointer> m_tasks;
+    bool m_cancel;
 };
 
 #endif // CONCURRENTTASKS_H

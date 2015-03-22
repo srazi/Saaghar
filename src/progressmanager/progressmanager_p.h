@@ -63,6 +63,11 @@
 #include <QTimer>
 #include <QToolButton>
 
+#if QT_VERSION < 0x050000
+#include <QWeakPointer>
+#else
+#include <QPointer>
+#endif
 
 class ProgressBar;
 class ProgressView;
@@ -119,7 +124,15 @@ private:
 
     QPointer<ProgressView> m_progressView;
     QList<FutureProgress *> m_taskList;
-    QList<FutureProgress *> m_queuedTaskList;
+
+#if QT_VERSION < 0x050000
+    typedef QWeakPointer<FutureProgress> FutureProgressPointer;
+#else
+    typedef QPointer<FutureProgress> FutureProgressPointer;
+#endif
+
+    QList<FutureProgressPointer> m_queuedTaskList;
+
     QMap<QFutureWatcher<void> *, QString> m_runningTasks;
     QFutureWatcher<void> *m_applicationTask;
     QWidget *m_statusBarWidget;

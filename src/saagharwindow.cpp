@@ -390,7 +390,13 @@ void SaagharWindow::searchStart()
         slowSearch = true;
     }
 
+    ConcurrentTaskManager::instance()->switchToStartState();
+
     for (int i = 0; i < selectList.size(); ++i) {
+        if (ConcurrentTaskManager::instance()->isAllTaskCanceled()) {
+            break;
+        }
+
         QVariant currentItemData = selectList.at(i)->data(Qt::UserRole);
         //QString currentItemStrData = currentItemData.toString();
 
@@ -2738,7 +2744,7 @@ void SaagharWindow::closeEvent(QCloseEvent* event)
     saveSettings();
     event->accept();
 
-    ConcurrentTask::finish();
+    ConcurrentTaskManager::instance()->finish();
     sApp->quit();
 }
 
