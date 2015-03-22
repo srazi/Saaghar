@@ -2745,7 +2745,7 @@ void SaagharWindow::closeEvent(QCloseEvent* event)
 #if QT_VERSION >= 0x050000
 void SaagharWindow::paintEvent(QPaintEvent* event)
 {
-    if (Settings::READ("UseTransparecy").toBool()) {
+    if (Settings::READ("UseTransparecy").toBool() && QtWin::isCompositionEnabled()) {
         QPainter p(this);
         p.setCompositionMode(QPainter::CompositionMode_Clear);
         p.fillRect(event->rect(), QColor(0, 0, 0, 0));
