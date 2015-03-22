@@ -106,6 +106,8 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     startDir = QStandardPaths::standardLocations(QStandardPaths::MusicLocation).isEmpty() ?
                 QDir::homePath() : QStandardPaths::standardLocations(QStandardPaths::MusicLocation).at(0);
 #endif
+
+#if USE_PHONON
     audioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
     QList<Phonon::AudioOutputDevice> audioOutputDevices = Phonon::BackendCapabilities::availableAudioOutputDevices();
     foreach (const Phonon::AudioOutputDevice newAudioOutput, audioOutputDevices) {
@@ -114,6 +116,7 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
             break;
         }
     }
+
 #ifdef SAAGHAR_DEBUG
     qDebug() << "Audio Output Devices:" << audioOutputDevices
              << "\nSelected Output Device:" << audioOutput->outputDevice().name();
@@ -121,20 +124,26 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     mediaObject = new Phonon::MediaObject(this);
     metaInformationResolver = new Phonon::MediaObject(this);
 
-    albumManager->setMediaObject(mediaObject);
-
+    connect(mediaObject, SIGNAL(currentSourceChanged(Phonon::MediaSource)), this, SLOT(sourceChanged()));
     connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
-    connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
-            this, SLOT(stateChanged(Phonon::State,Phonon::State)));
-    connect(metaInformationResolver, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
-            this, SLOT(metaStateChanged(Phonon::State,Phonon::State)));
-    connect(mediaObject, SIGNAL(currentSourceChanged(Phonon::MediaSource)),
-            this, SLOT(sourceChanged(Phonon::MediaSource)));
+    connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(seekOnStateChange()));
+    connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(stateChange()));
+    connect(metaInformationResolver, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(metaStateChange()));
     connect(mediaObject, SIGNAL(finished()), this, SLOT(aboutToFinish()));
 
-    connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(seekOnStateChange()));
-
     Phonon::createPath(mediaObject, audioOutput);
+#else
+    mediaObject = new QMediaPlayer(this, QMediaPlayer::StreamPlayback);
+    metaInformationResolver = new QMediaPlayer(this, QMediaPlayer::StreamPlayback);
+
+    connect(mediaObject, SIGNAL(currentMediaChanged(QMediaContent)), this, SLOT(sourceChanged()));
+    connect(mediaObject, SIGNAL(positionChanged(qint64)), this, SLOT(tick(qint64)));
+    connect(mediaObject, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(seekOnStateChange()));
+    connect(mediaObject, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChange()));
+    connect(metaInformationResolver, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(metaStateChange()));
+#endif
+
+    albumManager->setMediaObject(mediaObject);
 
     setupActions();
     setupUi();
@@ -144,14 +153,22 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
 void QMusicPlayer::seekOnStateChange()
 {
     if (_newTime > 0 && mediaObject->isSeekable()) {
+#ifdef USE_PHONON
         mediaObject->seek(_newTime);
+#else
+        mediaObject->setPosition(_newTime);
+#endif
         _newTime = -1;
     }
 }
 
 qint64 QMusicPlayer::currentTime()
 {
+#ifdef USE_PHONON
     return mediaObject->currentTime();
+#else
+    return mediaObject->position();
+#endif
 }
 
 void QMusicPlayer::setCurrentTime(qint64 time)
@@ -161,7 +178,11 @@ void QMusicPlayer::setCurrentTime(qint64 time)
 
 QString QMusicPlayer::source()
 {
+#ifdef USE_PHONON
     return metaInformationResolver->currentSource().fileName();
+#else
+    return metaInformationResolver->currentMedia().canonicalUrl().toLocalFile();
+#endif
 }
 
 void QMusicPlayer::setSource(const QString &fileName, const QString &title, int mediaID, bool newSource)
@@ -170,14 +191,24 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
         stopLyricSyncer();
     }
     _newTime = -1;
+
+#ifdef USE_PHONON
     Phonon::MediaSource source(fileName);
+#else
+    QMediaContent source(fileName);
+#endif
+
     sources.clear();
     infoLabel->setText("");
 
     if (!fileName.isEmpty()) {
         notLoaded = false;
         sources.append(source);
+#ifdef USE_PHONON
         metaInformationResolver->setCurrentSource(source);
+#else
+        metaInformationResolver->setMedia(source);
+#endif
         load(0);
         if (mediaID > 0) {
             QString albumName;
@@ -190,8 +221,13 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
     }
     else {
         notLoaded = true;
+#ifdef USE_PHONON
         mediaObject->clear();
         metaInformationResolver->clear();
+#else
+        mediaObject->setMedia(QMediaContent());
+        metaInformationResolver->setMedia(QMediaContent());
+#endif
     }
 
     if (!title.isEmpty()) {
@@ -205,6 +241,7 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
     QFile file(gLyricName);
     setLyricSyncerState(true, !file.exists());
 
+#ifdef USE_PHONON
     if (!fileName.isEmpty() && m_lyricReader->read(&file, "GANJOOR_XML")) {
         mediaObject->setTickInterval(TICK_INTERVAL);
         connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(showTextByTime(qint64)));
@@ -215,6 +252,18 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
         disconnect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(showTextByTime(qint64)));
         disconnect(this, SIGNAL(highlightedTextChange(QString)), infoLabel, SLOT(setText(QString)));
     }
+#else
+    if (!fileName.isEmpty() && m_lyricReader->read(&file, "GANJOOR_XML")) {
+        mediaObject->setNotifyInterval(TICK_INTERVAL);
+        connect(mediaObject, SIGNAL(positionChanged(qint64)), this, SLOT(showTextByTime(qint64)));
+        connect(this, SIGNAL(highlightedTextChange(QString)), infoLabel, SLOT(setText(QString)));
+    }
+    else {
+        mediaObject->setNotifyInterval(0);
+        disconnect(mediaObject, SIGNAL(positionChanged(qint64)), this, SLOT(showTextByTime(qint64)));
+        disconnect(this, SIGNAL(highlightedTextChange(QString)), infoLabel, SLOT(setText(QString)));
+    }
+#endif
 }
 
 void QMusicPlayer::setSource()
@@ -406,11 +455,24 @@ void QMusicPlayer::showTextByTime(qint64 time)
             infoLabel->setText(tr("Finished"));
         }
         else {
-            QMap<QString, QString> metaData = metaInformationResolver->metaData();
+            QMap<QString, QString> metaData;
 
+#ifdef USE_PHONON
+            metaData = metaInformationResolver->metaData();
+            Phonon::MediaSource source = metaInformationResolver->currentSource();
+            const QString &fileName = metaInformationResolver->currentSource().fileName();
+#else
+            QMediaContent source = metaInformationResolver->currentMedia();
+            const QString &fileName = source.canonicalUrl().toLocalFile();
+
+            metaData.insert("TITLE", metaInformationResolver->metaData("Title").toString());
+            metaData.insert("ARTIST", metaInformationResolver->metaData("Author").toStringList().join(QLatin1String("-")));
+            metaData.insert("ALBUM", metaInformationResolver->metaData("AlbumTitle").toString());
+            metaData.insert("DATE", metaInformationResolver->metaData("Date").toDate().toString());
+#endif
             QString title = metaData.value("TITLE");
             if (title == "") {
-                title = metaInformationResolver->currentSource().fileName();
+                title = fileName;
             }
 
             QStringList metaInfos;
@@ -429,8 +491,14 @@ void QMusicPlayer::removeSource()
     sources.clear();
     infoLabel->setText("");
     notLoaded = true;
+
+#ifdef USE_PHONON
     mediaObject->clear();
     metaInformationResolver->clear();
+#else
+    mediaObject->setMedia(QMediaContent());
+    metaInformationResolver->setMedia(QMediaContent());
+#endif
 
     emit mediaChanged("", "", currentID, true);
 
@@ -442,65 +510,7 @@ void QMusicPlayer::removeSource()
     }
 }
 
-void QMusicPlayer::stateChanged(Phonon::State newState, Phonon::State /* oldState */)
-{
-    switch (newState) {
-    case Phonon::ErrorState:
-        emit mediaChanged("", currentTitle, currentID, false);
-        break;
 
-    case Phonon::PlayingState:
-        stopAction->setEnabled(true);
-        togglePlayPauseAction->setEnabled(true);
-        togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
-        togglePlayPauseAction->setText(tr("Pause"));
-        disconnect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
-        connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
-        break;
-    case Phonon::StoppedState:
-        stopAction->setEnabled(false);
-        togglePlayPauseAction->setEnabled(true);
-        togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-        togglePlayPauseAction->setText(tr("Play"));
-        connect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
-        disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
-        timeLcd->display("00:00");
-        // clear highlight
-        emit showTextRequested(currentID, -3);
-        break;
-    case Phonon::PausedState:
-        stopAction->setEnabled(true);
-        togglePlayPauseAction->setEnabled(true);
-        togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-        togglePlayPauseAction->setText(tr("Play"));
-        connect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
-        disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
-        break;
-
-    case Phonon::BufferingState:
-        break;
-    default:
-        ;
-    }
-
-    if (notLoaded) {
-        infoLabel->setText("");
-        stopAction->setEnabled(false);
-        togglePlayPauseAction->setEnabled(false);
-        togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-        togglePlayPauseAction->setText(tr("Play"));
-        disconnect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
-        disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
-        timeLcd->display("00:00");
-    }
-
-    if (mediaObject->currentSource().type() == Phonon::MediaSource::Invalid) {
-        stopAction->setEnabled(false);
-        togglePlayPauseAction->setEnabled(false);
-        togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
-        togglePlayPauseAction->setText(tr("Play"));
-    }
-}
 
 void QMusicPlayer::tick(qint64 time)
 {
@@ -511,16 +521,23 @@ void QMusicPlayer::tick(qint64 time)
 
 void QMusicPlayer::load(int index)
 {
-    bool wasPlaying = mediaObject->state() == Phonon::PlayingState;
+    bool wasPlaying = mediaObject->state() == PlayingState;
 
     mediaObject->stop();
-    mediaObject->clearQueue();
+#ifdef USE_PHONON
+        mediaObject->clearQueue();
+#else
+        mediaObject->setMedia(QMediaContent());
+#endif
 
     if (index >= sources.size()) {
         return;
     }
-
+#ifdef USE_PHONON
     mediaObject->setCurrentSource(sources.at(index));
+#else
+    mediaObject->setMedia(sources.at(index));
+#endif
 
     if (wasPlaying) {
         mediaObject->play();
@@ -606,8 +623,13 @@ void QMusicPlayer::stopLyricSyncer(bool cancel)
     }
 
     if (!vOrders.contains(-2)) {
+#ifdef USE_PHONON
+        qint64 duration = mediaObject->totalTime();
+#else
+        qint64 duration = mediaObject->duration();
+#endif
         qint64 last = m_syncMap.keys().at(m_syncMap.size() - 1) + 1;
-        last = qBound(last, (mediaObject->totalTime() + last) / 2, mediaObject->totalTime());
+        last = qBound(last, (duration + last) / 2, duration);
         m_syncMap.insert(last, -2);
     }
 
@@ -656,8 +678,8 @@ void QMusicPlayer::stopLyricSyncer(bool cancel)
 
 void QMusicPlayer::recordTimeForVerse(int vorder)
 {
-    qint64 currentTime = qMax(mediaObject->currentTime(), qint64(TICK_INTERVAL + 1));
-    m_syncMap.insert(currentTime, vorder - 1);
+    qint64 time = qMax(currentTime(), qint64(TICK_INTERVAL + 1));
+    m_syncMap.insert(time, vorder - 1);
 }
 
 void QMusicPlayer::setLyricSyncerState(bool startState, bool enabled)
@@ -686,43 +708,143 @@ void QMusicPlayer::setLyricSyncerState(bool startState, bool enabled)
     }
 }
 
-void QMusicPlayer::sourceChanged(const Phonon::MediaSource &)
+void QMusicPlayer::sourceChanged()
 {
     timeLcd->display("00:00");
 }
 
-void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State)
+void QMusicPlayer::stateChange()
 {
-    if (m_lyricSyncerRuninng && (newState == Phonon::StoppedState || newState == Phonon::ErrorState)) {
+    State newState = State(mediaObject->state());
+
+#ifndef USE_PHONON
+    if (mediaObject->mediaStatus() == QMediaPlayer::EndOfMedia) {
+        // TODO: was the last source?
+        aboutToFinish();
+    }
+
+    if (mediaObject->error() != QMediaPlayer::NoError) {
+        newState = ErrorState;
+    }
+#endif
+    switch (newState) {
+    case ErrorState:
+        emit mediaChanged("", currentTitle, currentID, false);
+        break;
+
+    case PlayingState:
+        stopAction->setEnabled(true);
+        togglePlayPauseAction->setEnabled(true);
+        togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
+        togglePlayPauseAction->setText(tr("Pause"));
+        disconnect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
+        connect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
+        break;
+    case StoppedState:
+        stopAction->setEnabled(false);
+        togglePlayPauseAction->setEnabled(true);
+        togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        togglePlayPauseAction->setText(tr("Play"));
+        connect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
+        disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
+        timeLcd->display("00:00");
+        // clear highlight
+        emit showTextRequested(currentID, -3);
+
+        break;
+    case PausedState:
+        stopAction->setEnabled(true);
+        togglePlayPauseAction->setEnabled(true);
+        togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        togglePlayPauseAction->setText(tr("Play"));
+        connect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
+        disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
+        break;
+
+    case BufferingState:
+        break;
+    default:
+        ;
+    }
+
+    if (notLoaded) {
+        infoLabel->setText("");
+        stopAction->setEnabled(false);
+        togglePlayPauseAction->setEnabled(false);
+        togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        togglePlayPauseAction->setText(tr("Play"));
+        disconnect(togglePlayPauseAction, SIGNAL(triggered()), this, SLOT(playRequestedByUser()));
+        disconnect(togglePlayPauseAction, SIGNAL(triggered()), mediaObject, SLOT(pause()));
+        timeLcd->display("00:00");
+    }
+#ifdef USE_PHONON
+    if (mediaObject->currentSource().type() == Phonon::MediaSource::Invalid) {
+#else
+    if (mediaObject->mediaStatus() == QMediaPlayer::InvalidMedia) {
+#endif
+        stopAction->setEnabled(false);
+        togglePlayPauseAction->setEnabled(false);
+        togglePlayPauseAction->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+        togglePlayPauseAction->setText(tr("Play"));
+    }
+}
+
+void QMusicPlayer::metaStateChange()
+{
+    State newState = State(metaInformationResolver->state());
+
+    if (m_lyricSyncerRuninng && (newState == StoppedState || newState == ErrorState)) {
         stopLyricSyncer();
     }
 
-    if (newState == Phonon::ErrorState) {
+    if (newState == ErrorState) {
 #ifdef SAAGHAR_DEBUG
         qWarning() << "Error opening files: " << metaInformationResolver->errorString();
 #endif
+
+#ifdef USE_PHONON
+        Phonon::MediaSource source = metaInformationResolver->currentSource();
+#else
+        QMediaContent source = metaInformationResolver->currentMedia();
+#endif
+
         infoLabel->setText("Error opening files: " + metaInformationResolver->errorString());
-        while (!sources.isEmpty() &&
-                !(sources.takeLast() == metaInformationResolver->currentSource())
-              )
+        while (!sources.isEmpty() && !(sources.takeLast() == source))
         {}  /* loop */;
         return;
     }
 
-    if (newState != Phonon::StoppedState && newState != Phonon::PausedState) {
+    if (newState != StoppedState && newState != PausedState) {
         return;
     }
-
+#ifdef USE_PHONON
     if (metaInformationResolver->currentSource().type() == Phonon::MediaSource::Invalid) {
+#else
+    if (metaInformationResolver->mediaStatus() == QMediaPlayer::InvalidMedia) {
+#endif
         setLyricSyncerState(true, false);
         return;
     }
 
-    QMap<QString, QString> metaData = metaInformationResolver->metaData();
+    QMap<QString, QString> metaData;
+
+#ifdef USE_PHONON
+    metaData = metaInformationResolver->metaData();
+    Phonon::MediaSource source = metaInformationResolver->currentSource();
+    const QString &fileName = metaInformationResolver->currentSource().fileName();
+#else
+    QMediaContent source = metaInformationResolver->currentMedia();
+    const QString &fileName = source.canonicalUrl().toLocalFile();
+
+    metaData.insert("TITLE", metaInformationResolver->metaData("Title").toString());
+    metaData.insert("ARTIST", metaInformationResolver->metaData("Author").toStringList().join(QLatin1String("-")));
+    metaData.insert("ALBUM", metaInformationResolver->metaData("AlbumTitle").toString());
+    metaData.insert("DATE", metaInformationResolver->metaData("Date").toDate().toString());
+#endif
 
     QString title = metaData.value("TITLE");
     if (title == "") {
-        title = metaInformationResolver->currentSource().fileName();
+        title = fileName;
     }
 
     QStringList metaInfos;
@@ -732,10 +854,13 @@ void QMusicPlayer::metaStateChanged(Phonon::State newState, Phonon::State)
     metaInfos = tmp.split("-", QString::SkipEmptyParts);
     infoLabel->setText(metaInfos.join(" - "));
 
-    Phonon::MediaSource source = metaInformationResolver->currentSource();
-    int index = sources.indexOf(metaInformationResolver->currentSource()) + 1;
+    int index = sources.indexOf(source) + 1;
     if (sources.size() > index) {
+#ifdef USE_PHONON
         metaInformationResolver->setCurrentSource(sources.at(index));
+#else
+        metaInformationResolver->setMedia(sources.at(index));
+#endif
     }
 
     if (notLoaded) {
@@ -813,17 +938,21 @@ void QMusicPlayer::setupUi()
     addAction(stopAction);
     addSeparator();
 
+    infoLabel = new ScrollText(this);
+    infoLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+#ifdef USE_PHONON
     seekSlider = new Phonon::SeekSlider(this);
     seekSlider->setMediaObject(mediaObject);
 
-    infoLabel = new ScrollText(this);
-    infoLabel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
     infoLabel->resize(seekSlider->width(), infoLabel->height());
 
     volumeSlider = new Phonon::VolumeSlider(this);
     volumeSlider->setAudioOutput(audioOutput);
 
     volumeSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+#endif
 
     QPalette palette;
     palette.setBrush(QPalette::Light, Qt::darkGray);
@@ -832,18 +961,25 @@ void QMusicPlayer::setupUi()
     timeLcd->setPalette(palette);
 
     QVBoxLayout* infoLayout = new QVBoxLayout;
-    infoLayout->addWidget(seekSlider);
-    infoLayout->addWidget(infoLabel/*tmpLabel*/, 0, 0 /* Qt::AlignCenter*/);
     infoLayout->setSpacing(0);
     infoLayout->setContentsMargins(0, 0, 0, 0);
 
     QWidget* infoWidget = new QWidget;
     infoWidget->setLayout(infoLayout);
 
+#ifdef USE_PHONON
+    infoLayout->addWidget(seekSlider);
+    infoLayout->addWidget(infoLabel/*tmpLabel*/, 0, 0 /* Qt::AlignCenter*/);
+
     addWidget(infoWidget);
     addWidget(timeLcd);
     addWidget(volumeSlider);
+#else
+    infoLayout->addWidget(infoLabel/*tmpLabel*/, 0, 0 /* Qt::AlignCenter*/);
 
+    addWidget(infoWidget);
+    addWidget(timeLcd);
+#endif
 
     setLayoutDirection(Qt::LeftToRight);
 }
@@ -860,10 +996,15 @@ void QMusicPlayer::readPlayerSettings(QSettings* settingsObject)
         }
     }
 
+#ifdef USE_PHONON
     if (audioOutput) {
         audioOutput->setMuted(settingsObject->value("muted", false).toBool());
         audioOutput->setVolume(settingsObject->value("volume", 0.4).toReal());
     }
+#else
+    mediaObject->setMuted(settingsObject->value("muted", false).toBool());
+    mediaObject->setVolume(int(settingsObject->value("volume", 0.4).toReal()*100));
+#endif
     settingsObject->endGroup();
 }
 
@@ -871,10 +1012,17 @@ void QMusicPlayer::savePlayerSettings(QSettings* settingsObject)
 {
     settingsObject->beginGroup("QMusicPlayer");
     settingsObject->setValue("ListOfAlbum", albumsPathList);
+
+#ifdef USE_PHONON
     if (audioOutput) {
         settingsObject->setValue("muted", audioOutput->isMuted());
         settingsObject->setValue("volume", audioOutput->volume());
     }
+#else
+    settingsObject->setValue("muted", mediaObject->isMuted());
+    settingsObject->setValue("volume", ((qreal)mediaObject->volume()/100.0));
+#endif
+
     settingsObject->endGroup();
 }
 
@@ -1039,7 +1187,7 @@ void QMusicPlayer::saveAlbum(const QString &fileName, const QString &albumName, 
     QTextStream out(&file);
     out.setCodec("UTF-8");
     QString albumContent = QString("#SAAGHAR!ALBUM!V%1\n#ALBUM!TITLE!%2\n##################\n#ITEMS!\n").arg("0.1").arg(albumName);
-    QHash<int, SaagharMediaTag*>::const_iterator it = album->mediaItems.constBegin();  //album.constBegin();
+    QHash<int, SaagharMediaTag*>::const_iterator it = album->mediaItems.constBegin();
     while (it != album->mediaItems.constEnd()) {
         QString relativePath = albumInfo.relativeFilePath(it.value()->PATH);
         QString md5sumStr;
@@ -1244,8 +1392,9 @@ void QMusicPlayer::playMedia(int mediaID)
 void QMusicPlayer::resizeEvent(QResizeEvent* e)
 {
     QToolBar::resizeEvent(e);
-
+#ifdef USE_PHONON
     infoLabel->resize(seekSlider->width(), infoLabel->height());
+#endif
 }
 
 /*static*/
@@ -1257,7 +1406,13 @@ QStringList QMusicPlayer::commonSupportedMedia(const QString &type)
             << "asf" << "3gp" << "wmv" << "avi";
 
     const QString sep = "|";
+#ifdef USE_PHONON
     QString supportedMimeTypes = Phonon::BackendCapabilities::availableMimeTypes().join(sep);
+#else
+    // TODO: obsolete
+    QString supportedMimeTypes = QMediaPlayer::supportedMimeTypes().join(sep);
+    //qDebug() << QMediaPlayer::supportedMimeTypes();
+#endif
     for (int i = 0; i < commonMediaExtentions.size(); ++i) {
         QString extention = commonMediaExtentions.at(i);
         if (supportedMimeTypes.contains(QRegExp(QString("(%1/[^%2]*%3[^%2]*)").arg(type).arg(sep).arg(extention)))) {
@@ -1434,7 +1589,7 @@ void AlbumManager::setCurrentAlbum(const QString &albumName)
             mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
         }
         else {
-            if (albumMediaObject->state() != Phonon::PlayingState) {
+            if (albumMediaObject->state() != QMusicPlayer::PlayingState) {
                 mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
             }
             else {
@@ -1516,7 +1671,7 @@ void AlbumManager::currentMediaChanged(const QString &fileName, const QString &t
                         childItem->setToolTip(0, fontMetric.elidedText(title, Qt::ElideRight, 400) + "\n" + fileName);
                     }
 //                  childItem->setText(1, fileName);
-                    if (albumMediaObject && albumMediaObject->state() == Phonon::PlayingState) {
+                    if (albumMediaObject && albumMediaObject->state() == QMusicPlayer::PlayingState) {
                         childItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
                     }
                     if (mediaList->currentItem()) {
@@ -1542,7 +1697,7 @@ void AlbumManager::currentMediaChanged(const QString &fileName, const QString &t
             newChild->setToolTip(0, fontMetric.elidedText(title, Qt::ElideRight, 400) + "\n" + fileName);
 //          newChild->setText(1, fileName);
             newChild->setData(0, Qt::UserRole, mediaID);
-            if (albumMediaObject && albumMediaObject->state() == Phonon::PlayingState) {
+            if (albumMediaObject && albumMediaObject->state() == QMusicPlayer::PlayingState) {
                 newChild->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
             }
 
@@ -1615,18 +1770,26 @@ void AlbumManager::itemPlayRequested(QTreeWidgetItem* item, int /*col*/)
     previousItem = item;
     emit mediaPlayRequested(id);
 }
-
+#ifdef USE_PHONON
 void AlbumManager::setMediaObject(Phonon::MediaObject* MediaObject)
 {
     albumMediaObject = MediaObject;
     connect(albumMediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
             this, SLOT(mediaObjectStateChanged(Phonon::State,Phonon::State)));
 }
+#else
+void AlbumManager::setMediaObject(QMediaPlayer* MediaObject)
+{
+    albumMediaObject = MediaObject;
 
-void AlbumManager::mediaObjectStateChanged(Phonon::State newState, Phonon::State)
+    connect(albumMediaObject, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(mediaObjectStateChanged()));
+}
+#endif
+
+void AlbumManager::mediaObjectStateChanged()
 {
     if (previousItem) {
-        if (newState == Phonon::PlayingState) {
+        if (albumMediaObject->state() == QMusicPlayer::PlayingState) {
             previousItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
         }
         else {

@@ -46,12 +46,17 @@
 #define QMUSICPLAYER_H
 
 #include <QToolBar>
+#include <QList>
+
+#ifdef USE_PHONON
 #include <phonon/audiooutput.h>
 #include <phonon/seekslider.h>
 #include <phonon/mediaobject.h>
 #include <phonon/volumeslider.h>
 #include <phonon/backendcapabilities.h>
-#include <QList>
+#else
+#include <QMediaPlayer>
+#endif
 
 class QAction;
 class QLCDNumber;
@@ -68,6 +73,23 @@ class QMusicPlayer : public QToolBar
     Q_OBJECT
 
 public:
+    enum State {
+#ifdef USE_PHONON
+        StoppedState = Phonon::StoppedState,
+        PlayingState = Phonon::PlayingState,
+        PausedState = Phonon::PausedState,
+        ErrorState = Phonon::ErrorState,
+        BufferingState = Phonon::BufferingState
+#else
+        StoppedState = QMediaPlayer::StoppedState,
+        PlayingState = QMediaPlayer::PlayingState,
+        PausedState = QMediaPlayer::PausedState,
+        ErrorState,
+        BufferingState
+#endif
+
+    };
+
     struct SaagharMediaTag {
         qint64 time;
         QString TITLE;
@@ -122,11 +144,12 @@ private slots:
     void removeSource();
     void setSource();
     void seekOnStateChange();
+    void stateChange();
+    void metaStateChange();
 
-    void stateChanged(Phonon::State newState, Phonon::State oldState);
+    void sourceChanged();
+
     void tick(qint64 time);
-    void sourceChanged(const Phonon::MediaSource &);
-    void metaStateChanged(Phonon::State newState, Phonon::State oldState);
     void aboutToFinish();
     void load(int index);
     void playRequestedByUser();
@@ -151,12 +174,18 @@ private:
     void setupActions();
     void setupUi();
 
+#ifdef USE_PHONON
     Phonon::SeekSlider* seekSlider;
     Phonon::MediaObject* mediaObject;
     Phonon::MediaObject* metaInformationResolver;
     Phonon::AudioOutput* audioOutput;
     Phonon::VolumeSlider* volumeSlider;
     QList<Phonon::MediaSource> sources;
+#else
+    QMediaPlayer* mediaObject;
+    QMediaPlayer* metaInformationResolver;
+    QList<QMediaContent> sources;
+#endif
 
     QAction* togglePlayPauseAction;
     QAction* stopAction;
@@ -203,7 +232,12 @@ class AlbumManager : public QWidget
 public:
     AlbumManager(QMusicPlayer* musicPlayer = 0, QWidget* parent = 0);
     void setAlbums(const QHash<QString, QMusicPlayer::SaagharAlbum*> &albums, bool justMediaList = false);
+
+#ifdef USE_PHONON
     void setMediaObject(Phonon::MediaObject* MediaObject);
+#else
+    void setMediaObject(QMediaPlayer* MediaObject);
+#endif
 
     inline QString currentAlbumName() { return m_currentAlbum; }
     void setCurrentAlbum(const QString &albumName);
@@ -217,14 +251,19 @@ private:
     QTreeWidgetItem* previousItem;
     QTreeWidget* mediaList;
     QComboBox* m_albumList;
+#ifdef USE_PHONON
     Phonon::MediaObject* albumMediaObject;
+#else
+    QMediaPlayer* albumMediaObject;
+#endif
+
     QString m_currentAlbum;
     int m_currentID;
     QString m_currentFile;
     QMusicPlayer* m_musicPlayer;
 
 private slots:
-    void mediaObjectStateChanged(Phonon::State newState, Phonon::State);
+    void mediaObjectStateChanged();
     void itemPlayRequested(QTreeWidgetItem*, int);
     void currentMediaChanged(const QString &fileName, const QString &title, int mediaID, bool removeRequest = false);
     void currentAlbumChanged(int index);
