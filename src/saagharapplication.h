@@ -29,6 +29,7 @@
 #include <QApplication>
 
 class SaagharWindow;
+class DatabaseBrowser;
 
 class QThread;
 class QThreadPool;
@@ -43,6 +44,7 @@ public:
 
     ProgressManager* progressManager();
     QThreadPool* tasksThreadPool();
+    DatabaseBrowser* databaseBrowser();
 
     void applySettings();
 
@@ -58,6 +60,7 @@ private:
 
     ProgressManagerPrivate* m_progressManager;
     QThreadPool* m_tasksThreadPool;
+    DatabaseBrowser* m_databaseBrowser;
 
     int m_tasksThreads;
     bool m_displayFullNotification;

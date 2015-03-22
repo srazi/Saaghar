@@ -22,8 +22,6 @@
 #ifndef DATABASEBROWSER_H
 #define DATABASEBROWSER_H
 
-#define dbBrowser DatabaseBrowser::instance()
-
 #include <QMap>
 #include <QObject>
 #include <QWidget>
@@ -41,7 +39,6 @@
 #include "qtwin.h"
 
 #include <QDebug>
-#include <QMutex>
 
 #ifdef EMBEDDED_SQLITE
 #include "sqlite-driver/qsql_sqlite.h"
@@ -148,8 +145,6 @@ private:
     bool m_addRemoteDataSet;
 
     static QMultiHash<QThread*, QString> s_threadConnections;
-
-    QMutex m_mutex;
 
     static QString s_defaultConnectionId;
     static QString s_defaultDatabaseFileName;

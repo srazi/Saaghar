@@ -161,7 +161,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
     SearchResults searchResults;
 
-    QSqlDatabase threadDatabase = dbBrowser->databaseForThread(QThread::currentThread());
+    QSqlDatabase threadDatabase = sApp->databaseBrowser()->databaseForThread(QThread::currentThread());
     if (!threadDatabase.isOpen()) {
         qDebug() << QString("ConcurrentTask::startSearch: A database for thread %1 could not be opened!").arg(QString::number((quintptr)QThread::currentThread()));
         return QVariant();
@@ -241,12 +241,12 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
                         TASK_CANCELED;
 
-                        verses = dbBrowser->getVerses(poemID);
+                        verses = sApp->databaseBrowser()->getVerses(poemID);
                     }
 
                     TASK_CANCELED;
 
-                    excludeCurrentVerse = !dbBrowser->isRadif(verses, tphrase, verseOrder);
+                    excludeCurrentVerse = !sApp->databaseBrowser()->isRadif(verses, tphrase, verseOrder);
                     break;
                 }
                 if (tphrase.contains("=")) {
@@ -261,12 +261,12 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
                         TASK_CANCELED;
 
-                        verses = dbBrowser->getVerses(poemID);
+                        verses = sApp->databaseBrowser()->getVerses(poemID);
                     }
 
                     TASK_CANCELED;
 
-                    excludeCurrentVerse = !dbBrowser->isRhyme(verses, tphrase, verseOrder);
+                    excludeCurrentVerse = !sApp->databaseBrowser()->isRhyme(verses, tphrase, verseOrder);
                     break;
                 }
                 if (!tphrase.contains("%")) {
@@ -319,8 +319,8 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
             emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
         }
 
-        GanjoorPoem gPoem = dbBrowser->getPoem(poemID);
-        searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + dbBrowser->getPoetForCat(gPoem._CatID)._Name);
+        GanjoorPoem gPoem = sApp->databaseBrowser()->getPoem(poemID);
+        searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + sApp->databaseBrowser()->getPoetForCat(gPoem._CatID)._Name);
     }
 
     //for the last result

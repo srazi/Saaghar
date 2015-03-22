@@ -37,6 +37,7 @@
 #include "databasebrowser.h"
 #include "saagharwidget.h"
 #include "saagharwindow.h"
+#include "saagharapplication.h"
 
 QString DataBaseUpdater::downloadLocation;
 bool DataBaseUpdater::keepDownloadedFiles = false;
@@ -142,7 +143,7 @@ void DataBaseUpdater::parseElement(const QDomElement &element)
     QString ImageUrl = element.firstChildElement("ImageUrl").text();
     QString LowestPoemID = element.firstChildElement("LowestPoemID").text();
 
-    bool isNew = dbBrowser->getCategory(CatID).isNull();
+    bool isNew = sApp->databaseBrowser()->getCategory(CatID).isNull();
 
     if (insertedToList.contains(CatID) && insertedToList.value(CatID) == DownloadUrl) {
         return;

@@ -26,6 +26,7 @@
 #include "commands.h"
 #include "settings.h"
 #include "tools.h"
+#include "saagharapplication.h"
 
 #include <QSearchLineEdit>
 #include <QApplication>
@@ -209,14 +210,14 @@ void SaagharWidget::navigateToPage(QString type, int id, bool noError)
         type = "CatID";
     }
     if (type == "PoemID") {
-        GanjoorPoem poem = dbBrowser->getPoem(id);
+        GanjoorPoem poem = sApp->databaseBrowser()->getPoem(id);
         showPoem(poem);
     }
     else if (type == "CatID") {
         GanjoorCat category;
         category.init(0, 0, "", 0, "");
         if (noError) {
-            category = dbBrowser->getCategory(id);
+            category = sApp->databaseBrowser()->getCategory(id);
         }
         showCategory(category);
     }
@@ -316,7 +317,7 @@ void SaagharWidget::parentCatClicked()
     int idData = itemData.at(1).toInt(&OK);
     bool noError = false;
 
-    if (OK && dbBrowser) {
+    if (OK && sApp->databaseBrowser()) {
         noError = true;
     }
     processClickedItem("CatID", idData, noError);
@@ -329,8 +330,8 @@ void SaagharWidget::showHome()
 
 bool SaagharWidget::nextPoem()
 {
-    if (dbBrowser->isConnected()) {
-        GanjoorPoem poem = dbBrowser->getNextPoem(currentPoem, currentCat);
+    if (sApp->databaseBrowser()->isConnected()) {
+        GanjoorPoem poem = sApp->databaseBrowser()->getNextPoem(currentPoem, currentCat);
         if (!poem.isNull()) {
             processClickedItem("PoemID", poem._ID, true);
             return true;
@@ -341,8 +342,8 @@ bool SaagharWidget::nextPoem()
 
 bool SaagharWidget::previousPoem()
 {
-    if (dbBrowser->isConnected()) {
-        GanjoorPoem poem = dbBrowser->getPreviousPoem(currentPoem, currentCat);
+    if (sApp->databaseBrowser()->isConnected()) {
+        GanjoorPoem poem = sApp->databaseBrowser()->getPreviousPoem(currentPoem, currentCat);
         if (!poem.isNull()) {
             processClickedItem("PoemID", poem._ID, true);
             return true;
@@ -357,7 +358,7 @@ bool SaagharWidget::initializeCustomizedHome()
         return false;
     }
 
-    QList<GanjoorPoet*> poets = dbBrowser->getPoets();
+    QList<GanjoorPoet*> poets = sApp->databaseBrowser()->getPoets();
 
     //tableViewWidget->clearContents();
 
@@ -528,19 +529,19 @@ void SaagharWidget::showCategory(GanjoorCat category)
     pageMetaInfo.type = SaagharWidget::CategoryViewerPage;
 
     //new Caption
-    currentCaption = (currentCat == 0) ? tr("Home") : dbBrowser->getPoetForCat(currentCat)._Name;//for Tab Title
+    currentCaption = (currentCat == 0) ? tr("Home") : sApp->databaseBrowser()->getPoetForCat(currentCat)._Name;//for Tab Title
     if (currentCaption.isEmpty()) {
         currentCaption = currentLocationList.at(0);
     }
 
     emit captionChanged();
-    QList<GanjoorCat*> subcats = dbBrowser->getSubCategories(category._ID);
+    QList<GanjoorCat*> subcats = sApp->databaseBrowser()->getSubCategories(category._ID);
 
     int subcatsSize = subcats.size();
 
     bool poetForCathasDescription = false;
     if (category._ParentID == 0) {
-        poetForCathasDescription = !dbBrowser->getPoetForCat(category._ID)._Description.isEmpty();
+        poetForCathasDescription = !sApp->databaseBrowser()->getPoetForCat(category._ID)._Description.isEmpty();
     }
     if (subcatsSize == 1 && (category._ParentID != 0 || (category._ParentID == 0 && !poetForCathasDescription))) {
         GanjoorCat firstCat;
@@ -551,7 +552,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
         return;
     }
 
-    QList<GanjoorPoem*> poems = dbBrowser->getPoems(category._ID);
+    QList<GanjoorPoem*> poems = sApp->databaseBrowser()->getPoems(category._ID);
 
     if (poems.size() == 1 && subcatsSize == 0 && (category._ParentID != 0 || (category._ParentID == 0 && !poetForCathasDescription))) {
         GanjoorPoem firstPoem;
@@ -583,7 +584,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
     }
     else {
         tableViewWidget->setColumnCount(1);
-        GanjoorPoet gPoet = dbBrowser->getPoetForCat(category._ID);
+        GanjoorPoet gPoet = sApp->databaseBrowser()->getPoetForCat(category._ID);
         QString itemText = gPoet._Description;
         if (!itemText.isEmpty() && category._ParentID == 0) {
             startRow = 1;
@@ -690,7 +691,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
         catItem->setData(Qt::UserRole, "CatID=" + QString::number(subcats.at(i)->_ID));
 
         if (currentCat == 0) {
-            GanjoorPoet gPoet = dbBrowser->getPoetForCat(subcats.at(i)->_ID);
+            GanjoorPoet gPoet = sApp->databaseBrowser()->getPoetForCat(subcats.at(i)->_ID);
             QString poetPhotoFileName = poetsImagesDir + "/" + QString::number(gPoet._ID) + ".png";
             if (!QFile::exists(poetPhotoFileName)) {
                 poetPhotoFileName = ICON_PATH + "/no-photo.png";
@@ -720,7 +721,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
         if (subcatsSize > 0) {
             itemText.prepend("       ");    //7 spaces
         }
-        itemText += " : " + Tools::simpleCleanString(dbBrowser->getFirstMesra(poems.at(i)->_ID));
+        itemText += " : " + Tools::simpleCleanString(sApp->databaseBrowser()->getFirstMesra(poems.at(i)->_ID));
 
         if (itemText.isRightToLeft()) {
             ++betterRightToLeft;
@@ -763,8 +764,8 @@ void SaagharWidget::showCategory(GanjoorCat category)
     }
     QApplication::restoreOverrideCursor();
 
-    emit navPreviousActionState(!dbBrowser->getPreviousPoem(currentPoem, currentCat).isNull());
-    emit navNextActionState(!dbBrowser->getNextPoem(currentPoem, currentCat).isNull());
+    emit navPreviousActionState(!sApp->databaseBrowser()->getPreviousPoem(currentPoem, currentCat).isNull());
+    emit navNextActionState(!sApp->databaseBrowser()->getNextPoem(currentPoem, currentCat).isNull());
 
     dirty = false;//page is showed or refreshed
 }
@@ -777,7 +778,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
     parentCatsToolBar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
     parentCatsToolBar->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea | Qt::NoToolBarArea);
     //the parents of this category
-    QList<GanjoorCat> ancestors = dbBrowser->getParentCategories(category);
+    QList<GanjoorCat> ancestors = sApp->databaseBrowser()->getParentCategories(category);
 
 //  QHBoxLayout *parentCatLayout = new QHBoxLayout();
 //  QWidget *parentCatWidget = new QWidget();
@@ -890,9 +891,9 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
-    showParentCategory(dbBrowser->getCategory(poem._CatID));
+    showParentCategory(sApp->databaseBrowser()->getCategory(poem._CatID));
 
-    QList<GanjoorVerse*> verses = dbBrowser->getVerses(poem._ID);
+    QList<GanjoorVerse*> verses = sApp->databaseBrowser()->getVerses(poem._ID);
 
     QFont poemFont(Settings::getFromFonts(Settings::PoemTextFontColor));
     QFontMetrics poemFontMetric(poemFont);
@@ -910,7 +911,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     currentPoemTitle = poem._Title;
 
     //new Caption
-    currentCaption = (currentCat == 0) ? tr("Home") : dbBrowser->getPoetForCat(currentCat)._Name;//for Tab Title
+    currentCaption = (currentCat == 0) ? tr("Home") : sApp->databaseBrowser()->getPoetForCat(currentCat)._Name;//for Tab Title
     if (currentCaption.isEmpty()) {
         currentCaption = currentLocationList.at(0);
     }
@@ -1237,8 +1238,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     }
 #endif // MEDIA_PLAYER
 
-    emit navPreviousActionState(!dbBrowser->getPreviousPoem(currentPoem, currentCat).isNull());
-    emit navNextActionState(!dbBrowser->getNextPoem(currentPoem, currentCat).isNull());
+    emit navPreviousActionState(!sApp->databaseBrowser()->getPreviousPoem(currentPoem, currentCat).isNull());
+    emit navNextActionState(!sApp->databaseBrowser()->getNextPoem(currentPoem, currentCat).isNull());
 
     dirty = false;//page is showed or refreshed
 }
@@ -1256,9 +1257,9 @@ QString SaagharWidget::currentPageGanjoorUrl()
         return "http://ganjoor.net";
     }
     if (currentPoem == 0) {
-        return dbBrowser->getCategory(currentCat)._Url;
+        return sApp->databaseBrowser()->getCategory(currentCat)._Url;
     }
-    return dbBrowser->getPoem(currentPoem)._Url;
+    return sApp->databaseBrowser()->getPoem(currentPoem)._Url;
     /*
      * using following code you can delete url field in poem table,
      *
@@ -1359,7 +1360,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                     itemText = textEdit->toPlainText();
                 }
                 else {
-                    GanjoorPoet gPoet = dbBrowser->getPoetForCat(currentCat);
+                    GanjoorPoet gPoet = sApp->databaseBrowser()->getPoetForCat(currentCat);
                     itemText = gPoet._Description;
                 }
 

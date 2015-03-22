@@ -26,6 +26,8 @@
 #include "progressmanager.h"
 #include "progressview.h"
 #include "settings.h"
+#include "databasebrowser.h"
+
 #include <QExtendedSplashScreen>
 
 //#include<QMessageBox>
@@ -49,6 +51,7 @@ SaagharApplication::SaagharApplication(int &argc, char **argv)
       m_mainWindow(0),
       m_progressManager(0),
       m_tasksThreadPool(0),
+      m_databaseBrowser(0),
       m_tasksThreads(NORMAL_TASKS_THREADS),
       m_displayFullNotification(true),
       m_notificationPosition(ProgressManager::DesktopBottomRight)
@@ -63,6 +66,7 @@ SaagharApplication::~SaagharApplication()
 {
     delete m_mainWindow;
     delete m_progressManager;
+    delete m_databaseBrowser;
 }
 
 SaagharApplication *SaagharApplication::instance()
@@ -93,6 +97,15 @@ QThreadPool *SaagharApplication::tasksThreadPool()
     }
 
     return m_tasksThreadPool;
+}
+
+DatabaseBrowser *SaagharApplication::databaseBrowser()
+{
+    if (!m_databaseBrowser) {
+        m_databaseBrowser = DatabaseBrowser::instance();
+    }
+
+    return m_databaseBrowser;
 }
 
 void SaagharApplication::applySettings()
