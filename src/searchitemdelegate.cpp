@@ -33,7 +33,7 @@
 SaagharItemDelegate::SaagharItemDelegate(QWidget* parent, QStyle* style, QString phrase) : QItemDelegate(parent)
 {
     keywordList.clear();
-    keywordList = SearchPatternManager::phraseToList(phrase, false);
+    keywordList = SearchPatternManager::instance()->phraseToList(phrase, false);
     keywordList.removeDuplicates();
 
     parentWidget = parent;
@@ -392,7 +392,7 @@ void SaagharItemDelegate::keywordChanged(const QString &text)
 {
     keywordList.clear();
     QString tmp = text;
-    keywordList = SearchPatternManager::phraseToList(tmp, false);
+    keywordList = SearchPatternManager::instance()->phraseToList(tmp, false);
     keywordList.removeDuplicates();
 
     if (QAbstractScrollArea* scrollArea = qobject_cast<QAbstractScrollArea*>(parent())) {
@@ -407,7 +407,7 @@ ParagraphHighlighter::ParagraphHighlighter(QTextDocument* parent, const QString 
     : QSyntaxHighlighter(parent)
 {
     keywordList.clear();
-    keywordList = SearchPatternManager::phraseToList(phrase, false);
+    keywordList = SearchPatternManager::instance()->phraseToList(phrase, false);
     keywordList.removeDuplicates();
 }
 
@@ -415,7 +415,7 @@ void ParagraphHighlighter::keywordChanged(const QString &text)
 {
     keywordList.clear();
     QString tmp = text;
-    keywordList = SearchPatternManager::phraseToList(tmp, false);
+    keywordList = SearchPatternManager::instance()->phraseToList(tmp, false);
     keywordList.removeDuplicates();
     rehighlight();
 }

@@ -1430,7 +1430,7 @@ QTableWidgetItem* SaagharWidget::scrollToFirstItemContains(const QString &phrase
 
     QStringList list(keyword);
     if (pharseIsList) {
-        list = SearchPatternManager::phraseToList(keyword, false);
+        list = SearchPatternManager::instance()->phraseToList(keyword, false);
     }
 
     if (list.isEmpty()) {

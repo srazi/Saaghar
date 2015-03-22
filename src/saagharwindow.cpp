@@ -325,10 +325,6 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     uint seed = QCursor::pos().x() + QCursor::pos().y() + numOfSecs + QDateTime::currentDateTime().time().msec();
     qsrand(seed);
 
-    //install search pattern manager
-    SearchPatternManager* searchPatternManager = new SearchPatternManager();
-    searchPatternManager->setWildcardCharacter("%");
-
     restoreState(Settings::READ("MainWindowState").toByteArray(), 1);
     restoreGeometry(Settings::READ("Mainwindow Geometry").toByteArray());
 
@@ -428,10 +424,10 @@ void SaagharWindow::searchStart()
         else {
             //phrase = Tools::cleanString(SaagharWidget::lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
             //int poetID = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt();
-            SearchPatternManager::setInputPhrase(phrase);
-            SearchPatternManager::init();
-            QVector<QStringList> phraseVectorList = SearchPatternManager::outputPhrases();
-            QVector<QStringList> excludedVectorList = SearchPatternManager::outputExcludedLlist();
+            SearchPatternManager::instance()->setInputPhrase(phrase);
+            SearchPatternManager::instance()->init();
+            QVector<QStringList> phraseVectorList = SearchPatternManager::instance()->outputPhrases();
+            QVector<QStringList> excludedVectorList = SearchPatternManager::instance()->outputExcludedLlist();
             int vectorSize = phraseVectorList.size();
 
             int poetID;

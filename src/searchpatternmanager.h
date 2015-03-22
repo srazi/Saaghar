@@ -31,7 +31,7 @@ class SearchPatternManager : public QObject
 {
     Q_OBJECT
 public:
-    SearchPatternManager();
+    static SearchPatternManager* instance();
     ~SearchPatternManager();
 
     enum Operator {
@@ -44,24 +44,28 @@ public:
         Near = 60 //one argument just after it
     };
 
-    static void init();
-    static void setOperator(SearchPatternManager::Operator op, const QString &str);
-    static void setWildcardCharacter(const QString &str);
-    static void setInputPhrase(const QString &str);
-    static QVector<QStringList> outputPhrases();
-    static QVector<QStringList> outputExcludedLlist();
-    static void filterResults(QStringList*);
-    static QStringList phraseToList(const QString &str, bool removeWildCard = true);
-    //static void setSpaceOperator(SearchPatternManager::Operator op);
-    static int uniqueKeysCount;
+    void init();
+    void setOperator(SearchPatternManager::Operator op, const QString &str);
+    void setWildcardCharacter(const QString &str);
+    void setInputPhrase(const QString &str);
+    QVector<QStringList> outputPhrases();
+    QVector<QStringList> outputExcludedLlist();
+    void filterResults(QStringList*);
+    QStringList phraseToList(const QString &str, bool removeWildCard = true);
 
 private:
-    static QString OP(SearchPatternManager::Operator op);
-    static QString clearedPhrase(const QString &str);
-    static QMap<SearchPatternManager::Operator, QString> opList;
-    static QString wildcardCharacter;
-    static QString phraseForSearch;
-    static QMap<int, QString> computedPhraseList;//a multi value Map
-    static QMap<int, QString> relatedExcludeList;//a multi value Map
+    Q_DISABLE_COPY(SearchPatternManager)
+    SearchPatternManager(QObject* parent = 0);
+    static SearchPatternManager* s_instance;
+
+    QString OP(SearchPatternManager::Operator op);
+    QString clearedPhrase(const QString &str);
+
+    QMap<SearchPatternManager::Operator, QString> m_operators;
+    QString m_wildcardCharacter;
+    QString m_phraseForSearch;
+    QMap<int, QString> m_computedPhraseList;
+    QMap<int, QString> m_relatedExcludeList;
+    int m_uniqueKeysCount;
 };
 #endif // SEARCHPATTERNMANAGER_H

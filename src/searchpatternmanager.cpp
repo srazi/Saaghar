@@ -22,22 +22,34 @@
 #include "searchpatternmanager.h"
 #include "tools.h"
 
+#include <QApplication>
 #include <QDebug>
 
-int SearchPatternManager::uniqueKeysCount = 0;
-QString SearchPatternManager::wildcardCharacter = "*";
-QString SearchPatternManager::phraseForSearch = "";
-QMap<int, QString> SearchPatternManager::computedPhraseList = QMap<int, QString>();//a multi value Map
-QMap<int, QString> SearchPatternManager::relatedExcludeList = QMap<int, QString>();//a multi value Map
-QMap<SearchPatternManager::Operator, QString> SearchPatternManager::opList = QMap<SearchPatternManager::Operator, QString>();
+SearchPatternManager* SearchPatternManager::s_instance = 0;
 
-SearchPatternManager::SearchPatternManager()
+SearchPatternManager::SearchPatternManager(QObject *parent)
+    : QObject(parent),
+      m_operators(),
+      m_wildcardCharacter(QLatin1Char('%')),
+      m_phraseForSearch(),
+      m_computedPhraseList(),
+      m_relatedExcludeList(),
+      m_uniqueKeysCount(0)
 {
-    setOperator(SearchPatternManager::Or, "|");
-    setOperator(SearchPatternManager::Any, "*");
-    setOperator(SearchPatternManager::And, "+");
-    setOperator(SearchPatternManager::WithOut, "-");
-    setOperator(SearchPatternManager::WholeWord, "\"");
+    setOperator(SearchPatternManager::Or, QLatin1String("|"));
+    setOperator(SearchPatternManager::Any, QLatin1String("*"));
+    setOperator(SearchPatternManager::And, QLatin1String("+"));
+    setOperator(SearchPatternManager::WithOut, QLatin1String("-"));
+    setOperator(SearchPatternManager::WholeWord, QLatin1String("\""));
+}
+
+SearchPatternManager *SearchPatternManager::instance()
+{
+    if (!s_instance) {
+        s_instance = new SearchPatternManager(qApp);
+    }
+
+    return s_instance;
 }
 
 SearchPatternManager::~SearchPatternManager()
@@ -46,10 +58,10 @@ SearchPatternManager::~SearchPatternManager()
 
 void SearchPatternManager::init()
 {
-    computedPhraseList.clear();
-    relatedExcludeList.clear();
-    uniqueKeysCount = 0;
-    QString initilizedPhrase = SearchPatternManager::clearedPhrase(SearchPatternManager::phraseForSearch);
+    m_computedPhraseList.clear();
+    m_relatedExcludeList.clear();
+    m_uniqueKeysCount = 0;
+    QString initilizedPhrase = SearchPatternManager::clearedPhrase(SearchPatternManager::m_phraseForSearch);
 
     initilizedPhrase = initilizedPhrase.replace(OP(WholeWord), " ");//moved here from subAndList loop
 
@@ -62,7 +74,7 @@ void SearchPatternManager::init()
             if (str.startsWith(OP(WithOut))) {
                 str = str.remove(0, 1);
                 str = Tools::cleanString(str);
-                relatedExcludeList.insertMulti(i, str);
+                m_relatedExcludeList.insertMulti(i, str);
                 subAndList[j] = "";
                 continue;
             }
@@ -75,32 +87,32 @@ void SearchPatternManager::init()
         int andListSize = subAndList.size();
         for (int j = 0; j < andListSize; ++j) {
             QString str = subAndList.at(j);
-            if (str.remove(wildcardCharacter).isEmpty()) { //for remove empty items
+            if (str.remove(m_wildcardCharacter).isEmpty()) { //for remove empty items
                 continue;
             }
             //str = str.replace(OP(WholeWord), " ");//moved to the first
             //str = wildcardCharacter+str+wildcardCharacter;
             str = Tools::cleanString(subAndList.at(j));
-            computedPhraseList.insertMulti(i, str);
+            m_computedPhraseList.insertMulti(i, str);
         }
     }
 
-    uniqueKeysCount = computedPhraseList.uniqueKeys().size();
+    m_uniqueKeysCount = m_computedPhraseList.uniqueKeys().size();
 }
 
 void SearchPatternManager::setOperator(SearchPatternManager::Operator op, const QString &str)
 {
-    opList.insert(op, str);
+    m_operators.insert(op, str);
 }
 
 void SearchPatternManager::setWildcardCharacter(const QString &str)
 {
-    wildcardCharacter = str;
+    m_wildcardCharacter = str;
 }
 
 void SearchPatternManager::setInputPhrase(const QString &str)
 {
-    SearchPatternManager::phraseForSearch = str;
+    SearchPatternManager::m_phraseForSearch = str;
 }
 
 /*static */
@@ -113,11 +125,11 @@ QVector<QStringList> SearchPatternManager::outputPhrases(/*int i*/)
 //      qDebug() << i.key()<< "th-SubPhrase=" << ithSubPhrase.join("|");
 //      ++i;
 //  }
-    QList<int> keys = computedPhraseList.uniqueKeys();
+    QList<int> keys = m_computedPhraseList.uniqueKeys();
     int lsize = keys.size();
     QVector<QStringList> vector(lsize, QStringList());
     for (int i = 0; i < lsize; ++i) {
-        QStringList ithSubPhrase = computedPhraseList.values(keys.at(i));
+        QStringList ithSubPhrase = m_computedPhraseList.values(keys.at(i));
         ithSubPhrase.join("|");
         vector.replace(i, ithSubPhrase);
     }
@@ -133,11 +145,11 @@ QVector<QStringList> SearchPatternManager::outputExcludedLlist()
 //      qDebug() << i.key()<< "th-SubPhrase=" << ithSubPhrase.join("|");
 //      ++i;
 //  }
-    QList<int> keys = computedPhraseList.uniqueKeys();
+    QList<int> keys = m_computedPhraseList.uniqueKeys();
     int lsize = keys.size();
     QVector<QStringList> vector(lsize, QStringList());
     for (int i = 0; i < lsize; ++i) {
-        QStringList ithSubExclude = relatedExcludeList.values(keys.at(i));
+        QStringList ithSubExclude = m_relatedExcludeList.values(keys.at(i));
         ithSubExclude.join("|");
         vector.replace(i, ithSubExclude);
     }
@@ -151,7 +163,7 @@ void SearchPatternManager::filterResults(QStringList* /*resultList*/)
 /*static */
 QString SearchPatternManager::OP(SearchPatternManager::Operator op)
 {
-    return opList.value(op, "");
+    return m_operators.value(op, "");
 }
 
 QString SearchPatternManager::clearedPhrase(const QString &str)
@@ -178,7 +190,7 @@ QString SearchPatternManager::clearedPhrase(const QString &str)
     clearedString.replace(" " + OP(Or), OP(Or));
 
     //maybe we change this behaivior//a tricky and temporary method
-    clearedString.replace(OP(Any) + OP(Any), wildcardCharacter + wildcardCharacter);
+    clearedString.replace(OP(Any) + OP(Any), m_wildcardCharacter + m_wildcardCharacter);
 
     //clear doublicates
     clearedString = clearedString.split(OP(WithOut), QString::SkipEmptyParts).join(OP(WithOut));
@@ -187,7 +199,7 @@ QString SearchPatternManager::clearedPhrase(const QString &str)
     clearedString = clearedString.split(OP(And), QString::SkipEmptyParts).join(OP(And));
 
     //maybe we change this behaivior
-    clearedString.replace(OP(Any), wildcardCharacter);
+    clearedString.replace(OP(Any), m_wildcardCharacter);
 
     QStringList wholeWordList = clearedString.split(OP(WholeWord));
     //The odd indices are the ones enclosed by SearchPatternManager::WholeWord
@@ -223,7 +235,7 @@ QStringList SearchPatternManager::phraseToList(const QString &str,  bool removeW
     tmp.replace(OP(Any), " ");
     tmp.replace(OP(And), " ");
     tmp.replace(OP(WholeWord), " ");
-    tmp.replace(wildcardCharacter + wildcardCharacter, " ");
+    tmp.replace(m_wildcardCharacter + m_wildcardCharacter, " ");
     /**********************************************/
     //TODO: CHANGE THIS!!
     //for Rhyme finder need to changed
@@ -231,10 +243,10 @@ QStringList SearchPatternManager::phraseToList(const QString &str,  bool removeW
     /**********************************************/
 
     if (removeWildCard) {
-        tmp.replace(wildcardCharacter, " ");
+        tmp.replace(m_wildcardCharacter, " ");
     }
     else {
-        tmp.replace(wildcardCharacter, "@");
+        tmp.replace(m_wildcardCharacter, "@");
     }
 
     QStringList list = tmp.split(" ", QString::SkipEmptyParts);
