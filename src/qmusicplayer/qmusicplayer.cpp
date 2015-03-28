@@ -1777,7 +1777,7 @@ void AlbumManager::setMediaObject(Phonon::MediaObject* MediaObject)
 {
     albumMediaObject = MediaObject;
     connect(albumMediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)),
-            this, SLOT(mediaObjectStateChanged(Phonon::State,Phonon::State)));
+            this, SLOT(mediaObjectStateChanged()));
 }
 #else
 void AlbumManager::setMediaObject(QMediaPlayer* MediaObject)
