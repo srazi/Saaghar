@@ -52,7 +52,6 @@ public:
     bool read(const QByteArray &data);
     static QString downloadLocation;
     static bool keepDownloadedFiles;
-    inline static void setSaagharWindow(SaagharWindow* saagharWindow = 0) { DataBaseUpdater::s_saagharWindow = saagharWindow; }
 
 public slots:
     void readRepository(const QString &url = "");
@@ -75,9 +74,9 @@ private:
     void setupUi();
     void parseElement(const QDomElement &element);
     void fillRepositoryList();
+    void importDataBase(const QString &fileName, bool* ok = 0);
 
     QHash<QString, QPair<QTreeWidgetItem*, QTreeWidgetItem*> > itemsCache;
-    static SaagharWindow* s_saagharWindow;
     const static QStringList defaultRepositories;
     static QStringList repositoriesUrls;
     bool installCompleted;

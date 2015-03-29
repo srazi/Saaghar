@@ -71,11 +71,6 @@
 #include "qmusicplayer.h"
 #endif
 
-QString SaagharWindow::resourcesPath;
-QString SaagharWindow::userHomePath;
-bool SaagharWindow::autoCheckForUpdatesState = true;
-bool SaagharWindow::isPortable = false;
-
 SaagharWindow::SaagharWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::SaagharWindow)
@@ -84,75 +79,20 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     , m_settingsDialog(0)
 {
     setObjectName("SaagharMainWindow");
-
-    QCoreApplication::setOrganizationName("Pozh");
-    QCoreApplication::setApplicationName("Saaghar");
-    QCoreApplication::setOrganizationDomain("Pozh.org");
-
     setWindowIcon(QIcon(":/resources/images/saaghar.png"));
-
-#ifdef Q_OS_MAC
-    QFileInfo portableSettings(QCoreApplication::applicationDirPath() + "/../Resources/settings.ini");
-#else
-    QFileInfo portableSettings(QCoreApplication::applicationDirPath() + "/settings.ini");
-#endif
-
-    if (portableSettings.exists() && portableSettings.isWritable()) {
-        isPortable = true;
-    }
-    else {
-        isPortable = false;
-    }
-
-    const QString tempDataBaseName = "/ganjoor.s3db";//temp
-    QString dataBaseCompleteName = "/ganjoor.s3db";
-
-    if (isPortable) {
-#ifdef Q_OS_MAC
-        dataBaseCompleteName = QCoreApplication::applicationDirPath() + "/../Resources/" + dataBaseCompleteName;
-        resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
-#else
-        dataBaseCompleteName = QCoreApplication::applicationDirPath() + dataBaseCompleteName;
-        resourcesPath = QCoreApplication::applicationDirPath();
-#endif
-        userHomePath = resourcesPath;
-    }
-    else {
-#ifdef Q_OS_WIN
-        //dataBaseCompleteName = QDir::homePath()+"/Pojh/Saaghar/"+dataBaseCompleteName;
-        resourcesPath = QCoreApplication::applicationDirPath();
-        userHomePath = QDir::homePath() + "/Pozh/Saaghar/";
-#endif
-#ifdef Q_OS_X11
-        //dataBaseCompleteName = "/usr/share/saaghar/"+dataBaseCompleteName;
-        resourcesPath = PREFIX"/share/saaghar/";
-        userHomePath = QDir::homePath() + "/.Pozh/Saaghar/";
-#endif
-#ifdef Q_OS_MAC
-        //dataBaseCompleteName = QDir::homePath()+"/Library/Saaghar/"+dataBaseCompleteName;
-        resourcesPath = QCoreApplication::applicationDirPath() + "/../Resources/";
-        userHomePath = QDir::homePath() + "/Library/Saaghar/";
-#endif
-        dataBaseCompleteName = resourcesPath + dataBaseCompleteName;
-    }
 
     bool fresh = QCoreApplication::arguments().contains("-fresh", Qt::CaseInsensitive);
 
-    QString uiLanguage = getSettingsObject()->value("UI Language", "fa").toString();
+    QString uiLanguage = sApp->getSettingsObject()->value("UI Language", "fa").toString();
 
     QTranslator* appTranslator = new QTranslator();
     QTranslator* basicTranslator = new QTranslator();
 
-    if (appTranslator->load(QString("saaghar_") + uiLanguage, resourcesPath)) {
+    if (appTranslator->load(QString("saaghar_") + uiLanguage, sApp->defaultPath(SaagharApplication::ResourcesDir))) {
         QCoreApplication::installTranslator(appTranslator);
-        if (basicTranslator->load(QString("qt_") + uiLanguage, resourcesPath)) {
+        if (basicTranslator->load(QString("qt_") + uiLanguage, sApp->defaultPath(SaagharApplication::ResourcesDir))) {
             QCoreApplication::installTranslator(basicTranslator);
         }
-    }
-
-    QDir saagharUserPath(userHomePath);
-    if (!saagharUserPath.exists()) {
-        saagharUserPath.mkpath(userHomePath);
     }
 
 #ifdef MEDIA_PLAYER
@@ -162,10 +102,10 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     SaagharWidget::musicPlayer->albumManagerDock()->hide();
     SaagharWidget::musicPlayer->hide();
 
-    SaagharWidget::musicPlayer->readPlayerSettings(getSettingsObject());
+    SaagharWidget::musicPlayer->readPlayerSettings(sApp->getSettingsObject());
 
     if (QMusicPlayer::albumsPathList.isEmpty()) {
-        const QString &defaultFile = userHomePath + "/default.sal";
+        const QString &defaultFile = sApp->defaultPath(SaagharApplication::AlbumFile);
         if (!QFile::exists(defaultFile)) {
             SaagharWidget::musicPlayer->newAlbum(defaultFile, "default");
         }
@@ -182,13 +122,12 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     //loading application fonts
     //QString applicationFontsPath = resourcesPath + "/fonts/";
-    QDir fontsDir(resourcesPath + "/fonts/");
+    QDir fontsDir(sApp->defaultPath(SaagharApplication::ResourcesDir) + "/fonts/");
     QStringList fontsList = fontsDir.entryList(QDir::Files | QDir::NoDotAndDotDot);
     for (int i = 0; i < fontsList.size(); ++i) {
-        QFontDatabase::addApplicationFont(resourcesPath + "/fonts/" + fontsList.at(i));
+        QFontDatabase::addApplicationFont(sApp->defaultPath(SaagharApplication::ResourcesDir)
+                                          + "/fonts/" + fontsList.at(i));
     }
-
-    loadGlobalSettings();
 
     if (splashScreen(QExtendedSplashScreen) && !fresh) {
         if (Settings::READ("Display Splash Screen", true).toBool()) {
@@ -220,7 +159,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     skipContextMenu = false;
 
-    SaagharWidget::poetsImagesDir = resourcesPath + "/poets_images/";
+    SaagharWidget::poetsImagesDir = sApp->defaultPath(SaagharApplication::ResourcesDir) + "/poets_images/";
 
     ui->setupUi(this);
 
@@ -234,7 +173,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     //create Tab Widget
     mainTabWidget = ui->tabWidget;
 
-    if (autoCheckForUpdatesState && !fresh) {
+    if (Settings::READ("Auto Check For Updates", true).toBool() && !fresh) {
         showStatusText(tr("<i><b>Checking for update...</b></i>"));
         QCoreApplication::processEvents();
         checkForUpdates();
@@ -261,23 +200,6 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     cornerWidget->setLayout(hLayout);
     connect(cornerMenuButton, SIGNAL(clicked()), cornerMenuButton, SLOT(showMenu()));
     mainTabWidget->setCornerWidget(cornerWidget);
-
-    //searching database-path for database-file
-    //following lines are for support old default data-base pathes.
-    QStringList dataBaseCompatibilityPath(DatabaseBrowser::dataBasePath);
-    dataBaseCompatibilityPath   << resourcesPath
-                                << QDir::homePath() + "/Pojh/Saaghar/"
-                                << QDir::homePath() + "/Library/Saaghar/";
-    for (int i = 0; i < dataBaseCompatibilityPath.size(); ++i) {
-        if (QFile::exists(dataBaseCompatibilityPath.at(i) + tempDataBaseName)) {
-            dataBaseCompleteName = dataBaseCompatibilityPath.at(i) + tempDataBaseName;
-            break;
-        }
-    }
-
-    // create DataBase browser
-    // TODO: Move to SaagharApplication
-    DatabaseBrowser::setDefaultDatabasename(dataBaseCompleteName);
 
     loadTabWidgetSettings();
 
@@ -316,11 +238,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     previousTabIndex = mainTabWidget->currentIndex();
     currentTabChanged(mainTabWidget->currentIndex());
 
-    QListWidgetItem* item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
-    QListWidgetItem* titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
-    multiSelectObjectInitialize(selectSearchRange, selectedSearchRange, 2);
-    item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
-    titleSearchItem->setCheckState(selectedSearchRange.contains("ALL_TITLES") ? Qt::Checked : Qt::Unchecked);
+    multiSelectInsertItems(selectSearchRange);
 
     //seeding random function
     uint numOfSecs = QDateTime::currentDateTime().toTime_t();
@@ -349,6 +267,8 @@ SaagharWindow::SaagharWindow(QWidget* parent)
         //apply transparent effect just in windowed mode!
         QtWin::easyBlurUnBlur(this, Settings::READ("UseTransparecy").toBool());
     }
+
+    connect(sApp->databaseBrowser(), SIGNAL(databaseUpdated()), this, SLOT(onDatabaseUpdate()));
 
     showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), -1);
 }
@@ -565,6 +485,18 @@ void SaagharWindow::multiSelectObjectInitialize(QMultiSelectWidget* multiSelectW
     multiSelectWidget->updateSelectedLists();
 }
 
+void SaagharWindow::multiSelectInsertItems(QMultiSelectWidget *multiSelectWidget)
+{
+    QListWidgetItem* item = multiSelectWidget->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
+    QListWidgetItem* titleSearchItem = multiSelectWidget->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
+
+    const QStringList selectedSearchRange = Settings::READ("Selected Search Range", (QStringList() << "0" << "ALL_TITLES")).toStringList();
+
+    multiSelectObjectInitialize(multiSelectWidget, selectedSearchRange, 2);
+    item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
+    titleSearchItem->setCheckState(selectedSearchRange.contains("ALL_TITLES") ? Qt::Checked : Qt::Unchecked);
+}
+
 void SaagharWindow::actionRemovePoet()
 {
     bool ok = false;
@@ -596,11 +528,7 @@ void SaagharWindow::actionRemovePoet()
             outlineTree->setItems(sApp->databaseBrowser()->loadOutlineFromDataBase(0));
 
             selectSearchRange->clear();
-            QListWidgetItem* item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
-            QListWidgetItem* titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
-            multiSelectObjectInitialize(selectSearchRange, selectedSearchRange, 2);
-            item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
-            titleSearchItem->setCheckState(selectedSearchRange.contains("ALL_TITLES") ? Qt::Checked : Qt::Unchecked);
+            multiSelectInsertItems(selectSearchRange);
 
             setHomeAsDirty();
             QApplication::restoreOverrideCursor();
@@ -1008,7 +936,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         baseContainer->setLayout(baseLayout);
         /****/
 
-        QPixmap pixmap(resourcesPath + "/themes/backgrounds/saaghar-pattern_1.png");
+        QPixmap pixmap(sApp->defaultPath(SaagharApplication::ResourcesDir) + "/themes/backgrounds/saaghar-pattern_1.png");
         if (!pixmap.isNull()) {
             QPalette p(scrollArea->viewport()->palette());
             p.setBrush(QPalette::Base, QBrush(pixmap));
@@ -1576,7 +1504,7 @@ void SaagharWindow::aboutSaaghar()
 
 void SaagharWindow::helpContents()
 {
-    if (!QDesktopServices::openUrl("file:///" + resourcesPath + "/Saaghar-Manual.pdf")) {
+    if (!QDesktopServices::openUrl("file:///" + sApp->defaultPath(SaagharApplication::ResourcesDir) + "/Saaghar-Manual.pdf")) {
         QMessageBox::warning(this, tr("Error"), tr("Help file not found!"));
     }
 }
@@ -1973,6 +1901,9 @@ void SaagharWindow::setupUi()
     menuHelp->addAction(actionInstance("actionAboutSaaghar"));
     menuHelp->addAction(actionInstance("actionAboutQt"));
 
+    QStringList mainToolBarItems = sApp->mainToolBarItems();
+    mainToolBarItems.removeAll(QLatin1String(""));
+
     //Inserting mainToolbar's items
     for (int i = 0; i < mainToolBarItems.size(); ++i) {
         if (allActionMap.contains(mainToolBarItems.at(i)) || mainToolBarItems.at(i).contains("separator", Qt::CaseInsensitive)) {
@@ -1984,8 +1915,8 @@ void SaagharWindow::setupUi()
     }
 
     //removing no more supported items
-    QString temp = mainToolBarItems.join("|");
-    mainToolBarItems = temp.split("|", QString::SkipEmptyParts);
+    mainToolBarItems.removeAll(QLatin1String(""));
+    sApp->setMainToolBarItems(mainToolBarItems);
 
     addToolBar(Qt::TopToolBarArea, parentCatsToolBar);
     if (ui->menuToolBar) {
@@ -2113,6 +2044,14 @@ void SaagharWindow::showStatusText(const QString &message, int newLevelsCount)
     splashScreen(QExtendedSplashScreen)->showMessage(message);
 }
 
+void SaagharWindow::onDatabaseUpdate()
+{
+    outlineTree->setItems(sApp->databaseBrowser()->loadOutlineFromDataBase(0));
+    selectSearchRange->clear();
+    multiSelectInsertItems(selectSearchRange);
+    setHomeAsDirty();
+}
+
 QAction* SaagharWindow::actionInstance(const QString &actionObjectName, QString iconPath, QString displayName)
 {
     QAction* action = 0;
@@ -2224,10 +2163,10 @@ void SaagharWindow::showSettingsDialog()
 
     m_settingsDialog->ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
 
-    m_settingsDialog->ui->checkBoxAutoUpdates->setChecked(SaagharWindow::autoCheckForUpdatesState);
+    m_settingsDialog->ui->checkBoxAutoUpdates->setChecked(Settings::READ("Auto Check For Updates", true).toBool());
 
     //database
-    m_settingsDialog->ui->lineEditDataBasePath->setText(DatabaseBrowser::dataBasePath.join(";"));
+    m_settingsDialog->ui->lineEditDataBasePath->setText(sApp->defaultPath(SaagharApplication::DatabaseDirs));
     connect(m_settingsDialog->ui->pushButtonDataBasePath, SIGNAL(clicked()), m_settingsDialog, SLOT(browseForDataBasePath()));
 
     m_settingsDialog->ui->checkBoxBeytNumbers->setChecked(SaagharWidget::showBeytNumbers);
@@ -2242,7 +2181,7 @@ void SaagharWindow::showSettingsDialog()
     m_settingsDialog->ui->checkBoxSplashScreen->setChecked(Settings::READ("Display Splash Screen", true).toBool());
 
     //initialize Action's Tables
-    m_settingsDialog->initializeActionTables(allActionMap, mainToolBarItems);
+    m_settingsDialog->initializeActionTables(allActionMap, sApp->mainToolBarItems());
 
     connect(m_settingsDialog->ui->pushButtonActionBottom, SIGNAL(clicked()), m_settingsDialog, SLOT(bottomAction()));
     connect(m_settingsDialog->ui->pushButtonActionTop, SIGNAL(clicked()), m_settingsDialog, SLOT(topAction()));
@@ -2276,10 +2215,10 @@ void SaagharWindow::applySettings()
 
     SaagharWidget::maxPoetsPerGroup = m_settingsDialog->ui->spinBoxPoetsPerGroup->value();
 
-    SaagharWindow::autoCheckForUpdatesState = m_settingsDialog->ui->checkBoxAutoUpdates->isChecked();
+    Settings::WRITE("Auto Check For Updates", QVariant(m_settingsDialog->ui->checkBoxAutoUpdates->isChecked()));
 
     //database path
-    DatabaseBrowser::dataBasePath = m_settingsDialog->ui->lineEditDataBasePath->text().split(";", QString::SkipEmptyParts);
+    sApp->setDefaultPath(SaagharApplication::DatabaseDirs, m_settingsDialog->ui->lineEditDataBasePath->text());
 
     SaagharWidget::showBeytNumbers = m_settingsDialog->ui->checkBoxBeytNumbers->isChecked();
 
@@ -2294,7 +2233,7 @@ void SaagharWindow::applySettings()
     Settings::WRITE("Display Splash Screen", m_settingsDialog->ui->checkBoxSplashScreen->isChecked());
 
     //toolbar items
-    mainToolBarItems.clear();
+    QStringList mainToolBarItems;
     for (int i = 0; i < m_settingsDialog->ui->tableWidgetToolBarActions->rowCount(); ++i) {
         QTableWidgetItem* item = m_settingsDialog->ui->tableWidgetToolBarActions->item(i, 0);
         if (item) {
@@ -2302,7 +2241,7 @@ void SaagharWindow::applySettings()
         }
     }
 
-    Settings::WRITE("Main ToolBar Items", mainToolBarItems.join("|"));
+    sApp->setMainToolBarItems(mainToolBarItems);
 
     Settings::WRITE("Global Font", m_settingsDialog->ui->globalFontColorGroupBox->isChecked());
     //QFont fnt;
@@ -2377,124 +2316,6 @@ void SaagharWindow::applySettings()
     sApp->applySettings();
 }
 
-/*static*/
-QSettings* SaagharWindow::getSettingsObject()
-{
-    QString organization = "Pozh";
-    QString settingsName = "Saaghar";
-    QSettings::Format settingsFormat = QSettings::NativeFormat;
-
-    if (isPortable) {
-        settingsFormat = QSettings::IniFormat;
-        QSettings::setPath(settingsFormat, QSettings::UserScope, QCoreApplication::applicationDirPath());
-        organization = ".";
-        settingsName = "settings";
-    }
-    return  new QSettings(settingsFormat, QSettings::UserScope, organization, settingsName);
-}
-
-void SaagharWindow::loadGlobalSettings()
-{
-    QSettings* config = getSettingsObject();
-
-    Settings::LOAD_VARIABLES(config->value("VariableHash").toHash());
-
-    SaagharWidget::CurrentViewStyle = (SaagharWidget::PoemViewStyle)Settings::READ("Poem Current View Style", SaagharWidget::SteppedHemistichLine).toInt();
-
-    if (SaagharWidget::CurrentViewStyle != SaagharWidget::OneHemistichLine &&
-            SaagharWidget::CurrentViewStyle != SaagharWidget::TwoHemistichLine &&
-            SaagharWidget::CurrentViewStyle != SaagharWidget::SteppedHemistichLine) {
-        SaagharWidget::CurrentViewStyle = SaagharWidget::SteppedHemistichLine;
-    }
-
-    SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
-
-    //search options
-    SearchResultWidget::maxItemPerPage  = config->value("Max Search Results Per Page", 100).toInt();
-    SearchResultWidget::nonPagedSearch = config->value("SearchNonPagedResults", false).toBool();
-    SearchResultWidget::skipVowelSigns = config->value("SearchSkipVowelSigns", false).toBool();
-    SearchResultWidget::skipVowelLetters = config->value("SearchSkipVowelLetters", false).toBool();
-
-    SaagharWidget::backgroundImageState = Settings::READ("Background State", true).toBool();
-    SaagharWidget::backgroundImagePath = Settings::READ("Background Path", resourcesPath + "/themes/backgrounds/saaghar-pattern_1.png").toString();
-
-    DatabaseBrowser::dataBasePath = config->value("DataBase Path", "").toString().split(";", QString::SkipEmptyParts);
-
-
-    SaagharWidget::showBeytNumbers = config->value("Show Beyt Numbers", true).toBool();
-    SaagharWidget::matchedTextColor = Settings::READ("Matched Text Color", QColor(225, 0, 225)).value<QColor>();
-    SaagharWidget::backgroundColor = Settings::READ("Background Color", QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
-
-    QString firstFamily = QFontDatabase().families().contains("XB Sols") ?
-                          "XB Sols" : "Droid Arabic Naskh (with DOT)";
-    QFont appFont1(firstFamily, 18);
-    appFont1.setBold(true);
-    //The "Droid Arabic Naskh (with DOT)" is an application font
-    QString secondFamily = "Droid Arabic Naskh (with DOT)";
-#ifdef Q_OS_MAC
-    secondFamily = firstFamily;
-#endif
-    QFont appFont2(secondFamily, 8);
-    appFont2.setBold(true);
-
-    QHash<QString, QVariant> defaultFonts;
-
-    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::PoemTextFontColor);
-
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::OutLineFontColor);
-    appFont2.setPointSize(12);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::NumbersFontColor);
-    appFont2.setPointSize(16);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::ProseTextFontColor);
-    appFont2.setPointSize(18);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::SectionNameFontColor);
-    appFont2.setPointSize(22);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::TitlesFontColor);
-
-    QHash<QString, QVariant> defaultColors;
-    Settings::insertToFontColorHash(&defaultColors, QColor(22, 127, 175), Settings::OutLineFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(47, 144, 45), Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(57, 175, 175), Settings::PoemTextFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(2, 118, 190), Settings::ProseTextFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(48, 127, 105), Settings::SectionNameFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(143, 47, 47), Settings::TitlesFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(84, 81, 171), Settings::NumbersFontColor);
-
-    Settings::hashFonts = Settings::READ("Fonts Hash", QVariant(defaultFonts)).toHash();
-    Settings::hashColors = Settings::READ("Colors Hash", QVariant(defaultColors)).toHash();
-
-    DataBaseUpdater::setRepositories(Settings::READ("Repositories List").toStringList());
-    DataBaseUpdater::keepDownloadedFiles = Settings::READ("Keep Downloaded File", false).toBool();
-    DataBaseUpdater::downloadLocation = Settings::READ("Download Location", "").toString();
-    DataBaseUpdater::setSaagharWindow(this);
-
-    autoCheckForUpdatesState = config->value("Auto Check For Updates", true).toBool();
-
-    selectedRandomRange = config->value("Selected Random Range", "").toStringList();
-    selectedSearchRange = config->value("Selected Search Range", (QStringList() << "0" << "ALL_TITLES")).toStringList();
-
-    randomOpenInNewTab = config->value("Random Open New Tab", false).toBool();
-
-    //initialize default value for "UseTransparecy"
-#ifdef Q_OS_WIN
-    Settings::READ("UseTransparecy", true);
-#else
-    Settings::READ("UseTransparecy", false);
-#endif
-
-    const QString sepStr = QLatin1String("Separator");
-    QStringList defaultActions;
-    defaultActions << "outlineDockAction" << sepStr << "actionPreviousPoem" << "actionNextPoem"
-                   << "fixedNameUndoAction" << sepStr << "actionFaal" << "actionRandom"
-                   << sepStr << "searchToolbarAction" << "bookmarkManagerDockAction"
-#ifdef MEDIA_PLAYER
-                   << "albumDockAction" << "toggleMusicPlayer"
-#endif
-                   << sepStr << "actionSettings";
-    mainToolBarItems = Settings::READ("Main ToolBar Items", defaultActions.join("|")).toString().split("|", QString::SkipEmptyParts);
-}
-
 void SaagharWindow::loadTabWidgetSettings()
 {
     QPalette p(mainTabWidget->palette());
@@ -2520,7 +2341,7 @@ void SaagharWindow::saveSettings()
 #endif
 
     if (SaagharWidget::bookmarks) {
-        QFile bookmarkFile(userHomePath + "/bookmarks.xbel");
+        QFile bookmarkFile(sApp->defaultPath(SaagharApplication::BookmarksFile));
         if (!bookmarkFile.open(QFile::WriteOnly | QFile::Text)) {
             QMessageBox::warning(this, tr("Bookmarks"), tr("Can not write the bookmark file %1:\n%2.")
                                  .arg(bookmarkFile.fileName())
@@ -2531,7 +2352,7 @@ void SaagharWindow::saveSettings()
         }
     }
 
-    QSettings* config = getSettingsObject();
+    QSettings* config = sApp->getSettingsObject();
 
     config->setValue("UI Language", Settings::READ("UI Language", "fa"));
 
@@ -2551,8 +2372,6 @@ void SaagharWindow::saveSettings()
     //colors
     Settings::WRITE("Matched Text Color", SaagharWidget::matchedTextColor);
     Settings::WRITE("Background Color", SaagharWidget::backgroundColor);
-
-    config->setValue("Auto Check For Updates", autoCheckForUpdatesState);
 
     ///////////////////////////////////////////////////
     /////////////////////save state////////////////////
@@ -2577,7 +2396,7 @@ void SaagharWindow::saveSettings()
     Settings::WRITE("Opened tabs from last session", openedTabs);
 
     //database path
-    config->setValue("DataBase Path", QDir::toNativeSeparators(DatabaseBrowser::dataBasePath.join(";")));
+    Settings::WRITE("DataBase Path", QDir::toNativeSeparators(sApp->defaultPath(SaagharApplication::DatabaseDirs)));
 
     //search options
     config->setValue("Max Search Results Per Page", SearchResultWidget::maxItemPerPage);
@@ -2585,19 +2404,15 @@ void SaagharWindow::saveSettings()
     config->setValue("SearchSkipVowelSigns", SearchResultWidget::skipVowelSigns);
     config->setValue("SearchSkipVowelLetters", SearchResultWidget::skipVowelLetters);
 
-    //Search and Random Range
-    config->setValue("Selected Random Range", selectedRandomRange);
-
     QList<QListWidgetItem*> selectedItems = selectSearchRange->getSelectedItemList();
 
-    selectedSearchRange.clear();
+    QStringList selectedSearchRange;
     foreach (QListWidgetItem* item, selectedItems) {
         selectedSearchRange << item->data(Qt::UserRole).toString();
     }
 
-    config->setValue("Selected Search Range", selectedSearchRange);
-
-    config->setValue("Random Open New Tab", randomOpenInNewTab);
+    Settings::WRITE("Selected Search Range", selectedSearchRange);
+    Settings::WRITE("Random Open New Tab", selectedSearchRange);
 
     Settings::WRITE("Fonts Hash", Settings::hashFonts);
     Settings::WRITE("Colors Hash", Settings::hashColors);
@@ -2612,6 +2427,8 @@ void SaagharWindow::saveSettings()
     ///////////////////////////////////////////////////
     //variable hash
     config->setValue("VariableHash", Settings::GET_VARIABLES_VARIANT());
+
+    config->sync();
 }
 
 QString SaagharWindow::tableToString(QTableWidget* table, QString mesraSeparator, QString beytSeparator, int startRow, int startColumn, int endRow, int endColumn)
@@ -2742,10 +2559,12 @@ void SaagharWindow::closeEvent(QCloseEvent* event)
     if (SaagharWidget::lineEditSearchText) {
         SaagharWidget::lineEditSearchText->searchStop();
     }
+
     saveSettings();
-    event->accept();
 
     ConcurrentTaskManager::instance()->finish();
+
+    event->accept();
     sApp->quit();
 }
 
@@ -2914,76 +2733,6 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
     connect(senderTable, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(tableItemClick(QTableWidgetItem*)));
 }
 
-void SaagharWindow::importDataBase(const QString &fileName, bool* ok)
-{
-    QSqlDatabase dataBaseObject = DatabaseBrowser::database();
-    QFileInfo dataBaseFile(dataBaseObject.databaseName());
-    if (!dataBaseFile.isWritable()) {
-        QMessageBox::warning(this, tr("Error!"), tr("You have not write permission to database file, the import procedure can not proceed.\nDataBase Path: %2").arg(dataBaseFile.fileName()));
-        if (ok) {
-            *ok = false;
-        }
-        return;
-    }
-    QList<GanjoorPoet*> poetsConflictList = sApp->databaseBrowser()->getConflictingPoets(fileName);
-
-    dataBaseObject.transaction();
-
-    if (!poetsConflictList.isEmpty()) {
-        QMessageBox warnAboutConflict(this);
-        warnAboutConflict.setWindowTitle(tr("Warning!"));
-        warnAboutConflict.setIcon(QMessageBox::Warning);
-        warnAboutConflict.setText(tr("There are some conflict with your installed database. If you continue, these poets will be removed!"));
-        QString details = tr("These poets are present in installed database:\n");
-        for (int i = 0; i < poetsConflictList.size(); ++i) {
-            details += poetsConflictList.at(i)->_Name + "\n";
-        }
-        warnAboutConflict.setDetailedText(details);
-        warnAboutConflict.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        warnAboutConflict.setEscapeButton(QMessageBox::Cancel);
-        warnAboutConflict.setDefaultButton(QMessageBox::Cancel);
-        int ret = warnAboutConflict.exec();
-        if (ret == QMessageBox::Cancel) {
-            if (ok) {
-                *ok = false;
-            }
-            return;
-        }
-
-        foreach (GanjoorPoet* poet, poetsConflictList) {
-            sApp->databaseBrowser()->removePoetFromDataBase(poet->_ID);
-        }
-    }
-
-    //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-
-    if (sApp->databaseBrowser()->importDataBase(fileName)) {
-        dataBaseObject.commit();
-        if (ok) {
-            *ok = true;
-        }
-
-        outlineTree->setItems(sApp->databaseBrowser()->loadOutlineFromDataBase(0));
-        selectSearchRange->clear();
-        QListWidgetItem* item = selectSearchRange->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
-        QListWidgetItem* titleSearchItem = selectSearchRange->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
-        multiSelectObjectInitialize(selectSearchRange, selectedSearchRange, 2);
-        item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
-        titleSearchItem->setCheckState(selectedSearchRange.contains("ALL_TITLES") ? Qt::Checked : Qt::Unchecked);
-        setHomeAsDirty();
-    }
-    else {
-        if (ok) {
-            *ok = false;
-        }
-        dataBaseObject.rollback();
-        QMessageBox warning(QMessageBox::Warning, tr("Error!"), tr("There are some errors, the import procedure was not completed"), QMessageBox::Ok
-                            , DatabaseBrowser::dbUpdater, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
-        warning.exec();
-    }
-    //QApplication::restoreOverrideCursor();
-}
-
 void SaagharWindow::highlightTextOnPoem(int poemId, int vorder)
 {
     if (saagharWidget->currentPoem != poemId) {
@@ -3007,7 +2756,7 @@ void SaagharWindow::toolBarContextMenu(const QPoint &/*pos*/)
     toolBarViewActions(ui->mainToolBar, contextMenu, false);
 
     QAction* customizeRandom = 0;
-    if (mainToolBarItems.contains("actionFaal", Qt::CaseInsensitive) || mainToolBarItems.contains("actionRandom", Qt::CaseInsensitive)) {
+    if (sApp->mainToolBarItems().contains("actionFaal", Qt::CaseInsensitive) || sApp->mainToolBarItems().contains("actionRandom", Qt::CaseInsensitive)) {
         contextMenu->addSeparator();
         customizeRandom = contextMenu->addAction(tr("Customize Faal && Random...")/*, customizeRandomButtons()*/);
     }
@@ -3021,21 +2770,29 @@ void SaagharWindow::toolBarContextMenu(const QPoint &/*pos*/)
 
 void SaagharWindow::customizeRandomDialog()
 {
-    CustomizeRandomDialog* randomSetting = new CustomizeRandomDialog(this, randomOpenInNewTab);
+    bool openInNewTab = Settings::READ("Random Open New Tab", false).toBool();
+
+    CustomizeRandomDialog* randomSetting = new CustomizeRandomDialog(this, openInNewTab);
 
     QListWidgetItem* firstItem = randomSetting->selectRandomRange->insertRow(0, tr("Current tab's subsections"), true, "CURRENT_TAB_SUBSECTIONS", Qt::UserRole, true);
-    multiSelectObjectInitialize(randomSetting->selectRandomRange, selectedRandomRange, 1);
-    firstItem->setCheckState(selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS") ? Qt::Checked : Qt::Unchecked);
+    QStringList selectRandomRange = Settings::READ("Selected Random Range", QVariant()).toStringList();
+
+    multiSelectObjectInitialize(randomSetting->selectRandomRange, selectRandomRange, 1);
+    firstItem->setCheckState(selectRandomRange.contains("CURRENT_TAB_SUBSECTIONS") ? Qt::Checked : Qt::Unchecked);
 
     if (randomSetting->exec()) {
-        randomSetting->acceptSettings(&randomOpenInNewTab);
+        randomSetting->acceptSettings(&openInNewTab);
         QList<QListWidgetItem*> selectedItems = randomSetting->selectRandomRange->getSelectedItemList();
 
-        selectedRandomRange.clear();
+        selectRandomRange.clear();
         foreach (QListWidgetItem* item, selectedItems) {
-            selectedRandomRange << item->data(Qt::UserRole).toString();
+            selectRandomRange << item->data(Qt::UserRole).toString();
         }
+
+        Settings::WRITE("Selected Random Range", selectRandomRange);
+        Settings::WRITE("Random Open New Tab", openInNewTab);
     }
+
     delete randomSetting;
     randomSetting = 0;
 }
@@ -3337,11 +3094,13 @@ void SaagharWindow::namedActionTriggered(bool checked)
         DatabaseBrowser::dbUpdater->exec();
     }
     else if (actionName == "actionFaal") {
-        openRandomPoem(24, randomOpenInNewTab);// '24' is for Hafez!
+        openRandomPoem(24, Settings::READ("Random Open New Tab", false).toBool());// '24' is for Hafez!
     }
     else if (actionName == "actionRandom") {
         int id = 0;
-        if (selectedRandomRange.contains("CURRENT_TAB_SUBSECTIONS")) {
+        const QStringList selectRandomRange = Settings::READ("Selected Random Range", QVariant()).toStringList();
+
+        if (selectRandomRange.contains("CURRENT_TAB_SUBSECTIONS")) {
             if (saagharWidget) {
                 if (saagharWidget->currentPoem != 0) {
                     id = sApp->databaseBrowser()->getPoem(saagharWidget->currentPoem)._CatID;
@@ -3354,20 +3113,20 @@ void SaagharWindow::namedActionTriggered(bool checked)
                 id = 0;
             }
         }
-        else if (selectedRandomRange.contains("0")) { //all
+        else if (selectRandomRange.contains("0")) { //all
             id = 0;    //home
         }
         else {
-            if (selectedRandomRange.isEmpty()) {
+            if (selectRandomRange.isEmpty()) {
                 id = 0;    //all
             }
             else {
-                int randIndex = Tools::getRandomNumber(0, selectedRandomRange.size() - 1);
-                id = sApp->databaseBrowser()->getPoet(selectedRandomRange.at(randIndex).toInt())._CatID;
+                int randIndex = Tools::getRandomNumber(0, selectRandomRange.size() - 1);
+                id = sApp->databaseBrowser()->getPoet(selectRandomRange.at(randIndex).toInt())._CatID;
             }
         }
 
-        openRandomPoem(id, randomOpenInNewTab);
+        openRandomPoem(id, Settings::READ("Random Open New Tab", false).toBool());
     }
     else if (actionName == "Registeration") {
 #if 0
@@ -3544,8 +3303,7 @@ void SaagharWindow::setupBookmarkManagerUi()
     bookmarkMainLayout->addLayout(bookmarkToolsLayout);//move to bottom of layout! just we want looks similar other dock widgets!
     bookmarkContainer->setLayout(bookmarkMainLayout);
 
-    QString bookmarkFileName = userHomePath + "/bookmarks.xbel";
-    QFile bookmarkFile(bookmarkFileName);
+    QFile bookmarkFile(sApp->defaultPath(SaagharApplication::BookmarksFile));
 
     bool readBookmarkFile = true;
 
@@ -3591,8 +3349,11 @@ void SaagharWindow::setupBookmarkManagerUi()
     }
     else {
         //bookmark not loaded!
-        mainToolBarItems.removeAll("bookmarkManagerDockAction");
-        mainToolBarItems.removeAll("ImportGanjoorBookmarks");
+        QStringList items = sApp->mainToolBarItems();
+        items.removeAll("bookmarkManagerDockAction");
+        items.removeAll("ImportGanjoorBookmarks");
+        sApp->setMainToolBarItems(items);
+
         deleteActionInstance("bookmarkManagerDockAction");
         deleteActionInstance("ImportGanjoorBookmarks");
         allActionMap.insert("bookmarkManagerDockAction", 0);
@@ -3607,7 +3368,7 @@ void SaagharWindow::setupBookmarkManagerUi()
         showStatusText("!QExtendedSplashScreenCommands:HIDE");
         QMessageBox warning(QMessageBox::Warning, tr("Warning!"), tr("Bookmarking system was disabled, something going wrong with "
                             "writing or reading from bookmarks file:\n%1")
-                            .arg(bookmarkFileName), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+                            .arg(sApp->defaultPath(SaagharApplication::BookmarksFile)), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
         warning.exec();
         showStatusText("!QExtendedSplashScreenCommands:SHOW");
     }

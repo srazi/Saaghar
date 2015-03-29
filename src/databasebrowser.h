@@ -115,14 +115,13 @@ public:
 
     //STATIC Variables
     static DataBaseUpdater* dbUpdater;
-    static QStringList dataBasePath;
 
 public slots:
     void addDataSets();
 
 private:
     Q_DISABLE_COPY(DatabaseBrowser)
-    DatabaseBrowser(QString sqliteDbCompletePath = "ganjoor.s3db");
+    DatabaseBrowser(const QString &sqliteDbCompletePath = "ganjoor.s3db");
 
     bool createEmptyDataBase(const QString &connectionID = defaultConnectionId());
     bool poetHasSubCats(int poetID, const QString &connectionID = defaultConnectionId());
@@ -148,6 +147,7 @@ private:
 
     static QString s_defaultConnectionId;
     static QString s_defaultDatabaseFileName;
+    static bool s_isDefaultDatabaseSet;
 
     static DatabaseBrowser* s_instance;
 
@@ -157,6 +157,7 @@ private slots:
 signals:
     void searchStatusChanged(const QString &);
     void concurrentResultReady(const QString &type, const QVariant &results);
+    void databaseUpdated();
 
 #ifdef EMBEDDED_SQLITE
 private:

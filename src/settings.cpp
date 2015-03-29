@@ -21,7 +21,7 @@
 
 #include "settings.h"
 #include "saagharwindow.h"
-#include "progressmanager.h"
+#include "saagharapplication.h"
 
 #include <QColorDialog>
 #include <QFileDialog>
@@ -102,7 +102,7 @@ Settings::Settings(SaagharWindow* parent)
     ui->checkBoxIconTheme->setChecked(Settings::READ("Icon Theme State", false).toBool());
     ui->lineEditIconTheme->setEnabled(Settings::READ("Icon Theme State", false).toBool());
     ui->pushButtonIconTheme->setEnabled(Settings::READ("Icon Theme State", false).toBool());
-    ui->lineEditIconTheme->setText(Settings::READ("Icon Theme Path", SaagharWindow::resourcesPath +
+    ui->lineEditIconTheme->setText(Settings::READ("Icon Theme Path", sApp->defaultPath(SaagharApplication::ResourcesDir) +
                                    "/themes/iconsets/light-gray/").toString());
     connect(ui->pushButtonIconTheme, SIGNAL(clicked()), this, SLOT(browseForIconTheme()));
 
@@ -417,13 +417,27 @@ void Settings::insertToFontColorHash(QHash<QString, QVariant>* hash, const QVari
     hash->insert(QString::number(int(type)), variant);
 }
 
+QVariant Settings::READ(const QString &key, const QVariant &defaultValue)
+{
+    if (!Settings::VariablesHash.contains(key)) {
+        Settings::VariablesHash.insert(key, defaultValue);
+    }
+
+    return Settings::VariablesHash.value(key);
+}
+
+void Settings::WRITE(const QString &key, const QVariant &value)
+{
+    Settings::VariablesHash.insert(key, value);
+}
+
 QString Settings::currentIconThemePath()
 {
     if (s_currentIconPath.isEmpty()) {
         if (Settings::READ("Icon Theme State", false).toBool() &&
-                !Settings::READ("Icon Theme Path", SaagharWindow::resourcesPath +
+                !Settings::READ("Icon Theme Path", sApp->defaultPath(SaagharApplication::ResourcesDir) +
                                 "/themes/iconsets/light-gray/").toString().isEmpty()) {
-            s_currentIconPath = Settings::READ("Icon Theme Path", SaagharWindow::resourcesPath +
+            s_currentIconPath = Settings::READ("Icon Theme Path", sApp->defaultPath(SaagharApplication::ResourcesDir) +
                                                "/themes/iconsets/light-gray/").toString();
         }
         else {

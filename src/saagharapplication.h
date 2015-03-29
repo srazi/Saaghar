@@ -27,10 +27,12 @@
 #include "progressmanager.h"
 
 #include <QApplication>
+#include <QStringList>
 
 class SaagharWindow;
 class DatabaseBrowser;
 
+class QSettings;
 class QThread;
 class QThreadPool;
 
@@ -42,10 +44,24 @@ public:
 
     static SaagharApplication* instance();
 
+    enum PathType {
+        DatabaseFile,
+        DatabaseDirs,
+        SettingsFile,
+        BookmarksFile,
+        AlbumFile,
+        ResourcesDir,
+        UserDataDir
+    };
+
+    QString defaultPath(PathType type);
+    void setDefaultPath(PathType type, const QString &path);
+
     ProgressManager* progressManager();
     QThreadPool* tasksThreadPool();
     DatabaseBrowser* databaseBrowser();
 
+    void loadSettings();
     void applySettings();
 
     int tasksThreads() { return m_tasksThreads; }
@@ -53,8 +69,16 @@ public:
     bool displayFullNotification() { return m_displayFullNotification; }
     ProgressManager::Position notificationPosition() const { return m_notificationPosition; }
 
+    bool isPortable() const;
+    QSettings* getSettingsObject();
+
+    QStringList mainToolBarItems();
+    void setMainToolBarItems(const QStringList &items);
+
 private:
     void init();
+    void setupPaths();
+    void setupDatabasePaths();
 
     SaagharWindow* m_mainWindow;
 
@@ -65,6 +89,11 @@ private:
     int m_tasksThreads;
     bool m_displayFullNotification;
     ProgressManager::Position m_notificationPosition;
+
+    mutable int m_isPortable;
+
+    QHash<PathType, QString> m_paths;
+    QStringList m_defaultToolbarActions;
 };
 
 #endif // SAAGHARAPPLICATION_H

@@ -78,15 +78,8 @@ public:
     static void insertToFontColorHash(QHash<QString, QVariant>* hash, const QVariant &variant, FontColorItem type = DefaultFontColor);
 
     //settings variables
-    inline static QVariant READ(const QString &key, const QVariant &defaultValue = QVariant()) {
-        if (!Settings::VariablesHash.contains(key))
-            Settings::VariablesHash.insert(key, defaultValue);
-        return Settings::VariablesHash.value(key);
-    }
-
-    inline static void WRITE(const QString &key, const QVariant &value = QVariant()) {
-        Settings::VariablesHash.insert(key, value);
-    }
+    static QVariant READ(const QString &key, const QVariant &defaultValue = QVariant());
+    static void WRITE(const QString &key, const QVariant &value = QVariant());
 
     inline static void LOAD_VARIABLES(const QHash<QString, QVariant> &variables) {
         Settings::VariablesHash.clear();

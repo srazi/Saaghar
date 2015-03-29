@@ -24,6 +24,7 @@
 #include "searchresultwidget.h"
 #include "tools.h"
 #include "concurrenttasks.h"
+#include "saagharapplication.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -42,7 +43,7 @@ QMultiHash<QThread*, QString> DatabaseBrowser::s_threadConnections;
 DataBaseUpdater* DatabaseBrowser::dbUpdater = 0;
 QString DatabaseBrowser::s_defaultConnectionId;
 QString DatabaseBrowser::s_defaultDatabaseFileName;
-QStringList DatabaseBrowser::dataBasePath;
+bool DatabaseBrowser::s_isDefaultDatabaseSet = false;
 
 const int minNewPoetID = 1001;
 const int minNewCatID = 10001;
@@ -61,7 +62,7 @@ static QString threadToString(QThread* thread = 0)
     return QString::number((quintptr) (thread ? thread : QThread::currentThread()));
 }
 
-DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
+DatabaseBrowser::DatabaseBrowser(const QString &sqliteDbCompletePath)
 {
     Q_ASSERT(s_instance == 0);
 
@@ -176,8 +177,7 @@ DatabaseBrowser::DatabaseBrowser(QString sqliteDbCompletePath)
     s_defaultConnectionId = defaultConnectionId;
 
     // Saaghar just uses its first search path
-    DatabaseBrowser::dataBasePath.clear();
-    DatabaseBrowser::dataBasePath << QDir::toNativeSeparators(pathOfDatabase);
+    sApp->setDefaultPath(SaagharApplication::DatabaseDirs, QDir::toNativeSeparators(pathOfDatabase));
 
     cachedMaxCatID = cachedMaxPoemID = 0;
 }
@@ -189,7 +189,7 @@ DatabaseBrowser::~DatabaseBrowser()
 DatabaseBrowser* DatabaseBrowser::instance()
 {
     if (!s_instance) {
-        if (s_defaultDatabaseFileName.isEmpty()) {
+        if (!s_isDefaultDatabaseSet) {
             qFatal("In first place you have to use DatabaseBrowser::setDefaultDatabasename() to set default database.");
             exit(1);
         }
@@ -211,6 +211,7 @@ QString DatabaseBrowser::defaultDatabasename()
 
 void DatabaseBrowser::setDefaultDatabasename(const QString &databaseName)
 {
+    s_isDefaultDatabaseSet = true;
     s_defaultDatabaseFileName = databaseName;
 }
 
@@ -1077,6 +1078,8 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
     } // end of block
 
     QSqlDatabase::removeDatabase(connectionID);
+
+    emit databaseUpdated();
 
     return true;
 }

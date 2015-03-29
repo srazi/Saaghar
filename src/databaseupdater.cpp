@@ -48,8 +48,6 @@ const QStringList DataBaseUpdater::defaultRepositories = QStringList()
 //        << "http://ganjoor.sourceforge.net/programgdbs.xml"
 //        << "http://ganjoor.sourceforge.net/sitegdbs.xml";
 
-SaagharWindow* DataBaseUpdater::s_saagharWindow = 0;
-
 int PoetID_DATA = Qt::UserRole + 1;
 int CatID_DATA = Qt::UserRole + 2;
 int FileExt_DATA = Qt::UserRole + 3;
@@ -183,6 +181,67 @@ void DataBaseUpdater::fillRepositoryList()
                                    << tr("Click To Add/Remove..."));
     ui->comboBoxRepoList->insertSeparator(1);
     ui->comboBoxRepoList->insertSeparator(ui->comboBoxRepoList->count() - 1);
+}
+
+void DataBaseUpdater::importDataBase(const QString &fileName, bool *ok)
+{
+    QSqlDatabase dataBaseObject = DatabaseBrowser::database();
+    QFileInfo dataBaseFile(dataBaseObject.databaseName());
+    if (!dataBaseFile.isWritable()) {
+        QMessageBox::warning(sApp->activeWindow(), tr("Error!"), tr("You have not write permission to database file, the import procedure can not proceed.\nDataBase Path: %2").arg(dataBaseFile.fileName()));
+        if (ok) {
+            *ok = false;
+        }
+        return;
+    }
+    QList<GanjoorPoet*> poetsConflictList = sApp->databaseBrowser()->getConflictingPoets(fileName);
+
+    dataBaseObject.transaction();
+
+    if (!poetsConflictList.isEmpty()) {
+        QMessageBox warnAboutConflict(sApp->activeWindow());
+        warnAboutConflict.setWindowTitle(tr("Warning!"));
+        warnAboutConflict.setIcon(QMessageBox::Warning);
+        warnAboutConflict.setText(tr("There are some conflict with your installed database. If you continue, these poets will be removed!"));
+        QString details = tr("These poets are present in installed database:\n");
+        for (int i = 0; i < poetsConflictList.size(); ++i) {
+            details += poetsConflictList.at(i)->_Name + "\n";
+        }
+        warnAboutConflict.setDetailedText(details);
+        warnAboutConflict.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        warnAboutConflict.setEscapeButton(QMessageBox::Cancel);
+        warnAboutConflict.setDefaultButton(QMessageBox::Cancel);
+        int ret = warnAboutConflict.exec();
+        if (ret == QMessageBox::Cancel) {
+            if (ok) {
+                *ok = false;
+            }
+            return;
+        }
+
+        foreach (GanjoorPoet* poet, poetsConflictList) {
+            sApp->databaseBrowser()->removePoetFromDataBase(poet->_ID);
+        }
+    }
+
+    //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+
+    if (sApp->databaseBrowser()->importDataBase(fileName)) {
+        dataBaseObject.commit();
+        if (ok) {
+            *ok = true;
+        }
+    }
+    else {
+        if (ok) {
+            *ok = false;
+        }
+        dataBaseObject.rollback();
+        QMessageBox warning(QMessageBox::Warning, tr("Error!"), tr("There are some errors, the import procedure was not completed"), QMessageBox::Ok
+                            , DatabaseBrowser::dbUpdater, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
+        warning.exec();
+    }
+    //QApplication::restoreOverrideCursor();
 }
 
 void DataBaseUpdater::setRepositories(const QStringList &urls)
@@ -617,7 +676,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
                 qDebug() << "extract-ErrorCode=" << uz.formatError(ec) << entryFileName << extractPath;
 
                 if (entryFileName.endsWith(".gdb") || entryFileName.endsWith(".s3db")) {
-                    s_saagharWindow->importDataBase(extractPath + "/" + entryFileName, &installCompleted);
+                    importDataBase(extractPath + "/" + entryFileName, &installCompleted);
                     QFile::remove(extractPath + "/" + entryFileName);
                     QDir extractDir(extractPath);
                     extractDir.rmdir(extractPath);
@@ -633,7 +692,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
     } // end "zip" type
     else if (type == "s3db") {
         qDebug() << "FILE TYPE IS S3DB! [SQLite 3 Data Base]";
-        s_saagharWindow->importDataBase(file, &installCompleted);
+        importDataBase(file, &installCompleted);
     }
 
     QApplication::restoreOverrideCursor();

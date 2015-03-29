@@ -56,17 +56,9 @@ public:
     };
 
     SaagharWidget* saagharWidget;
-//      void emitReSizeEvent();
-    static bool autoCheckForUpdatesState;
-    static QSettings* getSettingsObject();
+
     void checkRegistration(bool forceShow = false);
     QMenu* cornerMenu();
-
-//  public slots:
-//      void emitReSizeEvent();
-
-    static QString resourcesPath;//not-writable
-    static QString userHomePath;//writable
 
 private:
     void loadAudioForCurrentTab(SaagharWidget* old_saagharWidget = 0);
@@ -80,15 +72,13 @@ private:
     void setupSearchToolBarUi();
     bool eventFilter(QObject* receiver, QEvent* event);
     void toolBarViewActions(QToolBar* toolBar, QMenu* menu, bool subMenu);
-    QStringList selectedRandomRange;
-    QStringList selectedSearchRange;
-    bool randomOpenInNewTab;
+
     int previousTabIndex;
-//      void importDataBase(const QString fileName);
-    QStringList mainToolBarItems;
+
     QAction* actionInstance(const QString &actionObjectName = "", QString iconPath = "", QString displayName = "");
     void deleteActionInstance(const QString &actionObjectName);
     void multiSelectObjectInitialize(QMultiSelectWidget* multiSelectWidget, const QStringList &selectedData = QStringList(), int insertIndex = 0);
+    void multiSelectInsertItems(QMultiSelectWidget* multiSelectWidget);
     QString convertToTeX(SaagharWidget* saagharObject);
     QPrinter* defaultPrinter;
     void printPreview(QPrinter* printer);
@@ -100,7 +90,6 @@ private:
     TabWidget* mainTabWidget;
     void loadTabWidgetSettings();
 
-    void loadGlobalSettings();
     void saveSettings();
     bool processTextChanged;
     QToolBar* parentCatsToolBar;
@@ -147,11 +136,8 @@ private:
     QDockWidget* m_outlineDock;
     QDockWidget* m_bookmarkManagerDock;
 
-    static bool isPortable;
-
 public slots:
     void updateTabsSubMenus();
-    void importDataBase(const QString &fileName, bool* ok = 0);
     void highlightTextOnPoem(int poemId, int vorder);
 
 private slots:
@@ -215,6 +201,8 @@ private slots:
     void showSearchOptionMenu();
     void showSearchTips();
     void showStatusText(const QString &message, int newLevelsCount = 0);
+
+    void onDatabaseUpdate();
 
 protected:
 //      void resizeEvent( QResizeEvent * event );
