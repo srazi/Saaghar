@@ -61,9 +61,9 @@ namespace {
     static const QString ALBUM_FILE_NAME = QLatin1String("default.sal");
 
 #ifdef Q_OS_MAC
-    static const QString PORTABLE_SETTINGS_PATH = QCoreApplication::applicationDirPath() + QLatin1String("/../Resources/settings.ini");
+    static const QString PORTABLE_SETTINGS_PATH = QLatin1String("/../Resources/settings.ini");
 #else
-    static const QString PORTABLE_SETTINGS_PATH = QCoreApplication::applicationDirPath() + QLatin1String("/settings.ini");
+    static const QString PORTABLE_SETTINGS_PATH = QLatin1String("/settings.ini");
 #endif
 }
 
@@ -288,7 +288,7 @@ bool SaagharApplication::isPortable() const
 #endif
 
     if (m_isPortable ==  -1) {
-        QFileInfo portableSettings(PORTABLE_SETTINGS_PATH);
+        QFileInfo portableSettings(QCoreApplication::applicationDirPath() + PORTABLE_SETTINGS_PATH);
 
         if (portableSettings.exists() && portableSettings.isWritable()) {
             m_isPortable = 1;
@@ -326,9 +326,6 @@ void SaagharApplication::setupPaths()
     if (!m_paths.isEmpty()) {
         qWarning() << "Duplicate call to SaagharApplication::setupPaths()!";
         return;
-    }
-    else {
-        qWarning() << "First Caall";
     }
 
     QString resourcesPath;
