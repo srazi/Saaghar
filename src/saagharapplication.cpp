@@ -39,6 +39,7 @@
 #include <QPointer>
 #include <QSettings>
 #include <QThreadPool>
+#include <QTranslator>
 
 #ifdef Q_OS_WIN
 #ifdef STATIC
@@ -87,6 +88,7 @@ SaagharApplication::SaagharApplication(int &argc, char **argv)
     setupDatabasePaths();
 
     applySettings();
+    setupTranslators();
 
     init();
 }
@@ -395,6 +397,21 @@ void SaagharApplication::setupDatabasePaths()
 
     // Set database browser default path
     DatabaseBrowser::setDefaultDatabasename(m_paths.value(DatabaseFile));
+}
+
+void SaagharApplication::setupTranslators()
+{
+    const QString uiLanguage = getSettingsObject()->value("UI Language", "fa").toString();
+
+    QTranslator* appTranslator = new QTranslator();
+    QTranslator* basicTranslator = new QTranslator();
+
+    if (appTranslator->load(QString("saaghar_") + uiLanguage, sApp->defaultPath(SaagharApplication::ResourcesDir))) {
+        installTranslator(appTranslator);
+        if (basicTranslator->load(QString("qt_") + uiLanguage, sApp->defaultPath(SaagharApplication::ResourcesDir))) {
+            installTranslator(basicTranslator);
+        }
+    }
 }
 
 QStringList SaagharApplication::mainToolBarItems()

@@ -65,7 +65,6 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QActionGroup>
-#include <QTranslator>
 
 #ifdef MEDIA_PLAYER
 #include "qmusicplayer.h"
@@ -82,18 +81,6 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     setWindowIcon(QIcon(":/resources/images/saaghar.png"));
 
     bool fresh = QCoreApplication::arguments().contains("-fresh", Qt::CaseInsensitive);
-
-    QString uiLanguage = sApp->getSettingsObject()->value("UI Language", "fa").toString();
-
-    QTranslator* appTranslator = new QTranslator();
-    QTranslator* basicTranslator = new QTranslator();
-
-    if (appTranslator->load(QString("saaghar_") + uiLanguage, sApp->defaultPath(SaagharApplication::ResourcesDir))) {
-        QCoreApplication::installTranslator(appTranslator);
-        if (basicTranslator->load(QString("qt_") + uiLanguage, sApp->defaultPath(SaagharApplication::ResourcesDir))) {
-            QCoreApplication::installTranslator(basicTranslator);
-        }
-    }
 
 #ifdef MEDIA_PLAYER
     SaagharWidget::musicPlayer = new QMusicPlayer(this);

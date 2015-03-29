@@ -79,6 +79,7 @@ private:
     void init();
     void setupPaths();
     void setupDatabasePaths();
+    void setupTranslators();
 
     SaagharWindow* m_mainWindow;
 
