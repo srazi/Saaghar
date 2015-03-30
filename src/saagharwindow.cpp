@@ -76,6 +76,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     , menuBookmarks(0)
     , m_cornerMenu(0)
     , m_settingsDialog(0)
+    , m_updateTaskScheduled(false)
 {
     setObjectName("SaagharMainWindow");
     setWindowIcon(QIcon(":/resources/images/saaghar.png"));
@@ -159,12 +160,6 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     //create Tab Widget
     mainTabWidget = ui->tabWidget;
-
-    if (Settings::READ("Auto Check For Updates", true).toBool() && !fresh) {
-        showStatusText(tr("<i><b>Checking for update...</b></i>"));
-        QCoreApplication::processEvents();
-        checkForUpdates();
-    }
 
     setupUi();
 
@@ -258,6 +253,11 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     connect(sApp->databaseBrowser(), SIGNAL(databaseUpdated()), this, SLOT(onDatabaseUpdate()));
 
     showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), -1);
+
+
+    if (Settings::READ("Auto Check For Updates", true).toBool() && !fresh) {
+        QTimer::singleShot(10000, this, SLOT(checkForUpdates()));
+    }
 }
 
 SaagharWindow::~SaagharWindow()
@@ -652,58 +652,54 @@ SaagharWidget* SaagharWindow::getSaagharWidget(int tabIndex)
 
 void SaagharWindow::checkForUpdates()
 {
-    QAction* action = qobject_cast<QAction*>(sender());
-
-    QEventLoop loop;
-
-    QStringList updateInfoServers;
-    updateInfoServers << "http://srazi.github.io/Saaghar/saaghar.version"
-                      << "http://saaghar.sourceforge.net/saaghar.version"
-                      << "http://en.saaghar.pozh.org/saaghar.version";
-
-    QNetworkReply* reply;
-    bool error = true;
-
-    for (int i = 0; i < updateInfoServers.size(); ++i) {
-        showStatusText("<i><b>" + tr("Checking for updates... (server number=%1)").arg(i + 1) + "</b></i>");
-        QProgressDialog updateProgress(tr("Checking for updates... (server number=%1)").arg(i + 1),  tr("Cancel"), 0, 0, this);
-        if (action) {
-            updateProgress.setMinimumDuration(0);
-        }
-        else {
-            updateProgress.setParent(0);
-            updateProgress.setMinimumDuration(1000);
-        }
-
-        updateProgress.setWindowModality(Qt::WindowModal);
-        updateProgress.setFixedSize(updateProgress.size());
-        if (action || !Settings::READ("Display Splash Screen", true).toBool()) {
-            updateProgress.show();
-        }
-
-        QNetworkRequest requestVersionInfo(QUrl(updateInfoServers.at(i)));
-        QNetworkAccessManager* netManager = new QNetworkAccessManager();
-        reply = netManager->get(requestVersionInfo);
-
-        connect(&updateProgress, SIGNAL(canceled()), &loop, SLOT(quit()));
-        connect(reply, SIGNAL(finished()), &updateProgress, SLOT(hide()));
-        connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
-        loop.exec();
-
-        if (updateProgress.wasCanceled()) {
-            updateProgress.hide();
-            loop.quit();
-            return;
-        }
-
-        if (!reply->error()) {
-            error = false;
-            break;
-        }
+    if (m_updateTaskScheduled) {
+        return;
     }
 
+    m_updateTaskScheduled = true;
+
+    const bool checkByUser = qobject_cast<QAction*>(sender()) != 0;
+
+    ConcurrentTask* updateTask = new ConcurrentTask(this);
+    connect(updateTask, SIGNAL(concurrentResultReady(QString,QVariant)), this, SLOT(processUpdateData(QString,QVariant)));
+
+    QVariantHash arguments;
+    const QString taskTitle(tr("Check for update..."));
+
+    VAR_ADD(arguments, taskTitle);
+    VAR_ADD(arguments, checkByUser);
+
+    updateTask->start("UPDATE", arguments);
+}
+
+void SaagharWindow::processUpdateData(const QString &type, const QVariant &results)
+{
+    m_updateTaskScheduled = false;
+
+    if (sender()) {
+        sender()->deleteLater();
+    }
+
+    if (type != "UPDATE") {
+        return;
+    }
+
+    QStringList data = results.toStringList();
+
+    if (type != "UPDATE" || data.size() != 3) {
+        return;
+    }
+
+    bool error = data.takeFirst() == QLatin1String("ERROR=TRUE");
+    const bool checkByUser = data.takeFirst() == QLatin1String("CHECK_BY_USER=TRUE");
+
+    QString dataPart = data.at(0);
+    dataPart.remove("DATA=");
+
+    error = error || dataPart.isEmpty();
+
     if (error) {
-        if (action || !Settings::READ("Display Splash Screen", true).toBool()) {
+        if (checkByUser || !Settings::READ("Display Splash Screen", true).toBool()) {
             QMessageBox criticalError(QMessageBox::Critical, tr("Error"), tr("There is an error when checking for updates...\nCheck your internet connection and try again."), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
             criticalError.exec();
         }
@@ -712,11 +708,13 @@ void SaagharWindow::checkForUpdates()
         }
         return;
     }
-    QStringList data = QString::fromUtf8(reply->readAll()).split("|", QString::SkipEmptyParts);
+
+    data = dataPart.split("|", QString::SkipEmptyParts);
 
     QMap<QString, QString> releaseInfo;
     for (int i = 0; i < data.size(); ++i) {
         QStringList fields = data.at(i).split("*", QString::SkipEmptyParts);
+
         if (fields.size() == 2) {
             releaseInfo.insert(fields.at(0), fields.at(1));
         }
@@ -725,6 +723,7 @@ void SaagharWindow::checkForUpdates()
     if (releaseInfo.value("VERSION").isEmpty()) {
         return;
     }
+
     QString runningAppVersionStr = SAAGHAR_VERSION + ".0";
     runningAppVersionStr.remove('.');
     int runningAppVersion = runningAppVersionStr.toInt();
@@ -770,7 +769,8 @@ void SaagharWindow::checkForUpdates()
         }
     }
     else {
-        if (action || !Settings::READ("Display Splash Screen", true).toBool()) {
+
+        if (checkByUser || !Settings::READ("Display Splash Screen", true).toBool()) {
             QMessageBox::information(this, tr("Saaghar is up to date"), tr("There is no new version available. Please check for updates later!"));
         }
         else {

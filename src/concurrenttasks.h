@@ -49,13 +49,13 @@ public:
 
     void run();
 
-    QVariant startSearch(const QVariantHash &options);
-
 public slots:
     void setCanceled();
 
 private:
     bool isCanceled();
+    QVariant startSearch(const QVariantHash &options);
+    QVariant checkForUpdates();
 
     QMutex m_mutex;
     QString m_type;
@@ -69,6 +69,7 @@ private:
 signals:
     void concurrentResultReady(const QString &type, const QVariant &results);
     void searchStatusChanged(const QString &);
+    void canceled();
 };
 
 class ConcurrentTaskManager : public QObject

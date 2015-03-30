@@ -136,6 +136,8 @@ private:
     QDockWidget* m_outlineDock;
     QDockWidget* m_bookmarkManagerDock;
 
+    bool m_updateTaskScheduled;
+
 public slots:
     void updateTabsSubMenus();
     void highlightTextOnPoem(int poemId, int vorder);
@@ -160,6 +162,7 @@ private slots:
     void customizeRandomDialog();
     void toolBarContextMenu(const QPoint &pos);
     void checkForUpdates();
+    void processUpdateData(const QString &type, const QVariant &results);
     void actFullScreenClicked(bool checked);
     void actionRemovePoet();
     //void newSearchNonAlphabetChanged(bool checked);

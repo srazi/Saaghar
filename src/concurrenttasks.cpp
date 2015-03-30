@@ -27,6 +27,7 @@
 #include "futureprogress.h"
 
 #include <QMetaType>
+#include <QNetworkReply>
 #include <QThread>
 #include <QThreadPool>
 
@@ -76,6 +77,10 @@ ConcurrentTask::~ConcurrentTask()
 
 void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
 {
+    if (type != "SEARCH" && type != "UPDATE") {
+        return;
+    }
+
     if (ConcurrentTaskManager::instance()->isAllTaskCanceled()) {
         return;
     }
@@ -129,7 +134,14 @@ void ConcurrentTask::run()
         m_progressObject->reportStarted();
     }
 
-    QVariant result = startSearch(m_options);
+    QVariant result;
+
+    if (m_type == "SEARCH") {
+        result = startSearch(m_options);
+    }
+    else if (m_type == "UPDATE") {
+        result = checkForUpdates();
+    }
 
     if (m_progressObject) {
         m_progressObject->reportFinished();
@@ -335,6 +347,52 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
     return QVariant::fromValue(searchResults);
 }
 
+QVariant ConcurrentTask::checkForUpdates()
+{
+    const QString checkByUser = VAR_GET(m_options, checkByUser).toBool()
+            ? QLatin1String("CHECK_BY_USER=TRUE") : QLatin1String("CHECK_BY_USER=FALSE");
+
+    QEventLoop loop;
+
+    QStringList updateInfoServers;
+    updateInfoServers << "http://srazi.github.io/Saaghar/saaghar.version"
+                      << "http://saaghar.sourceforge.net/saaghar.version"
+                      << "http://en.saaghar.pozh.org/saaghar.version";
+
+    QNetworkReply* reply;
+    bool error = true;
+
+    for (int i = 0; i < updateInfoServers.size(); ++i) {
+        QNetworkRequest requestVersionInfo(QUrl(updateInfoServers.at(i)));
+        QNetworkAccessManager* netManager = new QNetworkAccessManager();
+        reply = netManager->get(requestVersionInfo);
+
+        connect(this, SIGNAL(canceled()), &loop, SLOT(quit()));
+        connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
+        loop.exec();
+
+        if (m_cancel) {
+            loop.quit();
+
+            error = true;
+            break;
+        }
+
+        if (!reply->error()) {
+            error = false;
+            break;
+        }
+    }
+
+    if (error) {
+        return QStringList() << QLatin1String("ERROR=TRUE") << checkByUser << QLatin1String("DATA=");
+    }
+
+    return QStringList() << QLatin1String("ERROR=FALSE")
+                         << checkByUser
+                         << QString("DATA=%1").arg(QString::fromUtf8(reply->readAll()));
+}
+
 bool ConcurrentTask::isCanceled()
 {
     return m_cancel;
@@ -345,6 +403,8 @@ void ConcurrentTask::setCanceled()
     m_mutex.lock();
     m_cancel = true;
     m_mutex.unlock();
+
+    emit canceled();
 }
 
 
