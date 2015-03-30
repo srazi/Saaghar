@@ -33,6 +33,8 @@
 #include <QPointer>
 #endif
 
+class FutureProgress;
+
 class ConcurrentTask : public QObject, QRunnable
 {
     Q_OBJECT
@@ -65,6 +67,7 @@ private:
     bool m_displayFullNotification;
 
     QFutureInterface<void> *m_progressObject;
+    FutureProgress* m_futureProgress;
 
 signals:
     void concurrentResultReady(const QString &type, const QVariant &results);

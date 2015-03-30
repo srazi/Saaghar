@@ -545,7 +545,9 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
     progress->setTitle(title);
     progress->setFuture(future);
 
-    if (m_progressView->progressCount() >= countOfVisibleProgresses() && !progress->future().isFinished()) {
+    if (m_progressView->progressCount() >= countOfVisibleProgresses() &&
+            !progress->future().isFinished() &&
+            !flags.testFlag(PrependInsteadAppend)) {
         m_queuedTaskList.append(FutureProgressPointer(progress));
     }
     else if (!progress->future().isFinished()) {

@@ -64,7 +64,8 @@ class ProgressManager : public QObject
 public:
     enum ProgressFlag {
         KeepOnFinish = 0x01,
-        ShowInApplicationIcon = 0x02
+        ShowInApplicationIcon = 0x02,
+        PrependInsteadAppend = 0x03
     };
     Q_DECLARE_FLAGS(ProgressFlags, ProgressFlag)
 

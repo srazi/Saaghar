@@ -64,7 +64,8 @@ ConcurrentTask::ConcurrentTask(QObject *parent)
       QRunnable(),
       m_cancel(false),
       m_progressObject(0),
-      m_displayFullNotification(sApp->displayFullNotification() && sApp->notificationPosition() != ProgressManager::Disabled)
+      m_displayFullNotification(sApp->displayFullNotification() && sApp->notificationPosition() != ProgressManager::Disabled),
+      m_futureProgress(0)
 {
     // deleted by parent/child system of Qt
     setAutoDelete(false);
@@ -88,20 +89,26 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
     m_type = type;
     m_options = argumants;
 
+    const bool shouldPrependTask = type == "UPDATE" && VAR_GET(m_options, checkByUser).toBool();
+
     if (sApp->notificationPosition() != ProgressManager::Disabled) {
         m_progressObject = new QFutureInterface<void>;
 
-        FutureProgress* fp = sApp->progressManager()->addTimedTask(*m_progressObject,
+        ProgressManager::ProgressFlags progressFlags = shouldPrependTask
+                ? (ProgressManager::ShowInApplicationIcon | ProgressManager::PrependInsteadAppend)
+                : ProgressManager::ShowInApplicationIcon;
+
+        m_futureProgress = sApp->progressManager()->addTimedTask(*m_progressObject,
                                                                    VAR_GET(m_options, taskTitle).toString(),
                                                                    m_type, 5,
-                                                                   ProgressManager::ShowInApplicationIcon);
+                                                                   progressFlags);
 
-        connect(fp, SIGNAL(canceled()), this, SLOT(setCanceled()));
+        connect(m_futureProgress, SIGNAL(canceled()), this, SLOT(setCanceled()));
     }
 
     ConcurrentTaskManager::instance()->addConcurrentTask(this);
 
-    sApp->tasksThreadPool()->start(this);
+    sApp->tasksThreadPool()->start(this, (shouldPrependTask ? 1 : 0));
 }
 
 #ifdef SAAGHAR_DEBUG
@@ -371,10 +378,8 @@ QVariant ConcurrentTask::checkForUpdates()
         connect(reply, SIGNAL(finished()), &loop, SLOT(quit()));
         loop.exec();
 
-        if (m_cancel) {
+        if (isCanceled()) {
             loop.quit();
-
-            error = true;
             break;
         }
 
@@ -384,7 +389,12 @@ QVariant ConcurrentTask::checkForUpdates()
         }
     }
 
-    if (error) {
+    if (error || isCanceled()) {
+        if (m_futureProgress) {
+            m_futureProgress->setTitle(tr("Update: %1").arg(isCanceled() ? tr("Canceled by user") : tr("Error ocurred")));
+            m_futureProgress->future().cancel();
+        }
+
         return QStringList() << QLatin1String("ERROR=TRUE") << checkByUser << QLatin1String("DATA=");
     }
 
