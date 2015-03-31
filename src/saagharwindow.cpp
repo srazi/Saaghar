@@ -91,7 +91,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     SaagharWidget::musicPlayer->albumManagerDock()->hide();
     SaagharWidget::musicPlayer->hide();
 
-    SaagharWidget::musicPlayer->readPlayerSettings(sApp->getSettingsObject());
+    SaagharWidget::musicPlayer->readPlayerSettings();
 
     if (QMusicPlayer::albumsPathList.isEmpty()) {
         const QString &defaultFile = sApp->defaultPath(SaagharApplication::AlbumFile);
@@ -2334,26 +2334,22 @@ void SaagharWindow::saveSettings()
         }
     }
 
-    QSettings* config = sApp->getSettingsObject();
-
-    config->setValue("UI Language", VAR("UI Language"));
-
 #ifdef MEDIA_PLAYER
     if (SaagharWidget::musicPlayer) {
         SaagharWidget::musicPlayer->saveAllAlbums();
     }
 
-    SaagharWidget::musicPlayer->savePlayerSettings(config);
+    SaagharWidget::musicPlayer->savePlayerSettings();
 #endif
 
     VAR_DECL("SaagharWidget/PoemViewStyle", SaagharWidget::CurrentViewStyle);
 
-    config->setValue("Max Poets Per Group", SaagharWidget::maxPoetsPerGroup);
+    VAR_DECL("Max Poets Per Group", SaagharWidget::maxPoetsPerGroup);
 
     VAR_DECL("Background State", SaagharWidget::backgroundImageState);
     VAR_DECL("Background Path", SaagharWidget::backgroundImagePath);
 
-    config->setValue("Show Beyt Numbers", SaagharWidget::showBeytNumbers);
+    VAR_DECL("Show Beyt Numbers", SaagharWidget::showBeytNumbers);
 
     //colors
     VAR_DECL("Matched Text Color", SaagharWidget::matchedTextColor);
@@ -2385,10 +2381,10 @@ void SaagharWindow::saveSettings()
     VAR_DECL("DataBase Path", QDir::toNativeSeparators(sApp->defaultPath(SaagharApplication::DatabaseDirs)));
 
     //search options
-    config->setValue("Max Search Results Per Page", SearchResultWidget::maxItemPerPage);
-    config->setValue("SearchNonPagedResults", SearchResultWidget::nonPagedSearch);
-    config->setValue("SearchSkipVowelSigns", SearchResultWidget::skipVowelSigns);
-    config->setValue("SearchSkipVowelLetters", SearchResultWidget::skipVowelLetters);
+    VAR_DECL("Max Search Results Per Page", SearchResultWidget::maxItemPerPage);
+    VAR_DECL("SearchNonPagedResults", SearchResultWidget::nonPagedSearch);
+    VAR_DECL("SearchSkipVowelSigns", SearchResultWidget::skipVowelSigns);
+    VAR_DECL("SearchSkipVowelLetters", SearchResultWidget::skipVowelLetters);
 
     QList<QListWidgetItem*> selectedItems = selectSearchRange->getSelectedItemList();
 
@@ -2406,8 +2402,6 @@ void SaagharWindow::saveSettings()
     VAR_DECL("Repositories List", DataBaseUpdater::repositories());
     VAR_DECL("Keep Downloaded File", QVariant(DataBaseUpdater::keepDownloadedFiles));
     VAR_DECL("Download Location", DataBaseUpdater::downloadLocation);
-
-    config->sync();
 }
 
 QString SaagharWindow::tableToString(QTableWidget* table, QString mesraSeparator, QString beytSeparator, int startRow, int startColumn, int endRow, int endColumn)

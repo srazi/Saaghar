@@ -56,7 +56,9 @@ void SettingsManager::defineVariable(const QString &name, const QVariant &value)
 
 void SettingsManager::defineVariableInitialValue(const QString &name, const QVariant &value)
 {
-    Q_ASSERT(!m_variablesInitialValues.contains(name));
+    if (m_variablesInitialValues.contains(name)) {
+        qFatal("Duplicate initial value: \"%s\" in file %s, line %d", name.toLatin1().constData(), __FILE__, __LINE__);
+    }
 
     m_variablesInitialValues.insert(name, value);
 }

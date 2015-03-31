@@ -44,6 +44,7 @@
 
 #include "qmusicplayer.h"
 #include "lyricsmanager.h"
+#include "settingsmanager.h"
 
 #include <QLCDNumber>
 #include <QFile>
@@ -986,10 +987,9 @@ void QMusicPlayer::setupUi()
     setLayoutDirection(Qt::LeftToRight);
 }
 
-void QMusicPlayer::readPlayerSettings(QSettings* settingsObject)
+void QMusicPlayer::readPlayerSettings()
 {
-    settingsObject->beginGroup("QMusicPlayer");
-    albumsPathList = settingsObject->value("ListOfAlbum").toHash();
+    albumsPathList = VAR("QMusicPlayer/ListOfAlbum").toHash();
 
     QStringList keys = albumsPathList.uniqueKeys();
     for (int i = 0; i < keys.size(); ++i) {
@@ -1000,32 +1000,28 @@ void QMusicPlayer::readPlayerSettings(QSettings* settingsObject)
 
 #ifdef USE_PHONON
     if (audioOutput) {
-        audioOutput->setMuted(settingsObject->value("muted", false).toBool());
-        audioOutput->setVolume(settingsObject->value("volume", 0.4).toReal());
+        audioOutput->setMuted(VARB("QMusicPlayer/Muted"));
+        audioOutput->setVolume(VAR("QMusicPlayer/Volume").toReal());
     }
 #else
-    mediaObject->setMuted(settingsObject->value("muted", false).toBool());
-    mediaObject->setVolume(int(settingsObject->value("volume", 0.4).toReal()*100));
+    mediaObject->setMuted(VARB("QMusicPlayer/Muted"));
+    mediaObject->setVolume(int(VAR("QMusicPlayer/Volume").toReal()*100));
 #endif
-    settingsObject->endGroup();
 }
 
-void QMusicPlayer::savePlayerSettings(QSettings* settingsObject)
+void QMusicPlayer::savePlayerSettings()
 {
-    settingsObject->beginGroup("QMusicPlayer");
-    settingsObject->setValue("ListOfAlbum", albumsPathList);
+    VAR_DECL("QMusicPlayer/ListOfAlbum", albumsPathList);
 
 #ifdef USE_PHONON
     if (audioOutput) {
-        settingsObject->setValue("muted", audioOutput->isMuted());
-        settingsObject->setValue("volume", audioOutput->volume());
+        VAR_DECL("QMusicPlayer/Muted", audioOutput->isMuted());
+        VAR_DECL("QMusicPlayer/Volume", audioOutput->volume());
     }
 #else
-    settingsObject->setValue("muted", mediaObject->isMuted());
-    settingsObject->setValue("volume", ((qreal)mediaObject->volume()/100.0));
+    VAR_DECL("QMusicPlayer/Muted", mediaObject->isMuted());
+    VAR_DECL("QMusicPlayer/Volume", ((qreal)mediaObject->volume()/100.0));
 #endif
-
-    settingsObject->endGroup();
 }
 
 void QMusicPlayer::loadAlbum(const QString &fileName, bool inserToPathList)

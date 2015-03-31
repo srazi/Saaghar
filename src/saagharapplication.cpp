@@ -190,26 +190,6 @@ bool SaagharApplication::isPortable() const
     return (m_isPortable == 1);
 }
 
-QSettings* SaagharApplication::getSettingsObject()
-{
-    QString organization = ORGANIZATION_NAME;
-    QString settingsName = APPLICATION_NAME;
-    const QSettings::Format settingsFormat = QSettings::IniFormat;
-
-    if (isPortable()) {
-        QSettings::setPath(settingsFormat, QSettings::UserScope, QCoreApplication::applicationDirPath());
-        organization = ".";
-        settingsName = "settings";
-    }
-    else {
-        QSettings::setPath(settingsFormat, QSettings::UserScope, QDir::toNativeSeparators(defaultPath(UserDataDir)));
-        organization = ".";
-        settingsName = "settings";
-    }
-
-    return new QSettings(settingsFormat, QSettings::UserScope, organization, settingsName);
-}
-
 void SaagharApplication::setupPaths()
 {
     if (!m_paths.isEmpty()) {
@@ -288,14 +268,12 @@ void SaagharApplication::setupDatabasePaths()
 
 void SaagharApplication::setupTranslators()
 {
-    const QString uiLanguage = getSettingsObject()->value("UI Language", "fa").toString();
-
     QTranslator* appTranslator = new QTranslator();
     QTranslator* basicTranslator = new QTranslator();
 
-    if (appTranslator->load(QString("saaghar_") + uiLanguage, sApp->defaultPath(SaagharApplication::ResourcesDir))) {
+    if (appTranslator->load(QString("saaghar_") + VARS("UI Language"), sApp->defaultPath(SaagharApplication::ResourcesDir))) {
         installTranslator(appTranslator);
-        if (basicTranslator->load(QString("qt_") + uiLanguage, sApp->defaultPath(SaagharApplication::ResourcesDir))) {
+        if (basicTranslator->load(QString("qt_") + VARS("UI Language"), sApp->defaultPath(SaagharApplication::ResourcesDir))) {
             installTranslator(basicTranslator);
         }
     }
@@ -306,7 +284,6 @@ void SaagharApplication::setupInitialValues()
     VAR_INIT("SaagharWidget/PoemViewStyle", SaagharWidget::SteppedHemistichLine);
     VAR_INIT("Background State", true);
     VAR_INIT("Background Path", defaultPath(SaagharApplication::ResourcesDir) + LS("/themes/backgrounds/saaghar-pattern_1.png"));
-    VAR_INIT("Show Beyt Numbers", true);
     VAR_INIT("Matched Text Color", QColor(225, 0, 225));
     VAR_INIT("Background Color", QColor(0xFE, 0xFD, 0xF2));
 
@@ -399,6 +376,18 @@ void SaagharApplication::setupInitialValues()
     VAR_INIT("UI Language", "fa");
     VAR_INIT("Random Open New Tab", false);
     VAR_INIT("Selected Random Range", QVariant());
+
+    VAR_INIT("Show Beyt Numbers", true);
+    VAR_INIT("SearchSkipVowelLetters", false);
+    VAR_INIT("SearchSkipVowelSigns", false);
+    VAR_INIT("SearchNonPagedResults", false);
+    VAR_INIT("Max Search Results Per Page", 100);
+    VAR_INIT("Max Poets Per Group", 12);
+
+    // QMusicPlayer
+    VAR_INIT("QMusicPlayer/ListOfAlbum", QVariant());
+    VAR_INIT("QMusicPlayer/Muted", false);
+    VAR_INIT("QMusicPlayer/Volume", 0.4);
 }
 
 void SaagharApplication::loadSettings()
@@ -433,19 +422,19 @@ void SaagharApplication::applySettings()
             SaagharWidget::CurrentViewStyle != SaagharWidget::SteppedHemistichLine) {
         SaagharWidget::CurrentViewStyle = SaagharWidget::SteppedHemistichLine;
     }
-QSettings* config = getSettingsObject();
-    SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
+
+    SaagharWidget::maxPoetsPerGroup = VARI("Max Poets Per Group");
 
     //search options
-    SearchResultWidget::maxItemPerPage  = config->value("Max Search Results Per Page", 100).toInt();
-    SearchResultWidget::nonPagedSearch = config->value("SearchNonPagedResults", false).toBool();
-    SearchResultWidget::skipVowelSigns = config->value("SearchSkipVowelSigns", false).toBool();
-    SearchResultWidget::skipVowelLetters = config->value("SearchSkipVowelLetters", false).toBool();
+    SearchResultWidget::maxItemPerPage  = VARI("Max Search Results Per Page");
+    SearchResultWidget::nonPagedSearch = VARB("SearchNonPagedResults");
+    SearchResultWidget::skipVowelSigns = VARB("SearchSkipVowelSigns");
+    SearchResultWidget::skipVowelLetters = VARB("SearchSkipVowelLetters");
 
     SaagharWidget::backgroundImageState = VARB("Background State");
     SaagharWidget::backgroundImagePath = VARS("Background Path");
 
-    SaagharWidget::showBeytNumbers = config->value("Show Beyt Numbers", true).toBool();
+    SaagharWidget::showBeytNumbers = VARB("Show Beyt Numbers");
     SaagharWidget::matchedTextColor = VAR("Matched Text Color").value<QColor>();
     SaagharWidget::backgroundColor = VAR("Background Color").value<QColor>();
 

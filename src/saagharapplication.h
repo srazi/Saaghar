@@ -69,7 +69,6 @@ public:
     ProgressManager::Position notificationPosition() const { return m_notificationPosition; }
 
     bool isPortable() const;
-    QSettings* getSettingsObject();
 
     QStringList mainToolBarItems();
     void setMainToolBarItems(const QStringList &items);

@@ -105,8 +105,8 @@ public:
     QMusicPlayer(QWidget* parent = 0);
     QString source();
     void setSource(const QString &fileName, const QString &title = "", int mediaID = -1, bool newSource = false);
-    void readPlayerSettings(QSettings* settingsObject);
-    void savePlayerSettings(QSettings* settingsObject);
+    void readPlayerSettings();
+    void savePlayerSettings();
     qint64 currentTime();
     void setCurrentTime(qint64 time);
     void loadAlbum(const QString &fileName, bool inserToPathList = true);
