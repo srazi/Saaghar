@@ -77,19 +77,6 @@ public:
     static QColor getFromColors(FontColorItem type = DefaultFontColor, bool canLoadDefault = true);
     static void insertToFontColorHash(QHash<QString, QVariant>* hash, const QVariant &variant, FontColorItem type = DefaultFontColor);
 
-    //settings variables
-    static QVariant READ(const QString &key, const QVariant &defaultValue = QVariant());
-    static void WRITE(const QString &key, const QVariant &value = QVariant());
-
-    inline static void LOAD_VARIABLES(const QHash<QString, QVariant> &variables) {
-        Settings::VariablesHash.clear();
-        Settings::VariablesHash = variables;
-    }
-
-    inline static QVariant GET_VARIABLES_VARIANT() {
-        return QVariant(Settings::VariablesHash);
-    }
-
     void applySettings();
 
     static QString currentIconThemePath();
@@ -113,7 +100,6 @@ private:
     void replaceWithNeighbor(int neighbor);
     void setupTaskManagerUi();
 
-    static QHash<QString, QVariant> VariablesHash;
     static QString s_currentIconPath;
 };
 

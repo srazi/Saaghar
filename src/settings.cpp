@@ -22,12 +22,12 @@
 #include "settings.h"
 #include "saagharwindow.h"
 #include "saagharapplication.h"
+#include "settingsmanager.h"
 
 #include <QColorDialog>
 #include <QFileDialog>
 #include <QImageReader>
 
-QHash<QString, QVariant> Settings::VariablesHash = QHash<QString, QVariant>();
 QHash<QString, QVariant> Settings::hashFonts = QHash<QString, QVariant>();
 QHash<QString, QVariant> Settings::hashColors = QHash<QString, QVariant>();
 QString Settings::s_currentIconPath;
@@ -99,16 +99,15 @@ Settings::Settings(SaagharWindow* parent)
 
     connect(ui->pushButtonApply, SIGNAL(clicked()), parent, SLOT(applySettings()));
 
-    ui->checkBoxIconTheme->setChecked(Settings::READ("Icon Theme State", false).toBool());
-    ui->lineEditIconTheme->setEnabled(Settings::READ("Icon Theme State", false).toBool());
-    ui->pushButtonIconTheme->setEnabled(Settings::READ("Icon Theme State", false).toBool());
-    ui->lineEditIconTheme->setText(Settings::READ("Icon Theme Path", sApp->defaultPath(SaagharApplication::ResourcesDir) +
-                                   "/themes/iconsets/light-gray/").toString());
+    ui->checkBoxIconTheme->setChecked(VARB("Icon Theme State"));
+    ui->lineEditIconTheme->setEnabled(VARB("Icon Theme State"));
+    ui->pushButtonIconTheme->setEnabled(VARB("Icon Theme State"));
+    ui->lineEditIconTheme->setText(VARS("Icon Theme Path"));
     connect(ui->pushButtonIconTheme, SIGNAL(clicked()), this, SLOT(browseForIconTheme()));
 
     // force emitting toggle signal
-    ui->globalFontColorGroupBox->setChecked(!Settings::READ("Global Font", false).toBool());
-    ui->globalFontColorGroupBox->setChecked(Settings::READ("Global Font", false).toBool());
+    ui->globalFontColorGroupBox->setChecked(!VARB("Global Font"));
+    ui->globalFontColorGroupBox->setChecked(VARB("Global Font"));
 
     connect(ui->checkBoxBackground, SIGNAL(toggled(bool)), backgroundFontColor, SLOT(disableAll(bool)));
     backgroundFontColor->disableAll(ui->checkBoxBackground->isChecked());
@@ -212,9 +211,9 @@ void Settings::setupTaskManagerUi()
     ui->comboBoxNotification->insertItem(3, tr("Desktop Bottom Right"), ProgressManager::DesktopBottomRight);
     ui->comboBoxNotification->insertItem(4, tr("Desktop Top Right"), ProgressManager::DesktopTopRight);
 
-    ui->groupBoxTaskManager->setChecked(Settings::READ("TaskManager", false).toBool());
-    ui->comboBoxMode->setCurrentIndex(ui->comboBoxMode->findData(Settings::READ("TaskManager/Mode", "NORMAL")));
-    ui->comboBoxNotification->setCurrentIndex(ui->comboBoxNotification->findData(Settings::READ("TaskManager/Notification", ProgressManager::DesktopBottomRight)));
+    ui->groupBoxTaskManager->setChecked(VARB("TaskManager"));
+    ui->comboBoxMode->setCurrentIndex(ui->comboBoxMode->findData(VAR("TaskManager/Mode")));
+    ui->comboBoxNotification->setCurrentIndex(ui->comboBoxNotification->findData(VAR("TaskManager/Notification")));
 }
 
 void Settings::initializeActionTables(const QMap<QString, QAction*> &actionsMap, const QStringList &toolBarItems)
@@ -381,7 +380,7 @@ QFont Settings::getFromFonts(FontColorItem type, bool canLoadDefault)
     if (type == OutLineFontColor) {
         canLoadDefault = false;
     }
-    if (Settings::READ("Global Font", false).toBool() && canLoadDefault) {
+    if (VARB("Global Font") && canLoadDefault) {
         font = Settings::hashFonts.value(QString::number(int(DefaultFontColor))).value<QFont>();
     }
     else {
@@ -398,7 +397,7 @@ QColor Settings::getFromColors(FontColorItem type, bool canLoadDefault)
     if (type == OutLineFontColor) {
         canLoadDefault = false;
     }
-    if (Settings::READ("Global Font", false).toBool() && canLoadDefault) {
+    if (VARB("Global Font") && canLoadDefault) {
         color = Settings::hashColors.value(QString::number(int(DefaultFontColor))).value<QColor>();
     }
     else {
@@ -413,35 +412,18 @@ void Settings::insertToFontColorHash(QHash<QString, QVariant>* hash, const QVari
     if (!hash) {
         return;
     }
-    //if (Settings::READ("Global Font", false).toBool() && type != DefaultFontColor) return;
+    //if (VARB("Global Font") && type != DefaultFontColor) return;
     hash->insert(QString::number(int(type)), variant);
-}
-
-QVariant Settings::READ(const QString &key, const QVariant &defaultValue)
-{
-    if (!Settings::VariablesHash.contains(key)) {
-        Settings::VariablesHash.insert(key, defaultValue);
-    }
-
-    return Settings::VariablesHash.value(key);
-}
-
-void Settings::WRITE(const QString &key, const QVariant &value)
-{
-    Settings::VariablesHash.insert(key, value);
 }
 
 QString Settings::currentIconThemePath()
 {
     if (s_currentIconPath.isEmpty()) {
-        if (Settings::READ("Icon Theme State", false).toBool() &&
-                !Settings::READ("Icon Theme Path", sApp->defaultPath(SaagharApplication::ResourcesDir) +
-                                "/themes/iconsets/light-gray/").toString().isEmpty()) {
-            s_currentIconPath = Settings::READ("Icon Theme Path", sApp->defaultPath(SaagharApplication::ResourcesDir) +
-                                               "/themes/iconsets/light-gray/").toString();
+        if (VARB("Icon Theme State") && !VARS("Icon Theme Path").isEmpty()) {
+            s_currentIconPath = VARS("Icon Theme Path");
         }
         else {
-            s_currentIconPath = ":/resources/iconsets/default/";
+            s_currentIconPath = QLatin1String(":/resources/iconsets/default/");
         }
     }
 
@@ -457,16 +439,16 @@ void Settings::accept()
 
 void Settings::applySettings()
 {
-    Settings::WRITE("Icon Theme State", ui->checkBoxIconTheme->isChecked());
-    Settings::WRITE("Icon Theme Path", ui->lineEditIconTheme->text());
+    VAR_DECL("Icon Theme State", ui->checkBoxIconTheme->isChecked());
+    VAR_DECL("Icon Theme Path", ui->lineEditIconTheme->text());
     s_currentIconPath.clear();
 
-    bool storeTaskManagerSettings = ui->groupBoxTaskManager->isChecked();
-    Settings::WRITE("TaskManager", storeTaskManagerSettings);
+    const bool storeTaskManagerSettings = ui->groupBoxTaskManager->isChecked();
+    VAR_DECL("TaskManager", storeTaskManagerSettings);
 
     if (storeTaskManagerSettings) {
-        Settings::WRITE("TaskManager/Mode", ui->comboBoxMode->itemData(ui->comboBoxMode->currentIndex()));
-        Settings::WRITE("TaskManager/Notification", ui->comboBoxNotification->itemData(ui->comboBoxNotification->currentIndex()));
+        VAR_DECL("TaskManager/Mode", ui->comboBoxMode->itemData(ui->comboBoxMode->currentIndex()));
+        VAR_DECL("TaskManager/Notification", ui->comboBoxNotification->itemData(ui->comboBoxNotification->currentIndex()));
     }
 }
 

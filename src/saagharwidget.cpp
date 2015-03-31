@@ -27,6 +27,7 @@
 #include "settings.h"
 #include "tools.h"
 #include "saagharapplication.h"
+#include "settingsmanager.h"
 
 #include <QSearchLineEdit>
 #include <QApplication>
@@ -441,7 +442,7 @@ bool SaagharWidget::initializeCustomizedHome()
             if (!QFile::exists(poetPhotoFileName)) {
                 poetPhotoFileName = ICON_PATH + "/no-photo.png";
             }
-            if (Settings::READ("Show Photo at Home").toBool()) {
+            if (VARB("Show Photo at Home")) {
                 catItem->setIcon(QIcon(poetPhotoFileName));
             }
             else {
@@ -459,7 +460,7 @@ bool SaagharWidget::initializeCustomizedHome()
                 break;
             }
 
-            if (col == 0 && Settings::READ("Show Photo at Home").toBool()) {
+            if (col == 0 && VARB("Show Photo at Home")) {
                 tableViewWidget->setRowHeight(row + startIndex, 105);
             }
         }
@@ -483,7 +484,7 @@ void SaagharWidget::homeResizeColsRows()
         startIndex = 1;
     }
 
-    bool showPhoto = Settings::READ("Show Photo at Home").toBool();
+    bool showPhoto = VARB("Show Photo at Home");
     QFontMetrics sectionFontMetric = QFontMetrics(Settings::getFromFonts(Settings::SectionNameFontColor));
 
     int height = SaagharWidget::computeRowHeight(sectionFontMetric, -1, -1);
@@ -637,7 +638,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
                                          }\
                                          ");
             descContainer->setMaximumHeight(200);
-            /*if (category._ID == 0 && !Settings::READ("Show Photo at Home").toBool())
+            /*if (category._ID == 0 && !VARB("Show Photo at Home"))
             {
                 qDebug() << "Remove Icon11111111";
                 catItem->setIcon(QIcon());
@@ -696,7 +697,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
             if (!QFile::exists(poetPhotoFileName)) {
                 poetPhotoFileName = ICON_PATH + "/no-photo.png";
             }
-            if (Settings::READ("Show Photo at Home").toBool()) {
+            if (VARB("Show Photo at Home")) {
                 catItem->setIcon(QIcon(poetPhotoFileName));
             }
             else {

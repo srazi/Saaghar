@@ -60,6 +60,8 @@ public:
     void checkRegistration(bool forceShow = false);
     QMenu* cornerMenu();
 
+    void saveSettings();
+
 private:
     void loadAudioForCurrentTab(SaagharWidget* old_saagharWidget = 0);
 
@@ -90,7 +92,6 @@ private:
     TabWidget* mainTabWidget;
     void loadTabWidgetSettings();
 
-    void saveSettings();
     bool processTextChanged;
     QToolBar* parentCatsToolBar;
     SaagharWidget* getSaagharWidget(int tabIndex);

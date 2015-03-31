@@ -29,8 +29,9 @@
 #include <QApplication>
 #include <QStringList>
 
-class SaagharWindow;
 class DatabaseBrowser;
+class SaagharWindow;
+class SettingsManager;
 
 class QSettings;
 class QThread;
@@ -60,9 +61,7 @@ public:
     ProgressManager* progressManager();
     QThreadPool* tasksThreadPool();
     DatabaseBrowser* databaseBrowser();
-
-    void loadSettings();
-    void applySettings();
+    SettingsManager* settingsManager();
 
     int tasksThreads() { return m_tasksThreads; }
     void setPriority(QThread* thread);
@@ -75,17 +74,26 @@ public:
     QStringList mainToolBarItems();
     void setMainToolBarItems(const QStringList &items);
 
+    void applySettings();
+    void saveSettings();
+
+    void quitSaaghar();
+
 private:
     void init();
     void setupPaths();
     void setupDatabasePaths();
     void setupTranslators();
 
+    void setupInitialValues();
+    void loadSettings();
+
     SaagharWindow* m_mainWindow;
 
     ProgressManagerPrivate* m_progressManager;
     QThreadPool* m_tasksThreadPool;
     DatabaseBrowser* m_databaseBrowser;
+    SettingsManager* m_settingsManager;
 
     int m_tasksThreads;
     bool m_displayFullNotification;
@@ -94,7 +102,6 @@ private:
     mutable int m_isPortable;
 
     QHash<PathType, QString> m_paths;
-    QStringList m_defaultToolbarActions;
 };
 
 #endif // SAAGHARAPPLICATION_H

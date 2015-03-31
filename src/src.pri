@@ -25,7 +25,8 @@ HEADERS += \
     $$PWD/mactoolbutton.h \
     $$PWD/tools.h \
     $$PWD/concurrenttasks.h \
-    $$PWD/saagharapplication.h
+    $$PWD/saagharapplication.h \
+    $$PWD/settingsmanager.h
 
 FORMS += \
     $$PWD/saagharwindow.ui \
@@ -54,7 +55,8 @@ SOURCES += \
     $$PWD/mactoolbutton.cpp \
     $$PWD/tools.cpp \
     $$PWD/concurrenttasks.cpp \
-    $$PWD/saagharapplication.cpp
+    $$PWD/saagharapplication.cpp \
+    $$PWD/settingsmanager.cpp
 
 include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)

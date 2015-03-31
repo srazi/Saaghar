@@ -29,13 +29,14 @@
 #include "databasebrowser.h"
 #include "searchresultwidget.h"
 #include "databaseupdater.h"
+#include "settingsmanager.h"
 
 #include <QExtendedSplashScreen>
 
 #include <QDir>
 #include <QFileInfo>
 #include <QFontDatabase>
-//#include<QMessageBox>
+#include<QMessageBox>
 #include <QPointer>
 #include <QSettings>
 #include <QThreadPool>
@@ -74,6 +75,7 @@ SaagharApplication::SaagharApplication(int &argc, char **argv)
       m_progressManager(0),
       m_tasksThreadPool(0),
       m_databaseBrowser(0),
+      m_settingsManager(0),
       m_tasksThreads(NORMAL_TASKS_THREADS),
       m_displayFullNotification(true),
       m_notificationPosition(ProgressManager::DesktopBottomRight),
@@ -82,13 +84,6 @@ SaagharApplication::SaagharApplication(int &argc, char **argv)
     setOrganizationName(ORGANIZATION_NAME);
     setApplicationName(APPLICATION_NAME);
     setOrganizationDomain(ORGANIZATION_DOMAIN);
-
-    setupPaths();
-    loadSettings();
-    setupDatabasePaths();
-
-    applySettings();
-    setupTranslators();
 
     init();
 }
@@ -158,121 +153,13 @@ DatabaseBrowser *SaagharApplication::databaseBrowser()
     return m_databaseBrowser;
 }
 
-void SaagharApplication::loadSettings()
+SettingsManager *SaagharApplication::settingsManager()
 {
-    QSettings* config = getSettingsObject();
-
-    Settings::LOAD_VARIABLES(config->value("VariableHash").toHash());
-
-    SaagharWidget::CurrentViewStyle = (SaagharWidget::PoemViewStyle)Settings::READ("Poem Current View Style", SaagharWidget::SteppedHemistichLine).toInt();
-
-    if (SaagharWidget::CurrentViewStyle != SaagharWidget::OneHemistichLine &&
-            SaagharWidget::CurrentViewStyle != SaagharWidget::TwoHemistichLine &&
-            SaagharWidget::CurrentViewStyle != SaagharWidget::SteppedHemistichLine) {
-        SaagharWidget::CurrentViewStyle = SaagharWidget::SteppedHemistichLine;
+    if (!m_settingsManager) {
+        m_settingsManager = SettingsManager::instance();
     }
 
-    SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
-
-    //search options
-    SearchResultWidget::maxItemPerPage  = config->value("Max Search Results Per Page", 100).toInt();
-    SearchResultWidget::nonPagedSearch = config->value("SearchNonPagedResults", false).toBool();
-    SearchResultWidget::skipVowelSigns = config->value("SearchSkipVowelSigns", false).toBool();
-    SearchResultWidget::skipVowelLetters = config->value("SearchSkipVowelLetters", false).toBool();
-
-    SaagharWidget::backgroundImageState = Settings::READ("Background State", true).toBool();
-    SaagharWidget::backgroundImagePath = Settings::READ("Background Path", sApp->defaultPath(SaagharApplication::ResourcesDir) + "/themes/backgrounds/saaghar-pattern_1.png").toString();
-
-    SaagharWidget::showBeytNumbers = config->value("Show Beyt Numbers", true).toBool();
-    SaagharWidget::matchedTextColor = Settings::READ("Matched Text Color", QColor(225, 0, 225)).value<QColor>();
-    SaagharWidget::backgroundColor = Settings::READ("Background Color", QColor(0xFE, 0xFD, 0xF2)).value<QColor>();
-
-    QString firstFamily = QFontDatabase().families().contains("XB Sols") ?
-                          "XB Sols" : "Droid Arabic Naskh (with DOT)";
-    QFont appFont1(firstFamily, 18);
-    appFont1.setBold(true);
-    //The "Droid Arabic Naskh (with DOT)" is an application font
-    QString secondFamily = "Droid Arabic Naskh (with DOT)";
-#ifdef Q_OS_MAC
-    secondFamily = firstFamily;
-#endif
-    QFont appFont2(secondFamily, 8);
-    appFont2.setBold(true);
-
-    QHash<QString, QVariant> defaultFonts;
-
-    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::PoemTextFontColor);
-
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::OutLineFontColor);
-    appFont2.setPointSize(12);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::NumbersFontColor);
-    appFont2.setPointSize(16);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::ProseTextFontColor);
-    appFont2.setPointSize(18);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::SectionNameFontColor);
-    appFont2.setPointSize(22);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::TitlesFontColor);
-
-    QHash<QString, QVariant> defaultColors;
-    Settings::insertToFontColorHash(&defaultColors, QColor(22, 127, 175), Settings::OutLineFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(47, 144, 45), Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(57, 175, 175), Settings::PoemTextFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(2, 118, 190), Settings::ProseTextFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(48, 127, 105), Settings::SectionNameFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(143, 47, 47), Settings::TitlesFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(84, 81, 171), Settings::NumbersFontColor);
-
-    Settings::hashFonts = Settings::READ("Fonts Hash", QVariant(defaultFonts)).toHash();
-    Settings::hashColors = Settings::READ("Colors Hash", QVariant(defaultColors)).toHash();
-
-    DataBaseUpdater::setRepositories(Settings::READ("Repositories List").toStringList());
-    DataBaseUpdater::keepDownloadedFiles = Settings::READ("Keep Downloaded File", false).toBool();
-    DataBaseUpdater::downloadLocation = Settings::READ("Download Location", "").toString();
-
-    //initialize default value for "UseTransparecy"
-#ifdef Q_OS_WIN
-    Settings::READ("UseTransparecy", true);
-#else
-    Settings::READ("UseTransparecy", false);
-#endif
-}
-
-void SaagharApplication::applySettings()
-{
-    m_notificationPosition = ProgressManager::Position(Settings::READ("TaskManager/Notification", ProgressManager::DesktopBottomRight).toInt());
-    const QString mode = Settings::READ("TaskManager/Mode", "NORMAL").toString();
-
-    if (mode == "SLOW") {
-        m_tasksThreads = QThread::idealThreadCount() > 1 ? (QThread::idealThreadCount() - 1) : 1;
-        TASKS_PRIORITY = QThread::LowPriority;
-        m_displayFullNotification = true;
-    }
-    else if (mode == "FAST") {
-        m_tasksThreads = QThread::idealThreadCount();
-        TASKS_PRIORITY = QThread::NormalPriority;
-        m_displayFullNotification = false;
-    }
-    else { // fallback to "NORMAL"
-        m_tasksThreads = NORMAL_TASKS_THREADS;
-        TASKS_PRIORITY = QThread::LowPriority;
-        m_displayFullNotification = true;
-    }
-
-    if (m_tasksThreadPool) {
-        m_tasksThreadPool->setMaxThreadCount(m_tasksThreads);
-    }
-
-    if (m_progressManager) {
-        if (sApp->notificationPosition() == ProgressManager::Disabled) {
-            delete m_progressManager;
-            m_progressManager = 0;
-        }
-        else {
-            m_progressManager->progressView()->setProgressWidgetVisible(m_displayFullNotification);
-            m_progressManager->progressView()->setPosition(m_notificationPosition);
-        }
-    }
+    return m_settingsManager;
 }
 
 void SaagharApplication::setPriority(QThread* thread)
@@ -374,7 +261,7 @@ void SaagharApplication::setupPaths()
 
 void SaagharApplication::setupDatabasePaths()
 {
-    QStringList settingsDatabaseDirs = Settings::READ("DataBase Path", QVariant()).toString().split(QLatin1String(";"), QString::SkipEmptyParts);
+    QStringList settingsDatabaseDirs = VARS("DataBase Path").split(QLatin1String(";"), QString::SkipEmptyParts);
 
     //searching database-path for database-file
     //following lines are for support old default data-base pathes.
@@ -414,20 +301,255 @@ void SaagharApplication::setupTranslators()
     }
 }
 
-QStringList SaagharApplication::mainToolBarItems()
+void SaagharApplication::setupInitialValues()
 {
-    if (m_defaultToolbarActions.isEmpty()) {
-        const QString sepStr = QLatin1String("Separator");
-        m_defaultToolbarActions << "outlineDockAction" << sepStr << "actionPreviousPoem" << "actionNextPoem"
-                                << "fixedNameUndoAction" << sepStr << "actionFaal" << "actionRandom"
-                                << sepStr << "searchToolbarAction" << "bookmarkManagerDockAction"
-#ifdef MEDIA_PLAYER
-                                << "albumDockAction" << "toggleMusicPlayer"
+    VAR_INIT("SaagharWidget/PoemViewStyle", SaagharWidget::SteppedHemistichLine);
+    VAR_INIT("Background State", true);
+    VAR_INIT("Background Path", defaultPath(SaagharApplication::ResourcesDir) + LS("/themes/backgrounds/saaghar-pattern_1.png"));
+    VAR_INIT("Show Beyt Numbers", true);
+    VAR_INIT("Matched Text Color", QColor(225, 0, 225));
+    VAR_INIT("Background Color", QColor(0xFE, 0xFD, 0xF2));
+
+    // font & color defaults
+    const QString firstFamily = QFontDatabase().families().contains("XB Sols")
+            ? LS("XB Sols") : LS("Droid Arabic Naskh (with DOT)");
+
+    QFont appFont1(firstFamily, 18);
+    appFont1.setBold(true);
+
+    //The "Droid Arabic Naskh (with DOT)" is an application font
+    QString secondFamily = LS("Droid Arabic Naskh (with DOT)");
+#ifdef Q_OS_MAC
+    secondFamily = firstFamily;
 #endif
-                                << sepStr << "actionSettings";
+
+    QFont appFont2(secondFamily, 8);
+    appFont2.setBold(true);
+
+    QHash<QString, QVariant> defaultFonts;
+
+    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::DefaultFontColor);
+    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::PoemTextFontColor);
+
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::OutLineFontColor);
+    appFont2.setPointSize(12);
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::NumbersFontColor);
+    appFont2.setPointSize(16);
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::ProseTextFontColor);
+    appFont2.setPointSize(18);
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::SectionNameFontColor);
+    appFont2.setPointSize(22);
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::TitlesFontColor);
+
+    QHash<QString, QVariant> defaultColors;
+    Settings::insertToFontColorHash(&defaultColors, QColor(22, 127, 175), Settings::OutLineFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(47, 144, 45), Settings::DefaultFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(57, 175, 175), Settings::PoemTextFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(2, 118, 190), Settings::ProseTextFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(48, 127, 105), Settings::SectionNameFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(143, 47, 47), Settings::TitlesFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(84, 81, 171), Settings::NumbersFontColor);
+
+    VAR_INIT("Fonts Hash", QVariant(defaultFonts));
+    VAR_INIT("Colors Hash", QVariant(defaultColors));
+
+    VAR_INIT("Repositories List", QVariant());
+    VAR_INIT("Keep Downloaded File", false);
+    VAR_INIT("Download Location", QVariant());
+
+#ifdef Q_OS_WIN
+    VAR_INIT("UseTransparecy", true);
+#else
+    VAR_INIT("UseTransparecy", false);
+#endif
+
+    VAR_INIT("Show Photo at Home", true);
+
+    VAR_INIT("Icon Theme State", false);
+    VAR_INIT("Icon Theme Path", defaultPath(SaagharApplication::ResourcesDir) + LS("/themes/iconsets/light-gray/"));
+
+    VAR_INIT("Global Font", false);
+
+    VAR_INIT("TaskManager", false);
+    VAR_INIT("TaskManager/Mode", "NORMAL");
+    VAR_INIT("TaskManager/Notification", ProgressManager::DesktopBottomRight);
+
+    VAR_INIT("DataBase Path", QVariant());
+
+        const QString sepStr = QLatin1String("Separator");
+    QStringList defaultToolbarActions = QStringList()
+            << "outlineDockAction" << sepStr << "actionPreviousPoem" << "actionNextPoem"
+            << "fixedNameUndoAction" << sepStr << "actionFaal" << "actionRandom"
+            << sepStr << "searchToolbarAction" << "bookmarkManagerDockAction"
+#ifdef MEDIA_PLAYER
+            << "albumDockAction" << "toggleMusicPlayer"
+#endif
+            << sepStr << "actionSettings";
+
+    VAR_INIT("Main ToolBar Items", defaultToolbarActions);
+    VAR_INIT("Display Splash Screen", true);
+    VAR_INIT("Opened tabs from last session", QVariant());
+    VAR_INIT("MainWindowState1", QVariant());
+    VAR_INIT("Mainwindow Geometry", QVariant());
+    VAR_INIT("Auto Check For Updates", true);
+    VAR_INIT("Selected Search Range", (QStringList() << "0" << "ALL_TITLES"));
+    VAR_INIT("Lock ToolBars", true);
+    VAR_INIT("MainToolBar Style", "actionToolBarStyleOnlyIcon");
+    VAR_INIT("MainToolBar Size", "actionToolBarSizeMediumIcon");
+    VAR_INIT("UI Language", "fa");
+    VAR_INIT("Random Open New Tab", false);
+    VAR_INIT("Selected Random Range", QVariant());
+}
+
+void SaagharApplication::loadSettings()
+{
+    // first setup paths
+    setupPaths();
+
+    QFile file(defaultPath(SettingsFile));
+
+    if (file.exists() && (!file.open(QFile::ReadOnly)
+                          || !settingsManager()->loadVariable(&file))) {
+        QMessageBox::information(m_mainWindow, tr("Warning!"),
+                                 tr("Settings could not be loaded!\nFile: %1\nError: %2")
+                                 .arg(QFileInfo(file).absoluteFilePath())
+                                 .arg(file.errorString()));
     }
 
-    QStringList items = Settings::READ("Main ToolBar Items", m_defaultToolbarActions).toStringList();
+    // before using VAR* macros we have to initialize defaults
+    setupInitialValues();
+
+    // ready to setup database path
+    setupDatabasePaths();
+}
+
+void SaagharApplication::applySettings()
+{
+    // TODO: do things with VAR()
+    SaagharWidget::CurrentViewStyle = (SaagharWidget::PoemViewStyle)VARI("SaagharWidget/PoemViewStyle");
+
+    if (SaagharWidget::CurrentViewStyle != SaagharWidget::OneHemistichLine &&
+            SaagharWidget::CurrentViewStyle != SaagharWidget::TwoHemistichLine &&
+            SaagharWidget::CurrentViewStyle != SaagharWidget::SteppedHemistichLine) {
+        SaagharWidget::CurrentViewStyle = SaagharWidget::SteppedHemistichLine;
+    }
+QSettings* config = getSettingsObject();
+    SaagharWidget::maxPoetsPerGroup = config->value("Max Poets Per Group", 12).toInt();
+
+    //search options
+    SearchResultWidget::maxItemPerPage  = config->value("Max Search Results Per Page", 100).toInt();
+    SearchResultWidget::nonPagedSearch = config->value("SearchNonPagedResults", false).toBool();
+    SearchResultWidget::skipVowelSigns = config->value("SearchSkipVowelSigns", false).toBool();
+    SearchResultWidget::skipVowelLetters = config->value("SearchSkipVowelLetters", false).toBool();
+
+    SaagharWidget::backgroundImageState = VARB("Background State");
+    SaagharWidget::backgroundImagePath = VARS("Background Path");
+
+    SaagharWidget::showBeytNumbers = config->value("Show Beyt Numbers", true).toBool();
+    SaagharWidget::matchedTextColor = VAR("Matched Text Color").value<QColor>();
+    SaagharWidget::backgroundColor = VAR("Background Color").value<QColor>();
+
+    QString firstFamily = QFontDatabase().families().contains("XB Sols") ?
+                          "XB Sols" : "Droid Arabic Naskh (with DOT)";
+    QFont appFont1(firstFamily, 18);
+    appFont1.setBold(true);
+    //The "Droid Arabic Naskh (with DOT)" is an application font
+    QString secondFamily = "Droid Arabic Naskh (with DOT)";
+#ifdef Q_OS_MAC
+    secondFamily = firstFamily;
+#endif
+    QFont appFont2(secondFamily, 8);
+    appFont2.setBold(true);
+
+    QHash<QString, QVariant> defaultFonts;
+
+    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::DefaultFontColor);
+    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::PoemTextFontColor);
+
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::OutLineFontColor);
+    appFont2.setPointSize(12);
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::NumbersFontColor);
+    appFont2.setPointSize(16);
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::ProseTextFontColor);
+    appFont2.setPointSize(18);
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::SectionNameFontColor);
+    appFont2.setPointSize(22);
+    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::TitlesFontColor);
+
+    QHash<QString, QVariant> defaultColors;
+    Settings::insertToFontColorHash(&defaultColors, QColor(22, 127, 175), Settings::OutLineFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(47, 144, 45), Settings::DefaultFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(57, 175, 175), Settings::PoemTextFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(2, 118, 190), Settings::ProseTextFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(48, 127, 105), Settings::SectionNameFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(143, 47, 47), Settings::TitlesFontColor);
+    Settings::insertToFontColorHash(&defaultColors, QColor(84, 81, 171), Settings::NumbersFontColor);
+
+    Settings::hashFonts = VAR("Fonts Hash").toHash();
+    Settings::hashColors = VAR("Colors Hash").toHash();
+
+    DataBaseUpdater::setRepositories(VAR("Repositories List").toStringList());
+    DataBaseUpdater::keepDownloadedFiles = VARB("Keep Downloaded File");
+    DataBaseUpdater::downloadLocation = VARS("Download Location");
+
+    // application apply settings
+    m_notificationPosition = ProgressManager::Position(VARI("TaskManager/Notification"));
+    const QString mode = VARS("TaskManager/Mode");
+
+    if (mode == "SLOW") {
+        m_tasksThreads = QThread::idealThreadCount() > 1 ? (QThread::idealThreadCount() - 1) : 1;
+        TASKS_PRIORITY = QThread::LowPriority;
+        m_displayFullNotification = true;
+    }
+    else if (mode == "FAST") {
+        m_tasksThreads = QThread::idealThreadCount();
+        TASKS_PRIORITY = QThread::NormalPriority;
+        m_displayFullNotification = false;
+    }
+    else { // fallback to "NORMAL"
+        m_tasksThreads = NORMAL_TASKS_THREADS;
+        TASKS_PRIORITY = QThread::LowPriority;
+        m_displayFullNotification = true;
+    }
+
+    if (m_tasksThreadPool) {
+        m_tasksThreadPool->setMaxThreadCount(m_tasksThreads);
+    }
+
+    if (m_progressManager) {
+        if (sApp->notificationPosition() == ProgressManager::Disabled) {
+            delete m_progressManager;
+            m_progressManager = 0;
+        }
+        else {
+            m_progressManager->progressView()->setProgressWidgetVisible(m_displayFullNotification);
+            m_progressManager->progressView()->setPosition(m_notificationPosition);
+        }
+    }
+}
+
+void SaagharApplication::saveSettings()
+{
+    // TODO: do things with VAR_DECL
+    if (m_mainWindow) {
+        m_mainWindow->saveSettings();
+    }
+//    VAR_DECL("MainWindow/State0", saveState());
+//    VAR_DECL("MainWindow/Geometry", saveGeometry());
+
+    QFile file(defaultPath(SettingsFile));
+    if (!file.open(QFile::WriteOnly)
+            || !settingsManager()->writeVariable(&file)) {
+        QMessageBox::information(m_mainWindow, tr("Warning!"),
+                                 tr("Settings could not be saved!\nFile: %1\nError: %2")
+                                 .arg(QFileInfo(file).absoluteFilePath())
+                                 .arg(file.errorString()));
+    }
+}
+
+QStringList SaagharApplication::mainToolBarItems()
+{
+    QStringList items = VAR("Main ToolBar Items").toStringList();
     items.removeAll(QLatin1String(""));
 
     return items;
@@ -435,11 +557,32 @@ QStringList SaagharApplication::mainToolBarItems()
 
 void SaagharApplication::setMainToolBarItems(const QStringList &items)
 {
-    Settings::WRITE("Main ToolBar Items", items);
+    VAR_DECL("Main ToolBar Items", items);
+}
+
+void SaagharApplication::quitSaaghar()
+{
+    saveSettings();
+
+    quit();
 }
 
 void SaagharApplication::init()
 {
+    // loadSettings() setups paths and loads settings and then
+    // setups initial values and finally setups database path
+    loadSettings();
+
+    // apply loaded settings
+    applySettings();
+
+    // install translators
+    setupTranslators();
+
+    ////////////////////
+    // Initialize GUI //
+    ////////////////////
+
     //'At Development Stage' message
     //QMessageBox::information(0, QObject::tr("At Development Stage"), QObject::tr("This is an experimental version! Don\'t release it!\nWWW: http://saaghar.pozh.org"));
 

@@ -25,6 +25,7 @@
 #include "tools.h"
 #include "concurrenttasks.h"
 #include "saagharapplication.h"
+#include "settingsmanager.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -97,7 +98,7 @@ DatabaseBrowser::DatabaseBrowser(const QString &sqliteDbCompletePath)
         noDataBaseDialog.ui->pathLabel->setText(tr("Data Base Path:") + " " + sqliteDbCompletePath);
         noDataBaseDialog.ui->errorLabel->setText(tr("Error:") + " " + (errorString.isEmpty() ? tr("No Error!") : errorString));
 
-        QtWin::easyBlurUnBlur(&noDataBaseDialog, Settings::READ("UseTransparecy").toBool());
+        QtWin::easyBlurUnBlur(&noDataBaseDialog, VARB("UseTransparecy"));
 
         noDataBaseDialog.exec();
 
@@ -129,7 +130,7 @@ DatabaseBrowser::DatabaseBrowser(const QString &sqliteDbCompletePath)
                 getDir.setFileMode(QFileDialog::Directory);
                 getDir.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks /*| QFileDialog::DontUseNativeDialog*/);
                 getDir.setAcceptMode(QFileDialog::AcceptOpen);
-                QtWin::easyBlurUnBlur(&getDir, Settings::READ("UseTransparecy").toBool());
+                QtWin::easyBlurUnBlur(&getDir, VARB("UseTransparecy"));
                 getDir.exec();
                 QString dir = "";
                 if (!getDir.selectedFiles().isEmpty()) {
@@ -1672,7 +1673,7 @@ void DatabaseBrowser::addDataSets()
     }
     else if (m_addRemoteDataSet) {
         //download dialog
-        QtWin::easyBlurUnBlur(DatabaseBrowser::dbUpdater, Settings::READ("UseTransparecy").toBool());
+        QtWin::easyBlurUnBlur(DatabaseBrowser::dbUpdater, VARB("UseTransparecy"));
         DatabaseBrowser::dbUpdater->exec();
     }
 }
