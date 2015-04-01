@@ -71,12 +71,6 @@ public:
         OutLineFontColor = 6
     };
 
-    static QHash<QString, QVariant> hashFonts;
-    static QHash<QString, QVariant> hashColors;
-    static QFont getFromFonts(FontColorItem type = DefaultFontColor, bool canLoadDefault = true);
-    static QColor getFromColors(FontColorItem type = DefaultFontColor, bool canLoadDefault = true);
-    static void insertToFontColorHash(QHash<QString, QVariant>* hash, const QVariant &variant, FontColorItem type = DefaultFontColor);
-
     void applySettings();
 
     static QString currentIconThemePath();

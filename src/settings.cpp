@@ -28,8 +28,6 @@
 #include <QFileDialog>
 #include <QImageReader>
 
-QHash<QString, QVariant> Settings::hashFonts = QHash<QString, QVariant>();
-QHash<QString, QVariant> Settings::hashColors = QHash<QString, QVariant>();
 QString Settings::s_currentIconPath;
 
 Settings::Settings(SaagharWindow* parent)
@@ -41,58 +39,58 @@ Settings::Settings(SaagharWindow* parent)
     connect(ui->globalFontColorGroupBox, SIGNAL(toggled(bool)), this, SLOT(setUnCheckedOtherFontColorGroupBox(bool)));
     connect(ui->advancedFontColorGroupBox, SIGNAL(toggled(bool)), this, SLOT(setUnCheckedOtherFontColorGroupBox(bool)));
 
-    backgroundFontColor = new FontColorSelector(getFromFonts(OutLineFontColor, false),
+    backgroundFontColor = new FontColorSelector(VAR("SaagharWidget/Fonts/OutLine").value<QFont>(),
             SaagharWidget::backgroundColor, ui->groupBox_2);
     backgroundFontColor->setObjectName(QString::fromUtf8("backgroundFontColor"));
     backgroundFontColor->setColorSelector(true);
     ui->horizontalLayout_6->addWidget(backgroundFontColor);
 
-    matchedFontColor = new FontColorSelector(getFromFonts(DefaultFontColor, false),
+    matchedFontColor = new FontColorSelector(VAR("SaagharWidget/Fonts/Default").value<QFont>(),
             SaagharWidget::matchedTextColor, ui->groupBox_2);
     matchedFontColor->setObjectName(QString::fromUtf8("matchedFontColor"));
     matchedFontColor->setColorSelector(true);
     ui->horizontalLayout_5->addWidget(matchedFontColor);
 
 
-    outlineFontColor = new FontColorSelector(getFromFonts(OutLineFontColor, false),
-            getFromColors(OutLineFontColor, false),
+    outlineFontColor = new FontColorSelector(VAR("SaagharWidget/Fonts/OutLine").value<QFont>(),
+            VAR("SaagharWidget/Colors/OutLine").value<QColor>(),
             ui->groupBox_2);
     outlineFontColor->setObjectName(QString::fromUtf8("outlineFontColor"));
     ui->outlineLayout->addWidget(outlineFontColor);
 
-    globalTextFontColor = new FontColorSelector(getFromFonts(DefaultFontColor, false),
-            getFromColors(DefaultFontColor, false),
+    globalTextFontColor = new FontColorSelector(VAR("SaagharWidget/Fonts/Default").value<QFont>(),
+            VAR("SaagharWidget/Colors/Default").value<QColor>(),
             ui->globalFontColorGroupBox);
     globalTextFontColor->setObjectName(QString::fromUtf8("globalTextFontColor"));
     ui->gridLayout_16->addWidget(globalTextFontColor, 0, 1, 1, 1);
 
 
-    sectionNameFontColor = new FontColorSelector(getFromFonts(SectionNameFontColor, false),
-            getFromColors(SectionNameFontColor, false),
+    sectionNameFontColor = new FontColorSelector(VAR("SaagharWidget/Fonts/SectionName").value<QFont>(),
+            VAR("SaagharWidget/Colors/SectionName").value<QColor>(),
             ui->advancedFontColorGroupBox);
     sectionNameFontColor->setObjectName(QString::fromUtf8("sectionNameFontColor"));
     ui->gridLayout_9->addWidget(sectionNameFontColor, 0, 1, 1, 1);
 
-    titlesFontColor = new FontColorSelector(getFromFonts(TitlesFontColor, false),
-                                            getFromColors(TitlesFontColor, false),
+    titlesFontColor = new FontColorSelector(VAR("SaagharWidget/Fonts/Titles").value<QFont>(),
+                                            VAR("SaagharWidget/Colors/Titles").value<QColor>(),
                                             ui->advancedFontColorGroupBox);
     titlesFontColor->setObjectName(QString::fromUtf8("titlesFontColor"));
     ui->gridLayout_9->addWidget(titlesFontColor, 1, 1, 1, 1);
 
-    numbersFontColor = new FontColorSelector(getFromFonts(NumbersFontColor, false),
-            getFromColors(NumbersFontColor, false),
+    numbersFontColor = new FontColorSelector(VAR("SaagharWidget/Fonts/Numbers").value<QFont>(),
+            VAR("SaagharWidget/Colors/Numbers").value<QColor>(),
             ui->advancedFontColorGroupBox);
     numbersFontColor->setObjectName(QString::fromUtf8("numbersFontColor"));
     ui->gridLayout_9->addWidget(numbersFontColor, 2, 1, 1, 1);
 
-    poemTextFontColor = new FontColorSelector(getFromFonts(PoemTextFontColor, false),
-            getFromColors(PoemTextFontColor, false),
+    poemTextFontColor = new FontColorSelector(VAR("SaagharWidget/Fonts/PoemText").value<QFont>(),
+            VAR("SaagharWidget/Colors/PoemText").value<QColor>(),
             ui->advancedFontColorGroupBox);
     poemTextFontColor->setObjectName(QString::fromUtf8("poemTextFontColor"));
     ui->gridLayout_9->addWidget(poemTextFontColor, 3, 1, 1, 1);
 
-    proseTextFontColor = new FontColorSelector(getFromFonts(ProseTextFontColor, false),
-            getFromColors(ProseTextFontColor, false),
+    proseTextFontColor = new FontColorSelector(VAR("SaagharWidget/Fonts/ProseText").value<QFont>(),
+            VAR("SaagharWidget/Colors/ProseText").value<QColor>(),
             ui->advancedFontColorGroupBox);
     proseTextFontColor->setObjectName(QString::fromUtf8("proseTextFontColor"));
     ui->gridLayout_9->addWidget(proseTextFontColor, 4, 1, 1, 1);
@@ -371,49 +369,6 @@ void Settings::setUnCheckedOtherFontColorGroupBox(bool unChecked)
     else if (sender() == ui->globalFontColorGroupBox) {
         ui->advancedFontColorGroupBox->setChecked(!unChecked);
     }
-}
-
-/* static */
-QFont Settings::getFromFonts(FontColorItem type, bool canLoadDefault)
-{
-    QFont font;
-    if (type == OutLineFontColor) {
-        canLoadDefault = false;
-    }
-    if (VARB("Global Font") && canLoadDefault) {
-        font = Settings::hashFonts.value(QString::number(int(DefaultFontColor))).value<QFont>();
-    }
-    else {
-        font = Settings::hashFonts.value(QString::number(int(type))).value<QFont>();
-    }
-    font.setStyleStrategy(QFont::PreferAntialias);
-    return font;
-}
-
-/* static */
-QColor Settings::getFromColors(FontColorItem type, bool canLoadDefault)
-{
-    QColor color;
-    if (type == OutLineFontColor) {
-        canLoadDefault = false;
-    }
-    if (VARB("Global Font") && canLoadDefault) {
-        color = Settings::hashColors.value(QString::number(int(DefaultFontColor))).value<QColor>();
-    }
-    else {
-        color = Settings::hashColors.value(QString::number(int(type))).value<QColor>();
-    }
-    return color;
-}
-
-/* static */
-void Settings::insertToFontColorHash(QHash<QString, QVariant>* hash, const QVariant &variant, FontColorItem type)
-{
-    if (!hash) {
-        return;
-    }
-    //if (VARB("Global Font") && type != DefaultFontColor) return;
-    hash->insert(QString::number(int(type)), variant);
 }
 
 QString Settings::currentIconThemePath()

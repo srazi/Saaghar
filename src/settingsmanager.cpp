@@ -65,6 +65,10 @@ void SettingsManager::defineVariableInitialValue(const QString &name, const QVar
 
 QVariant SettingsManager::variable(const QString &name) const
 {
+    if (!m_variables.contains(name) && !m_variablesInitialValues.contains(name)) {
+        qFatal("Undefined value: \"%s\" in file %s, line %d", name.toLatin1().constData(), __FILE__, __LINE__);
+    }
+
     if (m_variables.contains(name)) {
         return variantDecode(m_variables.value(name));
     }

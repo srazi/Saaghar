@@ -293,6 +293,7 @@ void SaagharApplication::setupInitialValues()
 
     QFont appFont1(firstFamily, 18);
     appFont1.setBold(true);
+    appFont1.setStyleStrategy(QFont::PreferAntialias);
 
     //The "Droid Arabic Naskh (with DOT)" is an application font
     QString secondFamily = LS("Droid Arabic Naskh (with DOT)");
@@ -302,33 +303,28 @@ void SaagharApplication::setupInitialValues()
 
     QFont appFont2(secondFamily, 8);
     appFont2.setBold(true);
+    appFont2.setStyleStrategy(QFont::PreferAntialias);
 
-    QHash<QString, QVariant> defaultFonts;
+    VAR_INIT("SaagharWidget/Fonts/Default", appFont1);
+    VAR_INIT("SaagharWidget/Fonts/PoemText", appFont1);
 
-    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::PoemTextFontColor);
-
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::OutLineFontColor);
+    VAR_INIT("SaagharWidget/Fonts/OutLine", appFont2);
     appFont2.setPointSize(12);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::NumbersFontColor);
+    VAR_INIT("SaagharWidget/Fonts/Numbers", appFont2);
     appFont2.setPointSize(16);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::ProseTextFontColor);
+    VAR_INIT("SaagharWidget/Fonts/ProseText", appFont2);
     appFont2.setPointSize(18);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::SectionNameFontColor);
+    VAR_INIT("SaagharWidget/Fonts/SectionName", appFont2);
     appFont2.setPointSize(22);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::TitlesFontColor);
+    VAR_INIT("SaagharWidget/Fonts/Titles", appFont2);
 
-    QHash<QString, QVariant> defaultColors;
-    Settings::insertToFontColorHash(&defaultColors, QColor(22, 127, 175), Settings::OutLineFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(47, 144, 45), Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(57, 175, 175), Settings::PoemTextFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(2, 118, 190), Settings::ProseTextFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(48, 127, 105), Settings::SectionNameFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(143, 47, 47), Settings::TitlesFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(84, 81, 171), Settings::NumbersFontColor);
-
-    VAR_INIT("Fonts Hash", QVariant(defaultFonts));
-    VAR_INIT("Colors Hash", QVariant(defaultColors));
+    VAR_INIT("SaagharWidget/Colors/OutLine", QColor(22, 127, 175));
+    VAR_INIT("SaagharWidget/Colors/Default", QColor(47, 144, 45));
+    VAR_INIT("SaagharWidget/Colors/PoemText", QColor(57, 175, 175));
+    VAR_INIT("SaagharWidget/Colors/ProseText", QColor(2, 118, 190));
+    VAR_INIT("SaagharWidget/Colors/SectionName", QColor(48, 127, 105));
+    VAR_INIT("SaagharWidget/Colors/Titles", QColor(143, 47, 47));
+    VAR_INIT("SaagharWidget/Colors/Numbers", QColor(84, 81, 171));
 
     VAR_INIT("Repositories List", QVariant());
     VAR_INIT("Keep Downloaded File", false);
@@ -437,45 +433,6 @@ void SaagharApplication::applySettings()
     SaagharWidget::showBeytNumbers = VARB("Show Beyt Numbers");
     SaagharWidget::matchedTextColor = VAR("Matched Text Color").value<QColor>();
     SaagharWidget::backgroundColor = VAR("Background Color").value<QColor>();
-
-    QString firstFamily = QFontDatabase().families().contains("XB Sols") ?
-                          "XB Sols" : "Droid Arabic Naskh (with DOT)";
-    QFont appFont1(firstFamily, 18);
-    appFont1.setBold(true);
-    //The "Droid Arabic Naskh (with DOT)" is an application font
-    QString secondFamily = "Droid Arabic Naskh (with DOT)";
-#ifdef Q_OS_MAC
-    secondFamily = firstFamily;
-#endif
-    QFont appFont2(secondFamily, 8);
-    appFont2.setBold(true);
-
-    QHash<QString, QVariant> defaultFonts;
-
-    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&defaultFonts, appFont1, Settings::PoemTextFontColor);
-
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::OutLineFontColor);
-    appFont2.setPointSize(12);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::NumbersFontColor);
-    appFont2.setPointSize(16);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::ProseTextFontColor);
-    appFont2.setPointSize(18);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::SectionNameFontColor);
-    appFont2.setPointSize(22);
-    Settings::insertToFontColorHash(&defaultFonts, appFont2, Settings::TitlesFontColor);
-
-    QHash<QString, QVariant> defaultColors;
-    Settings::insertToFontColorHash(&defaultColors, QColor(22, 127, 175), Settings::OutLineFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(47, 144, 45), Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(57, 175, 175), Settings::PoemTextFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(2, 118, 190), Settings::ProseTextFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(48, 127, 105), Settings::SectionNameFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(143, 47, 47), Settings::TitlesFontColor);
-    Settings::insertToFontColorHash(&defaultColors, QColor(84, 81, 171), Settings::NumbersFontColor);
-
-    Settings::hashFonts = VAR("Fonts Hash").toHash();
-    Settings::hashColors = VAR("Colors Hash").toHash();
 
     DataBaseUpdater::setRepositories(VAR("Repositories List").toStringList());
     DataBaseUpdater::keepDownloadedFiles = VARB("Keep Downloaded File");

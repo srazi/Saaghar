@@ -126,6 +126,9 @@ public:
     static QHash<int, QPair<QString, qint64> > mediaInfoCash;
     static QHash<int, QString> longestHemistiches;
 
+    static QFont resolvedFont(const QString &name);
+    static QColor resolvedColor(const QString &name);
+
     int currentPoem;
     int currentCat;
     int currentParentID;

@@ -40,6 +40,7 @@
 #include <QFile>
 #include <QTextEdit>
 #include <QSplitter>
+#include <QVariant>
 
 //STATIC Variables
 QString SaagharWidget::poetsImagesDir = QString();
@@ -129,12 +130,12 @@ void SaagharWidget::applyDefaultSectionsHeight()
 
     int height;
     if (currentPoem == 0) {
-        height = SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::SectionNameFontColor)), -1, -1);
+        height = SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/SectionName"))), -1, -1);
     }
     else {
-        height = qMax(SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor)), -1, -1), bookmarkIconHeight * 5 / 4);
+        height = qMax(SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/PoemText"))), -1, -1), bookmarkIconHeight * 5 / 4);
         if (SaagharWidget::showBeytNumbers) {
-            height = qMax(height, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)), -1, -1));
+            height = qMax(height, SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))), -1, -1));
         }
     }
 
@@ -155,7 +156,7 @@ void SaagharWidget::loadSettings()
     else {
         p.setColor(QPalette::Base, SaagharWidget::backgroundColor);
     }
-    p.setColor(QPalette::Text, Settings::getFromColors(Settings::PoemTextFontColor) /*SaagharWidget::textColor*/);
+    p.setColor(QPalette::Text, resolvedColor(LS("SaagharWidget/Colors/PoemText")) /*SaagharWidget::textColor*/);
 #endif
 
     if (SaagharWidget::backgroundImageState && !SaagharWidget::backgroundImagePath.isEmpty()) {
@@ -281,7 +282,7 @@ QString SaagharWidget::highlightCell(int vorder)
 
     int numOfCols = tableViewWidget->columnCount();
     int numOfRows = tableViewWidget->rowCount();
-    const QColor poemColor(Settings::getFromColors(Settings::PoemTextFontColor));
+    const QColor poemColor(resolvedColor(LS("SaagharWidget/Colors/PoemText")));
 
     for (int col = 0; col < numOfCols; ++col) {
         for (int row = 0; row < numOfRows; ++row) {
@@ -390,9 +391,9 @@ bool SaagharWidget::initializeCustomizedHome()
     tableViewWidget->setColumnCount(numOfColumn);
     tableViewWidget->setRowCount(numOfRow);
 
-    QFont sectionFont(Settings::getFromFonts(Settings::SectionNameFontColor));
+    QFont sectionFont(resolvedFont(LS("SaagharWidget/Fonts/SectionName")));
     //QFontMetrics sectionFontMetric(sectionFont);
-    QColor sectionColor(Settings::getFromColors(Settings::SectionNameFontColor));
+    QColor sectionColor(resolvedColor(LS("SaagharWidget/Colors/SectionName")));
 
     int poetIndex = 0;
     for (int col = 0; col < numOfColumn; ++col) {
@@ -422,13 +423,13 @@ bool SaagharWidget::initializeCustomizedHome()
 
 
                     QTableWidgetItem* groupLabelItem = new QTableWidgetItem(groupLabel);
-                    groupLabelItem->setFont(Settings::getFromFonts(Settings::TitlesFontColor));
-                    groupLabelItem->setForeground(Settings::getFromColors(Settings::TitlesFontColor));
+                    groupLabelItem->setFont(resolvedFont(LS("SaagharWidget/Fonts/Titles")));
+                    groupLabelItem->setForeground(resolvedColor(LS("SaagharWidget/Colors/Titles")));
                     groupLabelItem->setFlags(Qt::NoItemFlags);
                     groupLabelItem->setTextAlignment(Qt::AlignCenter);
                     tableViewWidget->setItem(0, col, groupLabelItem);
                     if (col == 0) {
-                        tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::TitlesFontColor)), -1, -1));
+                        tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Titles"))), -1, -1));
                     }
                 }
             }
@@ -485,7 +486,7 @@ void SaagharWidget::homeResizeColsRows()
     }
 
     bool showPhoto = VARB("Show Photo at Home");
-    QFontMetrics sectionFontMetric = QFontMetrics(Settings::getFromFonts(Settings::SectionNameFontColor));
+    QFontMetrics sectionFontMetric = QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/SectionName")));
 
     int height = SaagharWidget::computeRowHeight(sectionFontMetric, -1, -1);
     height = showPhoto ? qMax(height, 105) : height;
@@ -666,9 +667,9 @@ void SaagharWidget::showCategory(GanjoorCat category)
         }
     }
 
-    QFont sectionFont(Settings::getFromFonts(Settings::SectionNameFontColor));
+    QFont sectionFont(resolvedFont(LS("SaagharWidget/Fonts/SectionName")));
     //QFontMetrics sectionFontMetric(sectionFont);
-    QColor sectionColor(Settings::getFromColors(Settings::SectionNameFontColor));
+    QColor sectionColor(resolvedColor(LS("SaagharWidget/Colors/SectionName")));
 
     int betterRightToLeft = 0, betterLeftToRight = 0;
     int step = 99;
@@ -896,9 +897,9 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
     QList<GanjoorVerse*> verses = sApp->databaseBrowser()->getVerses(poem._ID);
 
-    QFont poemFont(Settings::getFromFonts(Settings::PoemTextFontColor));
+    QFont poemFont(resolvedFont(LS("SaagharWidget/Fonts/PoemText")));
     QFontMetrics poemFontMetric(poemFont);
-    QColor poemColor(Settings::getFromColors(Settings::PoemTextFontColor));
+    QColor poemColor(resolvedColor(LS("SaagharWidget/Colors/PoemText")));
 
 
     int WholeBeytNum = 0;
@@ -933,12 +934,12 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     //title is centered by using each PoemViewStyle
     poemTitle->setTextAlignment(Qt::AlignCenter);
 
-    QFont titleFont(Settings::getFromFonts(Settings::TitlesFontColor));
+    QFont titleFont(resolvedFont(LS("SaagharWidget/Fonts/Titles")));
     int textWidth = QFontMetrics(titleFont).boundingRect(poem._Title).width();
     int totalWidth = tableViewWidget->columnWidth(1) + tableViewWidget->columnWidth(2) + tableViewWidget->columnWidth(3);
 
     poemTitle->setFont(titleFont);
-    poemTitle->setForeground(Settings::getFromColors(Settings::TitlesFontColor));
+    poemTitle->setForeground(resolvedColor(LS("SaagharWidget/Colors/Titles")));
     tableViewWidget->setItem(0, 1, poemTitle);
     tableViewWidget->setSpan(0, 1, 1, 3);
     tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(titleFont), textWidth, totalWidth));
@@ -1106,8 +1107,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                     int itemNumber = isBand ? BandNum : BeytNum;
                     QString localizedNumber = SaagharWidget::persianIranLocal.toString(itemNumber);
                     numItem->setText(localizedNumber);
-                    numItem->setFont(Settings::getFromFonts(Settings::NumbersFontColor));
-                    numItem->setForeground(Settings::getFromColors(Settings::NumbersFontColor));
+                    numItem->setFont(resolvedFont(LS("SaagharWidget/Fonts/Numbers")));
+                    numItem->setForeground(resolvedColor(LS("SaagharWidget/Colors/Numbers")));
                     if (isBand) {
                         QFont fnt = numItem->font();
                         fnt.setBold(true);
@@ -1291,7 +1292,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
         //****************************//
         //Start colWidths computations//
         //****************************//
-        QFontMetrics poemFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor));
+        QFontMetrics poemFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/PoemText")));
 
         int iconWidth = 0;
         if (SaagharWidget::bookmarks) {
@@ -1317,7 +1318,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
             break;
         case 4:
             if (CurrentViewStyle == SteppedHemistichLine /*|| CurrentViewStyle==MesraPerLineGroupedBeyt*/) {
-                table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
+                table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
                 baseWidthSize = baseWidthSize - table->columnWidth(0);
                 table->setColumnWidth(2, qMax(qMin((7 * minMesraWidth) / 4, (7 * baseWidthSize) / 8), minMesraWidth)); // cells contain mesras
                 test = qMax(0, baseWidthSize - (table->columnWidth(2)));
@@ -1325,7 +1326,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                 table->setColumnWidth(3, test / 2); //left margin
             }
             else if (CurrentViewStyle == OneHemistichLine) {
-                table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
+                table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
                 baseWidthSize = baseWidthSize - table->columnWidth(0);
                 table->setColumnWidth(2, qMax(0, minMesraWidth));  // cells contain mesras
                 test = qMax(0, baseWidthSize - (table->columnWidth(2)));
@@ -1333,7 +1334,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                 table->setColumnWidth(3, test / 2); //left margin
             }
             else {
-                table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
+                table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
                 int tw = baseWidthSize - (table->columnWidth(0) + poemFontMetrics.height() * 2/*table->columnWidth(2)*/);
                 table->setColumnWidth(1, qMax(minMesraWidth, tw / 2/* -table->columnWidth(0) */)); //mesra width
                 table->setColumnWidth(3, qMax(minMesraWidth, tw / 2)); //mesra width
@@ -1366,14 +1367,14 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                 }
 
                 if (!itemText.isEmpty()) {
-                    int textWidth = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(itemText).width();
+                    int textWidth = QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/ProseText"))).boundingRect(itemText).width();
                     int verticalScrollBarWidth = 0;
                     if (table->verticalScrollBar()->isVisible()) {
                         verticalScrollBarWidth = table->verticalScrollBar()->width();
                     }
                     int totalWidth = table->columnWidth(0) - verticalScrollBarWidth - 82;
                     totalWidth = qMax(82 + verticalScrollBarWidth, totalWidth);
-                    table->setRowHeight(0, qMin(200, qMax(100, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)), textWidth, totalWidth))));
+                    table->setRowHeight(0, qMin(200, qMax(100, SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/ProseText"))), textWidth, totalWidth))));
                 }
             }
         }
@@ -1386,7 +1387,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
             QMap<int, QPair<int, int> >::const_iterator i = rowParagraphHeightMap.constBegin();
             while (i != rowParagraphHeightMap.constEnd()) {
                 //Paragraphs
-                QFontMetrics paragraphFontMetric(Settings::getFromFonts(Settings::ProseTextFontColor));
+                QFontMetrics paragraphFontMetric(resolvedFont(LS("SaagharWidget/Fonts/ProseText")));
                 int height = SaagharWidget::computeRowHeight(paragraphFontMetric, i.value().first, totalWidth , (5 * paragraphFontMetric.height()) / 3);
                 height = height + i.value().second * paragraphFontMetric.height();
                 table->setRowHeight(i.key(), height);
@@ -1397,12 +1398,12 @@ void SaagharWidget::resizeTable(QTableWidget* table)
             while (it != rowSingleHeightMap.constEnd()) {
                 //Singles and Titles
                 if (currentPoem && it.key() == 0) {
-                    table->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::TitlesFontColor)), it.value(), totalWidth /*, table->rowHeight(i.key())*/));
+                    table->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Titles"))), it.value(), totalWidth /*, table->rowHeight(i.key())*/));
                 }
                 else {
-                    int height = qMax(SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::PoemTextFontColor)), it.value(), totalWidth), iconWidth * 5 / 4);
+                    int height = qMax(SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/PoemText"))), it.value(), totalWidth), iconWidth * 5 / 4);
                     if (SaagharWidget::showBeytNumbers) {
-                        height = qMax(height, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::NumbersFontColor)), -1, -1));
+                        height = qMax(height, SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))), -1, -1));
                     }
                     table->setRowHeight(it.key(), height);
                 }
@@ -1503,6 +1504,26 @@ int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidt
     }
     int numOfRow = (textWidth * 5) / (width * 4); //(5/4) is an empirical value
     return height + (fontMetric.height() * numOfRow);
+}
+
+QFont SaagharWidget::resolvedFont(const QString &name)
+{
+    if (!VARB("Global Font") || name == LS("SaagharWidget/Fonts/OutLine")) {
+        return VAR(name.toLatin1().constData()).value<QFont>();
+    }
+    else {
+        return VAR("SaagharWidget/Fonts/Default").value<QFont>();
+    }
+}
+
+QColor SaagharWidget::resolvedColor(const QString &name)
+{
+    if (!VARB("Global Font") || name == LS("SaagharWidget/Fonts/OutLine")) {
+        return VAR(name.toLatin1().constData()).value<QColor>();
+    }
+    else {
+        return VAR("SaagharWidget/Fonts/Default").value<QColor>();
+    }
 }
 
 void SaagharWidget::pressedOnItem(int row, int /*col*/)
@@ -1681,8 +1702,8 @@ QTextEdit* SaagharWidget::createItemForLongText(int row, int column, const QStri
     //connect(para, SIGNAL(customContextMenuRequested(QPoint)), this, SIGNAL(createContextMenuRequested(QPoint)));
     connect(para, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
 
-    para->setFont(Settings::getFromFonts(Settings::ProseTextFontColor));
-    para->setTextColor(Settings::getFromColors(Settings::ProseTextFontColor));
+    para->setFont(resolvedFont(LS("SaagharWidget/Fonts/ProseText")));
+    para->setTextColor(resolvedColor(LS("SaagharWidget/Colors/ProseText")));
 //  para->setFont(SaagharWidget::tableFont);
 //  para->setTextColor(SaagharWidget::textColor);
     para->setReadOnly(true);
@@ -1740,7 +1761,7 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
         return;
     }
     else if (versePosition == Paragraph) {
-        textWidth = QFontMetrics(Settings::getFromFonts(Settings::ProseTextFontColor)).boundingRect(mesraItem->text()).width();
+        textWidth = QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/ProseText"))).boundingRect(mesraItem->text()).width();
 
         mesraItem->setText("");
         //inserted just for its data and its behavior like other cells that use QTableWidgetItem'.

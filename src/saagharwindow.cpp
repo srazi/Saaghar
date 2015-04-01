@@ -589,7 +589,7 @@ void SaagharWindow::currentTabChanged(int tabIndex)
             int numOfPoets = poets.size();
             if (numOfPoets > SaagharWidget::maxPoetsPerGroup) {
                 if (SaagharWidget::maxPoetsPerGroup != 1) {
-                    saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(Settings::getFromFonts(Settings::TitlesFontColor)), -1, -1));
+                    saagharWidget->tableViewWidget->setRowHeight(0, SaagharWidget::computeRowHeight(QFontMetrics(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/Titles"))), -1, -1));
                 }
             }
         }
@@ -1076,7 +1076,7 @@ void SaagharWindow::print(QPrinter* printer)
     int pageWidth = printer->pageRect().width();
     int pageHeight = printer->pageRect().height();
 
-    const int extendedWidth = Settings::getFromFonts(Settings::PoemTextFontColor).pointSize() * 4;
+    const int extendedWidth = SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).pointSize() * 4;
     const qreal scale = pageWidth / (totalWidth + extendedWidth); //printer->logicalDpiX() / 96;
     painter.scale(scale, scale);
 
@@ -1089,8 +1089,8 @@ void SaagharWindow::print(QPrinter* printer)
             QTextEdit* textEdit = 0;
 
             if (item) {
-                QFont fnt(Settings::getFromFonts(Settings::PoemTextFontColor));
-                QColor color(Settings::getFromColors(Settings::PoemTextFontColor));
+                QFont fnt(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")));
+                QColor color(SaagharWidget::resolvedColor(LS("SaagharWidget/Fonts/PoemText")));
                 int rectX1 = 0;
                 int rectX2 = 0;
                 if (columns == 4) {
@@ -1116,8 +1116,8 @@ void SaagharWindow::print(QPrinter* printer)
                         else {
                             textEdit = qobject_cast<QTextEdit*>(saagharWidget->tableViewWidget->cellWidget(row, col));
                             if (textEdit) {
-                                fnt = Settings::getFromFonts(Settings::ProseTextFontColor);
-                                color = Settings::getFromColors(Settings::ProseTextFontColor);
+                                fnt = SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/ProseText"));
+                                color = SaagharWidget::resolvedColor(LS("SaagharWidget/Fonts/ProseText"));
                                 fontMetric = QFontMetrics(fnt);
                                 textWidth = fontMetric.boundingRect(textEdit->toPlainText()).width();
                             }
@@ -1298,10 +1298,10 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                                   "</TABLE>\n</BODY>\n</HTML>\n")
                           .arg(curPoem._Title)
                           .arg("CENTER").arg(numberOfCols).arg(totalWidth)
-                          .arg(Settings::getFromFonts(Settings::PoemTextFontColor).family())
-                          .arg(Settings::getFromColors(Settings::PoemTextFontColor).name())
-                          .arg(Settings::getFromFonts(Settings::PoemTextFontColor).pointSize())
-                          .arg(Settings::getFromFonts(Settings::PoemTextFontColor).bold() ? "FONT-WEIGHT: bold" : "")
+                          .arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).family())
+                          .arg(SaagharWidget::resolvedColor(LS("SaagharWidget/Fonts/PoemText")).name())
+                          .arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).pointSize())
+                          .arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).bold() ? "FONT-WEIGHT: bold" : "")
                           .arg(columnGroupFormat).arg(tableBody);
 
     return tableAsHTML;
@@ -1400,7 +1400,7 @@ QString SaagharWindow::convertToTeX(SaagharWidget* saagharObject)
     }
 
     QString tableAsTeX = QString("%%%%%\n%This file is generated automatically by Saaghar %1, 2010 http://pozh.org\n%%%%%\n%XePersian and bidipoem packages must have been installed on your TeX distribution for compiling this document\n%You can compile this document by running XeLaTeX on it, twice.\n%%%%%\n\\documentclass{article}\n\\usepackage{hyperref}%\n\\usepackage[Kashida]{xepersian}\n\\usepackage{bidipoem}\n\\settextfont{%2}\n\\hypersetup{\npdftitle={%3},%\npdfsubject={Poem},%\npdfkeywords={Poem, Persian},%\npdfcreator={Saaghar, a Persian poetry software, http://saaghar.pozh.org},%\npdfview=FitV,\n}\n\\renewcommand{\\poemcolsepskip}{1.5cm}\n\\begin{document}\n\\begin{center}\n%3\\\\\n\\end{center}\n\\begin{%4}\n%5\n%6\\end{document}\n%End of document\n")
-                         .arg(SAAGHAR_VERSION).arg(Settings::getFromFonts(Settings::PoemTextFontColor).family()).arg(curPoem._Title).arg(poemType).arg(tableBody).arg(endOfEnvironment);
+                         .arg(SAAGHAR_VERSION).arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).family()).arg(curPoem._Title).arg(poemType).arg(tableBody).arg(endOfEnvironment);
     return tableAsTeX;
     /*******************************************************
     %1: Saaghar Version: SAAGHAR_VERSION
@@ -2233,21 +2233,21 @@ void SaagharWindow::applySettings()
 
     VAR_DECL("Global Font", m_settingsDialog->ui->globalFontColorGroupBox->isChecked());
     //QFont fnt;
-    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->outlineFontColor->sampleFont(), Settings::OutLineFontColor);
-    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->globalTextFontColor->sampleFont(), Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->poemTextFontColor->sampleFont(), Settings::PoemTextFontColor);
-    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->proseTextFontColor->sampleFont(), Settings::ProseTextFontColor);
-    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->sectionNameFontColor->sampleFont(), Settings::SectionNameFontColor);
-    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->titlesFontColor->sampleFont(), Settings::TitlesFontColor);
-    Settings::insertToFontColorHash(&Settings::hashFonts, m_settingsDialog->numbersFontColor->sampleFont(), Settings::NumbersFontColor);
+    VAR_DECL("SaagharWidget/Fonts/OutLine", m_settingsDialog->outlineFontColor->sampleFont());
+    VAR_DECL("SaagharWidget/Fonts/Default", m_settingsDialog->globalTextFontColor->sampleFont());
+    VAR_DECL("SaagharWidget/Fonts/PoemText", m_settingsDialog->poemTextFontColor->sampleFont());
+    VAR_DECL("SaagharWidget/Fonts/ProseText", m_settingsDialog->proseTextFontColor->sampleFont());
+    VAR_DECL("SaagharWidget/Fonts/SectionName", m_settingsDialog->sectionNameFontColor->sampleFont());
+    VAR_DECL("SaagharWidget/Fonts/Titles", m_settingsDialog->titlesFontColor->sampleFont());
+    VAR_DECL("SaagharWidget/Fonts/Numbers", m_settingsDialog->numbersFontColor->sampleFont());
 
-    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->outlineFontColor->color(), Settings::OutLineFontColor);
-    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->globalTextFontColor->color(), Settings::DefaultFontColor);
-    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->poemTextFontColor->color(), Settings::PoemTextFontColor);
-    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->proseTextFontColor->color(), Settings::ProseTextFontColor);
-    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->sectionNameFontColor->color(), Settings::SectionNameFontColor);
-    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->titlesFontColor->color(), Settings::TitlesFontColor);
-    Settings::insertToFontColorHash(&Settings::hashColors, m_settingsDialog->numbersFontColor->color(), Settings::NumbersFontColor);
+    VAR_DECL("SaagharWidget/Colors/OutLine", m_settingsDialog->outlineFontColor->color());
+    VAR_DECL("SaagharWidget/Colors/Default", m_settingsDialog->globalTextFontColor->color());
+    VAR_DECL("SaagharWidget/Colors/PoemText", m_settingsDialog->poemTextFontColor->color());
+    VAR_DECL("SaagharWidget/Colors/ProseText", m_settingsDialog->proseTextFontColor->color());
+    VAR_DECL("SaagharWidget/Colors/SectionName", m_settingsDialog->sectionNameFontColor->color());
+    VAR_DECL("SaagharWidget/Colors/Titles", m_settingsDialog->titlesFontColor->color());
+    VAR_DECL("SaagharWidget/Colors/Numbers", m_settingsDialog->numbersFontColor->color());
 
     VAR_DECL("UseTransparecy", m_settingsDialog->ui->checkBoxTransparent->isChecked());
     QtWin::easyBlurUnBlur(this, VARB("UseTransparecy"));
@@ -2313,11 +2313,11 @@ void SaagharWindow::loadTabWidgetSettings()
     else {
         p.setColor(QPalette::Base, SaagharWidget::backgroundColor);
     }
-    p.setColor(QPalette::Text, Settings::getFromColors(Settings::PoemTextFontColor));
+    p.setColor(QPalette::Text, SaagharWidget::resolvedColor(LS("SaagharWidget/Fonts/PoemText")));
     mainTabWidget->setPalette(p);
 
-    outlineTree->setTreeFont(Settings::getFromFonts(Settings::OutLineFontColor));
-    outlineTree->setTreeColor(Settings::getFromColors(Settings::OutLineFontColor));
+    outlineTree->setTreeFont(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/OutLine")));
+    outlineTree->setTreeColor(SaagharWidget::resolvedColor(LS("SaagharWidget/Fonts/OutLine")));
 }
 
 void SaagharWindow::saveSettings()
@@ -2395,9 +2395,6 @@ void SaagharWindow::saveSettings()
 
     VAR_DECL("Selected Search Range", selectedSearchRange);
     VAR_DECL("Random Open New Tab", selectedSearchRange);
-
-    VAR_DECL("Fonts Hash", Settings::hashFonts);
-    VAR_DECL("Colors Hash", Settings::hashColors);
 
     VAR_DECL("Repositories List", DataBaseUpdater::repositories());
     VAR_DECL("Keep Downloaded File", QVariant(DataBaseUpdater::keepDownloadedFiles));
