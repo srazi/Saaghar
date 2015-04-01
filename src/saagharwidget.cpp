@@ -1518,11 +1518,11 @@ QFont SaagharWidget::resolvedFont(const QString &name)
 
 QColor SaagharWidget::resolvedColor(const QString &name)
 {
-    if (!VARB("Global Font") || name == LS("SaagharWidget/Fonts/OutLine")) {
+    if (!VARB("Global Font") || name == LS("SaagharWidget/Colors/OutLine")) {
         return VAR(name.toLatin1().constData()).value<QColor>();
     }
     else {
-        return VAR("SaagharWidget/Fonts/Default").value<QColor>();
+        return VAR("SaagharWidget/Colors/Default").value<QColor>();
     }
 }
 

@@ -1090,7 +1090,7 @@ void SaagharWindow::print(QPrinter* printer)
 
             if (item) {
                 QFont fnt(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")));
-                QColor color(SaagharWidget::resolvedColor(LS("SaagharWidget/Fonts/PoemText")));
+                QColor color(SaagharWidget::resolvedColor(LS("SaagharWidget/Colors/PoemText")));
                 int rectX1 = 0;
                 int rectX2 = 0;
                 if (columns == 4) {
@@ -1117,7 +1117,7 @@ void SaagharWindow::print(QPrinter* printer)
                             textEdit = qobject_cast<QTextEdit*>(saagharWidget->tableViewWidget->cellWidget(row, col));
                             if (textEdit) {
                                 fnt = SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/ProseText"));
-                                color = SaagharWidget::resolvedColor(LS("SaagharWidget/Fonts/ProseText"));
+                                color = SaagharWidget::resolvedColor(LS("SaagharWidget/Colors/ProseText"));
                                 fontMetric = QFontMetrics(fnt);
                                 textWidth = fontMetric.boundingRect(textEdit->toPlainText()).width();
                             }
@@ -1299,7 +1299,7 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                           .arg(curPoem._Title)
                           .arg("CENTER").arg(numberOfCols).arg(totalWidth)
                           .arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).family())
-                          .arg(SaagharWidget::resolvedColor(LS("SaagharWidget/Fonts/PoemText")).name())
+                          .arg(SaagharWidget::resolvedColor(LS("SaagharWidget/Colors/PoemText")).name())
                           .arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).pointSize())
                           .arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).bold() ? "FONT-WEIGHT: bold" : "")
                           .arg(columnGroupFormat).arg(tableBody);
@@ -2313,11 +2313,11 @@ void SaagharWindow::loadTabWidgetSettings()
     else {
         p.setColor(QPalette::Base, SaagharWidget::backgroundColor);
     }
-    p.setColor(QPalette::Text, SaagharWidget::resolvedColor(LS("SaagharWidget/Fonts/PoemText")));
+    p.setColor(QPalette::Text, SaagharWidget::resolvedColor(LS("SaagharWidget/Colors/PoemText")));
     mainTabWidget->setPalette(p);
 
-    outlineTree->setTreeFont(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/OutLine")));
-    outlineTree->setTreeColor(SaagharWidget::resolvedColor(LS("SaagharWidget/Fonts/OutLine")));
+    outlineTree->setTreeFont(VAR("SaagharWidget/Fonts/OutLine").value<QFont>());
+    outlineTree->setTreeColor(VAR("SaagharWidget/Colors/OutLine").value<QColor>());
 }
 
 void SaagharWindow::saveSettings()
