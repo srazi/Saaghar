@@ -56,18 +56,32 @@ void SettingsManager::defineVariable(const QString &name, const QVariant &value)
 
 void SettingsManager::defineVariableInitialValue(const QString &name, const QVariant &value)
 {
+#ifdef SAAGHAR_DEBUG
     if (m_variablesInitialValues.contains(name)) {
         qFatal("Duplicate initial value: \"%s\" in file %s, line %d", name.toLatin1().constData(), __FILE__, __LINE__);
     }
+#endif
 
     m_variablesInitialValues.insert(name, value);
 }
 
 QVariant SettingsManager::variable(const QString &name) const
 {
+#ifdef SAAGHAR_DEBUG
     if (!m_variables.contains(name) && !m_variablesInitialValues.contains(name)) {
         qFatal("Undefined value: \"%s\" in file %s, line %d", name.toLatin1().constData(), __FILE__, __LINE__);
     }
+
+    if (name.contains("/Fonts/") && (m_variables.value(name).type() == QMetaType::QColor
+                                     || m_variablesInitialValues.value(name).type() == QMetaType::QColor)) {
+        qFatal("Wrong value: \"%s\" in file %s, line %d", name.toLatin1().constData(), __FILE__, __LINE__);
+    }
+
+    if (name.contains("/Colors/") && (m_variables.value(name).type() == QMetaType::QFont
+                                     || m_variablesInitialValues.value(name).type() == QMetaType::QFont)) {
+        qFatal("Wrong value: \"%s\" in file %s, line %d", name.toLatin1().constData(), __FILE__, __LINE__);
+    }
+#endif
 
     if (m_variables.contains(name)) {
         return variantDecode(m_variables.value(name));

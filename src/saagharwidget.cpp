@@ -1508,6 +1508,13 @@ int SaagharWidget::computeRowHeight(const QFontMetrics &fontMetric, int textWidt
 
 QFont SaagharWidget::resolvedFont(const QString &name)
 {
+#ifdef SAAGHAR_DEBUG
+    if (name.contains("/Colors/")) {
+        qDebug() << __LINE__ << __FUNCTION__ << "name:" << name;
+        exit(1);
+    }
+#endif
+
     if (!VARB("Global Font") || name == LS("SaagharWidget/Fonts/OutLine")) {
         return VAR(name.toLatin1().constData()).value<QFont>();
     }
@@ -1518,6 +1525,13 @@ QFont SaagharWidget::resolvedFont(const QString &name)
 
 QColor SaagharWidget::resolvedColor(const QString &name)
 {
+#ifdef SAAGHAR_DEBUG
+    if (name.contains("/Fonts/")) {
+        qDebug() << __LINE__ << __FUNCTION__ << "name:" << name;
+        exit(1);
+    }
+#endif
+
     if (!VARB("Global Font") || name == LS("SaagharWidget/Colors/OutLine")) {
         return VAR(name.toLatin1().constData()).value<QColor>();
     }
