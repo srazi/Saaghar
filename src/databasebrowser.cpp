@@ -98,7 +98,7 @@ DatabaseBrowser::DatabaseBrowser(const QString &sqliteDbCompletePath)
         noDataBaseDialog.ui->pathLabel->setText(tr("Data Base Path:") + " " + sqliteDbCompletePath);
         noDataBaseDialog.ui->errorLabel->setText(tr("Error:") + " " + (errorString.isEmpty() ? tr("No Error!") : errorString));
 
-        QtWin::easyBlurUnBlur(&noDataBaseDialog, VARB("UseTransparecy"));
+        QtWin::easyBlurUnBlur(&noDataBaseDialog, VARB("SaagharWindow/UseTransparecy"));
 
         noDataBaseDialog.exec();
 
@@ -130,7 +130,7 @@ DatabaseBrowser::DatabaseBrowser(const QString &sqliteDbCompletePath)
                 getDir.setFileMode(QFileDialog::Directory);
                 getDir.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks /*| QFileDialog::DontUseNativeDialog*/);
                 getDir.setAcceptMode(QFileDialog::AcceptOpen);
-                QtWin::easyBlurUnBlur(&getDir, VARB("UseTransparecy"));
+                QtWin::easyBlurUnBlur(&getDir, VARB("SaagharWindow/UseTransparecy"));
                 getDir.exec();
                 QString dir = "";
                 if (!getDir.selectedFiles().isEmpty()) {
@@ -1673,7 +1673,7 @@ void DatabaseBrowser::addDataSets()
     }
     else if (m_addRemoteDataSet) {
         //download dialog
-        QtWin::easyBlurUnBlur(DatabaseBrowser::dbUpdater, VARB("UseTransparecy"));
+        QtWin::easyBlurUnBlur(DatabaseBrowser::dbUpdater, VARB("SaagharWindow/UseTransparecy"));
         DatabaseBrowser::dbUpdater->exec();
     }
 }

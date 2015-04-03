@@ -97,15 +97,15 @@ Settings::Settings(SaagharWindow* parent)
 
     connect(ui->pushButtonApply, SIGNAL(clicked()), parent, SLOT(applySettings()));
 
-    ui->checkBoxIconTheme->setChecked(VARB("Icon Theme State"));
-    ui->lineEditIconTheme->setEnabled(VARB("Icon Theme State"));
-    ui->pushButtonIconTheme->setEnabled(VARB("Icon Theme State"));
-    ui->lineEditIconTheme->setText(VARS("Icon Theme Path"));
+    ui->checkBoxIconTheme->setChecked(VARB("SaagharWindow/IconThemeState"));
+    ui->lineEditIconTheme->setEnabled(VARB("SaagharWindow/IconThemeState"));
+    ui->pushButtonIconTheme->setEnabled(VARB("SaagharWindow/IconThemeState"));
+    ui->lineEditIconTheme->setText(VARS("SaagharWindow/IconThemePath"));
     connect(ui->pushButtonIconTheme, SIGNAL(clicked()), this, SLOT(browseForIconTheme()));
 
     // force emitting toggle signal
-    ui->globalFontColorGroupBox->setChecked(!VARB("Global Font"));
-    ui->globalFontColorGroupBox->setChecked(VARB("Global Font"));
+    ui->globalFontColorGroupBox->setChecked(!VARB("SaagharWidget/UseGlobalTextFormat"));
+    ui->globalFontColorGroupBox->setChecked(VARB("SaagharWidget/UseGlobalTextFormat"));
 
     connect(ui->checkBoxBackground, SIGNAL(toggled(bool)), backgroundFontColor, SLOT(disableAll(bool)));
     backgroundFontColor->disableAll(ui->checkBoxBackground->isChecked());
@@ -209,7 +209,7 @@ void Settings::setupTaskManagerUi()
     ui->comboBoxNotification->insertItem(3, tr("Desktop Bottom Right"), ProgressManager::DesktopBottomRight);
     ui->comboBoxNotification->insertItem(4, tr("Desktop Top Right"), ProgressManager::DesktopTopRight);
 
-    ui->groupBoxTaskManager->setChecked(VARB("TaskManager"));
+    ui->groupBoxTaskManager->setChecked(VARB("TaskManager/UseAdvancedSettings"));
     ui->comboBoxMode->setCurrentIndex(ui->comboBoxMode->findData(VAR("TaskManager/Mode")));
     ui->comboBoxNotification->setCurrentIndex(ui->comboBoxNotification->findData(VAR("TaskManager/Notification")));
 }
@@ -374,8 +374,8 @@ void Settings::setUnCheckedOtherFontColorGroupBox(bool unChecked)
 QString Settings::currentIconThemePath()
 {
     if (s_currentIconPath.isEmpty()) {
-        if (VARB("Icon Theme State") && !VARS("Icon Theme Path").isEmpty()) {
-            s_currentIconPath = VARS("Icon Theme Path");
+        if (VARB("SaagharWindow/IconThemeState") && !VARS("SaagharWindow/IconThemePath").isEmpty()) {
+            s_currentIconPath = VARS("SaagharWindow/IconThemePath");
         }
         else {
             s_currentIconPath = QLatin1String(":/resources/iconsets/default/");
@@ -394,12 +394,12 @@ void Settings::accept()
 
 void Settings::applySettings()
 {
-    VAR_DECL("Icon Theme State", ui->checkBoxIconTheme->isChecked());
-    VAR_DECL("Icon Theme Path", ui->lineEditIconTheme->text());
+    VAR_DECL("SaagharWindow/IconThemeState", ui->checkBoxIconTheme->isChecked());
+    VAR_DECL("SaagharWindow/IconThemePath", ui->lineEditIconTheme->text());
     s_currentIconPath.clear();
 
     const bool storeTaskManagerSettings = ui->groupBoxTaskManager->isChecked();
-    VAR_DECL("TaskManager", storeTaskManagerSettings);
+    VAR_DECL("TaskManager/UseAdvancedSettings", storeTaskManagerSettings);
 
     if (storeTaskManagerSettings) {
         VAR_DECL("TaskManager/Mode", ui->comboBoxMode->itemData(ui->comboBoxMode->currentIndex()));

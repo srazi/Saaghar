@@ -443,7 +443,7 @@ bool SaagharWidget::initializeCustomizedHome()
             if (!QFile::exists(poetPhotoFileName)) {
                 poetPhotoFileName = ICON_PATH + "/no-photo.png";
             }
-            if (VARB("Show Photo at Home")) {
+            if (VARB("SaagharWindow/ShowPhotoAtHome")) {
                 catItem->setIcon(QIcon(poetPhotoFileName));
             }
             else {
@@ -461,7 +461,7 @@ bool SaagharWidget::initializeCustomizedHome()
                 break;
             }
 
-            if (col == 0 && VARB("Show Photo at Home")) {
+            if (col == 0 && VARB("SaagharWindow/ShowPhotoAtHome")) {
                 tableViewWidget->setRowHeight(row + startIndex, 105);
             }
         }
@@ -485,7 +485,7 @@ void SaagharWidget::homeResizeColsRows()
         startIndex = 1;
     }
 
-    bool showPhoto = VARB("Show Photo at Home");
+    bool showPhoto = VARB("SaagharWindow/ShowPhotoAtHome");
     QFontMetrics sectionFontMetric = QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/SectionName")));
 
     int height = SaagharWidget::computeRowHeight(sectionFontMetric, -1, -1);
@@ -639,7 +639,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
                                          }\
                                          ");
             descContainer->setMaximumHeight(200);
-            /*if (category._ID == 0 && !VARB("Show Photo at Home"))
+            /*if (category._ID == 0 && !VARB("SaagharWindow/ShowPhotoAtHome"))
             {
                 qDebug() << "Remove Icon11111111";
                 catItem->setIcon(QIcon());
@@ -698,7 +698,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
             if (!QFile::exists(poetPhotoFileName)) {
                 poetPhotoFileName = ICON_PATH + "/no-photo.png";
             }
-            if (VARB("Show Photo at Home")) {
+            if (VARB("SaagharWindow/ShowPhotoAtHome")) {
                 catItem->setIcon(QIcon(poetPhotoFileName));
             }
             else {
@@ -1515,7 +1515,7 @@ QFont SaagharWidget::resolvedFont(const QString &name)
     }
 #endif
 
-    if (!VARB("Global Font") || name == LS("SaagharWidget/Fonts/OutLine")) {
+    if (!VARB("SaagharWidget/UseGlobalTextFormat") || name == LS("SaagharWidget/Fonts/OutLine")) {
         return VAR(name.toLatin1().constData()).value<QFont>();
     }
     else {
@@ -1532,7 +1532,7 @@ QColor SaagharWidget::resolvedColor(const QString &name)
     }
 #endif
 
-    if (!VARB("Global Font") || name == LS("SaagharWidget/Colors/OutLine")) {
+    if (!VARB("SaagharWidget/UseGlobalTextFormat") || name == LS("SaagharWidget/Colors/OutLine")) {
         return VAR(name.toLatin1().constData()).value<QColor>();
     }
     else {

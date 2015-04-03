@@ -119,7 +119,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     }
 
     if (splashScreen(QExtendedSplashScreen) && !fresh) {
-        if (VARB("Display Splash Screen")) {
+        if (VARB("General/DisplaySplashScreen")) {
             splashScreen(QExtendedSplashScreen)->show();
             showStatusText(QObject::tr("<i><b>Loading...</b></i>"));
         }
@@ -192,7 +192,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     connect(outlineTree, SIGNAL(openRandomRequested(int,bool)), this, SLOT(openRandomPoem(int,bool)));
 
     if (!fresh) {
-        QStringList openedTabs = VAR("Opened tabs from last session").toStringList();
+        QStringList openedTabs = VAR("SaagharWindow/LastSessionTabs").toStringList();
         showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), openedTabs.size());
         for (int i = 0; i < openedTabs.size(); ++i) {
             QStringList tabViewData = openedTabs.at(i).split("=", QString::SkipEmptyParts);
@@ -228,8 +228,8 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     uint seed = QCursor::pos().x() + QCursor::pos().y() + numOfSecs + QDateTime::currentDateTime().time().msec();
     qsrand(seed);
 
-    restoreState(VAR("MainWindowState1").toByteArray(), 1);
-    restoreGeometry(VAR("Mainwindow Geometry").toByteArray());
+    restoreState(VAR("SaagharWindow/State0").toByteArray(), 0);
+    restoreGeometry(VAR("SaagharWindow/Geometry").toByteArray());
 
 //  if (!splitter->restoreState(VAR("SplitterState").toByteArray()))
 //  {
@@ -248,7 +248,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
         actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
         actionInstance("actionFullScreen")->setIcon(QIcon(ICON_PATH + "/fullscreen.png"));
         //apply transparent effect just in windowed mode!
-        QtWin::easyBlurUnBlur(this, VARB("UseTransparecy"));
+        QtWin::easyBlurUnBlur(this, VARB("SaagharWindow/UseTransparecy"));
     }
 
     connect(sApp->databaseBrowser(), SIGNAL(databaseUpdated()), this, SLOT(onDatabaseUpdate()));
@@ -256,7 +256,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), -1);
 
 
-    if (VARB("Auto Check For Updates") && !fresh) {
+    if (VARB("General/AutoCheckUpdates") && !fresh) {
         QTimer::singleShot(10000, this, SLOT(checkForUpdates()));
     }
 }
@@ -478,7 +478,7 @@ void SaagharWindow::multiSelectInsertItems(QMultiSelectWidget *multiSelectWidget
     QListWidgetItem* item = multiSelectWidget->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
     QListWidgetItem* titleSearchItem = multiSelectWidget->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
 
-    const QStringList selectedSearchRange = VAR("Selected Search Range").toStringList();
+    const QStringList selectedSearchRange = VAR("Search/SelectedRange").toStringList();
 
     multiSelectObjectInitialize(multiSelectWidget, selectedSearchRange, 2);
     item->setCheckState(selectedSearchRange.contains("ALL_OPENED_TAB") ? Qt::Checked : Qt::Unchecked);
@@ -700,7 +700,7 @@ void SaagharWindow::processUpdateData(const QString &type, const QVariant &resul
     error = error || dataPart.isEmpty();
 
     if (error) {
-        if (checkByUser || !VARB("Display Splash Screen")) {
+        if (checkByUser || !VARB("General/DisplaySplashScreen")) {
             QMessageBox criticalError(QMessageBox::Critical, tr("Error"), tr("There is an error when checking for updates...\nCheck your internet connection and try again."), QMessageBox::Ok, this, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
             criticalError.exec();
         }
@@ -771,7 +771,7 @@ void SaagharWindow::processUpdateData(const QString &type, const QVariant &resul
     }
     else {
 
-        if (checkByUser || !VARB("Display Splash Screen")) {
+        if (checkByUser || !VARB("General/DisplaySplashScreen")) {
             QMessageBox::information(this, tr("Saaghar is up to date"), tr("There is no new version available. Please check for updates later!"));
         }
         else {
@@ -1188,7 +1188,7 @@ void SaagharWindow::printPreview(QPrinter* printer)
     if (QtWin::isCompositionEnabled()) {
         previewDialog->setStyleSheet("QToolBar{ background-image:url(\":/resources/images/transp.png\"); border:none;}");
     }
-    QtWin::easyBlurUnBlur(previewDialog, VARB("UseTransparecy"));
+    QtWin::easyBlurUnBlur(previewDialog, VARB("SaagharWindow/UseTransparecy"));
 
     connect(previewDialog, SIGNAL(paintRequested(QPrinter*)), this, SLOT(print(QPrinter*)));
     previewDialog->exec();
@@ -1441,7 +1441,7 @@ void SaagharWindow::actFullScreenClicked(bool checked)
         actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
         actionInstance("actionFullScreen")->setIcon(QIcon(ICON_PATH + "/fullscreen.png"));
 
-        QtWin::easyBlurUnBlur(this, VARB("UseTransparecy"));
+        QtWin::easyBlurUnBlur(this, VARB("SaagharWindow/UseTransparecy"));
     }
     setUpdatesEnabled(true);
 }
@@ -1468,7 +1468,7 @@ void SaagharWindow::aboutSaaghar()
 {
     QMessageBox about(this);
 
-    QtWin::easyBlurUnBlur(&about, VARB("UseTransparecy"));
+    QtWin::easyBlurUnBlur(&about, VARB("SaagharWindow/UseTransparecy"));
 
     QPixmap pixmap(":/resources/images/saaghar.png");
     about.setIconPixmap(pixmap);
@@ -1670,20 +1670,20 @@ void SaagharWindow::setupUi()
     actionInstance("actionCheckUpdates", ICON_PATH + "/check-updates.png", tr("Check for &Updates"));
 
     //The following actions are processed in 'namedActionTriggered()' slot
-    actionInstance("Show Photo at Home", ICON_PATH + "/show-photo-home.png", tr("&Show Photo at Home"))->setCheckable(true);
-    actionInstance("Show Photo at Home")->setChecked(VARB("Show Photo at Home"));
+    actionInstance("SaagharWindow/ShowPhotoAtHome", ICON_PATH + "/show-photo-home.png", tr("&Show Photo at Home"))->setCheckable(true);
+    actionInstance("SaagharWindow/ShowPhotoAtHome")->setChecked(VARB("SaagharWindow/ShowPhotoAtHome"));
 
-    actionInstance("Lock ToolBars", ICON_PATH + "/lock-toolbars.png", tr("&Lock ToolBars"))->setCheckable(true);
-    actionInstance("Lock ToolBars")->setChecked(VARB("Lock ToolBars"));
-    ui->mainToolBar->setMovable(!VARB("Lock ToolBars"));
+    actionInstance("SaagharWindow/LockToolBars", ICON_PATH + "/lock-toolbars.png", tr("&Lock ToolBars"))->setCheckable(true);
+    actionInstance("SaagharWindow/LockToolBars")->setChecked(VARB("SaagharWindow/LockToolBars"));
+    ui->mainToolBar->setMovable(!VARB("SaagharWindow/LockToolBars"));
     if (ui->menuToolBar) {
-        ui->menuToolBar->setMovable(!VARB("Lock ToolBars"));
+        ui->menuToolBar->setMovable(!VARB("SaagharWindow/LockToolBars"));
     }
-    ui->searchToolBar->setMovable(!VARB("Lock ToolBars"));
-    parentCatsToolBar->setMovable(!VARB("Lock ToolBars"));
+    ui->searchToolBar->setMovable(!VARB("SaagharWindow/LockToolBars"));
+    parentCatsToolBar->setMovable(!VARB("SaagharWindow/LockToolBars"));
 
 #ifdef MEDIA_PLAYER
-    SaagharWidget::musicPlayer->setMovable(!VARB("Lock ToolBars"));
+    SaagharWidget::musicPlayer->setMovable(!VARB("SaagharWindow/LockToolBars"));
 #endif
 
     actionInstance("Ganjoor Verification", ICON_PATH + "/ocr-verification.png", tr("&OCR Verification"));
@@ -1842,7 +1842,7 @@ void SaagharWindow::setupUi()
 #endif
 
     toolbarsView->addSeparator();
-    toolbarsView->addAction(actionInstance("Lock ToolBars"));
+    toolbarsView->addAction(actionInstance("SaagharWindow/LockToolBars"));
     menuView->addMenu(toolbarsView);
 
     QMenu* panelsView = new QMenu(tr("Panels"), menuView);
@@ -1856,11 +1856,11 @@ void SaagharWindow::setupUi()
     menuView->addSeparator();
     toolBarViewActions(ui->mainToolBar, menuView, true);
     //checked actions, must be after above line
-    toolbarViewChanges(actionInstance(VARS("MainToolBar Style")));
-    toolbarViewChanges(actionInstance(VARS("MainToolBar Size")));
+    toolbarViewChanges(actionInstance(VARS("SaagharWindow/MainToolBarStyle")));
+    toolbarViewChanges(actionInstance(VARS("SaagharWindow/MainToolBarSize")));
 
     menuView->addMenu(poemViewStylesMenu);
-    menuView->addAction(actionInstance("Show Photo at Home"));
+    menuView->addAction(actionInstance("SaagharWindow/ShowPhotoAtHome"));
     menuView->addSeparator();
     menuView->addAction(actionInstance("actionFullScreen"));
 
@@ -2128,13 +2128,13 @@ void SaagharWindow::showSettingsDialog()
 {
     m_settingsDialog = new Settings(this);
 
-    QtWin::easyBlurUnBlur(m_settingsDialog, VARB("UseTransparecy"));
+    QtWin::easyBlurUnBlur(m_settingsDialog, VARB("SaagharWindow/UseTransparecy"));
 
     connect(m_settingsDialog->ui->pushButtonRandomOptions, SIGNAL(clicked()), this, SLOT(customizeRandomDialog()));
 
     /************initializing saved state of Settings dialog object!************/
     m_settingsDialog->ui->uiLanguageComboBox->addItems(QStringList() << "fa" << "en");
-    int langIndex = m_settingsDialog->ui->uiLanguageComboBox->findText(VARS("UI Language"), Qt::MatchExactly);
+    int langIndex = m_settingsDialog->ui->uiLanguageComboBox->findText(VARS("General/UILanguage"), Qt::MatchExactly);
     m_settingsDialog->ui->uiLanguageComboBox->setCurrentIndex(langIndex);
 
     m_settingsDialog->ui->pushButtonActionBottom->setIcon(QIcon(ICON_PATH + "/down.png"));
@@ -2151,7 +2151,7 @@ void SaagharWindow::showSettingsDialog()
 
     m_settingsDialog->ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
 
-    m_settingsDialog->ui->checkBoxAutoUpdates->setChecked(VARB("Auto Check For Updates"));
+    m_settingsDialog->ui->checkBoxAutoUpdates->setChecked(VARB("General/AutoCheckUpdates"));
 
     //database
     m_settingsDialog->ui->lineEditDataBasePath->setText(sApp->defaultPath(SaagharApplication::DatabaseDirs));
@@ -2166,7 +2166,7 @@ void SaagharWindow::showSettingsDialog()
     connect(m_settingsDialog->ui->pushButtonBackground, SIGNAL(clicked()), m_settingsDialog, SLOT(browseForBackground()));
 
     //splash screen
-    m_settingsDialog->ui->checkBoxSplashScreen->setChecked(VARB("Display Splash Screen"));
+    m_settingsDialog->ui->checkBoxSplashScreen->setChecked(VARB("General/DisplaySplashScreen"));
 
     //initialize Action's Tables
     m_settingsDialog->initializeActionTables(allActionMap, sApp->mainToolBarItems());
@@ -2176,7 +2176,7 @@ void SaagharWindow::showSettingsDialog()
     connect(m_settingsDialog->ui->pushButtonActionAdd, SIGNAL(clicked()), m_settingsDialog, SLOT(addActionToToolbarTable()));
     connect(m_settingsDialog->ui->pushButtonActionRemove, SIGNAL(clicked()), m_settingsDialog, SLOT(removeActionFromToolbarTable()));
 
-    m_settingsDialog->ui->checkBoxTransparent->setChecked(VARB("UseTransparecy"));
+    m_settingsDialog->ui->checkBoxTransparent->setChecked(VARB("SaagharWindow/UseTransparecy"));
 
     m_compareSettings = m_settingsDialog->ui->uiLanguageComboBox->currentText() +
                         m_settingsDialog->ui->lineEditDataBasePath->text() +
@@ -2199,11 +2199,11 @@ void SaagharWindow::applySettings()
 
     setUpdatesEnabled(false);
 
-    VAR_DECL("UI Language", m_settingsDialog->ui->uiLanguageComboBox->currentText());
+    VAR_DECL("General/UILanguage", m_settingsDialog->ui->uiLanguageComboBox->currentText());
 
     SaagharWidget::maxPoetsPerGroup = m_settingsDialog->ui->spinBoxPoetsPerGroup->value();
 
-    VAR_DECL("Auto Check For Updates", QVariant(m_settingsDialog->ui->checkBoxAutoUpdates->isChecked()));
+    VAR_DECL("General/AutoCheckUpdates", QVariant(m_settingsDialog->ui->checkBoxAutoUpdates->isChecked()));
 
     //database path
     sApp->setDefaultPath(SaagharApplication::DatabaseDirs, m_settingsDialog->ui->lineEditDataBasePath->text());
@@ -2218,7 +2218,7 @@ void SaagharWindow::applySettings()
     SaagharWidget::matchedTextColor = m_settingsDialog->matchedFontColor->color();
 
     //splash screen
-    VAR_DECL("Display Splash Screen", m_settingsDialog->ui->checkBoxSplashScreen->isChecked());
+    VAR_DECL("General/DisplaySplashScreen", m_settingsDialog->ui->checkBoxSplashScreen->isChecked());
 
     //toolbar items
     QStringList mainToolBarItems;
@@ -2231,7 +2231,7 @@ void SaagharWindow::applySettings()
 
     sApp->setMainToolBarItems(mainToolBarItems);
 
-    VAR_DECL("Global Font", m_settingsDialog->ui->globalFontColorGroupBox->isChecked());
+    VAR_DECL("SaagharWidget/UseGlobalTextFormat", m_settingsDialog->ui->globalFontColorGroupBox->isChecked());
     //QFont fnt;
     VAR_DECL("SaagharWidget/Fonts/OutLine", m_settingsDialog->outlineFontColor->sampleFont());
     VAR_DECL("SaagharWidget/Fonts/Default", m_settingsDialog->globalTextFontColor->sampleFont());
@@ -2249,9 +2249,9 @@ void SaagharWindow::applySettings()
     VAR_DECL("SaagharWidget/Colors/Titles", m_settingsDialog->titlesFontColor->color());
     VAR_DECL("SaagharWidget/Colors/Numbers", m_settingsDialog->numbersFontColor->color());
 
-    VAR_DECL("UseTransparecy", m_settingsDialog->ui->checkBoxTransparent->isChecked());
-    QtWin::easyBlurUnBlur(this, VARB("UseTransparecy"));
-    QtWin::easyBlurUnBlur(m_settingsDialog, VARB("UseTransparecy"));
+    VAR_DECL("SaagharWindow/UseTransparecy", m_settingsDialog->ui->checkBoxTransparent->isChecked());
+    QtWin::easyBlurUnBlur(this, VARB("SaagharWindow/UseTransparecy"));
+    QtWin::easyBlurUnBlur(m_settingsDialog, VARB("SaagharWindow/UseTransparecy"));
 
     ui->mainToolBar->clear();
     //Inserting main toolbar Items
@@ -2344,21 +2344,21 @@ void SaagharWindow::saveSettings()
 
     VAR_DECL("SaagharWidget/PoemViewStyle", SaagharWidget::CurrentViewStyle);
 
-    VAR_DECL("Max Poets Per Group", SaagharWidget::maxPoetsPerGroup);
+    VAR_DECL("SaagharWidget/MaxPoetsPerGroup", SaagharWidget::maxPoetsPerGroup);
 
-    VAR_DECL("Background State", SaagharWidget::backgroundImageState);
-    VAR_DECL("Background Path", SaagharWidget::backgroundImagePath);
+    VAR_DECL("SaagharWidget/BackgroundState", SaagharWidget::backgroundImageState);
+    VAR_DECL("SaagharWidget/BackgroundPath", SaagharWidget::backgroundImagePath);
 
-    VAR_DECL("Show Beyt Numbers", SaagharWidget::showBeytNumbers);
+    VAR_DECL("SaagharWidget/ShowBeytNumbers", SaagharWidget::showBeytNumbers);
 
     //colors
-    VAR_DECL("Matched Text Color", SaagharWidget::matchedTextColor);
-    VAR_DECL("Background Color", SaagharWidget::backgroundColor);
+    VAR_DECL("SaagharWidget/Colors/MatchedText", SaagharWidget::matchedTextColor);
+    VAR_DECL("SaagharWidget/Colors/Background", SaagharWidget::backgroundColor);
 
     ///////////////////////////////////////////////////
     /////////////////////save state////////////////////
-    VAR_DECL("MainWindowState1", saveState(1));
-    VAR_DECL("Mainwindow Geometry", saveGeometry());
+    VAR_DECL("SaagharWindow/State0", saveState(0));
+    VAR_DECL("SaagharWindow/Geometry", saveGeometry());
 
     QStringList openedTabs;
     for (int i = 0; i < mainTabWidget->count(); ++i) {
@@ -2375,16 +2375,16 @@ void SaagharWindow::saveSettings()
             openedTabs << tabViewType;
         }
     }
-    VAR_DECL("Opened tabs from last session", openedTabs);
+    VAR_DECL("SaagharWindow/LastSessionTabs", openedTabs);
 
     //database path
-    VAR_DECL("DataBase Path", QDir::toNativeSeparators(sApp->defaultPath(SaagharApplication::DatabaseDirs)));
+    VAR_DECL("DatabaseBrowser/DataBasePath", QDir::toNativeSeparators(sApp->defaultPath(SaagharApplication::DatabaseDirs)));
 
     //search options
-    VAR_DECL("Max Search Results Per Page", SearchResultWidget::maxItemPerPage);
-    VAR_DECL("SearchNonPagedResults", SearchResultWidget::nonPagedSearch);
-    VAR_DECL("SearchSkipVowelSigns", SearchResultWidget::skipVowelSigns);
-    VAR_DECL("SearchSkipVowelLetters", SearchResultWidget::skipVowelLetters);
+    VAR_DECL("Search/MaxResultsPerPage", SearchResultWidget::maxItemPerPage);
+    VAR_DECL("Search/NonPagedResults", SearchResultWidget::nonPagedSearch);
+    VAR_DECL("Search/SkipVowelSigns", SearchResultWidget::skipVowelSigns);
+    VAR_DECL("Search/SkipVowelLetters", SearchResultWidget::skipVowelLetters);
 
     QList<QListWidgetItem*> selectedItems = selectSearchRange->getSelectedItemList();
 
@@ -2393,12 +2393,12 @@ void SaagharWindow::saveSettings()
         selectedSearchRange << item->data(Qt::UserRole).toString();
     }
 
-    VAR_DECL("Selected Search Range", selectedSearchRange);
-    VAR_DECL("Random Open New Tab", selectedSearchRange);
+    VAR_DECL("Search/SelectedRange", selectedSearchRange);
+    VAR_DECL("SaagharWindow/RandomOpenNewTab", selectedSearchRange);
 
-    VAR_DECL("Repositories List", DataBaseUpdater::repositories());
-    VAR_DECL("Keep Downloaded File", QVariant(DataBaseUpdater::keepDownloadedFiles));
-    VAR_DECL("Download Location", DataBaseUpdater::downloadLocation);
+    VAR_DECL("DatabaseBrowser/RepositoriesList", DataBaseUpdater::repositories());
+    VAR_DECL("DatabaseBrowser/KeepDownloadedFile", QVariant(DataBaseUpdater::keepDownloadedFiles));
+    VAR_DECL("DatabaseBrowser/DownloadLocation", DataBaseUpdater::downloadLocation);
 }
 
 QString SaagharWindow::tableToString(QTableWidget* table, QString mesraSeparator, QString beytSeparator, int startRow, int startColumn, int endRow, int endColumn)
@@ -2539,7 +2539,7 @@ void SaagharWindow::closeEvent(QCloseEvent* event)
 #if QT_VERSION >= 0x050000
 void SaagharWindow::paintEvent(QPaintEvent* event)
 {
-    if (VARB("UseTransparecy") && QtWin::isCompositionEnabled()) {
+    if (VARB("SaagharWindow/UseTransparecy") && QtWin::isCompositionEnabled()) {
         QPainter p(this);
         p.setCompositionMode(QPainter::CompositionMode_Clear);
         p.fillRect(event->rect(), QColor(0, 0, 0, 0));
@@ -2738,12 +2738,12 @@ void SaagharWindow::toolBarContextMenu(const QPoint &/*pos*/)
 
 void SaagharWindow::customizeRandomDialog()
 {
-    bool openInNewTab = VARB("Random Open New Tab");
+    bool openInNewTab = VARB("SaagharWindow/RandomOpenNewTab");
 
     CustomizeRandomDialog* randomSetting = new CustomizeRandomDialog(this, openInNewTab);
 
     QListWidgetItem* firstItem = randomSetting->selectRandomRange->insertRow(0, tr("Current tab's subsections"), true, "CURRENT_TAB_SUBSECTIONS", Qt::UserRole, true);
-    QStringList selectRandomRange = VAR("Selected Random Range").toStringList();
+    QStringList selectRandomRange = VAR("SaagharWindow/SelectedRandomRange").toStringList();
 
     multiSelectObjectInitialize(randomSetting->selectRandomRange, selectRandomRange, 1);
     firstItem->setCheckState(selectRandomRange.contains("CURRENT_TAB_SUBSECTIONS") ? Qt::Checked : Qt::Unchecked);
@@ -2757,8 +2757,8 @@ void SaagharWindow::customizeRandomDialog()
             selectRandomRange << item->data(Qt::UserRole).toString();
         }
 
-        VAR_DECL("Selected Random Range", selectRandomRange);
-        VAR_DECL("Random Open New Tab", openInNewTab);
+        VAR_DECL("SaagharWindow/SelectedRandomRange", selectRandomRange);
+        VAR_DECL("SaagharWindow/RandomOpenNewTab", openInNewTab);
     }
 
     delete randomSetting;
@@ -2824,8 +2824,8 @@ void SaagharWindow::toolBarViewActions(QToolBar* toolBar, QMenu* menu, bool subM
     actionInstance("actionToolBarStyleTextIcon")->setData(Qt::ToolButtonTextUnderIcon);
 
     //checked actions
-    actionInstance(VARS("MainToolBar Style"))->setChecked(true);
-    actionInstance(VARS("MainToolBar Size"))->setChecked(true);
+    actionInstance(VARS("SaagharWindow/MainToolBarStyle"))->setChecked(true);
+    actionInstance(VARS("SaagharWindow/MainToolBarSize"))->setChecked(true);
 
     //create actiongroups connections
     connect(toolBarIconSize, SIGNAL(triggered(QAction*)), this, SLOT(toolbarViewChanges(QAction*)));
@@ -2855,11 +2855,11 @@ void SaagharWindow::toolbarViewChanges(QAction* action)
 
     if (actionType == "SizeType") {
         toolbar->setIconSize(QSize(data, data));
-        VAR_DECL("MainToolBar Size", actionId);
+        VAR_DECL("SaagharWindow/MainToolBarSize", actionId);
     }
     else if (actionType == "StyleType") {
         toolbar->setToolButtonStyle((Qt::ToolButtonStyle)data);
-        VAR_DECL("MainToolBar Style", actionId);
+        VAR_DECL("SaagharWindow/MainToolBarStyle", actionId);
     }
 
     connect(action->actionGroup(), SIGNAL(triggered(QAction*)), this, SLOT(toolbarViewChanges(QAction*)));
@@ -2987,8 +2987,8 @@ void SaagharWindow::namedActionTriggered(bool checked)
     QString actionName = action->objectName();
     QString text = action->text();
     text.remove("&");
-    if (actionName == "Show Photo at Home") {
-        VAR_DECL("Show Photo at Home", checked);
+    if (actionName == "SaagharWindow/ShowPhotoAtHome") {
+        VAR_DECL("SaagharWindow/ShowPhotoAtHome", checked);
         //TODO: reload Home page!!!!!!!
         setHomeAsDirty();
     }
@@ -3000,8 +3000,8 @@ void SaagharWindow::namedActionTriggered(bool checked)
         }
         return;//action is deleted by 'updateTabsSubMenus()'
     }
-    else if (actionName == "Lock ToolBars") {
-        VAR_DECL("Lock ToolBars", checked);
+    else if (actionName == "SaagharWindow/LockToolBars") {
+        VAR_DECL("SaagharWindow/LockToolBars", checked);
         ui->mainToolBar->setMovable(!checked);
         if (ui->menuToolBar) {
             ui->menuToolBar->setMovable(!checked);
@@ -3057,16 +3057,16 @@ void SaagharWindow::namedActionTriggered(bool checked)
             DatabaseBrowser::dbUpdater = new DataBaseUpdater(this);
         }
 
-        QtWin::easyBlurUnBlur(DatabaseBrowser::dbUpdater, VARB("UseTransparecy"));
+        QtWin::easyBlurUnBlur(DatabaseBrowser::dbUpdater, VARB("SaagharWindow/UseTransparecy"));
 
         DatabaseBrowser::dbUpdater->exec();
     }
     else if (actionName == "actionFaal") {
-        openRandomPoem(24, VARB("Random Open New Tab"));// '24' is for Hafez!
+        openRandomPoem(24, VARB("SaagharWindow/RandomOpenNewTab"));// '24' is for Hafez!
     }
     else if (actionName == "actionRandom") {
         int id = 0;
-        const QStringList selectRandomRange = VAR("Selected Random Range").toStringList();
+        const QStringList selectRandomRange = VAR("SaagharWindow/SelectedRandomRange").toStringList();
 
         if (selectRandomRange.contains("CURRENT_TAB_SUBSECTIONS")) {
             if (saagharWidget) {
@@ -3094,7 +3094,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
             }
         }
 
-        openRandomPoem(id, VARB("Random Open New Tab"));
+        openRandomPoem(id, VARB("SaagharWindow/RandomOpenNewTab"));
     }
     else if (actionName == "Registeration") {
 #if 0
@@ -3530,7 +3530,7 @@ void SaagharWindow::checkRegistration(bool forceShow)
         RegisterationForm* regForm = new RegisterationForm;
         regForm->setWindowFlags(Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint);
         regForm->setAttribute(Qt::WA_DeleteOnClose, true);
-        QtWin::easyBlurUnBlur(regForm, VARB("UseTransparecy"));
+        QtWin::easyBlurUnBlur(regForm, VARB("SaagharWindow/UseTransparecy"));
         regForm->show();
     }
     else {

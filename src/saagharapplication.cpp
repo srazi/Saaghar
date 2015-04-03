@@ -241,7 +241,7 @@ void SaagharApplication::setupPaths()
 
 void SaagharApplication::setupDatabasePaths()
 {
-    QStringList settingsDatabaseDirs = VARS("DataBase Path").split(QLatin1String(";"), QString::SkipEmptyParts);
+    QStringList settingsDatabaseDirs = VARS("DatabaseBrowser/DataBasePath").split(QLatin1String(";"), QString::SkipEmptyParts);
 
     //searching database-path for database-file
     //following lines are for support old default data-base pathes.
@@ -271,9 +271,9 @@ void SaagharApplication::setupTranslators()
     QTranslator* appTranslator = new QTranslator();
     QTranslator* basicTranslator = new QTranslator();
 
-    if (appTranslator->load(QString("saaghar_") + VARS("UI Language"), sApp->defaultPath(SaagharApplication::ResourcesDir))) {
+    if (appTranslator->load(QString("saaghar_") + VARS("General/UILanguage"), sApp->defaultPath(SaagharApplication::ResourcesDir))) {
         installTranslator(appTranslator);
-        if (basicTranslator->load(QString("qt_") + VARS("UI Language"), sApp->defaultPath(SaagharApplication::ResourcesDir))) {
+        if (basicTranslator->load(QString("qt_") + VARS("General/UILanguage"), sApp->defaultPath(SaagharApplication::ResourcesDir))) {
             installTranslator(basicTranslator);
         }
     }
@@ -281,14 +281,26 @@ void SaagharApplication::setupTranslators()
 
 void SaagharApplication::setupInitialValues()
 {
+    VAR_INIT("General/DisplaySplashScreen", true);
+    VAR_INIT("General/UILanguage", LS("fa"));
+    VAR_INIT("General/AutoCheckUpdates", true);
+
+    VAR_INIT("DatabaseBrowser/RepositoriesList", QVariant());
+    VAR_INIT("DatabaseBrowser/KeepDownloadedFile", false);
+    VAR_INIT("DatabaseBrowser/DownloadLocation", QVariant());
+    VAR_INIT("DatabaseBrowser/DataBasePath", QVariant());
+
+    VAR_INIT("SaagharWidget/ShowBeytNumbers", true);
+    VAR_INIT("SaagharWidget/MaxPoetsPerGroup", 12);
     VAR_INIT("SaagharWidget/PoemViewStyle", SaagharWidget::SteppedHemistichLine);
-    VAR_INIT("Background State", true);
-    VAR_INIT("Background Path", defaultPath(SaagharApplication::ResourcesDir) + LS("/themes/backgrounds/saaghar-pattern_1.png"));
-    VAR_INIT("Matched Text Color", QColor(225, 0, 225));
-    VAR_INIT("Background Color", QColor(0xFE, 0xFD, 0xF2));
+    VAR_INIT("SaagharWidget/BackgroundState", true);
+    VAR_INIT("SaagharWidget/BackgroundPath", defaultPath(SaagharApplication::ResourcesDir) + LS("/themes/backgrounds/saaghar-pattern_1.png"));
+    VAR_INIT("SaagharWidget/UseGlobalTextFormat", false);
+    VAR_INIT("SaagharWidget/Colors/MatchedText", QColor(225, 0, 225));
+    VAR_INIT("SaagharWidget/Colors/Background", QColor(0xFE, 0xFD, 0xF2));
 
     // font & color defaults
-    const QString firstFamily = QFontDatabase().families().contains("XB Sols")
+    const QString firstFamily = QFontDatabase().families().contains(LS("XB Sols"))
             ? LS("XB Sols") : LS("Droid Arabic Naskh (with DOT)");
 
     QFont appFont1(firstFamily, 18);
@@ -326,61 +338,47 @@ void SaagharApplication::setupInitialValues()
     VAR_INIT("SaagharWidget/Colors/Titles", QColor(143, 47, 47));
     VAR_INIT("SaagharWidget/Colors/Numbers", QColor(84, 81, 171));
 
-    VAR_INIT("Repositories List", QVariant());
-    VAR_INIT("Keep Downloaded File", false);
-    VAR_INIT("Download Location", QVariant());
-
 #ifdef Q_OS_WIN
-    VAR_INIT("UseTransparecy", true);
+    VAR_INIT("SaagharWindow/UseTransparecy", true);
 #else
-    VAR_INIT("UseTransparecy", false);
+    VAR_INIT("SaagharWindow/UseTransparecy", false);
 #endif
 
-    VAR_INIT("Show Photo at Home", true);
+    VAR_INIT("SaagharWindow/ShowPhotoAtHome", true);
 
-    VAR_INIT("Icon Theme State", false);
-    VAR_INIT("Icon Theme Path", defaultPath(SaagharApplication::ResourcesDir) + LS("/themes/iconsets/light-gray/"));
+    VAR_INIT("SaagharWindow/IconThemeState", false);
+    VAR_INIT("SaagharWindow/IconThemePath", defaultPath(SaagharApplication::ResourcesDir) + LS("/themes/iconsets/light-gray/"));
 
-    VAR_INIT("Global Font", false);
+    const QString sepStr = LS("Separator");
+    QStringList defaultToolbarActions = QStringList()
+            << LS("outlineDockAction") << sepStr << LS("actionPreviousPoem") << LS("actionNextPoem")
+            << LS("fixedNameUndoAction") << sepStr << LS("actionFaal") << LS("actionRandom")
+            << sepStr << LS("searchToolbarAction") << LS("bookmarkManagerDockAction")
+#ifdef MEDIA_PLAYER
+            << LS("albumDockAction") << LS("toggleMusicPlayer")
+#endif
+            << sepStr << LS("actionSettings");
 
-    VAR_INIT("TaskManager", false);
+    VAR_INIT("SaagharWindow/MainToolBarItems", defaultToolbarActions);
+    VAR_INIT("SaagharWindow/LastSessionTabs", QVariant());
+    VAR_INIT("SaagharWindow/State0", QVariant());
+    VAR_INIT("SaagharWindow/Geometry", QVariant());
+    VAR_INIT("SaagharWindow/LockToolBars", true);
+    VAR_INIT("SaagharWindow/MainToolBarStyle", LS("actionToolBarStyleOnlyIcon"));
+    VAR_INIT("SaagharWindow/MainToolBarSize", LS("actionToolBarSizeMediumIcon"));
+    VAR_INIT("SaagharWindow/RandomOpenNewTab", false);
+    VAR_INIT("SaagharWindow/SelectedRandomRange", QVariant());
+
+    VAR_INIT("Search/SkipVowelLetters", false);
+    VAR_INIT("Search/SkipVowelSigns", false);
+    VAR_INIT("Search/NonPagedResults", false);
+    VAR_INIT("Search/SelectedRange", (QStringList() << LS("0") << LS("ALL_TITLES")));
+    VAR_INIT("Search/MaxResultsPerPage", 100);
+
+    VAR_INIT("TaskManager/UseAdvancedSettings", false);
     VAR_INIT("TaskManager/Mode", "NORMAL");
     VAR_INIT("TaskManager/Notification", ProgressManager::DesktopBottomRight);
 
-    VAR_INIT("DataBase Path", QVariant());
-
-        const QString sepStr = QLatin1String("Separator");
-    QStringList defaultToolbarActions = QStringList()
-            << "outlineDockAction" << sepStr << "actionPreviousPoem" << "actionNextPoem"
-            << "fixedNameUndoAction" << sepStr << "actionFaal" << "actionRandom"
-            << sepStr << "searchToolbarAction" << "bookmarkManagerDockAction"
-#ifdef MEDIA_PLAYER
-            << "albumDockAction" << "toggleMusicPlayer"
-#endif
-            << sepStr << "actionSettings";
-
-    VAR_INIT("Main ToolBar Items", defaultToolbarActions);
-    VAR_INIT("Display Splash Screen", true);
-    VAR_INIT("Opened tabs from last session", QVariant());
-    VAR_INIT("MainWindowState1", QVariant());
-    VAR_INIT("Mainwindow Geometry", QVariant());
-    VAR_INIT("Auto Check For Updates", true);
-    VAR_INIT("Selected Search Range", (QStringList() << "0" << "ALL_TITLES"));
-    VAR_INIT("Lock ToolBars", true);
-    VAR_INIT("MainToolBar Style", "actionToolBarStyleOnlyIcon");
-    VAR_INIT("MainToolBar Size", "actionToolBarSizeMediumIcon");
-    VAR_INIT("UI Language", "fa");
-    VAR_INIT("Random Open New Tab", false);
-    VAR_INIT("Selected Random Range", QVariant());
-
-    VAR_INIT("Show Beyt Numbers", true);
-    VAR_INIT("SearchSkipVowelLetters", false);
-    VAR_INIT("SearchSkipVowelSigns", false);
-    VAR_INIT("SearchNonPagedResults", false);
-    VAR_INIT("Max Search Results Per Page", 100);
-    VAR_INIT("Max Poets Per Group", 12);
-
-    // QMusicPlayer
     VAR_INIT("QMusicPlayer/ListOfAlbum", QVariant());
     VAR_INIT("QMusicPlayer/Muted", false);
     VAR_INIT("QMusicPlayer/Volume", 0.4);
@@ -419,24 +417,24 @@ void SaagharApplication::applySettings()
         SaagharWidget::CurrentViewStyle = SaagharWidget::SteppedHemistichLine;
     }
 
-    SaagharWidget::maxPoetsPerGroup = VARI("Max Poets Per Group");
+    SaagharWidget::maxPoetsPerGroup = VARI("SaagharWidget/MaxPoetsPerGroup");
 
     //search options
-    SearchResultWidget::maxItemPerPage  = VARI("Max Search Results Per Page");
-    SearchResultWidget::nonPagedSearch = VARB("SearchNonPagedResults");
-    SearchResultWidget::skipVowelSigns = VARB("SearchSkipVowelSigns");
-    SearchResultWidget::skipVowelLetters = VARB("SearchSkipVowelLetters");
+    SearchResultWidget::maxItemPerPage  = VARI("Search/MaxResultsPerPage");
+    SearchResultWidget::nonPagedSearch = VARB("Search/NonPagedResults");
+    SearchResultWidget::skipVowelSigns = VARB("Search/SkipVowelSigns");
+    SearchResultWidget::skipVowelLetters = VARB("Search/SkipVowelLetters");
 
-    SaagharWidget::backgroundImageState = VARB("Background State");
-    SaagharWidget::backgroundImagePath = VARS("Background Path");
+    SaagharWidget::backgroundImageState = VARB("SaagharWidget/BackgroundState");
+    SaagharWidget::backgroundImagePath = VARS("SaagharWidget/BackgroundPath");
 
-    SaagharWidget::showBeytNumbers = VARB("Show Beyt Numbers");
-    SaagharWidget::matchedTextColor = VAR("Matched Text Color").value<QColor>();
-    SaagharWidget::backgroundColor = VAR("Background Color").value<QColor>();
+    SaagharWidget::showBeytNumbers = VARB("SaagharWidget/ShowBeytNumbers");
+    SaagharWidget::matchedTextColor = VAR("SaagharWidget/Colors/MatchedText").value<QColor>();
+    SaagharWidget::backgroundColor = VAR("SaagharWidget/Colors/Background").value<QColor>();
 
-    DataBaseUpdater::setRepositories(VAR("Repositories List").toStringList());
-    DataBaseUpdater::keepDownloadedFiles = VARB("Keep Downloaded File");
-    DataBaseUpdater::downloadLocation = VARS("Download Location");
+    DataBaseUpdater::setRepositories(VAR("DatabaseBrowser/RepositoriesList").toStringList());
+    DataBaseUpdater::keepDownloadedFiles = VARB("DatabaseBrowser/KeepDownloadedFile");
+    DataBaseUpdater::downloadLocation = VARS("DatabaseBrowser/DownloadLocation");
 
     // application apply settings
     m_notificationPosition = ProgressManager::Position(VARI("TaskManager/Notification"));
@@ -495,7 +493,7 @@ void SaagharApplication::saveSettings()
 
 QStringList SaagharApplication::mainToolBarItems()
 {
-    QStringList items = VAR("Main ToolBar Items").toStringList();
+    QStringList items = VAR("SaagharWindow/MainToolBarItems").toStringList();
     items.removeAll(QLatin1String(""));
 
     return items;
@@ -503,7 +501,7 @@ QStringList SaagharApplication::mainToolBarItems()
 
 void SaagharApplication::setMainToolBarItems(const QStringList &items)
 {
-    VAR_DECL("Main ToolBar Items", items);
+    VAR_DECL("SaagharWindow/MainToolBarItems", items);
 }
 
 void SaagharApplication::quitSaaghar()
