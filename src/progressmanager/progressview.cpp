@@ -209,7 +209,7 @@ void ProgressView::reposition()
 {
     m_repositioning = false;
 
-    if (m_referenceWidget && m_referenceWidget->isMinimized()) {
+    if (!m_referenceWidget) {
         return;
     }
 
