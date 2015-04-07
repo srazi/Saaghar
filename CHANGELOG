@@ -1,3 +1,24 @@
+== 1.0.94-->2.5.99 ==
+- Not released
+New Features:
+--------------------------
+Add multi-threaded search.
+Add Qt5 support to QMusicPlayer using phonon4qt5 and also QtMultiMedia.
+Internal: Add ConcurrentTask to run jobs asynchronously.
+Internal: Add a patched version of ProgressManager. (code taken from QtCreator's code).
+
+Improved Features:
+--------------------------
+Use vertical title-bar for bottom and top search docks.
+Check for update use another thread than GUI thread.
+Internal: Switched to a new settings manager.
+
+Fixed Bugs:
+--------------------------
+Windows XP: Fixed black background.
+Fixed libpng warning: iCCP: known incorrect sRGB profile.
+
+
 == 1.0.94-->2.5.0 ==
 New Features:
 --------------------------
