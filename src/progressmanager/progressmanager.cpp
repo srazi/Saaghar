@@ -767,7 +767,7 @@ void ProgressManagerPrivate::updateVisibility()
 {
     //m_progressView->setVisible(m_progressViewPinned || m_hovered || m_progressView->isHovered());
     m_summaryProgressWidget->setVisible((!m_runningTasks.isEmpty() || !m_taskList.isEmpty())
-                                     && m_progressViewPinned);
+                                     && m_progressViewPinned && m_runningTasks.size() > 1);
 
     m_summaryProgressBar->setTitle(tr("All Tasks (%1):").arg(m_runningTasks.size()));
 }
