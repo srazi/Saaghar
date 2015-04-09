@@ -45,28 +45,31 @@
 #ifndef OUTLINETREE_H
 #define OUTLINETREE_H
 
-#include <QTreeWidget>
+#include <QModelIndex>
+#include <QWidget>
 
-class OutLineTree : public QWidget
+class QTreeView;
+
+class OutlineTree : public QWidget
 {
     Q_OBJECT
 
 public:
-    OutLineTree(QWidget* parent = 0);
-    void setItems(const QList<QTreeWidgetItem*> &items);
+    OutlineTree(QWidget* parent = 0);
+    void refreshTree();
     void setTreeFont(const QFont &font);
     void setTreeColor(const QColor &color);
 
 private slots:
-    bool filterItems(const QString &str = "", QTreeWidgetItem* parentItem = 0);
-    void recursivelyUnHide(QTreeWidgetItem* parentItem = 0);
-    void doubleClicked(QTreeWidgetItem* item, int column);
-    void justClicked(QTreeWidgetItem* item, int column);
-    void itemPressed(QTreeWidgetItem* item, int column);
+    bool filterItems(const QString &str = QString(), const QModelIndex &parent = QModelIndex());
+    void recursivelyUnHide(const QModelIndex &parent = QModelIndex());
+    void doubleClicked(const QModelIndex &index);
+    void clicked(const QModelIndex &index);
+    void pressed();
     void createCustomContextMenu(const QPoint &pos);
 
 private:
-    QTreeWidget* outlineWidget;
+    QTreeView* m_outlineView;
     Qt::MouseButtons pressedMouseButton;
 
 signals:

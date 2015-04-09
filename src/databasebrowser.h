@@ -45,7 +45,6 @@
 #include "sqlite3.h"
 #endif
 
-class QTreeWidgetItem;
 class ConcurrentTask;
 
 typedef QMap<int,QString> SearchResults;
@@ -107,9 +106,6 @@ public:
     int getRandomPoemID(int* CatID);
     void removePoetFromDataBase(int PoetID);
     bool importDataBase(const QString filename);
-
-    QList<QTreeWidgetItem*> loadOutlineFromDataBase(int parentID = 0);
-
     // Returns database connection for thread, creates new connection if not exists
     QSqlDatabase databaseForThread(QThread* thread, const QString &baseConnectionID = defaultConnectionId());
 

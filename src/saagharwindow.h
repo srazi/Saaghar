@@ -33,7 +33,7 @@
 class QPrinter;
 
 class QMultiSelectWidget;
-class OutLineTree;
+class OutlineTree;
 class Settings;
 class TabWidget;
 
@@ -66,7 +66,7 @@ private:
     void loadAudioForCurrentTab(SaagharWidget* old_saagharWidget = 0);
 
     QSplitter* splitter;
-    OutLineTree* outlineTree;
+    OutlineTree* outlineTree;
     bool skipContextMenu;
     void setupBookmarkManagerUi();
     QBoxLayout* searchToolBarBoxLayout;

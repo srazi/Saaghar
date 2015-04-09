@@ -186,7 +186,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     loadTabWidgetSettings();
 
-    outlineTree->setItems(sApp->databaseBrowser()->loadOutlineFromDataBase(0));
+    outlineTree->refreshTree();
     connect(outlineTree, SIGNAL(openParentRequested(int)), this, SLOT(openParentPage(int)));
     connect(outlineTree, SIGNAL(newParentRequested(int)), this, SLOT(newTabForItem(int)));
     connect(outlineTree, SIGNAL(openRandomRequested(int,bool)), this, SLOT(openRandomPoem(int,bool)));
@@ -513,7 +513,7 @@ void SaagharWindow::actionRemovePoet()
 
             QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
             sApp->databaseBrowser()->removePoetFromDataBase(poetID);
-            outlineTree->setItems(sApp->databaseBrowser()->loadOutlineFromDataBase(0));
+            outlineTree->refreshTree();
 
             selectSearchRange->clear();
             multiSelectInsertItems(selectSearchRange);
@@ -1734,7 +1734,7 @@ void SaagharWindow::setupUi()
     actionInstance("SteppedHemistichPoemViewStyle")->setCheckable(true);
     actionInstance("SteppedHemistichPoemViewStyle")->setData(SaagharWidget::SteppedHemistichLine);
 
-    outlineTree = new OutLineTree;
+    outlineTree = new OutlineTree;
     m_outlineDock = new QDockWidget(tr("Outline"), this);
     m_outlineDock->setObjectName("outlineDock");
     m_outlineDock->setWidget(outlineTree);
@@ -2034,7 +2034,7 @@ void SaagharWindow::showStatusText(const QString &message, int newLevelsCount)
 
 void SaagharWindow::onDatabaseUpdate()
 {
-    outlineTree->setItems(sApp->databaseBrowser()->loadOutlineFromDataBase(0));
+    outlineTree->refreshTree();
     selectSearchRange->clear();
     multiSelectInsertItems(selectSearchRange);
     setHomeAsDirty();

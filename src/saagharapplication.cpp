@@ -30,6 +30,7 @@
 #include "searchresultwidget.h"
 #include "databaseupdater.h"
 #include "settingsmanager.h"
+#include "outlinemodel.h"
 
 #include <QExtendedSplashScreen>
 
@@ -76,6 +77,7 @@ SaagharApplication::SaagharApplication(int &argc, char **argv)
       m_tasksThreadPool(0),
       m_databaseBrowser(0),
       m_settingsManager(0),
+      m_outlineModel(0),
       m_tasksThreads(NORMAL_TASKS_THREADS),
       m_displayFullNotification(true),
       m_notificationPosition(ProgressManager::DesktopBottomRight),
@@ -160,6 +162,15 @@ SettingsManager *SaagharApplication::settingsManager()
     }
 
     return m_settingsManager;
+}
+
+OutlineModel* SaagharApplication::outlineModel()
+{
+    if (!m_outlineModel) {
+        m_outlineModel = OutlineModel::instance();
+    }
+
+    return m_outlineModel;
 }
 
 void SaagharApplication::setPriority(QThread* thread)

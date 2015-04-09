@@ -42,34 +42,36 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QTreeWidget>
+#include <QTreeView>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMenu>
 #include <QHeaderView>
-#include <QApplication>
 #include <QSearchLineEdit>
 
 #include "outline.h"
 #include "searchitemdelegate.h"
 #include "tools.h"
+#include "outlinemodel.h"
+#include "saagharapplication.h"
 
-OutLineTree::OutLineTree(QWidget* parent)
+OutlineTree::OutlineTree(QWidget* parent)
     : QWidget(parent)
 {
     pressedMouseButton = Qt::LeftButton;
 
-    outlineWidget = new QTreeWidget(parent);
-    outlineWidget->setObjectName("outlineTreeWidget");
-    outlineWidget->setLayoutDirection(Qt::RightToLeft);
-    outlineWidget->setTextElideMode(Qt::ElideMiddle);
+    m_outlineView = new QTreeView(parent);
+    m_outlineView->setModel(sApp->outlineModel());
+    m_outlineView->setObjectName("outlineTreeWidget");
+    m_outlineView->setLayoutDirection(Qt::RightToLeft);
+    m_outlineView->setTextElideMode(Qt::ElideMiddle);
 #ifdef Q_OS_WIN
-    outlineWidget->setIndentation(10);
+    m_outlineView->setIndentation(10);
 #endif
-    outlineWidget->header()->hide();
-    outlineWidget->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(outlineWidget, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
+    m_outlineView->header()->hide();
+    m_outlineView->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(m_outlineView, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
 
     QStringList labels;
     labels << tr("Title") << tr("Comments");
@@ -97,132 +99,111 @@ OutLineTree::OutLineTree(QWidget* parent)
     toolsLayout->addWidget(outLineFilter);
     toolsLayout->addItem(filterHorizSpacer);
 
-    mainLayout->addWidget(outlineWidget);
+    mainLayout->addWidget(m_outlineView);
     mainLayout->addLayout(toolsLayout);
     setLayout(mainLayout);
 
-    connect(outlineWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*,int)), this, SLOT(doubleClicked(QTreeWidgetItem*,int)));
-    connect(outlineWidget, SIGNAL(itemClicked(QTreeWidgetItem*,int)), this, SLOT(justClicked(QTreeWidgetItem*,int)));
-    connect(outlineWidget, SIGNAL(itemPressed(QTreeWidgetItem*,int)), this, SLOT(itemPressed(QTreeWidgetItem*,int)));
+    connect(m_outlineView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(doubleClicked(QModelIndex)));
+    connect(m_outlineView, SIGNAL(clicked(QModelIndex)), this, SLOT(clicked(QModelIndex)));
+    connect(m_outlineView, SIGNAL(pressed(QModelIndex)), this, SLOT(pressed()));
 
-    SaagharItemDelegate* filterDelegate = new SaagharItemDelegate(outlineWidget, outlineWidget->style());
-    outlineWidget->setItemDelegate(filterDelegate);
+    SaagharItemDelegate* filterDelegate = new SaagharItemDelegate(m_outlineView, m_outlineView->style());
+    m_outlineView->setItemDelegate(filterDelegate);
     connect(outLineFilter, SIGNAL(textChanged(QString)), filterDelegate, SLOT(keywordChanged(QString)));
 }
 
-void OutLineTree::setItems(const QList<QTreeWidgetItem*> &items)
+void OutlineTree::refreshTree()
 {
-    outlineWidget->clear();
-    outlineWidget->addTopLevelItems(items);
+    sApp->outlineModel()->clear();
+
+    m_outlineView->setModel(sApp->outlineModel());
 }
 
-bool OutLineTree::filterItems(const QString &str, QTreeWidgetItem* parentItem)
+bool OutlineTree::filterItems(const QString &str, const QModelIndex &parent)
 {
-    int childrenSize;
-    if (!parentItem) {
-        childrenSize = outlineWidget->topLevelItemCount();
-    }
-    else {
-        childrenSize = parentItem->childCount();
-    }
+    int childrenSize = m_outlineView->model()->rowCount(parent);
 
     bool result = true;
 
     for (int i = 0; i < childrenSize; ++i) {
-        QTreeWidgetItem* ithChild;
-        if (!parentItem) {
-            ithChild = outlineWidget->topLevelItem(i);
-        }
-        else {
-            ithChild = parentItem->child(i);
-        }
+        QModelIndex ithChild = m_outlineView->model()->index(i, 0, parent);
 
-        QString text = ithChild->text(0);
+        QString text = ithChild.data().toString();
         text = Tools::cleanString(text);
         QString cleanStr = Tools::cleanString(str);
         if (!cleanStr.isEmpty() && !text.contains(cleanStr)) {
             // if all its children are hidden it should be hidden, too.
-            if (ithChild->childCount() > 0) {
+            if (m_outlineView->model()->rowCount(ithChild) > 0) {
                 bool tmp = filterItems(cleanStr, ithChild);
                 if (!tmp) {
-                    ithChild->setExpanded(true);
+                    m_outlineView->setExpanded(ithChild, true);
                 }
 
-                ithChild->setHidden(tmp);
+                m_outlineView->setRowHidden(i, parent, tmp);
                 result = result && tmp;
             }
             else {
-                ithChild->setHidden(true);
+                m_outlineView->setRowHidden(i, parent, true);
                 //return true when all children are hidden
                 result = result && true;
             }
         }
         else {
             recursivelyUnHide(ithChild);
-            ithChild->setExpanded(false);
+            m_outlineView->setExpanded(ithChild, false);
             //return false when at least one child is visible
             result = result && false;
         }
     }
+
     return result;
 }
 
-void OutLineTree::recursivelyUnHide(QTreeWidgetItem* parentItem)
+void OutlineTree::recursivelyUnHide(const QModelIndex &parent)
 {
-    int childrenSize;
-    if (!parentItem) {
-        childrenSize = outlineWidget->topLevelItemCount();
-    }
-    else {
-        childrenSize = parentItem->childCount();
-        parentItem->setHidden(false);
+    int childrenSize = m_outlineView->model()->rowCount(parent);
+    if (parent.isValid()) {
+        m_outlineView->setRowHidden(parent.row(), parent.parent(), false);
     }
 
     for (int i = 0; i < childrenSize; ++i) {
-        QTreeWidgetItem* ithChild;
-        if (!parentItem) {
-            ithChild = outlineWidget->topLevelItem(i);
-        }
-        else {
-            ithChild = parentItem->child(i);
-        }
+        QModelIndex ithChild = m_outlineView->model()->index(i, 0, parent);
+
         recursivelyUnHide(ithChild);
     }
 }
 
-void OutLineTree::doubleClicked(QTreeWidgetItem* item, int /*column*/)
+void OutlineTree::doubleClicked(const QModelIndex &index)
 {
-    if (item) {
-        int id = item->data(0, Qt::UserRole).toInt();
-        emit openParentRequested(id);
+    if (index.isValid()) {
+        emit openParentRequested(index.data(OutlineModel::IDRole).toInt());
     }
 }
 
-void OutLineTree::justClicked(QTreeWidgetItem* item, int /*column*/)
+void OutlineTree::clicked(const QModelIndex &index)
 {
     if (pressedMouseButton == Qt::RightButton) {
         return;
     }
 
-    if (item) {
-        if (item->childCount() > 0) {
-            item->setExpanded(!item->isExpanded());
+    if (index.isValid()) {
+        if (m_outlineView->model()->rowCount(index) > 0) {
+            m_outlineView->expand(index);
         }
         else {
-            int itemID = item->data(0, Qt::UserRole).toInt();
-            emit openParentRequested(itemID);
+            emit openParentRequested(index.data(OutlineModel::IDRole).toInt());
         }
     }
 }
 
-void OutLineTree::createCustomContextMenu(const QPoint &pos)
+void OutlineTree::createCustomContextMenu(const QPoint &pos)
 {
-    QTreeWidgetItem* item = outlineWidget->itemAt(pos);
-    if (!item) {
+    QModelIndex index = m_outlineView->indexAt(pos);
+    if (!index.isValid()) {
         return;
     }
 
-    int itemID = item->data(0, Qt::UserRole).toInt();
+    int itemID = index.data(OutlineModel::IDRole).toInt();
 
     QMenu* contextMenu = new QMenu;
     contextMenu->addAction(tr("Open in New Tab"));
@@ -231,8 +212,8 @@ void OutLineTree::createCustomContextMenu(const QPoint &pos)
     contextMenu->addAction(tr("Random in New Tab"));
     contextMenu->addAction(tr("Random"));
     contextMenu->addSeparator();
-    if (item->childCount() > 0) {
-        if (item->isExpanded()) {
+    if (m_outlineView->model()->rowCount(index) > 0) {
+        if (m_outlineView->isExpanded(index)) {
             contextMenu->addAction(tr("Collapse"));
         }
         else {
@@ -255,7 +236,7 @@ void OutLineTree::createCustomContextMenu(const QPoint &pos)
         emit openParentRequested(itemID);
     }
     else if (text == tr("Collapse") || text == tr("Expand")) {
-        item->setExpanded(!item->isExpanded());
+        m_outlineView->setExpanded(index, !m_outlineView->isExpanded(index));
     }
     else if (text == tr("Random in New Tab")) {
         emit openRandomRequested(itemID, true);
@@ -265,23 +246,23 @@ void OutLineTree::createCustomContextMenu(const QPoint &pos)
     }
 }
 
-void OutLineTree::itemPressed(QTreeWidgetItem* /*item*/, int /*column*/)
+void OutlineTree::pressed()
 {
     pressedMouseButton = QApplication::mouseButtons();
 }
 
-void OutLineTree::setTreeFont(const QFont &font)
+void OutlineTree::setTreeFont(const QFont &font)
 {
-    if (outlineWidget) {
-        outlineWidget->setFont(font);
+    if (m_outlineView) {
+        m_outlineView->setFont(font);
     }
 }
 
-void OutLineTree::setTreeColor(const QColor &color)
+void OutlineTree::setTreeColor(const QColor &color)
 {
-    if (outlineWidget && color.isValid()) {
-        QPalette p(outlineWidget->palette());
+    if (m_outlineView && color.isValid()) {
+        QPalette p(m_outlineView->palette());
         p.setColor(QPalette::Text, color);
-        outlineWidget->setPalette(p);
+        m_outlineView->setPalette(p);
     }
 }

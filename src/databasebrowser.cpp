@@ -1635,26 +1635,6 @@ SearchResults DatabaseBrowser::startSearch(const QString &strQuery, const QSqlDa
     return searchResults;
 }
 
-QList<QTreeWidgetItem*> DatabaseBrowser::loadOutlineFromDataBase(int parentID)
-{
-    QList<QTreeWidgetItem*> items;
-    QList<GanjoorCat*> parents = getSubCategories(parentID);
-    if (parents.isEmpty()) {
-        return items;
-    }
-    for (int i = 0; i < parents.size(); ++i) {
-        QTreeWidgetItem* item = new QTreeWidgetItem(QStringList() << parents.at(i)->_Text);
-        item->setToolTip(0, parents.at(i)->_Text);
-        item->setData(0, Qt::UserRole, parents.at(i)->_ID);
-        QList<QTreeWidgetItem*> children = loadOutlineFromDataBase(parents.at(i)->_ID);
-        if (!children.isEmpty()) {
-            item->addChildren(children);
-        }
-        items << item;
-    }
-    return items;
-}
-
 void DatabaseBrowser::addDataSets()
 {
     if (!DatabaseBrowser::dbUpdater) {

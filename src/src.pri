@@ -26,7 +26,8 @@ HEADERS += \
     $$PWD/tools.h \
     $$PWD/concurrenttasks.h \
     $$PWD/saagharapplication.h \
-    $$PWD/settingsmanager.h
+    $$PWD/settingsmanager.h \
+    $$PWD/outlinemodel.h
 
 FORMS += \
     $$PWD/saagharwindow.ui \
@@ -56,7 +57,8 @@ SOURCES += \
     $$PWD/tools.cpp \
     $$PWD/concurrenttasks.cpp \
     $$PWD/saagharapplication.cpp \
-    $$PWD/settingsmanager.cpp
+    $$PWD/settingsmanager.cpp \
+    $$PWD/outlinemodel.cpp
 
 include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)
