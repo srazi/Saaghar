@@ -146,6 +146,7 @@ QIrDefaultBreadCrumbBarStyle::~QIrDefaultBreadCrumbBarStyle()
 QIrDefaultBreadCrumbBarStyle::QIrDefaultBreadCrumbBarStyle(QIrDefaultBreadCrumbBarStylePrivate &p) : QIrBreadCrumbBarStyle(p)
 {
 }
+
 QRect QIrDefaultBreadCrumbBarStyle::subControlRect(QStyle::ComplexControl control, const QStyleOptionComplex* option, QStyle::SubControl subControl, const QWidget* widget) const
 {
     switch (control) {
@@ -202,6 +203,7 @@ void QIrDefaultBreadCrumbBarStyle::drawPrimitive(QStyle::PrimitiveElement elemen
     }
     QIrBreadCrumbBarStyle::drawPrimitive(element, option, painter, widget);
 }
+
 void QIrDefaultBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption* option, QPainter* painter, const QWidget* widget) const
 {
     bool hover = option->state & QStyle::State_MouseOver;
@@ -211,6 +213,7 @@ void QIrDefaultBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, c
     switch (element) {
     case CE_BreadCrumbIndicator:
         if (const QIrStyleOptionBreadCrumbIndicator* indicator = qstyleoption_cast< const QIrStyleOptionBreadCrumbIndicator* >(option)) {
+            bool isLeftToRight = widget ? !widget->isRightToLeft() : true;
             bool valid = indicator->isValid;
 
             if (indicator->usePseudoState) {
@@ -222,7 +225,8 @@ void QIrDefaultBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, c
 
             downArrow.setColor(1, down ? !valid ? QColor(Qt::red).rgba() : color.dark(120).rgba() : hover ? !valid ? QColor(Qt::red).rgba() : color.rgba() : option->palette.foreground().color().rgba());
             painter->drawImage(rect.center().x() - downArrow.width() / 2,
-                               rect.center().y() - downArrow.height() / 2 + 1, downArrow);
+                               rect.center().y() - downArrow.height() / 2 + 1,
+                               isLeftToRight ? downArrow : downArrow.mirrored(false, true));
 
             return;
         }
@@ -264,9 +268,12 @@ QRect QIrDefaultBreadCrumbBarStyle::lineEditRect(const QIrBreadCrumbBar* bar) co
         option.currentIcon = QIcon();
         option.iconSize = comboBox->iconSize();
         option.state |= QStyle::State_On;
-        editRect = comboBox->style()->subControlRect(QStyle::CC_ComboBox, &option,
-                   QStyle::SC_ComboBoxEditField, comboBox);
+        // subControlRect() returned from Qt internal styles is reversed in RTL layout
+        // but we compute editRect for LTR layout because of this we reverse it again.
+        editRect = QStyle::visualRect(bar->layoutDirection(), bar->rect(), comboBox->style()->subControlRect(QStyle::CC_ComboBox, &option,
+                                        QStyle::SC_ComboBoxEditField, comboBox));
     }
+
     return editRect;
 }
 
@@ -305,6 +312,8 @@ void QIrStyledBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, co
     case CE_BreadCrumbIndicator:
         if (const QIrStyleOptionBreadCrumbIndicator* indicator = qstyleoption_cast< const QIrStyleOptionBreadCrumbIndicator* >(option)) {
             QImage downArrow(indicator->isTruncated ? truncated_img : down && !indicator->usePseudoState ? arrow_down_img : arrow_right_img);
+            bool isLeftToRight = widget ? !widget->isRightToLeft() : true;
+
             if (down || hover) {
                 QLinearGradient g(rect.topLeft(), rect.bottomLeft());
 
@@ -338,7 +347,8 @@ void QIrStyledBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, co
             }
             downArrow.setColor(1, option->palette.foreground().color().rgba());
             painter->drawImage(rect.center().x() - downArrow.width() / 2,
-                               rect.center().y() - downArrow.height() / 2 + 1, downArrow);
+                               rect.center().y() - downArrow.height() / 2 + 1,
+                               isLeftToRight ? downArrow : downArrow.mirrored(true, false));
 
             return;
         }

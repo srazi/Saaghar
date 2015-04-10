@@ -358,6 +358,7 @@ void QIrBreadCrumbComboBoxContainer::clearAll()
         delete m_items.takeFirst();
     }
 }
+
 void QIrBreadCrumbComboBoxContainer::updateGeometries()
 {
     QIrBreadCrumbBar* bar = m_comboBox->bar();
@@ -366,7 +367,7 @@ void QIrBreadCrumbComboBoxContainer::updateGeometries()
     QIrStyleOptionBreadCrumbLabel labelOption;
     QStyleOption emptyAreaOption;
     QIrAbstractBreadCrumbModel* model = bar->model();
-    QRect r = rect(), arrowRect, labelRect, tempRect, emptyAreaRect;
+    QRect arrowRect, labelRect, tempRect, emptyAreaRect;
     int lastLabelWidth,
         incWidth = 0,
         accWidth = 0,
@@ -379,13 +380,15 @@ void QIrBreadCrumbComboBoxContainer::updateGeometries()
     QIrBreadCrumbItem* item;
     QIrBreadCrumbIndicator* indic;
     QIrBreadCrumbLabel* label;
-    QRect containerRect;
+
+    const QRect containerRect = rect();
+    QRect remainingRect = containerRect;
 
     if (m_items.isEmpty()) {
         return;
     }
 
-    arrowOption.rect = rect();
+    arrowOption.rect = containerRect;
 
     if (model->supportsMenuNavigation()) {
         arrowRect = style->subElementRect((QStyle::SubElement)QIrBreadCrumbBarStyle::SE_BreadCrumbIndicator, &arrowOption, bar);
@@ -396,12 +399,12 @@ void QIrBreadCrumbComboBoxContainer::updateGeometries()
         m_items[lastLabelIndex - 1]->setVisible(true);
     }
     labelOption.text = static_cast< QIrBreadCrumbLabel* >(m_items[lastLabelIndex])->node().label();
-    labelOption.rect = rect();
+    labelOption.rect = containerRect;
     labelRect = style->subElementRect((QStyle::SubElement)QIrBreadCrumbBarStyle::SE_BreadCrumbLabel, &labelOption, bar);
     lastLabelWidth = labelRect.width();
     emptyAreaOption.initFrom(this);
     emptyAreaRect = style->subElementRect((QStyle::SubElement)QIrBreadCrumbBarStyle::SE_BreadCrumbEmptyArea, &emptyAreaOption, bar);
-    r.setWidth(r.width() - emptyAreaRect.width() - (arrowRect.width() + incWidth) - lastLabelWidth);
+    remainingRect.setWidth(remainingRect.width() - emptyAreaRect.width() - (arrowRect.width() + incWidth) - lastLabelWidth);
     m_items[lastLabelIndex]->setVisible(true);
     if (model->supportsMenuNavigation()) {
         for (i = lastLabelIndex - 1; i > 1; i -= 2) {
@@ -414,7 +417,7 @@ void QIrBreadCrumbComboBoxContainer::updateGeometries()
             labelRect = style->subElementRect((QStyle::SubElement)QIrBreadCrumbBarStyle::SE_BreadCrumbLabel, &labelOption, bar);
             if (!trunc) {
                 tempWidth = arrowRect.width() + labelRect.width();
-                if (r.width() < (accWidth + tempWidth)) {
+                if (remainingRect.width() < (accWidth + tempWidth)) {
                     trunc = true;
                 }
                 else {
@@ -434,7 +437,7 @@ void QIrBreadCrumbComboBoxContainer::updateGeometries()
             labelRect = style->subElementRect((QStyle::SubElement)QIrBreadCrumbBarStyle::SE_BreadCrumbLabel, &labelOption, bar);
             if (!trunc) {
                 tempWidth = labelRect.width();
-                if (r.width() < (accWidth + tempWidth)) {
+                if (remainingRect.width() < (accWidth + tempWidth)) {
                     trunc = true;
                 }
                 else {
@@ -445,7 +448,7 @@ void QIrBreadCrumbComboBoxContainer::updateGeometries()
         }
     }
 
-    remainingWidth = r.width() - accWidth + emptyAreaRect.width();
+    remainingWidth = remainingRect.width() - accWidth + emptyAreaRect.width();
 
     m_rootIndicator->setTruncated(trunc);
     foreach (QIrBreadCrumbItem* item, m_items) {
@@ -461,8 +464,10 @@ void QIrBreadCrumbComboBoxContainer::updateGeometries()
             else {
                 tempRect = arrowRect;
             }
+
             tempRect.moveTo(startPoint);
-            item->setRect(tempRect);
+
+            item->setRect(QStyle::visualRect(layoutDirection(), containerRect, tempRect));
             startPoint.setX(startPoint.x() + tempRect.width());
         }
     }
@@ -566,7 +571,7 @@ bool QIrBreadCrumbComboBox::event(QEvent* e)
     return QComboBox::event(e);
 
 }
-#include <QDebug>
+
 void QIrBreadCrumbComboBox::setLocation(const QString &location)
 {
     QIrAbstractBreadCrumbModel* model = m_bar->model();
@@ -698,11 +703,12 @@ void QIrBreadCrumbComboBox::updateGeometries()
     QIrSubStyle* style = m_bar->subStyle();
 
     initStyleOption(&option);
-    m_iconLabel->setGeometry(style->subControlRect(QStyle::CC_ComboBox, &option, (QStyle::SubControl)QIrBreadCrumbBarStyle::SC_BreadCrumbIcon, m_bar));
+    m_iconLabel->setGeometry(QStyle::visualRect(layoutDirection(), m_bar->rect(), style->subControlRect(QStyle::CC_ComboBox, &option, (QStyle::SubControl)QIrBreadCrumbBarStyle::SC_BreadCrumbIcon, m_bar)));
     if (!m_flat && lineEdit) {
-        lineEdit->setGeometry(style->subControlRect(QStyle::CC_ComboBox, &option, (QStyle::SubControl)QIrBreadCrumbBarStyle::SC_BreadCrumbEditField, m_bar));
+        // a Qt element and it is reversed within RTL layouts
+        lineEdit->setGeometry(QStyle::visualRect(layoutDirection(), m_bar->rect(), style->subControlRect(QStyle::CC_ComboBox, &option, (QStyle::SubControl)QIrBreadCrumbBarStyle::SC_BreadCrumbEditField, m_bar)));
     }
-    m_container->setGeometry(style->subControlRect(QStyle::CC_ComboBox, &option, (QStyle::SubControl)QIrBreadCrumbBarStyle::SC_BreadCrumbContainer, m_bar));
+    m_container->setGeometry(QStyle::visualRect(layoutDirection(), m_bar->rect(), style->subControlRect(QStyle::CC_ComboBox, &option, (QStyle::SubControl)QIrBreadCrumbBarStyle::SC_BreadCrumbContainer, m_bar)));
 }
 
 
