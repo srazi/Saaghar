@@ -47,7 +47,7 @@
 
 class ConcurrentTask;
 
-typedef QMap<int,QString> SearchResults;
+typedef QMap<int, QString> SearchResults;
 
 
 class DatabaseBrowser : public QObject
@@ -132,8 +132,8 @@ private:
     int getNewCatID();
     void removeCatFromDataBase(const GanjoorCat &gCat);
     static QString defaultConnectionId();
-    static QString getIdForDataBase(const QString &fileName, QThread *thread = 0);
-    static void removeDatabase(const QString &fileName, QThread *thread = 0);
+    static QString getIdForDataBase(const QString &fileName, QThread* thread = 0);
+    static void removeDatabase(const QString &fileName, QThread* thread = 0);
 
     static bool comparePoetsByName(GanjoorPoet* poet1, GanjoorPoet* poet2);
     static bool compareCategoriesByName(GanjoorCat* cat1, GanjoorCat* cat2);
@@ -148,7 +148,7 @@ private:
     static DatabaseBrowser* s_instance;
 
 private slots:
-    void removeThreadsConnections(QObject *obj = 0);
+    void removeThreadsConnections(QObject* obj = 0);
 
 signals:
     void searchStatusChanged(const QString &);

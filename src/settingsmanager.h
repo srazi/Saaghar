@@ -38,7 +38,7 @@
 class SettingsManager : public QObject
 {
 public:
-    static SettingsManager *instance();
+    static SettingsManager* instance();
     ~SettingsManager();
 
     void defineVariable(const QString &name, const QVariant &value = QVariant());
@@ -46,13 +46,13 @@ public:
     QVariant variable(const QString &name) const;
 
     void clear();
-    bool loadVariable(QIODevice *in, bool append = false);
-    bool writeVariable(QIODevice *out);
+    bool loadVariable(QIODevice* in, bool append = false);
+    bool writeVariable(QIODevice* out);
 
 private:
     Q_DISABLE_COPY(SettingsManager)
-    SettingsManager(QObject *parent = 0);
-    static SettingsManager *s_instance;
+    SettingsManager(QObject* parent = 0);
+    static SettingsManager* s_instance;
 
     QVariant variantEncode(const QVariant &v) const;
     QVariant variantDecode(const QVariant &v) const;

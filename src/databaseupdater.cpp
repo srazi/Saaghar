@@ -183,7 +183,7 @@ void DataBaseUpdater::fillRepositoryList()
     ui->comboBoxRepoList->insertSeparator(ui->comboBoxRepoList->count() - 1);
 }
 
-void DataBaseUpdater::importDataBase(const QString &fileName, bool *ok)
+void DataBaseUpdater::importDataBase(const QString &fileName, bool* ok)
 {
     QSqlDatabase dataBaseObject = DatabaseBrowser::database();
     QFileInfo dataBaseFile(dataBaseObject.databaseName());
@@ -503,8 +503,8 @@ bool DataBaseUpdater::doStopDownload()
 
     if (downloadStarted) {
         if (QMessageBox::question(this, tr("Warning!"),
-             tr("Download in progress! Are you sure to stop downloading?"),
-             QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ==
+                                  tr("Download in progress! Are you sure to stop downloading?"),
+                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::No) ==
                 QMessageBox::No) {
             return false;
         }

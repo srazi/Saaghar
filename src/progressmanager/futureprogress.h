@@ -71,10 +71,10 @@ public:
         KeepOnFinishTillUserInteraction = 1,
         KeepOnFinish = 2
     };
-    explicit FutureProgress(QWidget *parent = 0);
+    explicit FutureProgress(QWidget* parent = 0);
     virtual ~FutureProgress();
 
-    virtual bool eventFilter(QObject *object, QEvent *);
+    virtual bool eventFilter(QObject* object, QEvent*);
 
     void setFuture(const QFuture<void> &future);
     QFuture<void> future() const;
@@ -90,11 +90,11 @@ public:
 
     bool hasError() const;
 
-    void setWidget(QWidget *widget);
-    QWidget *widget() const;
+    void setWidget(QWidget* widget);
+    QWidget* widget() const;
 
-    void setStatusBarWidget(QWidget *widget);
-    QWidget *statusBarWidget() const;
+    void setStatusBarWidget(QWidget* widget);
+    QWidget* statusBarWidget() const;
 
     bool isFading() const;
 
@@ -113,8 +113,8 @@ signals:
     void statusBarWidgetChanged();
 
 protected:
-    void mousePressEvent(QMouseEvent *event);
-    void paintEvent(QPaintEvent *);
+    void mousePressEvent(QMouseEvent* event);
+    void paintEvent(QPaintEvent*);
 
 private slots:
     void updateToolTip(const QString &);
@@ -127,7 +127,7 @@ private slots:
 
 private:
     friend class FutureProgressPrivate; // for sending signal
-    FutureProgressPrivate *d;
+    FutureProgressPrivate* d;
 };
 
 #endif // FUTUREPROGRESS_H

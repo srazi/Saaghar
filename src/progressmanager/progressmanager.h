@@ -77,12 +77,12 @@ public:
         Disabled = -1
     };
 
-    static ProgressManager *instance();
+    static ProgressManager* instance();
 
-    static FutureProgress *addTask(const QFuture<void> &future, const QString &title,
+    static FutureProgress* addTask(const QFuture<void> &future, const QString &title,
                                    const QString &type, ProgressFlags flags = 0);
-    static FutureProgress *addTimedTask(const QFutureInterface<void> &fi, const QString &title,
-                                   const QString &type, int expectedSeconds, ProgressFlags flags = 0);
+    static FutureProgress* addTimedTask(const QFutureInterface<void> &fi, const QString &title,
+                                        const QString &type, int expectedSeconds, ProgressFlags flags = 0);
     static void setApplicationLabel(const QString &text);
 
 public slots:

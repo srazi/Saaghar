@@ -62,13 +62,13 @@ static const int CANCELBUTTON_WIDTH = 16;
 static const int SEPARATOR_HEIGHT = 2;
 
 // Draws a CSS-like border image where the defined borders are not stretched
-static void drawCornerImage(const QImage &img, QPainter *painter, const QRect &rect,
-                                  int left, int top, int right, int bottom)
+static void drawCornerImage(const QImage &img, QPainter* painter, const QRect &rect,
+                            int left, int top, int right, int bottom)
 {
     QSize size = img.size();
     if (top > 0) { //top
-        painter->drawImage(QRect(rect.left() + left, rect.top(), rect.width() -right - left, top), img,
-                           QRect(left, 0, size.width() -right - left, top));
+        painter->drawImage(QRect(rect.left() + left, rect.top(), rect.width() - right - left, top), img,
+                           QRect(left, 0, size.width() - right - left, top));
         if (left > 0) //top-left
             painter->drawImage(QRect(rect.left(), rect.top(), left, top), img,
                                QRect(0, 0, left, top));
@@ -78,32 +78,32 @@ static void drawCornerImage(const QImage &img, QPainter *painter, const QRect &r
     }
     //left
     if (left > 0)
-        painter->drawImage(QRect(rect.left(), rect.top()+top, left, rect.height() - top - bottom), img,
+        painter->drawImage(QRect(rect.left(), rect.top() + top, left, rect.height() - top - bottom), img,
                            QRect(0, top, left, size.height() - bottom - top));
     //center
-    painter->drawImage(QRect(rect.left() + left, rect.top()+top, rect.width() -right - left,
+    painter->drawImage(QRect(rect.left() + left, rect.top() + top, rect.width() - right - left,
                              rect.height() - bottom - top), img,
-                       QRect(left, top, size.width() -right -left,
+                       QRect(left, top, size.width() - right - left,
                              size.height() - bottom - top));
     if (right > 0) //right
-        painter->drawImage(QRect(rect.left() +rect.width() - right, rect.top()+top, right, rect.height() - top - bottom), img,
+        painter->drawImage(QRect(rect.left() + rect.width() - right, rect.top() + top, right, rect.height() - top - bottom), img,
                            QRect(size.width() - right, top, right, size.height() - bottom - top));
     if (bottom > 0) { //bottom
-        painter->drawImage(QRect(rect.left() +left, rect.top() + rect.height() - bottom,
+        painter->drawImage(QRect(rect.left() + left, rect.top() + rect.height() - bottom,
                                  rect.width() - right - left, bottom), img,
                            QRect(left, size.height() - bottom,
                                  size.width() - right - left, bottom));
-    if (left > 0) //bottom-left
-        painter->drawImage(QRect(rect.left(), rect.top() + rect.height() - bottom, left, bottom), img,
-                           QRect(0, size.height() - bottom, left, bottom));
-    if (right > 0) //bottom-right
-        painter->drawImage(QRect(rect.left() + rect.width() - right, rect.top() + rect.height() - bottom, right, bottom), img,
-                           QRect(size.width() - right, size.height() - bottom, right, bottom));
+        if (left > 0) //bottom-left
+            painter->drawImage(QRect(rect.left(), rect.top() + rect.height() - bottom, left, bottom), img,
+                               QRect(0, size.height() - bottom, left, bottom));
+        if (right > 0) //bottom-right
+            painter->drawImage(QRect(rect.left() + rect.width() - right, rect.top() + rect.height() - bottom, right, bottom), img,
+                               QRect(size.width() - right, size.height() - bottom, right, bottom));
     }
 }
 
 
-ProgressBar::ProgressBar(QWidget *parent)
+ProgressBar::ProgressBar(QWidget* parent)
     : QWidget(parent), m_titleVisible(true), m_separatorVisible(true), m_cancelEnabled(true),
       m_progressHeight(0),
       m_minimum(1), m_maximum(100), m_value(1), m_cancelButtonFader(0), m_finished(false),
@@ -117,25 +117,23 @@ ProgressBar::~ProgressBar()
 {
 }
 
-bool ProgressBar::event(QEvent *e)
+bool ProgressBar::event(QEvent* e)
 {
     switch (e->type()) {
-    case QEvent::Enter:
-        {
-            QPropertyAnimation *animation = new QPropertyAnimation(this, "cancelButtonFader");
-            animation->setDuration(125);
-            animation->setEndValue(1.0);
-            animation->start(QAbstractAnimation::DeleteWhenStopped);
-        }
-        break;
-    case QEvent::Leave:
-        {
-            QPropertyAnimation *animation = new QPropertyAnimation(this, "cancelButtonFader");
-            animation->setDuration(225);
-            animation->setEndValue(0.0);
-            animation->start(QAbstractAnimation::DeleteWhenStopped);
-        }
-        break;
+    case QEvent::Enter: {
+        QPropertyAnimation* animation = new QPropertyAnimation(this, "cancelButtonFader");
+        animation->setDuration(125);
+        animation->setEndValue(1.0);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+    }
+    break;
+    case QEvent::Leave: {
+        QPropertyAnimation* animation = new QPropertyAnimation(this, "cancelButtonFader");
+        animation->setDuration(225);
+        animation->setEndValue(0.0);
+        animation->start(QAbstractAnimation::DeleteWhenStopped);
+    }
+    break;
     default:
         return QWidget::event(e);
     }
@@ -153,8 +151,9 @@ void ProgressBar::setRange(int minimum, int maximum)
 {
     m_minimum = minimum;
     m_maximum = maximum;
-    if (m_value < m_minimum || m_value > m_maximum)
+    if (m_value < m_minimum || m_value > m_maximum) {
         m_value = m_minimum;
+    }
     update();
 }
 
@@ -171,8 +170,9 @@ void ProgressBar::setValue(int value)
 
 void ProgressBar::setFinished(bool b)
 {
-    if (b == m_finished)
+    if (b == m_finished) {
         return;
+    }
     m_finished = b;
     update();
 }
@@ -196,8 +196,9 @@ void ProgressBar::setTitle(const QString &title)
 
 void ProgressBar::setTitleVisible(bool visible)
 {
-    if (m_titleVisible == visible)
+    if (m_titleVisible == visible) {
         return;
+    }
     m_titleVisible = visible;
     updateGeometry();
     update();
@@ -210,8 +211,9 @@ bool ProgressBar::isTitleVisible() const
 
 void ProgressBar::setSeparatorVisible(bool visible)
 {
-    if (m_separatorVisible == visible)
+    if (m_separatorVisible == visible) {
         return;
+    }
     m_separatorVisible = visible;
     update();
 }
@@ -223,8 +225,9 @@ bool ProgressBar::isSeparatorVisible() const
 
 void ProgressBar::setCancelEnabled(bool enabled)
 {
-    if (m_cancelEnabled == enabled)
+    if (m_cancelEnabled == enabled) {
         return;
+    }
     m_cancelEnabled = enabled;
     update();
 }
@@ -249,14 +252,18 @@ QSize ProgressBar::sizeHint() const
         width = qMax(width, fm.width(m_title) + 16);
         height += fm.height() + 4;
     }
-    if (m_separatorVisible)
+    if (m_separatorVisible) {
         height += SEPARATOR_HEIGHT;
+    }
     return QSize(width, height);
 }
 
-namespace { const int INDENT = 6; }
+namespace
+{
+const int INDENT = 6;
+}
 
-void ProgressBar::mousePressEvent(QMouseEvent *event)
+void ProgressBar::mousePressEvent(QMouseEvent* event)
 {
     if (event->modifiers() == Qt::NoModifier) {
         if (m_cancelEnabled && m_cancelRect.contains(event->pos())) {
@@ -285,27 +292,32 @@ QFont ProgressBar::titleFont() const
     return boldFont;
 }
 
-void ProgressBar::mouseMoveEvent(QMouseEvent *)
+void ProgressBar::mouseMoveEvent(QMouseEvent*)
 {
     update();
 }
 
-void ProgressBar::paintEvent(QPaintEvent *)
+void ProgressBar::paintEvent(QPaintEvent*)
 {
-    if (bar.isNull())
+    if (bar.isNull()) {
         bar.load(QLatin1String(":/progressmanager/images/progressbar.png"));
+    }
 
     double range = maximum() - minimum();
     double percent = 0.;
-    if (range != 0)
+    if (range != 0) {
         percent = (value() - minimum()) / range;
-    if (percent > 1)
+    }
+    if (percent > 1) {
         percent = 1;
-    else if (percent < 0)
+    }
+    else if (percent < 0) {
         percent = 0;
+    }
 
-    if (finished())
+    if (finished()) {
         percent = 1;
+    }
 
     QPainter p(this);
     QFont fnt(titleFont());
@@ -318,7 +330,7 @@ void ProgressBar::paintEvent(QPaintEvent *)
     int separatorHeight = m_separatorVisible ? SEPARATOR_HEIGHT : 0;
     if (m_separatorVisible) {
         p.setPen(QColor(0, 0, 0, 40));
-        p.drawLine(0,0, size().width(), 0);
+        p.drawLine(0, 0, size().width(), 0);
 
         p.setPen(QColor(255, 255, 255, 40));
         p.drawLine(1, 1, size().width(), 1);
@@ -335,7 +347,7 @@ void ProgressBar::paintEvent(QPaintEvent *)
         QString elidedtitle  = fm.elidedText(m_title, Qt::ElideRight, textSpace);
 
         QRect textRect = rect().adjusted(3, separatorHeight - 1, -3, 0);
-        textRect.setHeight(titleHeight+5);
+        textRect.setHeight(titleHeight + 5);
 
         p.setPen(QColor(0, 0, 0, 120));
         p.drawText(textRect, alignment | Qt::AlignBottom, elidedtitle);
@@ -363,9 +375,11 @@ void ProgressBar::paintEvent(QPaintEvent *)
         QColor red(255, 60, 0, 210);
         c = red;
         // avoid too small red bar
-        if (inner.width() < 10)
+        if (inner.width() < 10) {
             inner.adjust(0, 0, 10 - inner.width(), 0);
-    } else if (m_finished) {
+        }
+    }
+    else if (m_finished) {
         c = QColor(90, 170, 60);
     }
 

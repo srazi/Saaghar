@@ -42,40 +42,40 @@ QObject* Tools::s_splashScreen = 0;
 //  "،" cell= 12 row= 6
 //  "؛" cell= 27 row= 6
 const QStringList Tools::someSymbols = QStringList()
-        << QChar(31, 6) << QChar(12, 6) << QChar(27, 6)
-        << QChar(187, 0) << QChar(171, 0) << QChar(46, 0)
-        << ")" << "(" << "[" << "]" << ":" << "!" << "-" << "." << "?";
+                                       << QChar(31, 6) << QChar(12, 6) << QChar(27, 6)
+                                       << QChar(187, 0) << QChar(171, 0) << QChar(46, 0)
+                                       << ")" << "(" << "[" << "]" << ":" << "!" << "-" << "." << "?";
 
 //the zero index of following stringlists is equipped by expected variant!
 //  "ؤ" cell= 36 row= 6
 //  "و" cell= 72 row= 6
 const QStringList Tools::Ve_Variant = QStringList()
-        << QChar(72, 6) << QChar(36, 6);
+                                      << QChar(72, 6) << QChar(36, 6);
 
 //  "ى" cell= 73 row= 6 //ALEF MAKSURA
 //  "ي" cell= 74 row= 6 //Arabic Ye
 //  "ئ" cell= 38 row= 6
 //  "ی" cell= 204 row= 6 //Persian Ye
 const QStringList Tools::Ye_Variant = QStringList()
-        << QChar(204, 6) << QChar(38, 6) << QChar(74, 6) << QChar(73, 6);
+                                      << QChar(204, 6) << QChar(38, 6) << QChar(74, 6) << QChar(73, 6);
 
 //  "آ" cell= 34 row= 6
 //  "أ" cell= 35 row= 6
 //  "إ" cell= 37 row= 6
 //  "ا" cell= 39 row= 6
 const QStringList Tools::AE_Variant = QStringList()
-        << QChar(39, 6) << QChar(37, 6) << QChar(35, 6) << QChar(34, 6);
+                                      << QChar(39, 6) << QChar(37, 6) << QChar(35, 6) << QChar(34, 6);
 
 //  "ة" cell= 41 row= 6
 //  "ۀ" cell=192 row= 6
 //  "ه" cell= 71 row= 6
 const QStringList Tools::He_Variant = QStringList()
-        << QChar(71, 6) << QChar(41, 6) << QChar(192, 6);
+                                      << QChar(71, 6) << QChar(41, 6) << QChar(192, 6);
 
 // tashdid+keshide+o+a+e+an+en+on+saaken+zwnj
 const QString &Tools::OTHER_GLYPHS = QString(QChar(78, 6)) +
-        QChar(79, 6) + QChar(80, 6) + QChar(81, 6) + QChar(64, 6) +
-        QChar(75, 6) + QChar(76, 6) + QChar(77, 6) + QChar(82, 6) + QChar(0x200C);
+                                     QChar(79, 6) + QChar(80, 6) + QChar(81, 6) + QChar(64, 6) +
+                                     QChar(75, 6) + QChar(76, 6) + QChar(77, 6) + QChar(82, 6) + QChar(0x200C);
 /***************************/
 const QRegExp Ve_EXP = QRegExp("[" +
                                Tools::Ve_Variant.join("").remove(Tools::Ve_Variant.at(0))

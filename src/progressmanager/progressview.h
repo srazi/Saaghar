@@ -66,30 +66,30 @@ class ProgressView : public QWidget
     Q_OBJECT
 
 public:
-    ProgressView(QWidget *parent = 0);
+    ProgressView(QWidget* parent = 0);
     ~ProgressView();
 
-    void addProgressWidget(QWidget *widget);
-    void removeProgressWidget(QWidget *widget);
+    void addProgressWidget(QWidget* widget);
+    void removeProgressWidget(QWidget* widget);
 
     void setProgressWidgetVisible(bool visible);
     void setPosition(const ProgressManager::Position &position);
 
     int progressCount() const;
 
-    void addSummeryProgressWidget(QWidget *widget);
-    void removeSummeryProgressWidget(QWidget *widget);
+    void addSummeryProgressWidget(QWidget* widget);
+    void removeSummeryProgressWidget(QWidget* widget);
 
     bool isHovered() const;
 
-    void setReferenceWidget(QWidget *widget);
+    void setReferenceWidget(QWidget* widget);
 
 public slots:
     void setVisible(bool visible);
 
 protected:
-    bool event(QEvent *event);
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool event(QEvent* event);
+    bool eventFilter(QObject* obj, QEvent* event);
 
 private slots:
     void toggleAllProgressView();
@@ -101,9 +101,9 @@ signals:
 private:
     void doReposition();
 
-    QVBoxLayout *m_layout;
-    QVBoxLayout *m_topLayout;
-    QWidget *m_referenceWidget;
+    QVBoxLayout* m_layout;
+    QVBoxLayout* m_topLayout;
+    QWidget* m_referenceWidget;
     QWidget* m_progressWidget;
     bool m_hovered;
     bool m_lastVisibleState;

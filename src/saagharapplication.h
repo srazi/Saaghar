@@ -41,7 +41,7 @@ class QThreadPool;
 class SaagharApplication : public QApplication
 {
 public:
-    SaagharApplication(int &argc, char **argv);
+    SaagharApplication(int &argc, char** argv);
     ~SaagharApplication();
 
     static SaagharApplication* instance();

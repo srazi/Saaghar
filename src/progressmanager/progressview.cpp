@@ -57,7 +57,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
-ProgressView::ProgressView(QWidget *parent)
+ProgressView::ProgressView(QWidget* parent)
     : QWidget(parent),
       m_referenceWidget(0),
       m_hovered(false),
@@ -87,14 +87,14 @@ ProgressView::~ProgressView()
 {
 }
 
-void ProgressView::addProgressWidget(QWidget *widget)
+void ProgressView::addProgressWidget(QWidget* widget)
 {
     setUpdatesEnabled(false);
     m_layout->insertWidget(0, widget);
     setUpdatesEnabled(true);
 }
 
-void ProgressView::removeProgressWidget(QWidget *widget)
+void ProgressView::removeProgressWidget(QWidget* widget)
 {
     setUpdatesEnabled(false);
     m_layout->removeWidget(widget);
@@ -120,12 +120,12 @@ int ProgressView::progressCount() const
     return m_layout->count();
 }
 
-void ProgressView::addSummeryProgressWidget(QWidget *widget)
+void ProgressView::addSummeryProgressWidget(QWidget* widget)
 {
     m_topLayout->insertWidget(1, widget);
 }
 
-void ProgressView::removeSummeryProgressWidget(QWidget *widget)
+void ProgressView::removeSummeryProgressWidget(QWidget* widget)
 {
     m_topLayout->removeWidget(widget);
 }
@@ -135,10 +135,11 @@ bool ProgressView::isHovered() const
     return m_hovered;
 }
 
-void ProgressView::setReferenceWidget(QWidget *widget)
+void ProgressView::setReferenceWidget(QWidget* widget)
 {
-    if (m_referenceWidget)
+    if (m_referenceWidget) {
         m_referenceWidget->removeEventFilter(this);
+    }
     m_referenceWidget = widget;
 
     if (m_referenceWidget) {
@@ -159,19 +160,23 @@ void ProgressView::setVisible(bool visible)
     QWidget::setVisible(visible);
 }
 
-bool ProgressView::event(QEvent *event)
+bool ProgressView::event(QEvent* event)
 {
     if (event->type() == QEvent::ParentAboutToChange && parentWidget()) {
         parentWidget()->removeEventFilter(this);
-    } else if (event->type() == QEvent::ParentChange && parentWidget()) {
+    }
+    else if (event->type() == QEvent::ParentChange && parentWidget()) {
         parentWidget()->installEventFilter(this);
-    } else if (event->type() == QEvent::Resize) {
+    }
+    else if (event->type() == QEvent::Resize) {
         doReposition();
-    } else if (event->type() == QEvent::Enter) {
+    }
+    else if (event->type() == QEvent::Enter) {
         m_hovered = true;
         setWindowOpacity(0.9);
         emit hoveredChanged(m_hovered);
-    } else if (event->type() == QEvent::Leave) {
+    }
+    else if (event->type() == QEvent::Leave) {
         m_hovered = false;
         setWindowOpacity(0.75);
         emit hoveredChanged(m_hovered);
@@ -179,7 +184,7 @@ bool ProgressView::event(QEvent *event)
     return QWidget::event(event);
 }
 
-bool ProgressView::eventFilter(QObject *obj, QEvent *event)
+bool ProgressView::eventFilter(QObject* obj, QEvent* event)
 {
     if (obj == m_referenceWidget && m_referenceWidget) {
         if (event->type() == QEvent::Resize || event->type() == QEvent::Move) {
@@ -226,8 +231,9 @@ void ProgressView::reposition()
     // for now we always assume parent is 0
     switch (m_position) {
     case ProgressManager::AppBottomLeft: {
-        if (!m_referenceWidget)
+        if (!m_referenceWidget) {
             return;
+        }
         int w = geoRect.width();
         int h = geoRect.height();
         geoRect.setRect(m_referenceWidget->x() + frameWidth,
@@ -240,10 +246,11 @@ void ProgressView::reposition()
 //            m_progressWidget->show();
 //        }
     }
-        break;
+    break;
     case ProgressManager::AppBottomRight: {
-        if (!m_referenceWidget)
+        if (!m_referenceWidget) {
             return;
+        }
         int w = geoRect.width();
         int h = geoRect.height();
         geoRect.setRect(m_referenceWidget->x() + m_referenceWidget->frameGeometry().width() - w - frameWidth,
@@ -256,7 +263,7 @@ void ProgressView::reposition()
 //            m_progressWidget->show();
 //        }
     }
-        break;
+    break;
     case ProgressManager::DesktopBottomRight:
         geoRect.setRect(screenRect.x() + screenRect.width() - geoRect.width(),
                         screenRect.height() - geoRect.height(),

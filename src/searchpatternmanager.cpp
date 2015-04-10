@@ -27,7 +27,7 @@
 
 SearchPatternManager* SearchPatternManager::s_instance = 0;
 
-SearchPatternManager::SearchPatternManager(QObject *parent)
+SearchPatternManager::SearchPatternManager(QObject* parent)
     : QObject(parent),
       m_operators(),
       m_wildcardCharacter(QLatin1Char('%')),
@@ -43,7 +43,7 @@ SearchPatternManager::SearchPatternManager(QObject *parent)
     setOperator(SearchPatternManager::WholeWord, QLatin1String("\""));
 }
 
-SearchPatternManager *SearchPatternManager::instance()
+SearchPatternManager* SearchPatternManager::instance()
 {
     if (!s_instance) {
         s_instance = new SearchPatternManager(qApp);

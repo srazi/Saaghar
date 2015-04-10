@@ -66,7 +66,7 @@ private:
 
     bool m_displayFullNotification;
 
-    QFutureInterface<void> *m_progressObject;
+    QFutureInterface<void>* m_progressObject;
     FutureProgress* m_futureProgress;
 
 signals:

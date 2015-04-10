@@ -280,11 +280,12 @@ static int countOfVisibleProgresses()
     Sent when all tasks of a \a type have finished.
 */
 
-static void drawArrow(QStyle::PrimitiveElement element, QPainter *painter, const QStyleOption *option)
+static void drawArrow(QStyle::PrimitiveElement element, QPainter* painter, const QStyleOption* option)
 {
     // From windowsstyle but modified to enable AA
-    if (option->rect.width() <= 1 || option->rect.height() <= 1)
+    if (option->rect.width() <= 1 || option->rect.height() <= 1) {
         return;
+    }
 
     QRect r = option->rect;
     int size = qMin(r.height(), r.width());
@@ -295,8 +296,8 @@ static void drawArrow(QStyle::PrimitiveElement element, QPainter *painter, const
                        uint(option->state), element,
                        size, option->palette.cacheKey());
     if (!QPixmapCache::find(pixmapName, pixmap)) {
-        int border = size/5;
-        int sqsize = 2*(size/2);
+        int border = size / 5;
+        int sqsize = 2 * (size / 2);
         QImage image(sqsize, sqsize, QImage::Format_ARGB32);
         image.fill(Qt::transparent);
         QPainter imagePainter(&image);
@@ -304,20 +305,20 @@ static void drawArrow(QStyle::PrimitiveElement element, QPainter *painter, const
         imagePainter.translate(0.5, 0.5);
         QPolygon a;
         switch (element) {
-            case QStyle::PE_IndicatorArrowUp:
-                a.setPoints(3, border, sqsize/2,  sqsize/2, border,  sqsize - border, sqsize/2);
-                break;
-            case QStyle::PE_IndicatorArrowDown:
-                a.setPoints(3, border, sqsize/2,  sqsize/2, sqsize - border,  sqsize - border, sqsize/2);
-                break;
-            case QStyle::PE_IndicatorArrowRight:
-                a.setPoints(3, sqsize - border, sqsize/2,  sqsize/2, border,  sqsize/2, sqsize - border);
-                break;
-            case QStyle::PE_IndicatorArrowLeft:
-                a.setPoints(3, border, sqsize/2,  sqsize/2, border,  sqsize/2, sqsize - border);
-                break;
-            default:
-                break;
+        case QStyle::PE_IndicatorArrowUp:
+            a.setPoints(3, border, sqsize / 2,  sqsize / 2, border,  sqsize - border, sqsize / 2);
+            break;
+        case QStyle::PE_IndicatorArrowDown:
+            a.setPoints(3, border, sqsize / 2,  sqsize / 2, sqsize - border,  sqsize - border, sqsize / 2);
+            break;
+        case QStyle::PE_IndicatorArrowRight:
+            a.setPoints(3, sqsize - border, sqsize / 2,  sqsize / 2, border,  sqsize / 2, sqsize - border);
+            break;
+        case QStyle::PE_IndicatorArrowLeft:
+            a.setPoints(3, border, sqsize / 2,  sqsize / 2, border,  sqsize / 2, sqsize - border);
+            break;
+        default:
+            break;
         }
 
         int bsx = 0;
@@ -337,7 +338,8 @@ static void drawArrow(QStyle::PrimitiveElement element, QPainter *painter, const
             QColor foreGround(150, 150, 150, 150);
             imagePainter.setBrush(option->palette.mid().color());
             imagePainter.setPen(option->palette.mid().color());
-        } else {
+        }
+        else {
             QColor shadow(0, 0, 0, 100);
             imagePainter.translate(0, 1);
             imagePainter.setPen(shadow);
@@ -353,20 +355,20 @@ static void drawArrow(QStyle::PrimitiveElement element, QPainter *painter, const
         pixmap = QPixmap::fromImage(image);
         QPixmapCache::insert(pixmapName, pixmap);
     }
-    int xOffset = r.x() + (r.width() - size)/2;
-    int yOffset = r.y() + (r.height() - size)/2;
+    int xOffset = r.x() + (r.width() - size) / 2;
+    int yOffset = r.y() + (r.height() - size) / 2;
     painter->drawPixmap(xOffset, yOffset, pixmap);
 }
 
-static ProgressManagerPrivate *m_instance = 0;
+static ProgressManagerPrivate* m_instance = 0;
 
 ProgressManagerPrivate::ProgressManagerPrivate()
-  : m_applicationTask(0),
-    m_currentStatusDetailsWidget(0),
-    m_opacityEffect(new QGraphicsOpacityEffect(this)),
-    m_progressViewPinned(true),
-    m_hovered(false),
-    m_allTasksCount(0)
+    : m_applicationTask(0),
+      m_currentStatusDetailsWidget(0),
+      m_opacityEffect(new QGraphicsOpacityEffect(this)),
+      m_progressViewPinned(true),
+      m_hovered(false),
+      m_allTasksCount(0)
 {
     m_instance = this;
     m_progressView = new ProgressView;
@@ -396,7 +398,7 @@ void ProgressManagerPrivate::init()
     readSettings();
 
     m_statusBarWidget = new QWidget;
-    QHBoxLayout *layout = new QHBoxLayout(m_statusBarWidget);
+    QHBoxLayout* layout = new QHBoxLayout(m_statusBarWidget);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     m_statusBarWidget->setLayout(layout);
@@ -419,7 +421,7 @@ void ProgressManagerPrivate::init()
 
     m_summaryProgressLayout->addWidget(m_summaryProgressBar);
     layout->addWidget(m_summaryProgressWidget);
-    ToggleButton *toggleButton = new ToggleButton(m_statusBarWidget);
+    ToggleButton* toggleButton = new ToggleButton(m_statusBarWidget);
     layout->addWidget(toggleButton);
 
     m_statusBarWidget->installEventFilter(this);
@@ -446,8 +448,9 @@ void ProgressManagerPrivate::doCancelTasks(const QString &type)
         }
         found = true;
         disconnect(task.key(), SIGNAL(finished()), this, SLOT(taskFinished()));
-        if (m_applicationTask == task.key())
+        if (m_applicationTask == task.key()) {
             disconnectApplicationTask();
+        }
         task.key()->cancel();
         delete task.key();
         task = m_runningTasks.erase(task);
@@ -458,29 +461,33 @@ void ProgressManagerPrivate::doCancelTasks(const QString &type)
     }
 }
 
-bool ProgressManagerPrivate::eventFilter(QObject *obj, QEvent *event)
+bool ProgressManagerPrivate::eventFilter(QObject* obj, QEvent* event)
 {
     if (obj == m_statusBarWidget) {
         if (event->type() == QEvent::Enter) {
             m_hovered = true;
             updateVisibility();
-        } else if (event->type() == QEvent::Leave) {
+        }
+        else if (event->type() == QEvent::Leave) {
             m_hovered = false;
             // give the progress view the chance to get the mouse enter event
             updateVisibilityWithDelay();
-        } else if (event->type() == QEvent::MouseButtonPress && !m_taskList.isEmpty()) {
-            QMouseEvent *me = static_cast<QMouseEvent *>(event);
+        }
+        else if (event->type() == QEvent::MouseButtonPress && !m_taskList.isEmpty()) {
+            QMouseEvent* me = static_cast<QMouseEvent*>(event);
             if (me->button() == Qt::LeftButton && !me->modifiers()) {
-                FutureProgress *progress = m_currentStatusDetailsProgress;
-                if (!progress)
+                FutureProgress* progress = m_currentStatusDetailsProgress;
+                if (!progress) {
                     progress = m_taskList.last();
+                }
                 // don't send signal directly from an event filter, event filters should
                 // do as little a possible
                 QTimer::singleShot(0, progress, SIGNAL(clicked()));
                 event->accept();
                 return true;
             }
-        } else if (event->type() == QEvent::Paint) {
+        }
+        else if (event->type() == QEvent::Paint) {
             QPainter p(m_statusBarWidget);
             const QRect fillRect = m_statusBarWidget->rect();
 
@@ -495,8 +502,9 @@ void ProgressManagerPrivate::cancelAllRunningTasks()
     QMap<QFutureWatcher<void> *, QString>::const_iterator task = m_runningTasks.constBegin();
     while (task != m_runningTasks.constEnd()) {
         disconnect(task.key(), SIGNAL(finished()), this, SLOT(taskFinished()));
-        if (m_applicationTask == task.key())
+        if (m_applicationTask == task.key()) {
             disconnectApplicationTask();
+        }
         task.key()->cancel();
         delete task.key();
         ++task;
@@ -505,11 +513,11 @@ void ProgressManagerPrivate::cancelAllRunningTasks()
     updateSummaryProgressBar();
 }
 
-FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, const QString &title,
-                                                const QString &type, ProgressFlags flags)
+FutureProgress* ProgressManagerPrivate::doAddTask(const QFuture<void> &future, const QString &title,
+        const QString &type, ProgressFlags flags)
 {
     // watch
-    QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
+    QFutureWatcher<void>* watcher = new QFutureWatcher<void>();
 
     // it's the first task or last tasks are finished/canceled
     if (m_runningTasks.isEmpty()) {
@@ -526,8 +534,9 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
 
     // handle application task
     if (flags & ShowInApplicationIcon) {
-        if (m_applicationTask)
+        if (m_applicationTask) {
             disconnectApplicationTask();
+        }
         m_applicationTask = watcher;
         setApplicationProgressRange(future.progressMinimum(), future.progressMaximum());
         setApplicationProgressValue(future.progressValue());
@@ -541,7 +550,7 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
     // create FutureProgress and manage task list
     removeOldTasks(type);
 
-    FutureProgress *progress = new FutureProgress;
+    FutureProgress* progress = new FutureProgress;
     progress->setTitle(title);
     progress->setFuture(future);
 
@@ -556,10 +565,12 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
 
     m_taskList.append(progress);
     progress->setType(type);
-    if (flags.testFlag(ProgressManager::KeepOnFinish))
+    if (flags.testFlag(ProgressManager::KeepOnFinish)) {
         progress->setKeepOnFinish(FutureProgress::KeepOnFinishTillUserInteraction);
-    else
+    }
+    else {
         progress->setKeepOnFinish(FutureProgress::HideOnFinish);
+    }
     connect(progress, SIGNAL(hasErrorChanged()), this, SLOT(updateSummaryProgressBar()));
     connect(progress, SIGNAL(removeMe()), this, SLOT(slotRemoveTask()));
     connect(progress, SIGNAL(fadeStarted()), this, SLOT(updateSummaryProgressBar()));
@@ -570,33 +581,35 @@ FutureProgress *ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
     return progress;
 }
 
-ProgressView *ProgressManagerPrivate::progressView()
+ProgressView* ProgressManagerPrivate::progressView()
 {
     return m_progressView;
 }
 
 void ProgressManagerPrivate::taskFinished()
 {
-    QObject *taskObject = sender();
+    QObject* taskObject = sender();
     Q_ASSERT(taskObject);
-    QFutureWatcher<void> *task = static_cast<QFutureWatcher<void> *>(taskObject);
-    if (m_applicationTask == task)
+    QFutureWatcher<void>* task = static_cast<QFutureWatcher<void> *>(taskObject);
+    if (m_applicationTask == task) {
         disconnectApplicationTask();
+    }
     const QString &type = m_runningTasks.value(task);
     m_runningTasks.remove(task);
     delete task;
     updateSummaryProgressBar();
 
-    if (!m_runningTasks.key(type, 0))
+    if (!m_runningTasks.key(type, 0)) {
         emit allTasksFinished(type);
+    }
 }
 
 void ProgressManagerPrivate::disconnectApplicationTask()
 {
     disconnect(m_applicationTask, SIGNAL(progressRangeChanged(int,int)),
-            this, SLOT(setApplicationProgressRange(int,int)));
+               this, SLOT(setApplicationProgressRange(int,int)));
     disconnect(m_applicationTask, SIGNAL(progressValueChanged(int)),
-            this, SLOT(setApplicationProgressValue(int)));
+               this, SLOT(setApplicationProgressValue(int)));
     setApplicationProgressVisible(false);
     m_applicationTask = 0;
 }
@@ -607,8 +620,9 @@ void ProgressManagerPrivate::updateSummaryProgressBar()
     updateVisibility();
     if (m_runningTasks.isEmpty()) {
         m_summaryProgressBar->setFinished(true);
-        if (m_taskList.isEmpty() || isLastFading())
+        if (m_taskList.isEmpty() || isLastFading()) {
             fadeAwaySummaryProgress();
+        }
         return;
     }
 
@@ -620,11 +634,12 @@ void ProgressManagerPrivate::updateSummaryProgressBar()
     int value = 0;
     while (it.hasNext()) {
         it.next();
-        QFutureWatcher<void> *watcher = it.key();
+        QFutureWatcher<void>* watcher = it.key();
         int min = watcher->progressMinimum();
         int range = watcher->progressMaximum() - min;
-        if (range > 0)
+        if (range > 0) {
             value += TASK_RANGE * (watcher->progressValue() - min) / range;
+        }
     }
 
     const int finishedCount = m_allTasksCount - m_runningTasks.size();
@@ -655,26 +670,29 @@ void ProgressManagerPrivate::stopFadeOfSummaryProgress()
 
 bool ProgressManagerPrivate::hasError() const
 {
-    foreach (FutureProgress *progress, m_taskList)
-        if (progress->hasError())
+    foreach (FutureProgress* progress, m_taskList)
+        if (progress->hasError()) {
             return true;
+        }
     return false;
 }
 
 bool ProgressManagerPrivate::isLastFading() const
 {
-    if (m_taskList.isEmpty())
+    if (m_taskList.isEmpty()) {
         return false;
-    foreach (FutureProgress *progress, m_taskList) {
-        if (!progress->isFading()) // we still have progress bars that are not fading
+    }
+    foreach (FutureProgress* progress, m_taskList) {
+        if (!progress->isFading()) { // we still have progress bars that are not fading
             return false;
+        }
     }
     return true;
 }
 
 void ProgressManagerPrivate::slotRemoveTask()
 {
-    FutureProgress *progress = qobject_cast<FutureProgress *>(sender());
+    FutureProgress* progress = qobject_cast<FutureProgress*>(sender());
     Q_ASSERT(progress);
     const QString &type = progress->type();
     removeTask(progress);
@@ -694,7 +712,7 @@ void ProgressManagerPrivate::slotRemoveTask()
 void ProgressManagerPrivate::removeOldTasks(const QString &type, bool keepOne)
 {
     bool firstFound = !keepOne; // start with false if we want to keep one
-    QList<FutureProgress *>::iterator i = m_taskList.end();
+    QList<FutureProgress*>::iterator i = m_taskList.end();
     while (i != m_taskList.begin()) {
         --i;
         if ((*i)->type() == type) {
@@ -711,10 +729,11 @@ void ProgressManagerPrivate::removeOldTasks(const QString &type, bool keepOne)
 
 void ProgressManagerPrivate::removeOneOldTask()
 {
-    if (m_taskList.isEmpty())
+    if (m_taskList.isEmpty()) {
         return;
+    }
     // look for oldest ended process
-    for (QList<FutureProgress *>::iterator i = m_taskList.begin(); i != m_taskList.end(); ++i) {
+    for (QList<FutureProgress*>::iterator i = m_taskList.begin(); i != m_taskList.end(); ++i) {
         if ((*i)->future().isFinished()) {
             deleteTask(*i);
             i = m_taskList.erase(i);
@@ -722,13 +741,14 @@ void ProgressManagerPrivate::removeOneOldTask()
         }
     }
     // no ended process, look for a task type with multiple running tasks and remove the oldest one
-    for (QList<FutureProgress *>::iterator i = m_taskList.begin(); i != m_taskList.end(); ++i) {
+    for (QList<FutureProgress*>::iterator i = m_taskList.begin(); i != m_taskList.end(); ++i) {
         const QString &type = (*i)->type();
 
         int taskCount = 0;
-        foreach (FutureProgress *p, m_taskList)
-            if (p->type() == type)
+        foreach (FutureProgress* p, m_taskList)
+            if (p->type() == type) {
                 ++taskCount;
+            }
 
         if (taskCount > 1) { // don't care for optimizations it's only a handful of entries
             deleteTask(*i);
@@ -738,13 +758,13 @@ void ProgressManagerPrivate::removeOneOldTask()
     }
 
     // no ended process, no type with multiple processes, just remove the oldest task
-    FutureProgress *task = m_taskList.takeFirst();
+    FutureProgress* task = m_taskList.takeFirst();
     deleteTask(task);
     updateSummaryProgressBar();
     updateStatusDetailsWidget();
 }
 
-void ProgressManagerPrivate::removeTask(FutureProgress *task)
+void ProgressManagerPrivate::removeTask(FutureProgress* task)
 {
     if (m_taskList.removeAll(task) == 0) {
         m_queuedTaskList.removeAll(task);
@@ -756,7 +776,7 @@ void ProgressManagerPrivate::removeTask(FutureProgress *task)
     updateStatusDetailsWidget();
 }
 
-void ProgressManagerPrivate::deleteTask(FutureProgress *progress)
+void ProgressManagerPrivate::deleteTask(FutureProgress* progress)
 {
     m_progressView->removeProgressWidget(progress);
     progress->hide();
@@ -767,7 +787,7 @@ void ProgressManagerPrivate::updateVisibility()
 {
     //m_progressView->setVisible(m_progressViewPinned || m_hovered || m_progressView->isHovered());
     m_summaryProgressWidget->setVisible((!m_runningTasks.isEmpty() || !m_taskList.isEmpty())
-                                     && m_progressViewPinned && m_runningTasks.size() > 1);
+                                        && m_progressViewPinned && m_runningTasks.size() > 1);
 
     m_summaryProgressBar->setTitle(tr("All Tasks (%1):").arg(m_runningTasks.size()));
 }
@@ -779,9 +799,9 @@ void ProgressManagerPrivate::updateVisibilityWithDelay()
 
 void ProgressManagerPrivate::updateStatusDetailsWidget()
 {
-    QWidget *candidateWidget = 0;
+    QWidget* candidateWidget = 0;
     // get newest progress with a status bar widget
-    QList<FutureProgress *>::iterator i = m_taskList.end();
+    QList<FutureProgress*>::iterator i = m_taskList.end();
     while (i != m_taskList.begin()) {
         --i;
         candidateWidget = (*i)->statusBarWidget();
@@ -791,8 +811,9 @@ void ProgressManagerPrivate::updateStatusDetailsWidget()
         }
     }
 
-    if (candidateWidget == m_currentStatusDetailsWidget)
+    if (candidateWidget == m_currentStatusDetailsWidget) {
         return;
+    }
 
     if (m_currentStatusDetailsWidget) {
         m_currentStatusDetailsWidget->hide();
@@ -819,7 +840,7 @@ void ProgressManagerPrivate::progressDetailsToggled(bool checked)
     updateVisibility();
 }
 
-ToggleButton::ToggleButton(QWidget *parent)
+ToggleButton::ToggleButton(QWidget* parent)
     : QToolButton(parent)
 {
     setToolButtonStyle(Qt::ToolButtonIconOnly);
@@ -830,7 +851,7 @@ QSize ToggleButton::sizeHint() const
     return QSize(13, 12); // Uneven width, because the arrow's width is also uneven.
 }
 
-void ToggleButton::paintEvent(QPaintEvent *event)
+void ToggleButton::paintEvent(QPaintEvent* event)
 {
     QToolButton::paintEvent(event);
     QPainter p(this);
@@ -850,12 +871,12 @@ ProgressManager::~ProgressManager()
 {
 }
 
-ProgressManager *ProgressManager::instance()
+ProgressManager* ProgressManager::instance()
 {
     return m_instance;
 }
 
-FutureProgress *ProgressManager::addTask(const QFuture<void> &future, const QString &title, const QString &type, ProgressFlags flags)
+FutureProgress* ProgressManager::addTask(const QFuture<void> &future, const QString &title, const QString &type, ProgressFlags flags)
 {
     return m_instance->doAddTask(future, title, type, flags);
 }
@@ -870,11 +891,11 @@ FutureProgress *ProgressManager::addTask(const QFuture<void> &future, const QStr
     \sa addTask
 */
 
-FutureProgress *ProgressManager::addTimedTask(const QFutureInterface<void> &futureInterface, const QString &title,
-                                              const QString &type, int expectedSeconds, ProgressFlags flags)
+FutureProgress* ProgressManager::addTimedTask(const QFutureInterface<void> &futureInterface, const QString &title,
+        const QString &type, int expectedSeconds, ProgressFlags flags)
 {
     QFutureInterface<void> dummy(futureInterface); // Need mutable to access .future()
-    FutureProgress *fp = m_instance->doAddTask(dummy.future(), title, type, flags);
+    FutureProgress* fp = m_instance->doAddTask(dummy.future(), title, type, flags);
     (void) new ProgressTimer(fp, futureInterface, expectedSeconds);
     return fp;
 }
@@ -886,12 +907,13 @@ void ProgressManager::setApplicationLabel(const QString &text)
 
 void ProgressManager::cancelTasks(const QString &type)
 {
-    if (m_instance)
+    if (m_instance) {
         m_instance->doCancelTasks(type);
+    }
 }
 
 
-ProgressTimer::ProgressTimer(QObject *parent,
+ProgressTimer::ProgressTimer(QObject* parent,
                              const QFutureInterface<void> &futureInterface,
                              int expectedSeconds)
     : QTimer(parent),

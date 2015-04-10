@@ -81,17 +81,17 @@ public:
     void init();
     void cleanup();
 
-    FutureProgress *doAddTask(const QFuture<void> &future, const QString &title, const QString &type,
-                            ProgressFlags flags);
+    FutureProgress* doAddTask(const QFuture<void> &future, const QString &title, const QString &type,
+                              ProgressFlags flags);
 
     void doSetApplicationLabel(const QString &text);
-    ProgressView *progressView();
+    ProgressView* progressView();
 
 public slots:
     void doCancelTasks(const QString &type);
 
 protected:
-    bool eventFilter(QObject *obj, QEvent *event);
+    bool eventFilter(QObject* obj, QEvent* event);
 
 private slots:
     void taskFinished();
@@ -119,11 +119,11 @@ private:
 
     void removeOldTasks(const QString &type, bool keepOne = false);
     void removeOneOldTask();
-    void removeTask(FutureProgress *task);
-    void deleteTask(FutureProgress *task);
+    void removeTask(FutureProgress* task);
+    void deleteTask(FutureProgress* task);
 
     QPointer<ProgressView> m_progressView;
-    QList<FutureProgress *> m_taskList;
+    QList<FutureProgress*> m_taskList;
 
 #if QT_VERSION < 0x050000
     typedef QWeakPointer<FutureProgress> FutureProgressPointer;
@@ -134,14 +134,14 @@ private:
     QList<FutureProgressPointer> m_queuedTaskList;
 
     QMap<QFutureWatcher<void> *, QString> m_runningTasks;
-    QFutureWatcher<void> *m_applicationTask;
-    QWidget *m_statusBarWidget;
-    QWidget *m_summaryProgressWidget;
-    QHBoxLayout *m_summaryProgressLayout;
-    QWidget *m_currentStatusDetailsWidget;
+    QFutureWatcher<void>* m_applicationTask;
+    QWidget* m_statusBarWidget;
+    QWidget* m_summaryProgressWidget;
+    QHBoxLayout* m_summaryProgressLayout;
+    QWidget* m_currentStatusDetailsWidget;
     QPointer<FutureProgress> m_currentStatusDetailsProgress;
-    ProgressBar *m_summaryProgressBar;
-    QGraphicsOpacityEffect *m_opacityEffect;
+    ProgressBar* m_summaryProgressBar;
+    QGraphicsOpacityEffect* m_opacityEffect;
     QPointer<QPropertyAnimation> m_opacityAnimation;
     bool m_progressViewPinned;
     bool m_hovered;
@@ -152,9 +152,9 @@ class ToggleButton : public QToolButton
 {
     Q_OBJECT
 public:
-    ToggleButton(QWidget *parent);
+    ToggleButton(QWidget* parent);
     QSize sizeHint() const;
-    void paintEvent(QPaintEvent *event);
+    void paintEvent(QPaintEvent* event);
 };
 
 
@@ -163,7 +163,7 @@ class ProgressTimer : public QTimer
     Q_OBJECT
 
 public:
-    ProgressTimer(QObject *parent, const QFutureInterface<void> &futureInterface, int expectedSeconds);
+    ProgressTimer(QObject* parent, const QFutureInterface<void> &futureInterface, int expectedSeconds);
 
 private slots:
     void handleTimeout();

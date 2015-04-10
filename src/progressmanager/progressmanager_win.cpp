@@ -74,9 +74,10 @@
 // Windows 7 SDK required
 #ifdef __ITaskbarList3_INTERFACE_DEFINED__
 
-namespace {
-    int total = 0;
-    ITaskbarList3* pITask = 0;
+namespace
+{
+int total = 0;
+ITaskbarList3* pITask = 0;
 }
 
 QT_BEGIN_NAMESPACE
@@ -85,24 +86,27 @@ QT_END_NAMESPACE
 
 #if QT_VERSION >= 0x050000
 
-static inline QWindow *windowOfWidget(const QWidget *widget)
+static inline QWindow* windowOfWidget(const QWidget* widget)
 {
-    if (QWindow *window = widget->windowHandle())
+    if (QWindow* window = widget->windowHandle()) {
         return window;
-    if (QWidget *topLevel = widget->nativeParentWidget())
+    }
+    if (QWidget* topLevel = widget->nativeParentWidget()) {
         return topLevel->windowHandle();
+    }
     return 0;
 }
 
-static inline HWND hwndOfWidget(const QWidget *w)
+static inline HWND hwndOfWidget(const QWidget* w)
 {
-    void *result = 0;
-    if (QWindow *window = windowOfWidget(w))
+    void* result = 0;
+    if (QWindow* window = windowOfWidget(w)) {
         result = QGuiApplication::platformNativeInterface()->nativeResourceForWindow("handle", window);
+    }
     return static_cast<HWND>(result);
 }
 #else
-static inline HWND hwndOfWidget(const QWidget *w)
+static inline HWND hwndOfWidget(const QWidget* w)
 {
     return w->winId();
 }
@@ -112,37 +116,38 @@ void ProgressManagerPrivate::initInternal()
 {
     CoInitialize(NULL);
     HRESULT hRes = CoCreateInstance(CLSID_TaskbarList,
-                                    NULL,CLSCTX_INPROC_SERVER,
-                                    IID_ITaskbarList3,(LPVOID*) &pITask);
-     if (FAILED(hRes))
-     {
-         pITask = 0;
-         CoUninitialize();
-         return;
-     }
+                                    NULL, CLSCTX_INPROC_SERVER,
+                                    IID_ITaskbarList3, (LPVOID*) &pITask);
+    if (FAILED(hRes)) {
+        pITask = 0;
+        CoUninitialize();
+        return;
+    }
 
-     pITask->HrInit();
-     return;
+    pITask->HrInit();
+    return;
 }
 
 void ProgressManagerPrivate::cleanup()
 {
     if (pITask) {
-    pITask->Release();
-    pITask = NULL;
-    CoUninitialize();
+        pITask->Release();
+        pITask = NULL;
+        CoUninitialize();
     }
 }
 
 void ProgressManagerPrivate::doSetApplicationLabel(const QString &text)
 {
-    if (!pITask)
+    if (!pITask) {
         return;
+    }
 
     const HWND winId = hwndOfWidget(qApp->activeWindow());
     if (text.isEmpty()) {
         pITask->SetOverlayIcon(winId, NULL, NULL);
-    } else {
+    }
+    else {
         QPixmap pix(QLatin1String(":/progressmanager/images/compile_error_taskbar.png"));
 #if QT_VERSION >= 0x050000
         pix.setDevicePixelRatio(1); // We want device-pixel sized font depending on the pix.height
@@ -165,7 +170,7 @@ void ProgressManagerPrivate::doSetApplicationLabel(const QString &text)
 
 void ProgressManagerPrivate::setApplicationProgressRange(int min, int max)
 {
-    total = max-min;
+    total = max - min;
 }
 
 void ProgressManagerPrivate::setApplicationProgressValue(int value)
@@ -178,14 +183,17 @@ void ProgressManagerPrivate::setApplicationProgressValue(int value)
 
 void ProgressManagerPrivate::setApplicationProgressVisible(bool visible)
 {
-    if (!pITask)
+    if (!pITask) {
         return;
+    }
 
     const HWND winId = hwndOfWidget(qApp->activeWindow());
-    if (visible)
+    if (visible) {
         pITask->SetProgressState(winId, TBPF_NORMAL);
-    else
+    }
+    else {
         pITask->SetProgressState(winId, TBPF_NOPROGRESS);
+    }
 }
 
 #else

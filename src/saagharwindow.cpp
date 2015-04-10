@@ -402,7 +402,7 @@ void SaagharWindow::searchStart()
 
             phrase = Tools::cleanString(phrase);
             SearchResultWidget* searchResultWidget = new SearchResultWidget(this, ICON_PATH, searchResultContents,
-                                                                            phrase, poetName);
+                    phrase, poetName);
 
             ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget);
             connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
@@ -499,7 +499,7 @@ void SaagharWindow::multiSelectObjectInitialize(QMultiSelectWidget* multiSelectW
     multiSelectWidget->updateSelectedLists();
 }
 
-void SaagharWindow::multiSelectInsertItems(QMultiSelectWidget *multiSelectWidget)
+void SaagharWindow::multiSelectInsertItems(QMultiSelectWidget* multiSelectWidget)
 {
     QListWidgetItem* item = multiSelectWidget->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
     QListWidgetItem* titleSearchItem = multiSelectWidget->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
@@ -1547,7 +1547,7 @@ void SaagharWindow::actionImportNewSet()
         foreach (const QString &file, fileList) {
 
 #ifdef SAAGHAR_DEBUG
-            QMessageBox::information(0, "DEBUG!", QString("%1\n%2\n%3\n%4\n%5").arg(file, QFile::encodeName(file), file.toUtf8(), file.toLocal8Bit(), QTextCodec::codecForName("Windows-1256")->fromUnicode(file)) );
+            QMessageBox::information(0, "DEBUG!", QString("%1\n%2\n%3\n%4\n%5").arg(file, QFile::encodeName(file), file.toUtf8(), file.toLocal8Bit(), QTextCodec::codecForName("Windows-1256")->fromUnicode(file)));
 #endif
 
             DatabaseBrowser::dbUpdater->installItemToDB(file);

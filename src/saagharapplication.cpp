@@ -50,27 +50,28 @@ Q_IMPORT_PLUGIN(qsqlite)
 #endif
 #endif
 
-namespace {
-    QThread::Priority TASKS_PRIORITY = QThread::LowPriority;
-    static const int NORMAL_TASKS_THREADS = QThread::idealThreadCount();
+namespace
+{
+QThread::Priority TASKS_PRIORITY = QThread::LowPriority;
+static const int NORMAL_TASKS_THREADS = QThread::idealThreadCount();
 
-    static const QString APPLICATION_NAME = QLatin1String("Saaghar");
-    static const QString ORGANIZATION_NAME = QLatin1String("Pozh");
-    static const QString ORGANIZATION_DOMAIN = QLatin1String("pozh.org");
+static const QString APPLICATION_NAME = QLatin1String("Saaghar");
+static const QString ORGANIZATION_NAME = QLatin1String("Pozh");
+static const QString ORGANIZATION_DOMAIN = QLatin1String("pozh.org");
 
-    static const QString DATABASE_FILE_NAME = QLatin1String("ganjoor.s3db");
-    static const QString SETTINGS_FILE_NAME = QLatin1String("settings.ini");
-    static const QString BOOKMARKS_FILE_NAME = QLatin1String("bookmarks.xbel");
-    static const QString ALBUM_FILE_NAME = QLatin1String("default.sal");
+static const QString DATABASE_FILE_NAME = QLatin1String("ganjoor.s3db");
+static const QString SETTINGS_FILE_NAME = QLatin1String("settings.ini");
+static const QString BOOKMARKS_FILE_NAME = QLatin1String("bookmarks.xbel");
+static const QString ALBUM_FILE_NAME = QLatin1String("default.sal");
 
 #ifdef Q_OS_MAC
-    static const QString PORTABLE_SETTINGS_PATH = QLatin1String("/../Resources/settings.ini");
+static const QString PORTABLE_SETTINGS_PATH = QLatin1String("/../Resources/settings.ini");
 #else
-    static const QString PORTABLE_SETTINGS_PATH = QLatin1String("/settings.ini");
+static const QString PORTABLE_SETTINGS_PATH = QLatin1String("/settings.ini");
 #endif
 }
 
-SaagharApplication::SaagharApplication(int &argc, char **argv)
+SaagharApplication::SaagharApplication(int &argc, char** argv)
     : QApplication(argc, argv, true),
       m_mainWindow(0),
       m_progressManager(0),
@@ -97,7 +98,7 @@ SaagharApplication::~SaagharApplication()
     delete m_databaseBrowser;
 }
 
-SaagharApplication *SaagharApplication::instance()
+SaagharApplication* SaagharApplication::instance()
 {
     return static_cast<SaagharApplication*>(QCoreApplication::instance());
 }
@@ -130,7 +131,7 @@ ProgressManager* SaagharApplication::progressManager()
     return m_progressManager;
 }
 
-QThreadPool *SaagharApplication::tasksThreadPool()
+QThreadPool* SaagharApplication::tasksThreadPool()
 {
     if (!m_tasksThreadPool) {
         m_tasksThreadPool = new QThreadPool(this);
@@ -141,7 +142,7 @@ QThreadPool *SaagharApplication::tasksThreadPool()
     return m_tasksThreadPool;
 }
 
-DatabaseBrowser *SaagharApplication::databaseBrowser()
+DatabaseBrowser* SaagharApplication::databaseBrowser()
 {
     if (!m_databaseBrowser) {
         if (!m_paths.contains(DatabaseDirs)) {
@@ -155,7 +156,7 @@ DatabaseBrowser *SaagharApplication::databaseBrowser()
     return m_databaseBrowser;
 }
 
-SettingsManager *SaagharApplication::settingsManager()
+SettingsManager* SaagharApplication::settingsManager()
 {
     if (!m_settingsManager) {
         m_settingsManager = SettingsManager::instance();
@@ -312,7 +313,7 @@ void SaagharApplication::setupInitialValues()
 
     // font & color defaults
     const QString firstFamily = QFontDatabase().families().contains(LS("XB Sols"))
-            ? LS("XB Sols") : LS("Droid Arabic Naskh (with DOT)");
+                                ? LS("XB Sols") : LS("Droid Arabic Naskh (with DOT)");
 
     QFont appFont1(firstFamily, 18);
     appFont1.setBold(true);
@@ -362,13 +363,13 @@ void SaagharApplication::setupInitialValues()
 
     const QString sepStr = LS("Separator");
     QStringList defaultToolbarActions = QStringList()
-            << LS("outlineDockAction") << sepStr << LS("actionPreviousPoem") << LS("actionNextPoem")
-            << LS("fixedNameUndoAction") << sepStr << LS("actionFaal") << LS("actionRandom")
-            << sepStr << LS("searchToolbarAction") << LS("bookmarkManagerDockAction")
+                                        << LS("outlineDockAction") << sepStr << LS("actionPreviousPoem") << LS("actionNextPoem")
+                                        << LS("fixedNameUndoAction") << sepStr << LS("actionFaal") << LS("actionRandom")
+                                        << sepStr << LS("searchToolbarAction") << LS("bookmarkManagerDockAction")
 #ifdef MEDIA_PLAYER
-            << LS("albumDockAction") << LS("toggleMusicPlayer")
+                                        << LS("albumDockAction") << LS("toggleMusicPlayer")
 #endif
-            << sepStr << LS("actionSettings");
+                                        << sepStr << LS("actionSettings");
 
     VAR_INIT("SaagharWindow/MainToolBarItems", defaultToolbarActions);
     VAR_INIT("SaagharWindow/LastSessionTabs", QVariant());

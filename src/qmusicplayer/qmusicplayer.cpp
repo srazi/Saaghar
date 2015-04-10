@@ -105,7 +105,7 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     startDir = QDesktopServices::storageLocation(QDesktopServices::MusicLocation);
 #else
     startDir = QStandardPaths::standardLocations(QStandardPaths::MusicLocation).isEmpty() ?
-                QDir::homePath() : QStandardPaths::standardLocations(QStandardPaths::MusicLocation).at(0);
+               QDir::homePath() : QStandardPaths::standardLocations(QStandardPaths::MusicLocation).at(0);
 #endif
 
 #if USE_PHONON
@@ -528,9 +528,9 @@ void QMusicPlayer::load(int index)
 
     mediaObject->stop();
 #ifdef USE_PHONON
-        mediaObject->clearQueue();
+    mediaObject->clearQueue();
 #else
-        mediaObject->setMedia(QMediaContent());
+    mediaObject->setMedia(QMediaContent());
 #endif
 
     if (index >= sources.size()) {
@@ -1005,7 +1005,7 @@ void QMusicPlayer::readPlayerSettings()
     }
 #else
     mediaObject->setMuted(VARB("QMusicPlayer/Muted"));
-    mediaObject->setVolume(int(VAR("QMusicPlayer/Volume").toReal()*100));
+    mediaObject->setVolume(int(VAR("QMusicPlayer/Volume").toReal() * 100));
 #endif
 }
 
@@ -1020,7 +1020,7 @@ void QMusicPlayer::savePlayerSettings()
     }
 #else
     VAR_DECL("QMusicPlayer/Muted", mediaObject->isMuted());
-    VAR_DECL("QMusicPlayer/Volume", ((qreal)mediaObject->volume()/100.0));
+    VAR_DECL("QMusicPlayer/Volume", ((qreal)mediaObject->volume() / 100.0));
 #endif
 }
 

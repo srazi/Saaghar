@@ -59,7 +59,7 @@ static void msleep(unsigned long msecs)
 }
 #endif
 
-ConcurrentTask::ConcurrentTask(QObject *parent)
+ConcurrentTask::ConcurrentTask(QObject* parent)
     : QObject(parent),
       QRunnable(),
       m_cancel(false),
@@ -99,9 +99,9 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
                 : ProgressManager::ShowInApplicationIcon;
 
         m_futureProgress = sApp->progressManager()->addTimedTask(*m_progressObject,
-                                                                   VAR_GET(m_options, taskTitle).toString(),
-                                                                   m_type, 5,
-                                                                   progressFlags);
+                           VAR_GET(m_options, taskTitle).toString(),
+                           m_type, 5,
+                           progressFlags);
 
         connect(m_futureProgress, SIGNAL(canceled()), this, SLOT(setCanceled()));
     }
@@ -357,7 +357,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 QVariant ConcurrentTask::checkForUpdates()
 {
     const QString checkByUser = VAR_GET(m_options, checkByUser).toBool()
-            ? QLatin1String("CHECK_BY_USER=TRUE") : QLatin1String("CHECK_BY_USER=FALSE");
+                                ? QLatin1String("CHECK_BY_USER=TRUE") : QLatin1String("CHECK_BY_USER=FALSE");
 
     QEventLoop loop;
 
@@ -399,8 +399,8 @@ QVariant ConcurrentTask::checkForUpdates()
     }
 
     return QStringList() << QLatin1String("ERROR=FALSE")
-                         << checkByUser
-                         << QString("DATA=%1").arg(QString::fromUtf8(reply->readAll()));
+           << checkByUser
+           << QString("DATA=%1").arg(QString::fromUtf8(reply->readAll()));
 }
 
 bool ConcurrentTask::isCanceled()
@@ -420,7 +420,7 @@ void ConcurrentTask::setCanceled()
 
 ConcurrentTaskManager* ConcurrentTaskManager::s_instance = 0;
 
-ConcurrentTaskManager *ConcurrentTaskManager::instance()
+ConcurrentTaskManager* ConcurrentTaskManager::instance()
 {
     if (!s_instance) {
         s_instance = new ConcurrentTaskManager(sApp);
