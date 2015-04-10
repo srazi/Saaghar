@@ -103,7 +103,7 @@ SaagharWidget::SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidge
 
     currentCat = currentPoem = 0;
     currentParentID = 0;
-    currentCaption = tr("Home");
+    currentCaption = SaagharWidget::rootTitle();
     pressedPosition = QPoint(-1, -1);
 
     connect(this->tableViewWidget, SIGNAL(cellClicked(int,int)), this, SLOT(clickedOnItem(int,int)));
@@ -531,7 +531,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
     pageMetaInfo.type = SaagharWidget::CategoryViewerPage;
 
     //new Caption
-    currentCaption = (currentCat == 0) ? tr("Home") : sApp->databaseBrowser()->getPoetForCat(currentCat)._Name;//for Tab Title
+    currentCaption = (currentCat == 0) ? SaagharWidget::rootTitle() : sApp->databaseBrowser()->getPoetForCat(currentCat)._Name;//for Tab Title
     if (currentCaption.isEmpty()) {
         currentCaption = currentLocationList.at(0);
     }
@@ -777,8 +777,6 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
     currentLocationList.clear();
 
     parentCatsToolBar->clear();
-    parentCatsToolBar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    parentCatsToolBar->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea | Qt::NoToolBarArea);
     //the parents of this category
     QList<GanjoorCat> ancestors = sApp->databaseBrowser()->getParentCategories(category);
 
@@ -873,12 +871,11 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
 
         currentLocationList << parentCatButton->text();
     }
-//  parentCatWidget->setLayout(parentCatLayout);
-//  parentCatsToolBar->addWidget(parentCatWidget);
-    parentCatsToolBar->setStyleSheet("QToolBar { background-image:url(\":/resources/images/transp.png\"); border:none; padding: 3px; spacing: 0px; /* spacing between items in the tool bar */ }");
 
     currentCat = !category.isNull() ? category._ID : 0;
     currentParentID = !category.isNull() ? category._ParentID : 0;
+
+    emit currentLocationChanged(currentLocationList);
 }
 #include<QTime>
 void SaagharWidget::showPoem(GanjoorPoem poem)
@@ -913,7 +910,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     currentPoemTitle = poem._Title;
 
     //new Caption
-    currentCaption = (currentCat == 0) ? tr("Home") : sApp->databaseBrowser()->getPoetForCat(currentCat)._Name;//for Tab Title
+    currentCaption = (currentCat == 0) ? SaagharWidget::rootTitle() : sApp->databaseBrowser()->getPoetForCat(currentCat)._Name;//for Tab Title
     if (currentCaption.isEmpty()) {
         currentCaption = currentLocationList.at(0);
     }
@@ -1538,6 +1535,11 @@ QColor SaagharWidget::resolvedColor(const QString &name)
     else {
         return VAR("SaagharWidget/Colors/Default").value<QColor>();
     }
+}
+
+QString SaagharWidget::rootTitle(bool localized)
+{
+    return localized ? tr("Home") : QLatin1String("Home");
 }
 
 void SaagharWidget::pressedOnItem(int row, int /*col*/)

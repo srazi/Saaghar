@@ -129,6 +129,8 @@ public:
     static QFont resolvedFont(const QString &name);
     static QColor resolvedColor(const QString &name);
 
+    static QString rootTitle(bool localized = true);
+
     int currentPoem;
     int currentCat;
     int currentParentID;
@@ -181,5 +183,6 @@ signals:
     void navPreviousActionState(bool);
     void loadingStatusText(const QString &, int num = 0);
     void createContextMenuRequested(const QPoint &);
+    void currentLocationChanged(const QStringList &);
 };
 #endif // SAAGHARWIDGET_H

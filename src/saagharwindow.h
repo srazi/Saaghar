@@ -36,6 +36,7 @@ class QMultiSelectWidget;
 class OutlineTree;
 class Settings;
 class TabWidget;
+class QIrBreadCrumbBar;
 
 namespace Ui
 {
@@ -94,6 +95,8 @@ private:
 
     bool processTextChanged;
     QToolBar* parentCatsToolBar;
+    QToolBar* m_breadCrumbToolBar;
+    QIrBreadCrumbBar* m_breadCrumbBar;
     SaagharWidget* getSaagharWidget(int tabIndex);
     Qt::MouseButtons pressedMouseButton;
     QWidget* insertNewTab(TabType tabType = SaagharWindow::SaagharViewerTab, const QString &title = QString(),
@@ -144,10 +147,12 @@ public slots:
     void highlightTextOnPoem(int poemId, int vorder);
 
 private slots:
+    void openPath(const QString &path);
     void openParentPage(int parentID, bool newPage = false);
     void openChildPage(int childID, bool newPage = false);
     void openPage(int id, SaagharWidget::PageType type, bool newPage = false);
     void createCustomContextMenu(const QPoint &pos);
+    void onCurrentLocationChanged(const QStringList &locationList);
 
 #ifdef MEDIA_PLAYER
     void mediaInfoChanged(const QString &fileName, const QString &title = "", int id = -1);

@@ -26,6 +26,7 @@
 #include "concurrenttasks.h"
 #include "saagharapplication.h"
 #include "settingsmanager.h"
+#include "saagharwidget.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -351,7 +352,7 @@ QList<GanjoorCat> DatabaseBrowser::getParentCategories(GanjoorCat Cat)
             lst.insert(0, Cat);
         }
         GanjoorCat gCat;
-        gCat.init(0, 0, tr("Home"), 0, QString());
+        gCat.init(0, 0, SaagharWidget::rootTitle(), 0, QString());
         lst.insert(0, gCat);
     }
     return lst;

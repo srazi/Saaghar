@@ -64,6 +64,7 @@ include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)
 include(OSDaB-Zip/osdabzip.pri)
 include(progressmanager/progressmanager.pri)
+include(QIrBreadCrumbBar/QIrBreadCrumbBar.pri)
 
 contains( DEFINES, MEDIA_PLAYER ) {
     include(qmusicplayer/qmusicplayer.pri)

@@ -23,6 +23,7 @@
 #include "saagharapplication.h"
 #include "databasebrowser.h"
 #include "databaseelements.h"
+#include "saagharwidget.h"
 
 struct OutlineNode
 {
@@ -120,6 +121,23 @@ QVector<OutlineNode*> OutlineModel::children(OutlineNode *parent, bool useCache)
     parent->children = nodeList;
 
     return nodeList;
+}
+
+QModelIndex OutlineModel::find(const QString &key, const QModelIndex &parent) const
+{
+    OutlineNode* n = node(parent);
+
+    QVector<OutlineNode *> parentChildren = children(n, true);
+
+    for (int i = 0; i < parentChildren.size(); ++i) {
+        OutlineNode *child = parentChildren.at(i);
+
+        if (child && child->cat && child->cat->_Text == key) {
+            return index(i, 0, parent);
+        }
+    }
+
+    return QModelIndex();
 }
 
 OutlineModel *OutlineModel::instance()
@@ -227,4 +245,44 @@ void OutlineModel::clear()
    clear(&RootNode);
 
    endResetModel();
+}
+
+bool OutlineModel::isPathValid(const QStringList &pathSections)
+{
+    bool ok;
+    index(pathSections, &ok);
+
+    return ok;
+}
+
+QModelIndex OutlineModel::index(const QStringList &pathSections, bool *ok) const
+{
+    QModelIndex parent = QModelIndex();
+
+    for (int i = 0; i < pathSections.size(); ++i) {
+        if (i == 0 && pathSections.at(0).compare(SaagharWidget::rootTitle(), Qt::CaseInsensitive) == 0) {
+            continue;
+        }
+
+        parent = find(pathSections.at(i), parent);
+
+        if (!parent.isValid()) {
+            if (ok) {
+                *ok = false;
+            }
+            return QModelIndex();
+        }
+        else if (i == pathSections.size() - 1) {
+            if (ok) {
+                *ok = true;
+            }
+            return parent;
+        }
+    }
+
+    if (ok) {
+        *ok = true;
+    }
+
+    return QModelIndex();
 }

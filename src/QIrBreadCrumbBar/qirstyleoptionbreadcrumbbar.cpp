@@ -18,54 +18,24 @@
  *  along with this program; if not, see http://www.gnu.org/licenses/      *
  *                                                                         *
  ***************************************************************************/
+#include "qirstyleoptionbreadcrumbbar.h"
 
-#ifndef OUTLINEMODEL_H
-#define OUTLINEMODEL_H
+QIR_BEGIN_NAMESPACE
 
-#include <QAbstractItemModel>
-
-struct OutlineNode;
-
-class OutlineModel : public QAbstractItemModel
+////////////////////////////////
+//QIrStyleOptionBreadCrumbIndicator
+////////////////////////////////
+QIrStyleOptionBreadCrumbIndicator::QIrStyleOptionBreadCrumbIndicator() : QStyleOption(Version, Type),
+    isTruncated(false), hasLabel(true), usePseudoState(false), isValid(true), isFlat(false)
 {
-public:
-    static OutlineModel* instance();
-    ~OutlineModel();
+}
 
-    enum DataRole {
-        IDRole = Qt::UserRole + 1,
-        TitleRole
-    };
+/////////////////////////////////
+//QIrStyleOptionBreadCrumbLabel
+/////////////////////////////////
+QIrStyleOptionBreadCrumbLabel::QIrStyleOptionBreadCrumbLabel() : QStyleOption(Version, Type), text(QString()),
+    hasIndicator(true), usePseudoState(false), isValid(true), isFlat(false)
+{
+}
 
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-    QModelIndex parent(const QModelIndex &child) const;
-
-
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-
-    void clear();
-
-    bool isPathValid(const QStringList &pathSections);
-    QModelIndex index(const QStringList &pathSections, bool *ok = 0) const;
-
-private:
-    Q_DISABLE_COPY(OutlineModel)
-    OutlineModel(QObject* parent = 0);
-    static OutlineModel* s_instance;
-
-    inline bool indexValid(const QModelIndex &index) const {
-         return index.isValid() && (index.row() >= 0) && (index.column() >= 0) && (index.model() == this);
-    }
-
-    OutlineNode* node(const QModelIndex &index) const;
-    OutlineNode* node(int row, OutlineNode* parent) const;
-    void clear(OutlineNode *parent) const;
-    QVector<OutlineNode *> children(OutlineNode *parent, bool useCache = false) const;
-
-    QModelIndex find(const QString &key, const QModelIndex &parent) const;
-};
-
-#endif // OUTLINEMODEL_H
+QIR_END_NAMESPACE
