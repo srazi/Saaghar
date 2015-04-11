@@ -119,7 +119,8 @@ void QIrBreadCrumbIndicator::clicked(const QPoint &)
     QIrBreadCrumbComboBoxContainer* cont = container();
     QIrBreadCrumbComboBox* comboBox = cont->comboBox();
     QIrAbstractBreadCrumbModel* model = comboBox->bar()->model();
-    QIrBreadCrumbModelNode node("", QIrBreadCrumbModelNode::Global);
+    QIrBreadCrumbModelNode node(cont->hiddenPath(), QIrBreadCrumbModelNode::Global);
+
     QMenu* menu;
 
     menu = model->buildMenu(m_label ? m_label->node() : node);
@@ -171,7 +172,7 @@ void QIrBreadCrumbComboBoxContainer::splitPath(const QString &location)
 void QIrBreadCrumbComboBoxContainer::refresh()
 {
     QIrAbstractBreadCrumbModel* model = m_comboBox->bar()->model();
-    QIrBreadCrumbModelNode node("", QIrBreadCrumbModelNode::Global);
+    QIrBreadCrumbModelNode node(QString(), QIrBreadCrumbModelNode::Global);
     QIrBreadCrumbLabel* item;
     QIrBreadCrumbIndicator* indic;
 
@@ -202,6 +203,27 @@ void QIrBreadCrumbComboBoxContainer::refresh()
     m_items << m_emptyArea;
     updateGeometries();
     update();
+}
+
+QString QIrBreadCrumbComboBoxContainer::hiddenPath() const
+{
+    QString path;
+
+    if (!m_rootIndicator->isTruncated()) {
+        return path;
+    }
+
+    for (int i = m_items.count() - 1; i > 0; --i) {
+        QIrBreadCrumbItem* item = m_items.at(i);
+
+        if (item->type() == QIrBreadCrumbItem::Label && !item->isVisible()) {
+            QIrBreadCrumbLabel* label = static_cast<QIrBreadCrumbLabel*>(item);
+            path = label->node().path();
+            break;
+        }
+    }
+
+    return path;
 }
 void QIrBreadCrumbComboBoxContainer::mousePressEvent(QMouseEvent* evt)
 {

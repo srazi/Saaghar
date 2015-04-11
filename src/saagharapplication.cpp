@@ -380,6 +380,7 @@ void SaagharApplication::setupInitialValues()
     VAR_INIT("SaagharWindow/MainToolBarSize", LS("actionToolBarSizeMediumIcon"));
     VAR_INIT("SaagharWindow/RandomOpenNewTab", false);
     VAR_INIT("SaagharWindow/SelectedRandomRange", QVariant());
+    VAR_INIT("SaagharWindow/QuickAccessBookmarks", QVariant());
 
     VAR_INIT("Search/SkipVowelLetters", false);
     VAR_INIT("Search/SkipVowelSigns", false);
@@ -521,6 +522,25 @@ void SaagharApplication::quitSaaghar()
     saveSettings();
 
     quit();
+}
+
+QStringList SaagharApplication::quickAccessBookmarks() const
+{
+    return VAR("SaagharWindow/QuickAccessBookmarks").toStringList();
+}
+
+QAction* SaagharApplication::quickAccessCustomizeAction()
+{
+    QAction* act = new QAction(tr("Customize this menu..."), 0);
+    act->setObjectName("QuickAccessCustomizeAction");
+    connect(act, SIGNAL(triggered()), this, SLOT(customizeQuickAccessBookmarks()));
+
+    return act;
+}
+
+void SaagharApplication::customizeQuickAccessBookmarks()
+{
+    // TODO: impelement customizeQuickAccessBookmarks()
 }
 
 void SaagharApplication::init()

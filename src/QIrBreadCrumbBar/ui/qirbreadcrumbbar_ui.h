@@ -156,6 +156,8 @@ public:
     inline QIrBreadCrumbModelNodeList nodeList() const { return m_nodeList; }
     void refresh();
 
+    QString hiddenPath() const;
+
 protected:
     void mousePressEvent(QMouseEvent*);
     void mouseMoveEvent(QMouseEvent*);

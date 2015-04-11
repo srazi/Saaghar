@@ -116,6 +116,7 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
 {
     QModelIndex index;
 
+    int separatorCount = 0;
     QMenu* menu = new QMenu(0);
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
@@ -127,21 +128,59 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
 
     const QStringList sections = pathSections(node.path());
 
-    QModelIndex parent = sApp->outlineModel()->index(sections);
-    int count = sApp->outlineModel()->rowCount(parent);
+    if (node.type() != QIrBreadCrumbModelNode::Global) {
+        QModelIndex parent = sApp->outlineModel()->index(sections);
+        int count = sApp->outlineModel()->rowCount(parent);
 
-    for (int i = 0; i < count; ++i) {
-        index = sApp->outlineModel()->index(i, 0, parent);
-        if (index.isValid()) {
-            const QString title = index.data().toString();
-            const QString childPath = cleanedPath + SEPARATOR + title;
-            QAction* act = new QAction(icon(pathNodeType(QStringList() << sections << title)), title, menu);
-            act->setData(childPath);
-            menu->addAction(act);
+        for (int i = 0; i < count; ++i) {
+            index = sApp->outlineModel()->index(i, 0, parent);
+            if (index.isValid()) {
+                const QString title = index.data().toString();
+                const QString childPath = cleanedPath + SEPARATOR + title;
+                QAction* act = new QAction(icon(pathNodeType(QStringList() << sections << title)), title, menu);
+                act->setData(childPath);
+                menu->addAction(act);
+            }
         }
     }
+    else {
+        int count = sections.size();
 
-    if (menu->actions().isEmpty()) {
+        for (int i = count - 1; i >= 0; --i) {
+            const QString path = cleanPath(QStringList(sections.mid(0, i + 1)).join(SEPARATOR));
+            const QString title = sections.at(i);
+            QAction* act = new QAction(icon(i == 0 ? QIrBreadCrumbModelNode::Root : QIrBreadCrumbModelNode::Container), title, menu);
+            act->setData(path);
+            menu->addAction(act);
+        }
+
+        menu->addSeparator();
+        ++separatorCount;
+
+        const QStringList bookmarks = sApp->quickAccessBookmarks();
+
+        for (int i = 0; i < bookmarks.size(); ++i) {
+            const QString path = cleanPath(bookmarks.at(i));
+            const QStringList sections = pathSections(path);
+            const QString title = sections.isEmpty()
+                    ? SaagharWidget::rootTitle()
+                    : sections.size() == 1
+                      ? sections.at(0)
+                      : sections.first() + QLatin1String(":") + sections.last();
+
+            QAction* act = new QAction(icon(pathNodeType(sections)), title, menu);
+            act->setData(path);
+            menu->addAction(act);
+        }
+
+        menu->addSeparator();
+        ++separatorCount;
+//        QAction* act = sApp->quickAccessCustomizeAction();
+//        act->setParent(menu);
+//        menu->addAction(act);
+    }
+
+    if (menu->actions().size() == separatorCount) {
         menu->clear();
         menu->deleteLater();
         menu = 0;
