@@ -160,13 +160,13 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
         const QStringList bookmarks = sApp->quickAccessBookmarks();
 
         for (int i = 0; i < bookmarks.size(); ++i) {
-            const QString path = cleanPath(bookmarks.at(i));
+            const QString path = bookmarks.at(i);
             const QStringList sections = pathSections(path);
             const QString title = sections.isEmpty()
                     ? SaagharWidget::rootTitle()
                     : sections.size() == 1
                       ? sections.at(0)
-                      : sections.first() + QLatin1String(":") + sections.last();
+                      : sections.first() + QLatin1String(": ") + sections.last();
 
             QAction* act = new QAction(icon(pathNodeType(sections)), title, menu);
             act->setData(path);
@@ -175,9 +175,9 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
 
         menu->addSeparator();
         ++separatorCount;
-//        QAction* act = sApp->quickAccessCustomizeAction();
-//        act->setParent(menu);
-//        menu->addAction(act);
+        QAction* act = sApp->quickAccessCustomizeAction();
+        act->setParent(menu);
+        menu->addAction(act);
     }
 
     if (menu->actions().size() == separatorCount) {

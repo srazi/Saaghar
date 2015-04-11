@@ -31,6 +31,7 @@
 #include "databaseupdater.h"
 #include "settingsmanager.h"
 #include "outlinemodel.h"
+#include "selectionmanager.h"
 
 #include <QExtendedSplashScreen>
 
@@ -540,7 +541,14 @@ QAction* SaagharApplication::quickAccessCustomizeAction()
 
 void SaagharApplication::customizeQuickAccessBookmarks()
 {
-    // TODO: impelement customizeQuickAccessBookmarks()
+    SelectionManager* selectionManager = new SelectionManager(0);
+    selectionManager->setSelection(VAR("SaagharWindow/QuickAccessBookmarks").toStringList());
+
+    if (selectionManager->exec() == QDialog::Accepted) {
+        VAR_DECL("SaagharWindow/QuickAccessBookmarks", selectionManager->selectionPaths());
+    }
+
+    selectionManager->deleteLater();
 }
 
 void SaagharApplication::init()
