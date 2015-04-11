@@ -488,12 +488,9 @@ void SaagharApplication::applySettings()
 
 void SaagharApplication::saveSettings()
 {
-    // TODO: do things with VAR_DECL
     if (m_mainWindow) {
         m_mainWindow->saveSettings();
     }
-//    VAR_DECL("MainWindow/State0", saveState());
-//    VAR_DECL("MainWindow/Geometry", saveGeometry());
 
     QFile file(defaultPath(SettingsFile));
     if (!file.open(QFile::WriteOnly)

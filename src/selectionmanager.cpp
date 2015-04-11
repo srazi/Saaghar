@@ -32,6 +32,14 @@ SelectionManager::SelectionManager(QWidget* parent) :
 {
     ui->setupUi(this);
 
+    setWindowTitle(tr("Selection Manager"));
+    setObjectName(QLatin1String("SelectionManager"));
+
+    setFocusProxy(ui->selectionView);
+    ui->selectionPreView->setExpandsOnDoubleClick(false);
+    ui->selectionPreView->setFocusPolicy(Qt::NoFocus);
+    setFocus();
+
     ui->selectionView->setSelectionMode(QAbstractItemView::MultiSelection);
     ui->selectionPreView->setSelectionMode(QAbstractItemView::NoSelection);
 
@@ -47,6 +55,8 @@ SelectionManager::SelectionManager(QWidget* parent) :
     ui->selectionPreView->setItemDelegate(new SelectionPreviewDelegate(m_selectionProxyModel, this));
 
     connect(m_selectionProxyModel, SIGNAL(filterInvalidated()), ui->selectionPreView, SLOT(expandAll()));
+    connect(ui->selectionPreView, SIGNAL(doubleClicked(QModelIndex)),
+            this, SLOT(onPreviewIndexDoubleClicked(QModelIndex)));
 
     connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(close()));
     connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
@@ -74,6 +84,12 @@ void SelectionManager::setSelection(const QStringList &paths)
             ui->selectionView->selectionModel()->select(ind, QItemSelectionModel::Select);
         }
     }
+}
+
+void SelectionManager::onPreviewIndexDoubleClicked(const QModelIndex &index)
+{
+    ui->selectionView->scrollTo(m_selectionProxyModel->mapToSource(index));
+    setFocus();
 }
 
 

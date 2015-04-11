@@ -271,7 +271,7 @@ QRect QIrDefaultBreadCrumbBarStyle::lineEditRect(const QIrBreadCrumbBar* bar) co
         // subControlRect() returned from Qt internal styles is reversed in RTL layout
         // but we compute editRect for LTR layout because of this we reverse it again.
         editRect = QStyle::visualRect(bar->layoutDirection(), bar->rect(), comboBox->style()->subControlRect(QStyle::CC_ComboBox, &option,
-                                        QStyle::SC_ComboBoxEditField, comboBox));
+                                      QStyle::SC_ComboBoxEditField, comboBox));
     }
 
     return editRect;

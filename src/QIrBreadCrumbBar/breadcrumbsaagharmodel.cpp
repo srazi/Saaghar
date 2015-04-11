@@ -163,10 +163,10 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
             const QString path = bookmarks.at(i);
             const QStringList sections = pathSections(path);
             const QString title = sections.isEmpty()
-                    ? SaagharWidget::rootTitle()
-                    : sections.size() == 1
-                      ? sections.at(0)
-                      : sections.first() + QLatin1String(": ") + sections.last();
+                                  ? SaagharWidget::rootTitle()
+                                  : sections.size() == 1
+                                  ? sections.at(0)
+                                  : sections.first() + QLatin1String(": ") + sections.last();
 
             QAction* act = new QAction(icon(pathNodeType(sections)), title, menu);
             act->setData(path);
@@ -218,9 +218,12 @@ QIcon BreadCrumbSaagharModel::icon(const QIrBreadCrumbModelNode::Type &type) con
     const static QIcon leafIcon(":/saagharmodel/images/leaf-node.png");
 
     switch (type) {
-    case QIrBreadCrumbModelNode::Root: return rootIcon;
-    case QIrBreadCrumbModelNode::Container: return containerIcon;
-    case QIrBreadCrumbModelNode::Leaf: return leafIcon;
+    case QIrBreadCrumbModelNode::Root:
+        return rootIcon;
+    case QIrBreadCrumbModelNode::Container:
+        return containerIcon;
+    case QIrBreadCrumbModelNode::Leaf:
+        return leafIcon;
     default:
         break;
     }

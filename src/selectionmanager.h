@@ -30,7 +30,8 @@
 class QItemSelection;
 class QItemSelectionModel;
 
-namespace Ui {
+namespace Ui
+{
 class SelectionManager;
 }
 
@@ -84,14 +85,17 @@ class SelectionManager : public QDialog
     Q_OBJECT
 
 public:
-    explicit SelectionManager(QWidget *parent = 0);
+    explicit SelectionManager(QWidget* parent = 0);
     ~SelectionManager();
 
     QStringList selectionPaths() const;
     void setSelection(const QStringList &paths);
 
+private slots:
+    void onPreviewIndexDoubleClicked(const QModelIndex &index);
+
 private:
-    Ui::SelectionManager *ui;
+    Ui::SelectionManager* ui;
     SelectionProxyModel* m_selectionProxyModel;
 };
 
