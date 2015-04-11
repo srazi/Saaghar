@@ -53,6 +53,8 @@ public:
 
 private:
     QStringList pathSections(const QString &path) const;
+    QIrBreadCrumbModelNode::Type pathNodeType(const QStringList &sections) const;
+    QIcon icon(const QIrBreadCrumbModelNode::Type &) const;
 };
 
 QIR_END_NAMESPACE

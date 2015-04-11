@@ -81,14 +81,7 @@ QIrBreadCrumbModelNodeList BreadCrumbSaagharModel::splitPath(const QString &path
             nodeType = QIrBreadCrumbModelNode::Container;
         }
         else {
-            bool ok;
-            const QModelIndex ind = sApp->outlineModel()->index(sections, &ok);
-            if (ok && sApp->outlineModel()->rowCount(ind) > 0) {
-                nodeType = QIrBreadCrumbModelNode::Container;
-            }
-            else {
-                nodeType = QIrBreadCrumbModelNode::Leaf;
-            }
+            nodeType = pathNodeType(sections);
         }
 
         nodeList.append(QIrBreadCrumbModelNode(QStringList(sections.mid(0, i + 1)).join(SEPARATOR), nodeType, this));
@@ -99,7 +92,7 @@ QIrBreadCrumbModelNodeList BreadCrumbSaagharModel::splitPath(const QString &path
 
 QIcon BreadCrumbSaagharModel::icon(const QIrBreadCrumbModelNode &node) const
 {
-    return QIcon();
+    return icon(node.type());
 }
 
 QString BreadCrumbSaagharModel::label(const QIrBreadCrumbModelNode &node) const
@@ -132,15 +125,18 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
         return 0;
     }
 
-    QModelIndex parent = sApp->outlineModel()->index(pathSections(node.path()));
+    const QStringList sections = pathSections(node.path());
+
+    QModelIndex parent = sApp->outlineModel()->index(sections);
     int count = sApp->outlineModel()->rowCount(parent);
 
     for (int i = 0; i < count; ++i) {
         index = sApp->outlineModel()->index(i, 0, parent);
         if (index.isValid()) {
-            QString title = index.data().toString();
-            QAction* act = new QAction(index.data(Qt::DecorationRole).value<QIcon>(), title, menu);
-            act->setData(cleanedPath + SEPARATOR + title);
+            const QString title = index.data().toString();
+            const QString childPath = cleanedPath + SEPARATOR + title;
+            QAction* act = new QAction(icon(pathNodeType(QStringList() << sections << title)), title, menu);
+            act->setData(childPath);
             menu->addAction(act);
         }
     }
@@ -157,6 +153,40 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
 QStringList BreadCrumbSaagharModel::pathSections(const QString &path) const
 {
     return path.split(SEPARATOR, QString::SkipEmptyParts);
+}
+
+QIrBreadCrumbModelNode::Type BreadCrumbSaagharModel::pathNodeType(const QStringList &sections) const
+{
+    if (sections.isEmpty() || (sections.size() == 1 && sections.at(0).compare(SaagharWidget::rootTitle(), Qt::CaseInsensitive) == 0)) {
+        return QIrBreadCrumbModelNode::Root;
+    }
+    else {
+        bool ok;
+        const QModelIndex ind = sApp->outlineModel()->index(sections, &ok);
+        if (ok && sApp->outlineModel()->rowCount(ind) > 0) {
+            return QIrBreadCrumbModelNode::Container;
+        }
+        else {
+            return QIrBreadCrumbModelNode::Leaf;
+        }
+    }
+}
+
+QIcon BreadCrumbSaagharModel::icon(const QIrBreadCrumbModelNode::Type &type) const
+{
+    const static QIcon rootIcon(":/saagharmodel/images/root-node.png");
+    const static QIcon containerIcon(":/saagharmodel/images/container-node.png");
+    const static QIcon leafIcon(":/saagharmodel/images/leaf-node.png");
+
+    switch (type) {
+    case QIrBreadCrumbModelNode::Root: return rootIcon;
+    case QIrBreadCrumbModelNode::Container: return containerIcon;
+    case QIrBreadCrumbModelNode::Leaf: return leafIcon;
+    default:
+        break;
+    }
+
+    return QIcon();
 }
 
 QIR_END_NAMESPACE
