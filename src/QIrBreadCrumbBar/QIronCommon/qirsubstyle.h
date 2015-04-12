@@ -44,12 +44,12 @@
 #ifndef QIRSUBSTYLE_H
 #define QIRSUBSTYLE_H
 
-#include <QStyle>
+#include <QCommonStyle>
 #include "qiron_export.h"
 
 QIR_BEGIN_NAMESPACE
 
-class QIRONSHARED_EXPORT QIrSubStyle : public QStyle
+class QIRONSHARED_EXPORT QIrSubStyle : public QCommonStyle
 {
     Q_OBJECT
 
