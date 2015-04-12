@@ -48,19 +48,24 @@ public:
 
     void clear();
 
+    bool isPathValid(const QStringList &pathSections);
+    QModelIndex index(const QStringList &pathSections, bool* ok = 0) const;
+
 private:
     Q_DISABLE_COPY(OutlineModel)
     OutlineModel(QObject* parent = 0);
     static OutlineModel* s_instance;
 
     inline bool indexValid(const QModelIndex &index) const {
-         return index.isValid() && (index.row() >= 0) && (index.column() >= 0) && (index.model() == this);
+        return index.isValid() && (index.row() >= 0) && (index.column() >= 0) && (index.model() == this);
     }
 
     OutlineNode* node(const QModelIndex &index) const;
     OutlineNode* node(int row, OutlineNode* parent) const;
-    void clear(OutlineNode *parent) const;
-    QVector<OutlineNode *> children(OutlineNode *parent, bool useCache = false) const;
+    void clear(OutlineNode* parent) const;
+    QVector<OutlineNode*> children(OutlineNode* parent, bool useCache = false) const;
+
+    QModelIndex find(const QString &key, const QModelIndex &parent) const;
 };
 
 #endif // OUTLINEMODEL_H

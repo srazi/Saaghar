@@ -26,6 +26,7 @@
 #include "concurrenttasks.h"
 #include "saagharapplication.h"
 #include "settingsmanager.h"
+#include "saagharwidget.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -60,7 +61,7 @@ const QString sqlDriver = "QSQLITE";
 
 static QString threadToString(QThread* thread = 0)
 {
-    return QString::number((quintptr) (thread ? thread : QThread::currentThread()));
+    return QString::number((quintptr)(thread ? thread : QThread::currentThread()));
 }
 
 DatabaseBrowser::DatabaseBrowser(const QString &sqliteDbCompletePath)
@@ -207,7 +208,7 @@ QSqlDatabase DatabaseBrowser::database(const QString &connectionID, bool open)
 
 QString DatabaseBrowser::defaultDatabasename()
 {
-     return s_defaultDatabaseFileName;
+    return s_defaultDatabaseFileName;
 }
 
 void DatabaseBrowser::setDefaultDatabasename(const QString &databaseName)
@@ -351,7 +352,7 @@ QList<GanjoorCat> DatabaseBrowser::getParentCategories(GanjoorCat Cat)
             lst.insert(0, Cat);
         }
         GanjoorCat gCat;
-        gCat.init(0, 0, tr("Home"), 0, QString());
+        gCat.init(0, 0, SaagharWidget::rootTitle(), 0, QString());
         lst.insert(0, gCat);
     }
     return lst;
@@ -701,8 +702,8 @@ QString DatabaseBrowser::getIdForDataBase(const QString &fileName, QThread* thre
         }
 
         QSqlDatabase db = clone
-                ? QSqlDatabase::cloneDatabase(QSqlDatabase::database(id, false), connectionID)
-                : QSqlDatabase::addDatabase(sqlDriver, connectionID);
+                          ? QSqlDatabase::cloneDatabase(QSqlDatabase::database(id, false), connectionID)
+                          : QSqlDatabase::addDatabase(sqlDriver, connectionID);
 
         db.setDatabaseName(fileName);
         db.open();
@@ -717,7 +718,7 @@ QString DatabaseBrowser::getIdForDataBase(const QString &fileName, QThread* thre
     return connectionID;
 }
 
-void DatabaseBrowser::removeDatabase(const QString &fileName, QThread *thread)
+void DatabaseBrowser::removeDatabase(const QString &fileName, QThread* thread)
 {
     if (thread == 0) {
         thread = QThread::currentThread();
@@ -898,7 +899,8 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
         return false;
     }
 
-    { // start of block
+    {
+        // start of block
         QList<GanjoorPoet*> poets = getPoets(connectionID, false);
 
         QString strQuery;
@@ -1477,9 +1479,9 @@ bool DatabaseBrowser::poetHasSubCats(int poetID, const QString &connectionID)
 }
 
 SearchResults DatabaseBrowser::startSearch(const QString &strQuery, const QSqlDatabase &db,
-                                           int PoetID, const QStringList &phraseList,
-                                           const QStringList &excludedList, const QStringList &excludeWhenCleaning,
-                                           bool* Canceled, bool slowSearch)
+        int PoetID, const QStringList &phraseList,
+        const QStringList &excludedList, const QStringList &excludeWhenCleaning,
+        bool* Canceled, bool slowSearch)
 {
     SearchResults searchResults;
 

@@ -38,7 +38,7 @@ NavigateToPage::NavigateToPage(SaagharWidget* saagharWidget, const QString &type
             m_previousText += "-" + Tools::snippedText(m_saagharWidget->currentPoemTitle, QString(), 0, 10, true, Qt::ElideMiddle);
         }
         if (m_previousText.isEmpty()) {
-            m_previousText = QObject::tr("Home");
+            m_previousText = SaagharWidget::rootTitle();
         }
 
         m_previousRow = m_saagharWidget->currentVerticalPosition();
@@ -114,7 +114,7 @@ void NavigateToPage::redo()
     }
 
     if (m_newText.isEmpty()) {
-        m_newText = QObject::tr("Home");
+        m_newText = SaagharWidget::rootTitle();
     }
     setText(QObject::tr("Navigate To %1").arg(m_newText));
 }

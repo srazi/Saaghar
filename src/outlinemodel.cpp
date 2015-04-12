@@ -23,32 +23,37 @@
 #include "saagharapplication.h"
 #include "databasebrowser.h"
 #include "databaseelements.h"
+#include "saagharwidget.h"
 
-struct OutlineNode
-{
+struct OutlineNode {
     OutlineNode() : parent(0), cat(0), populated(false) {}
-    ~OutlineNode() { qDeleteAll(children); children.clear(); delete cat; }
-    OutlineNode *parent;
-    GanjoorCat *cat;
+    ~OutlineNode() {
+        qDeleteAll(children);
+        children.clear();
+        delete cat;
+    }
+    OutlineNode* parent;
+    GanjoorCat* cat;
 
     mutable QVector<OutlineNode*> children;
     mutable bool populated;
 };
 
-namespace {
-    static OutlineNode RootNode;
+namespace
+{
+static OutlineNode RootNode;
 }
 
 OutlineModel* OutlineModel::s_instance = 0;
 
-OutlineModel::OutlineModel(QObject *parent)
+OutlineModel::OutlineModel(QObject* parent)
     : QAbstractItemModel(parent)
 {
 }
 
-OutlineNode *OutlineModel::node(const QModelIndex &index) const
+OutlineNode* OutlineModel::node(const QModelIndex &index) const
 {
-    OutlineNode *p;
+    OutlineNode* p;
     if (index.isValid()) {
         p = static_cast<OutlineNode*>(index.internalPointer());
     }
@@ -61,7 +66,7 @@ OutlineNode *OutlineModel::node(const QModelIndex &index) const
     return p;
 }
 
-OutlineNode *OutlineModel::node(int row, OutlineNode *parent) const
+OutlineNode* OutlineModel::node(int row, OutlineNode* parent) const
 {
     if (row < 0) {
         qDebug() << "negatiove row:" << row << __LINE__ << __FUNCTION__;
@@ -77,7 +82,7 @@ OutlineNode *OutlineModel::node(int row, OutlineNode *parent) const
         return 0;
     }
 
-    return const_cast<OutlineNode *>(parentChildren.at(row));
+    return const_cast<OutlineNode*>(parentChildren.at(row));
 }
 
 void OutlineModel::clear(OutlineNode* parent) const
@@ -92,7 +97,7 @@ void OutlineModel::clear(OutlineNode* parent) const
     parent->cat = 0;
 }
 
-QVector<OutlineNode*> OutlineModel::children(OutlineNode *parent, bool useCache) const
+QVector<OutlineNode*> OutlineModel::children(OutlineNode* parent, bool useCache) const
 {
     Q_ASSERT(parent);
 
@@ -108,7 +113,7 @@ QVector<OutlineNode*> OutlineModel::children(OutlineNode *parent, bool useCache)
     nodeList.reserve(cats.size());
 
     for (int i = 0; i < cats.size(); ++i) {
-        OutlineNode *n = new OutlineNode();
+        OutlineNode* n = new OutlineNode();
         n->cat = cats.at(i);
         n->parent = parent;
         n->populated = false;
@@ -122,7 +127,24 @@ QVector<OutlineNode*> OutlineModel::children(OutlineNode *parent, bool useCache)
     return nodeList;
 }
 
-OutlineModel *OutlineModel::instance()
+QModelIndex OutlineModel::find(const QString &key, const QModelIndex &parent) const
+{
+    OutlineNode* n = node(parent);
+
+    QVector<OutlineNode*> parentChildren = children(n, true);
+
+    for (int i = 0; i < parentChildren.size(); ++i) {
+        OutlineNode* child = parentChildren.at(i);
+
+        if (child && child->cat && child->cat->_Text == key) {
+            return index(i, 0, parent);
+        }
+    }
+
+    return QModelIndex();
+}
+
+OutlineModel* OutlineModel::instance()
 {
     if (!s_instance) {
         s_instance = new OutlineModel(sApp);
@@ -138,7 +160,7 @@ OutlineModel::~OutlineModel()
 
 QModelIndex OutlineModel::index(int row, int column, const QModelIndex &parent) const
 {
-    if(hasIndex(row, column, parent)) {
+    if (hasIndex(row, column, parent)) {
         return createIndex(row, column, node(row, node(parent)));
     }
 
@@ -147,8 +169,8 @@ QModelIndex OutlineModel::index(int row, int column, const QModelIndex &parent) 
 
 QModelIndex OutlineModel::parent(const QModelIndex &child) const
 {
-    OutlineNode *n = node(child);
-    OutlineNode *par = (n ? n->parent : 0);
+    OutlineNode* n = node(child);
+    OutlineNode* par = (n ? n->parent : 0);
 
     if (par == 0 || par == &RootNode) {
         return QModelIndex();
@@ -191,24 +213,23 @@ int OutlineModel::columnCount(const QModelIndex &) const
 
 QVariant OutlineModel::data(const QModelIndex &index, int role) const
 {
-    if(!indexValid(index)) {
+    if (!indexValid(index)) {
         return QVariant();
     }
 
-    OutlineNode *indexNode = node(index);
+    OutlineNode* indexNode = node(index);
 
     if (!indexNode) {
         return QVariant();
     }
 
-    GanjoorCat *cat = indexNode->cat;
+    GanjoorCat* cat = indexNode->cat;
 
     if (!cat) {
         return QVariant();
     }
 
-    switch(role)
-    {
+    switch (role) {
     default:
         return QVariant();
     case IDRole:
@@ -222,9 +243,49 @@ QVariant OutlineModel::data(const QModelIndex &index, int role) const
 
 void OutlineModel::clear()
 {
-   beginResetModel();
+    beginResetModel();
 
-   clear(&RootNode);
+    clear(&RootNode);
 
-   endResetModel();
+    endResetModel();
+}
+
+bool OutlineModel::isPathValid(const QStringList &pathSections)
+{
+    bool ok;
+    index(pathSections, &ok);
+
+    return ok;
+}
+
+QModelIndex OutlineModel::index(const QStringList &pathSections, bool* ok) const
+{
+    QModelIndex parent = QModelIndex();
+
+    for (int i = 0; i < pathSections.size(); ++i) {
+        if (i == 0 && pathSections.at(0).compare(SaagharWidget::rootTitle(), Qt::CaseInsensitive) == 0) {
+            continue;
+        }
+
+        parent = find(pathSections.at(i), parent);
+
+        if (!parent.isValid()) {
+            if (ok) {
+                *ok = false;
+            }
+            return QModelIndex();
+        }
+        else if (i == pathSections.size() - 1) {
+            if (ok) {
+                *ok = true;
+            }
+            return parent;
+        }
+    }
+
+    if (ok) {
+        *ok = true;
+    }
+
+    return QModelIndex();
 }

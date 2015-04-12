@@ -571,7 +571,7 @@ void SearchResultWidget::onDockLocationChanged(Qt::DockWidgetArea area)
     if (area == Qt::BottomDockWidgetArea || area == Qt::TopDockWidgetArea) {
         searchResultWidget->setFeatures(searchResultWidget->features() | QDockWidget::DockWidgetVerticalTitleBar);
         searchResultWidget->setStyleSheet(QString("QDockWidget::title { background: transparent; padding: 0 %1 0 10; }"
-                                                  "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}")
+                                          "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}")
                                           .arg(-10 - searchResultWidget->fontMetrics().width(searchResultWidget->windowTitle())));
     }
     else {

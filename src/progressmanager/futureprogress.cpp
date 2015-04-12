@@ -69,7 +69,7 @@ const int shortNotificationTimeout = 1000;
 
 static QColor baseColor()
 {
-    return QColor(127,127,127);
+    return QColor(127, 127, 127);
 }
 
 static int clamp(float x)
@@ -105,24 +105,24 @@ public slots:
     void fadeAway();
 
 public:
-    explicit FutureProgressPrivate(FutureProgress *q);
+    explicit FutureProgressPrivate(FutureProgress* q);
 
     void tryToFadeAway();
 
     QFutureWatcher<void> m_watcher;
-    ProgressBar *m_progress;
-    QWidget *m_widget;
-    QHBoxLayout *m_widgetLayout;
-    QWidget *m_statusBarWidget;
+    ProgressBar* m_progress;
+    QWidget* m_widget;
+    QHBoxLayout* m_widgetLayout;
+    QWidget* m_statusBarWidget;
     QString m_type;
     FutureProgress::KeepOnFinishType m_keep;
     bool m_waitingForUserInteraction;
-    FutureProgress *m_q;
+    FutureProgress* m_q;
     bool m_fadeStarting;
     bool m_isFading;
 };
 
-FutureProgressPrivate::FutureProgressPrivate(FutureProgress *q) :
+FutureProgressPrivate::FutureProgressPrivate(FutureProgress* q) :
     m_progress(new ProgressBar), m_widget(0), m_widgetLayout(new QHBoxLayout),
     m_statusBarWidget(0),
     m_keep(FutureProgress::HideOnFinish), m_waitingForUserInteraction(false),
@@ -170,10 +170,10 @@ FutureProgressPrivate::FutureProgressPrivate(FutureProgress *q) :
     \fn FutureProgress::FutureProgress(QWidget *parent)
     \internal
 */
-FutureProgress::FutureProgress(QWidget *parent) :
+FutureProgress::FutureProgress(QWidget* parent) :
     QWidget(parent), d(new FutureProgressPrivate(this))
 {
-    QVBoxLayout *layout = new QVBoxLayout;
+    QVBoxLayout* layout = new QVBoxLayout;
     setLayout(layout);
     layout->addWidget(d->m_progress);
     layout->setMargin(0);
@@ -208,15 +208,16 @@ FutureProgress::~FutureProgress()
     This will be destroyed when the progress indicator is destroyed.
     Default is to show no widget below the progress indicator.
 */
-void FutureProgress::setWidget(QWidget *widget)
+void FutureProgress::setWidget(QWidget* widget)
 {
     delete d->m_widget;
     QSizePolicy sp = widget->sizePolicy();
     sp.setHorizontalPolicy(QSizePolicy::Ignored);
     widget->setSizePolicy(sp);
     d->m_widget = widget;
-    if (d->m_widget)
+    if (d->m_widget) {
         d->m_widgetLayout->addWidget(d->m_widget);
+    }
 }
 
 /*!
@@ -254,7 +255,7 @@ void FutureProgress::setStarted()
 }
 
 
-bool FutureProgress::eventFilter(QObject *, QEvent *e)
+bool FutureProgress::eventFilter(QObject*, QEvent* e)
 {
     if (d->m_keep != KeepOnFinish && d->m_waitingForUserInteraction
             && (e->type() == QEvent::MouseMove || e->type() == QEvent::KeyPress)) {
@@ -273,7 +274,8 @@ void FutureProgress::setFinished()
     if (d->m_watcher.future().isCanceled()) {
         d->m_progress->setError(true);
         emit hasErrorChanged();
-    } else {
+    }
+    else {
         d->m_progress->setError(false);
     }
     emit finished();
@@ -282,8 +284,9 @@ void FutureProgress::setFinished()
 
 void FutureProgressPrivate::tryToFadeAway()
 {
-    if (m_fadeStarting)
+    if (m_fadeStarting) {
         return;
+    }
     if (m_keep == FutureProgress::KeepOnFinishTillUserInteraction
             || (m_keep == FutureProgress::HideOnFinish && m_progress->hasError())) {
         m_waitingForUserInteraction = true;
@@ -291,7 +294,8 @@ void FutureProgressPrivate::tryToFadeAway()
         //events to start QTimer::singleShot later
         qApp->installEventFilter(m_q);
         m_fadeStarting = true;
-    } else if (m_keep == FutureProgress::HideOnFinish) {
+    }
+    else if (m_keep == FutureProgress::HideOnFinish) {
         QTimer::singleShot(shortNotificationTimeout, this, SLOT(fadeAway()));
         m_fadeStarting = true;
     }
@@ -332,14 +336,15 @@ QFuture<void> FutureProgress::future() const
 /*!
     \internal
 */
-void FutureProgress::mousePressEvent(QMouseEvent *event)
+void FutureProgress::mousePressEvent(QMouseEvent* event)
 {
-    if (event->button() == Qt::LeftButton)
+    if (event->button() == Qt::LeftButton) {
         emit clicked();
+    }
     QWidget::mousePressEvent(event);
 }
 
-void FutureProgress::paintEvent(QPaintEvent *)
+void FutureProgress::paintEvent(QPaintEvent*)
 {
     QPainter p(this);
     const QRect fillRect = rect();
@@ -367,13 +372,15 @@ QString FutureProgress::type() const
 
 void FutureProgress::setKeepOnFinish(KeepOnFinishType keepType)
 {
-    if (d->m_keep == keepType)
+    if (d->m_keep == keepType) {
         return;
+    }
     d->m_keep = keepType;
 
     //if it is not finished tryToFadeAway is called by setFinished at the end
-    if (d->m_watcher.isFinished())
+    if (d->m_watcher.isFinished()) {
         d->tryToFadeAway();
+    }
 }
 
 bool FutureProgress::keepOnFinish() const
@@ -381,21 +388,22 @@ bool FutureProgress::keepOnFinish() const
     return d->m_keep;
 }
 
-QWidget *FutureProgress::widget() const
+QWidget* FutureProgress::widget() const
 {
     return d->m_widget;
 }
 
-void FutureProgress::setStatusBarWidget(QWidget *widget)
+void FutureProgress::setStatusBarWidget(QWidget* widget)
 {
-    if (widget == d->m_statusBarWidget)
+    if (widget == d->m_statusBarWidget) {
         return;
+    }
     delete d->m_statusBarWidget;
     d->m_statusBarWidget = widget;
     emit statusBarWidgetChanged();
 }
 
-QWidget *FutureProgress::statusBarWidget() const
+QWidget* FutureProgress::statusBarWidget() const
 {
     return d->m_statusBarWidget;
 }
@@ -414,12 +422,12 @@ void FutureProgressPrivate::fadeAway()
 {
     m_isFading = true;
 
-    QGraphicsOpacityEffect *opacityEffect = new QGraphicsOpacityEffect;
+    QGraphicsOpacityEffect* opacityEffect = new QGraphicsOpacityEffect;
     opacityEffect->setOpacity(1.);
     m_q->setGraphicsEffect(opacityEffect);
 
-    QSequentialAnimationGroup *group = new QSequentialAnimationGroup(this);
-    QPropertyAnimation *animation = new QPropertyAnimation(opacityEffect, "opacity");
+    QSequentialAnimationGroup* group = new QSequentialAnimationGroup(this);
+    QPropertyAnimation* animation = new QPropertyAnimation(opacityEffect, "opacity");
     animation->setDuration(ProgressFadeAnimationDuration);
     animation->setEndValue(0.);
     group->addAnimation(animation);

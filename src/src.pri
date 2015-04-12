@@ -27,14 +27,16 @@ HEADERS += \
     $$PWD/concurrenttasks.h \
     $$PWD/saagharapplication.h \
     $$PWD/settingsmanager.h \
-    $$PWD/outlinemodel.h
+    $$PWD/outlinemodel.h \
+    $$PWD/selectionmanager.h
 
 FORMS += \
     $$PWD/saagharwindow.ui \
     $$PWD/settings.ui \
     $$PWD/databaseupdater.ui \
     $$PWD/nodatabasedialog.ui \
-    $$PWD/searchoptionsdialog.ui
+    $$PWD/searchoptionsdialog.ui \
+    $$PWD/selectionmanager.ui
 
 SOURCES += \
     $$PWD/main.cpp \
@@ -58,12 +60,14 @@ SOURCES += \
     $$PWD/concurrenttasks.cpp \
     $$PWD/saagharapplication.cpp \
     $$PWD/settingsmanager.cpp \
-    $$PWD/outlinemodel.cpp
+    $$PWD/outlinemodel.cpp \
+    $$PWD/selectionmanager.cpp
 
 include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)
 include(OSDaB-Zip/osdabzip.pri)
 include(progressmanager/progressmanager.pri)
+include(QIrBreadCrumbBar/QIrBreadCrumbBar.pri)
 
 contains( DEFINES, MEDIA_PLAYER ) {
     include(qmusicplayer/qmusicplayer.pri)

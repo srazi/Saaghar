@@ -34,14 +34,16 @@ class OutlineModel;
 class SaagharWindow;
 class SettingsManager;
 
+class QAction;
 class QSettings;
 class QThread;
 class QThreadPool;
 
 class SaagharApplication : public QApplication
 {
+    Q_OBJECT
 public:
-    SaagharApplication(int &argc, char **argv);
+    SaagharApplication(int &argc, char** argv);
     ~SaagharApplication();
 
     static SaagharApplication* instance();
@@ -79,6 +81,12 @@ public:
     void saveSettings();
 
     void quitSaaghar();
+
+    QStringList quickAccessBookmarks() const;
+    QAction* quickAccessCustomizeAction();
+
+private slots:
+    void customizeQuickAccessBookmarks();
 
 private:
     void init();

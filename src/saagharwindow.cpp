@@ -35,6 +35,7 @@
 #include "concurrenttasks.h"
 #include "saagharapplication.h"
 #include "settingsmanager.h"
+#include "outlinemodel.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -66,6 +67,11 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QActionGroup>
+
+
+#include "qirbreadcrumbbar.h"
+#include "qirbreadcrumbbarstyle.h"
+#include "breadcrumbsaagharmodel.h"
 
 #ifdef MEDIA_PLAYER
 #include "qmusicplayer.h"
@@ -152,12 +158,32 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     ui->setupUi(this);
 
+    const QString toolbarCSS = QLatin1String("QToolBar { background-image:url(\":/resources/images/transp.png\"); border:none; padding: 3px; spacing: 0px; /* spacing between items in the tool bar */ }");
     //create Parent Categories ToolBar
     parentCatsToolBar = new QToolBar(this);
-    parentCatsToolBar->setObjectName(QString::fromUtf8("parentCatsToolBar"));
+    parentCatsToolBar->setObjectName(QString::fromUtf8("ClassicBreadCrumbToolBar"));
     parentCatsToolBar->setLayoutDirection(Qt::RightToLeft);
     parentCatsToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
-    parentCatsToolBar->setWindowTitle(tr("Parent Categories"));
+    parentCatsToolBar->setWindowTitle(tr("Classic navigation bar"));
+    parentCatsToolBar->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea | Qt::NoToolBarArea);
+    parentCatsToolBar->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    parentCatsToolBar->setStyleSheet(toolbarCSS);
+
+    // create Bread Crumb ToolBar
+    m_breadCrumbBar = new QIrBreadCrumbBar(this);
+    m_breadCrumbBar->setSubStyle(new QIrStyledBreadCrumbBarStyle);
+    m_breadCrumbBar->setModel(new BreadCrumbSaagharModel);
+    m_breadCrumbBar->setMinimumWidth(300);
+    m_breadCrumbBar->setSizePolicy(QSizePolicy::Expanding, m_breadCrumbBar->sizePolicy().verticalPolicy());
+    connect(m_breadCrumbBar, SIGNAL(locationChanged(QString)), this, SLOT(openPath(QString)));
+
+    m_breadCrumbToolBar = new QToolBar(this);
+    m_breadCrumbToolBar->setObjectName(QString::fromUtf8("ModernBreadCrumbToolBar"));
+    m_breadCrumbToolBar->setContextMenuPolicy(Qt::PreventContextMenu);
+    m_breadCrumbToolBar->setWindowTitle(tr("Modern navigation bar"));
+    m_breadCrumbToolBar->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea | Qt::NoToolBarArea);
+    m_breadCrumbToolBar->setStyleSheet(toolbarCSS);
+    m_breadCrumbToolBar->addWidget(m_breadCrumbBar);
 
     //create Tab Widget
     mainTabWidget = ui->tabWidget;
@@ -376,7 +402,7 @@ void SaagharWindow::searchStart()
 
             phrase = Tools::cleanString(phrase);
             SearchResultWidget* searchResultWidget = new SearchResultWidget(this, ICON_PATH, searchResultContents,
-                                                                            phrase, poetName);
+                    phrase, poetName);
 
             ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget);
             connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
@@ -473,7 +499,7 @@ void SaagharWindow::multiSelectObjectInitialize(QMultiSelectWidget* multiSelectW
     multiSelectWidget->updateSelectedLists();
 }
 
-void SaagharWindow::multiSelectInsertItems(QMultiSelectWidget *multiSelectWidget)
+void SaagharWindow::multiSelectInsertItems(QMultiSelectWidget* multiSelectWidget)
 {
     QListWidgetItem* item = multiSelectWidget->insertRow(0, tr("All Opened Tab"), true, "ALL_OPENED_TAB", Qt::UserRole, true);
     QListWidgetItem* titleSearchItem = multiSelectWidget->insertRow(1, tr("Titles"), true, "ALL_TITLES", Qt::UserRole);
@@ -604,6 +630,7 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         loadAudioForCurrentTab(old_saagharWidget);
 
         parentCatsToolBar->setEnabled(true);
+        m_breadCrumbToolBar->setEnabled(true);
         globalRedoAction->setEnabled(saagharWidget->undoStack->canRedo());
         globalUndoAction->setEnabled(saagharWidget->undoStack->canUndo());
         actionInstance("fixedNameRedoAction")->setEnabled(globalRedoAction->isEnabled());
@@ -616,6 +643,7 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         actionInstance("actionNextPoem")->setEnabled(false);
         actionInstance("actionHome")->setEnabled(false);
         parentCatsToolBar->setEnabled(false);
+        m_breadCrumbToolBar->setEnabled(false);
 
         globalRedoAction->setEnabled(false);
         globalUndoAction->setEnabled(false);
@@ -881,6 +909,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         connect(saagharWidget, SIGNAL(loadingStatusText(QString,int)), this, SLOT(showStatusText(QString,int)));
 
         connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateCaption()));
+        connect(saagharWidget, SIGNAL(currentLocationChanged(QStringList)), this, SLOT(onCurrentLocationChanged(QStringList)));
         //temp
         connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateTabsSubMenus()));
 
@@ -1518,7 +1547,7 @@ void SaagharWindow::actionImportNewSet()
         foreach (const QString &file, fileList) {
 
 #ifdef SAAGHAR_DEBUG
-            QMessageBox::information(0, "DEBUG!", QString("%1\n%2\n%3\n%4\n%5").arg(file, QFile::encodeName(file), file.toUtf8(), file.toLocal8Bit(), QTextCodec::codecForName("Windows-1256")->fromUnicode(file)) );
+            QMessageBox::information(0, "DEBUG!", QString("%1\n%2\n%3\n%4\n%5").arg(file, QFile::encodeName(file), file.toUtf8(), file.toLocal8Bit(), QTextCodec::codecForName("Windows-1256")->fromUnicode(file)));
 #endif
 
             DatabaseBrowser::dbUpdater->installItemToDB(file);
@@ -1681,6 +1710,7 @@ void SaagharWindow::setupUi()
     }
     ui->searchToolBar->setMovable(!VARB("SaagharWindow/LockToolBars"));
     parentCatsToolBar->setMovable(!VARB("SaagharWindow/LockToolBars"));
+    m_breadCrumbToolBar->setMovable(!VARB("SaagharWindow/LockToolBars"));
 
 #ifdef MEDIA_PLAYER
     SaagharWidget::musicPlayer->setMovable(!VARB("SaagharWindow/LockToolBars"));
@@ -1836,6 +1866,7 @@ void SaagharWindow::setupUi()
     toolbarsView->addAction(ui->mainToolBar->toggleViewAction());
     toolbarsView->addAction(ui->searchToolBar->toggleViewAction());
     toolbarsView->addAction(parentCatsToolBar->toggleViewAction());
+    toolbarsView->addAction(m_breadCrumbToolBar->toggleViewAction());
 
 #ifdef MEDIA_PLAYER
     toolbarsView->addAction(actionInstance("toggleMusicPlayer"));
@@ -1906,10 +1937,14 @@ void SaagharWindow::setupUi()
     mainToolBarItems.removeAll(QLatin1String(""));
     sApp->setMainToolBarItems(mainToolBarItems);
 
-    addToolBar(Qt::TopToolBarArea, parentCatsToolBar);
+    addToolBar(Qt::TopToolBarArea, m_breadCrumbToolBar);
     if (ui->menuToolBar) {
-        insertToolBar(parentCatsToolBar, ui->menuToolBar);
+        insertToolBar(m_breadCrumbToolBar, ui->menuToolBar);
     }
+
+    addToolBar(Qt::TopToolBarArea, parentCatsToolBar);
+    parentCatsToolBar->hide();
+
 #ifdef MEDIA_PLAYER
     if (SaagharWidget::musicPlayer) {
         insertToolBar(SaagharWidget::musicPlayer, ui->searchToolBar);
@@ -2711,6 +2746,17 @@ void SaagharWindow::highlightTextOnPoem(int poemId, int vorder)
     emit highlightedTextChanged(highlightedText);
 }
 
+void SaagharWindow::openPath(const QString &path)
+{
+    QString SEPARATOR = QLatin1String("/");
+    bool ok;
+    QModelIndex ind = sApp->outlineModel()->index(path.split(SEPARATOR, QString::SkipEmptyParts), &ok);
+
+    if (ok) {
+        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage);
+    }
+}
+
 void SaagharWindow::showSearchOptionsDialog()
 {
     SearchOptionsDialog searchDialog(this);
@@ -3008,6 +3054,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
         }
         ui->searchToolBar->setMovable(!checked);
         parentCatsToolBar->setMovable(!checked);
+        m_breadCrumbToolBar->setMovable(!checked);
 #ifdef MEDIA_PLAYER
         SaagharWidget::musicPlayer->setMovable(!checked);
 #endif
@@ -3482,6 +3529,15 @@ void SaagharWindow::createCustomContextMenu(const QPoint &pos)
     else if (text == tr("Refresh")) {
         saagharWidget->refresh();
     }
+}
+
+void SaagharWindow::onCurrentLocationChanged(const QStringList &locationList)
+{
+    const QString SEPARATOR = QLatin1String("/");
+
+    m_breadCrumbBar->blockSignals(true);
+    m_breadCrumbBar->setLocation(locationList.join(SEPARATOR));
+    m_breadCrumbBar->blockSignals(false);
 }
 
 void SaagharWindow::openParentPage(int parentID, bool newPage)

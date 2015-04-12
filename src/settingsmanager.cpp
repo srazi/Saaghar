@@ -25,15 +25,15 @@
 #include <QDataStream>
 #include <QDebug>
 
-SettingsManager *SettingsManager::s_instance = 0;
+SettingsManager* SettingsManager::s_instance = 0;
 
-SettingsManager::SettingsManager(QObject *parent)
+SettingsManager::SettingsManager(QObject* parent)
     : QObject(parent),
       m_variables()
 {
 }
 
-SettingsManager *SettingsManager::instance()
+SettingsManager* SettingsManager::instance()
 {
     if (!s_instance) {
         s_instance = new SettingsManager(qApp);
@@ -78,7 +78,7 @@ QVariant SettingsManager::variable(const QString &name) const
     }
 
     if (name.contains("/Colors/") && (m_variables.value(name).type() == QMetaType::QFont
-                                     || m_variablesInitialValues.value(name).type() == QMetaType::QFont)) {
+                                      || m_variablesInitialValues.value(name).type() == QMetaType::QFont)) {
         qFatal("Wrong value: \"%s\" in file %s, line %d", name.toLatin1().constData(), __FILE__, __LINE__);
     }
 #endif
@@ -99,7 +99,7 @@ void SettingsManager::clear()
     m_variables.clear();
 }
 
-bool SettingsManager::loadVariable(QIODevice *in, bool append)
+bool SettingsManager::loadVariable(QIODevice* in, bool append)
 {
     if (!in || !in->isOpen() || !in->isReadable()) {
         qDebug() << "SettingsManager::loadVariableFromFile: Is not open or is not readable";
@@ -129,7 +129,7 @@ bool SettingsManager::loadVariable(QIODevice *in, bool append)
     return true;
 }
 
-bool SettingsManager::writeVariable(QIODevice *out)
+bool SettingsManager::writeVariable(QIODevice* out)
 {
     if (!out || !out->isOpen() || !out->isWritable()) {
         qDebug() << "SettingsManager::writeVariableToFile: Is not open or is not writable";

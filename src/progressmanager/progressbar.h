@@ -62,7 +62,7 @@ class ProgressBar : public QWidget
     Q_PROPERTY(float cancelButtonFader READ cancelButtonFader WRITE setCancelButtonFader)
 
 public:
-    explicit ProgressBar(QWidget *parent = 0);
+    explicit ProgressBar(QWidget* parent = 0);
     ~ProgressBar();
 
     QString title() const;
@@ -76,8 +76,8 @@ public:
     void setError(bool on);
     bool hasError() const;
     QSize sizeHint() const;
-    void paintEvent(QPaintEvent *);
-    void mouseMoveEvent(QMouseEvent *);
+    void paintEvent(QPaintEvent*);
+    void mouseMoveEvent(QMouseEvent*);
     int minimum() const { return m_minimum; }
     int maximum() const { return m_maximum; }
     int value() const { return m_value; }
@@ -87,15 +87,15 @@ public:
     void setValue(int value);
     void setFinished(bool b);
     float cancelButtonFader() { return m_cancelButtonFader; }
-    void setCancelButtonFader(float value) { update(); m_cancelButtonFader= value;}
-    bool event(QEvent *);
+    void setCancelButtonFader(float value) { update(); m_cancelButtonFader = value;}
+    bool event(QEvent*);
 
 signals:
     void clicked();
     void barClicked();
 
 protected:
-    void mousePressEvent(QMouseEvent *event);
+    void mousePressEvent(QMouseEvent* event);
 
 private:
     QFont titleFont() const;
