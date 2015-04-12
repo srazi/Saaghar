@@ -66,6 +66,8 @@
 #include <QDrag>
 #include <QMimeData>
 #include <QUrl>
+#include <QTimer>
+
 #include "qirbreadcrumbbar.h"
 #include "qirbreadcrumbbarstyle.h"
 #include "breadcrumbsaagharmodel.h"
@@ -638,7 +640,8 @@ void QIrBreadCrumbComboBox::showPopup()
     edit();
     QComboBox::showPopup();
 }
-void QIrBreadCrumbComboBox::showBreadCrumbs(bool popupError)
+
+void QIrBreadCrumbComboBox::showBreadCrumbs(bool popupError, bool changeLocation, bool forceShowContainer)
 {
     QString text = currentText();
     QIrAbstractBreadCrumbModel* model = m_bar->model();
@@ -647,6 +650,7 @@ void QIrBreadCrumbComboBox::showBreadCrumbs(bool popupError)
         if (text.isEmpty()) {
             return;
         }
+
         if (!model->isValid(text)) {
             if (popupError) {
                 QString caption =  qApp->applicationName();
@@ -660,21 +664,32 @@ void QIrBreadCrumbComboBox::showBreadCrumbs(bool popupError)
                 setFocus(Qt::OtherFocusReason);
             }
             else {
+                if (forceShowContainer) {
+                    lineEdit()->hide();
+                    m_container->show();
+                }
+
                 return;
             }
         }
         else {
-            setLocation(model->cleanPath(text));
+            if (changeLocation) {
+                setLocation(model->cleanPath(text));
+            }
             lineEdit()->hide();
             m_container->show();
         }
     }
     else {
         if (text.isEmpty() || !model->isValid(text)) {
-            setLocation(model->defaultPath());
+            if (changeLocation) {
+                setLocation(model->defaultPath());
+            }
         }
         else {
-            setLocation(model->cleanPath(text));
+            if (changeLocation) {
+                setLocation(model->cleanPath(text));
+            }
         }
         lineEdit()->hide();
         m_container->show();
@@ -702,10 +717,15 @@ void QIrBreadCrumbComboBox::edit()
     lineEdit->show();
     lineEdit->selectAll();
 }
+
 void QIrBreadCrumbComboBox::slotSetLocation(QAction* action)
 {
-    setLocation(action->data().toString());
+    if (action->data().isValid()) {
+        m_delayedLocation = action->data().toString();
+        QTimer::singleShot(0, this, SLOT(setDelayedLocation()));
+    }
 }
+
 void QIrBreadCrumbComboBox::slotHandleEditTextChanged()
 {
     updateGeometries();
@@ -725,7 +745,7 @@ void QIrBreadCrumbComboBox::focusOutEvent(QFocusEvent* evt)
     QWidget* focus = qApp->focusWidget();
 
     if (focus && focus != this && evt->reason() != Qt::PopupFocusReason) {
-        showBreadCrumbs(false);
+        showBreadCrumbs(false, false, true);
     }
     QComboBox::focusOutEvent(evt);
 }
@@ -742,6 +762,12 @@ void QIrBreadCrumbComboBox::updateGeometries()
         lineEdit->setGeometry(QStyle::visualRect(layoutDirection(), m_bar->rect(), style->subControlRect(QStyle::CC_ComboBox, &option, (QStyle::SubControl)QIrBreadCrumbBarStyle::SC_BreadCrumbEditField, m_bar)));
     }
     m_container->setGeometry(QStyle::visualRect(layoutDirection(), m_bar->rect(), style->subControlRect(QStyle::CC_ComboBox, &option, (QStyle::SubControl)QIrBreadCrumbBarStyle::SC_BreadCrumbContainer, m_bar)));
+}
+
+void QIrBreadCrumbComboBox::setDelayedLocation()
+{
+    setLocation(m_delayedLocation);
+    m_delayedLocation.clear();
 }
 
 

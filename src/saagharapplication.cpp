@@ -538,6 +538,11 @@ QAction* SaagharApplication::quickAccessCustomizeAction()
 
 void SaagharApplication::customizeQuickAccessBookmarks()
 {
+    if (qobject_cast<QAction*>(sender())) {
+        QTimer::singleShot(0, this, SLOT(customizeQuickAccessBookmarks()));
+        return;
+    }
+
     SelectionManager* selectionManager = new SelectionManager(0);
     selectionManager->setSelection(VAR("SaagharWindow/QuickAccessBookmarks").toStringList());
 

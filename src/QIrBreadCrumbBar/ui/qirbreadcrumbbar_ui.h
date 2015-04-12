@@ -225,12 +225,13 @@ public:
 
     void showPopup();
 
-    void showBreadCrumbs(bool popupError = true);
+    void showBreadCrumbs(bool popupError = true, bool changeLocation = true, bool forceShowContainer = false);
     void edit();
 
     inline QIrBreadCrumbComboBoxContainer* container() const { return m_container; }
     void updateGeometries();
 private slots:
+    void setDelayedLocation();
     void slotSetLocation(QAction*);
     void slotHandleEditTextChanged();
     void slotActivated();
@@ -244,6 +245,7 @@ private:
 
     bool m_flat;
     QString m_location;
+    QString m_delayedLocation;
     QIrBreadCrumbIconWidget* m_iconLabel;
     QIrBreadCrumbComboBoxContainer* m_container;
     QIrBreadCrumbBar* m_bar;
