@@ -52,6 +52,7 @@
 #define MIN_EMPTY_AREA_WIDTH 80
 #define ARROW_WIDTH 15
 #define ICONLABEL_WIDTH 20
+#define LABEL_MAX_WIDTH 250
 
 static const char* const arrow_right_img[] = {
     "4 7 2 1",
@@ -183,8 +184,9 @@ QRect QIrDefaultBreadCrumbBarStyle::subElementRect(QStyle::SubElement subElement
     case SE_BreadCrumbLabel :
         if (const QIrStyleOptionBreadCrumbLabel* lb = qstyleoption_cast< const QIrStyleOptionBreadCrumbLabel* >(option)) {
             int spacing = 6;
+            int maxWidth = qBound(lb->rect.width() / 2, LABEL_MAX_WIDTH, lb->rect.width() - 3 * spacing);
 
-            return QRect(0, 0, lb->fontMetrics.boundingRect(lb->text).width() + 2 * spacing, lb->rect.height());
+            return QRect(0, 0, qMin(maxWidth, lb->fontMetrics.boundingRect(lb->text).width() + 2 * spacing), lb->rect.height());
         }
         break;
     default:
@@ -393,7 +395,8 @@ void QIrStyledBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, co
                 }
             }
             painter->setPen(option->palette.foreground().color());
-            painter->drawText(textRect, Qt::AlignCenter, label->text);
+            const QString text = label->fontMetrics.elidedText(label->text, Qt::ElideMiddle, textRect.width());
+            painter->drawText(textRect, Qt::AlignCenter, text);
 
             return;
         }
