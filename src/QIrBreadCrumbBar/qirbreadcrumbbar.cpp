@@ -129,6 +129,7 @@ void QIrBreadCrumbIndicator::clicked(const QPoint &)
     if (!menu || (menu && menu->actions().isEmpty())) {
         return;
     }
+    menu->setStyleSheet(QLatin1String("QMenu { menu-scrollable: 1; }"));
     menu->connect(menu, SIGNAL(triggered(QAction*)), container()->comboBox(), SLOT(slotSetLocation(QAction*)));
 
     QPoint pos;
