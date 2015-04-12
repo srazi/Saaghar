@@ -1735,10 +1735,8 @@ QTextEdit* SaagharWidget::createItemForLongText(int row, int column, const QStri
     tBF.setAlignment(Qt::AlignJustify);
     tc.setBlockFormat(tBF);
     tc.clearSelection();
+    tc.movePosition(QTextCursor::Start);
     para->setTextCursor(tc);
-    //para->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-    //para->setAttribute(Qt::WA_NoMousePropagation, true);
-    //para->setMouseTracking(false);
     para->setFocusPolicy(Qt::NoFocus);
     ParagraphHighlighter* paraHighlighter = new ParagraphHighlighter(para->document(), highlightText);
     connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(QString)), paraHighlighter, SLOT(keywordChanged(QString)));
