@@ -128,7 +128,18 @@ void QIrBreadCrumbIndicator::clicked(const QPoint &)
         return;
     }
     menu->connect(menu, SIGNAL(triggered(QAction*)), container()->comboBox(), SLOT(slotSetLocation(QAction*)));
-    menu->exec(cont->mapToGlobal(rect().bottomLeft()));
+
+    QPoint pos;
+
+    if (cont->isRightToLeft()) {
+        pos = cont->mapToGlobal(rect().bottomRight());
+        pos.setX(pos.x() - menu->sizeHint().width());
+    }
+    else {
+        pos = cont->mapToGlobal(rect().bottomLeft());
+    }
+
+    menu->exec(pos);
 }
 
 /////////////////////////
