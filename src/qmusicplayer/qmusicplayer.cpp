@@ -122,26 +122,13 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     qDebug() << "Audio Output Devices:" << audioOutputDevices
              << "\nSelected Output Device:" << audioOutput->outputDevice().name();
 #endif
+
     mediaObject = new Phonon::MediaObject(this);
     metaInformationResolver = new Phonon::MediaObject(this);
-
-    connect(mediaObject, SIGNAL(currentSourceChanged(Phonon::MediaSource)), this, SLOT(sourceChanged()));
-    connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
-    connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(seekOnStateChange()));
-    connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(stateChange()));
-    connect(metaInformationResolver, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(metaStateChange()));
-    connect(mediaObject, SIGNAL(finished()), this, SLOT(aboutToFinish()));
-
     Phonon::createPath(mediaObject, audioOutput);
 #else
     mediaObject = new QMediaPlayer(this, QMediaPlayer::StreamPlayback);
     metaInformationResolver = new QMediaPlayer(this, QMediaPlayer::StreamPlayback);
-
-    connect(mediaObject, SIGNAL(currentMediaChanged(QMediaContent)), this, SLOT(sourceChanged()));
-    connect(mediaObject, SIGNAL(positionChanged(qint64)), this, SLOT(tick(qint64)));
-    connect(mediaObject, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(seekOnStateChange()));
-    connect(mediaObject, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChange()));
-    connect(metaInformationResolver, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(metaStateChange()));
 #endif
 
     albumManager->setMediaObject(mediaObject);
@@ -985,6 +972,24 @@ void QMusicPlayer::setupUi()
 #endif
 
     setLayoutDirection(Qt::LeftToRight);
+}
+
+void QMusicPlayer::createConnections()
+{
+#if USE_PHONON
+    connect(mediaObject, SIGNAL(currentSourceChanged(Phonon::MediaSource)), this, SLOT(sourceChanged()));
+    connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
+    connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(seekOnStateChange()));
+    connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(stateChange()));
+    connect(metaInformationResolver, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(metaStateChange()));
+    connect(mediaObject, SIGNAL(finished()), this, SLOT(aboutToFinish()));
+#else
+    connect(mediaObject, SIGNAL(currentMediaChanged(QMediaContent)), this, SLOT(sourceChanged()));
+    connect(mediaObject, SIGNAL(positionChanged(qint64)), this, SLOT(tick(qint64)));
+    connect(mediaObject, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(seekOnStateChange()));
+    connect(mediaObject, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChange()));
+    connect(metaInformationResolver, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(metaStateChange()));
+#endif
 }
 
 void QMusicPlayer::readPlayerSettings()

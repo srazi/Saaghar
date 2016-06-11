@@ -173,6 +173,7 @@ private:
     qint64 _newTime;
     void setupActions();
     void setupUi();
+    void createConnections();
 
 #ifdef USE_PHONON
     Phonon::SeekSlider* seekSlider;
