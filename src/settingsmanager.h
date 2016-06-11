@@ -35,6 +35,8 @@
 #include <QHash>
 #include <QVariant>
 
+class QIODevice;
+
 class SettingsManager : public QObject
 {
 public:
