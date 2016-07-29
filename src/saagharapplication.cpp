@@ -97,6 +97,7 @@ SaagharApplication::~SaagharApplication()
     delete m_mainWindow;
     delete m_progressManager;
     delete m_databaseBrowser;
+    delete m_splash;
 }
 
 SaagharApplication* SaagharApplication::instance()
@@ -574,14 +575,16 @@ void SaagharApplication::init()
 
     QPixmap pixmap(":/resources/images/saaghar-splash.png");
     QPixmap mask(":/resources/images/saaghar-splash-mask.png");
-    QExtendedSplashScreen splash(pixmap, Qt::WindowStaysOnTopHint);
-    splash.setMessageOptions(QRect(QPoint(120, 525), QSize(310, qMin(splash.fontMetrics().height() + 2, 18))),
+    m_splash = new QExtendedSplashScreen(pixmap, Qt::WindowStaysOnTopHint);
+    m_splash->setMessageOptions(QRect(QPoint(120, 525), QSize(310, qMin(m_splash->fontMetrics().height() + 2, 18))),
                              Qt::AlignLeft | Qt::AlignVCenter, QColor(7, 12, 150));
-    splash.setProgressBar(mask, 0, 10, Qt::Vertical);
-    Tools::setSplashScreen(&splash);
+    m_splash->setProgressBar(mask, 0, 10, Qt::Vertical);
+    Tools::setSplashScreen(m_splash);
 
     m_mainWindow = new SaagharWindow;
     m_mainWindow->show();
 
-    splash.finish(m_mainWindow);
+    if (m_splash) {
+        m_splash->finish(m_mainWindow);
+    }
 }

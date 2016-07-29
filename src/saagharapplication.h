@@ -28,11 +28,13 @@
 
 #include <QApplication>
 #include <QStringList>
+#include <QPointer>
 
 class DatabaseBrowser;
 class OutlineModel;
 class SaagharWindow;
 class SettingsManager;
+class QExtendedSplashScreen;
 
 class QAction;
 class QSettings;
@@ -96,6 +98,8 @@ private:
 
     void setupInitialValues();
     void loadSettings();
+
+    QPointer<QExtendedSplashScreen> m_splash;
 
     SaagharWindow* m_mainWindow;
 
