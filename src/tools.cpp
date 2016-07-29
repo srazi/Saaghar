@@ -108,13 +108,15 @@ QString Tools::getLongPathName(const QString &fileName)
     }
 #else
     DWORD  retval = 0;
-#ifdef D_MSVC_CC
+//#ifdef D_MSVC_CC
+//    TCHAR  bufLongFileName[BUFSIZE] = TEXT("");
+//    TCHAR  bufFileName[BUFSIZE] = TEXT("");
+//#else
+//    TCHAR  bufLongFileName[BUFSIZE] = TEXT(L"");
+//    TCHAR  bufFileName[BUFSIZE] = TEXT(L"");
+//#endif
     TCHAR  bufLongFileName[BUFSIZE] = TEXT("");
     TCHAR  bufFileName[BUFSIZE] = TEXT("");
-#else
-    TCHAR  bufLongFileName[BUFSIZE] = TEXT(L"");
-    TCHAR  bufFileName[BUFSIZE] = TEXT(L"");
-#endif
 
     QString winFileName = fileName;
     winFileName.replace("/", "\\");
