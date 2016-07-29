@@ -111,12 +111,13 @@ void QExtendedSplashScreen::setProgressBar(const QPixmap &maskPixmap, int minimu
         m_progressBar->setAttribute(Qt::WA_TranslucentBackground);
         m_progressBar->setTextVisible(false);
 
+        bool customstyle = true;
         bool badProgressBar = style()->objectName() == "cde" || style()->objectName() == "motif" ||
                               style()->objectName().startsWith("macintosh") || style()->objectName() == "windows" ||
                               style()->objectName() == "windowsxp";
-        if (badProgressBar) {
+        if (badProgressBar || customstyle) {
             m_progressBar->setStyleSheet("QProgressBar{border: none; background: transparent; width: 100px; height: 100px;}"
-                                         "QProgressBar::chunk {width: 15px; height: 15px; margin: -5px;"
+                                         "QProgressBar::chunk {width: 15px; height: 1px; margin: 1px;"
                                          "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,stop: 0 #9F9, stop: 0.4 #4F4, stop: 0.5 #4F4, stop: 1.0 #3E3);}");
         }
         else {
