@@ -52,6 +52,8 @@ public:
 
     static void setSplashScreen(QObject* splash);
     static QObject* s_splashScreen;
+
+    static const QStringList No_KASHIDA_FONTS;
 };
 
 #endif // TOOLS_H

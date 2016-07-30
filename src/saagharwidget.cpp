@@ -947,7 +947,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     tableViewWidget->setLayoutDirection(Qt::RightToLeft);
 
 //#ifndef Q_OS_MAC //Qt Bug when inserting TATWEEl character
-    const bool justified = true;//temp
+    const bool justified = true && !Tools::No_KASHIDA_FONTS.contains(poemFont.family());//temp
     int maxWidth = -1;
     if (longestHemistiches.contains(poem._ID)) {
         maxWidth = poemFontMetric.width(longestHemistiches.value(poem._ID));

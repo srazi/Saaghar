@@ -95,6 +95,8 @@ const QRegExp SomeSymbol_EXP = QRegExp("[" +
 /***************************/
 ////////////////////////////
 
+const QStringList Tools::No_KASHIDA_FONTS = QStringList()
+                                            << "IranNastaliq";
 
 QString Tools::getLongPathName(const QString &fileName)
 {
