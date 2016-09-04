@@ -136,11 +136,16 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     setupActions();
     setupUi();
     timeLcd->display("00:00");
+
+    createConnections();
+
+    playRequestedByUser(false);
+    stateChange();
 }
 
 void QMusicPlayer::seekOnStateChange()
 {
-    if (_newTime > 0 && mediaObject->isSeekable()) {
+    if (_newTime > 0) {
 #ifdef USE_PHONON
         mediaObject->seek(_newTime);
 #else
@@ -162,6 +167,8 @@ qint64 QMusicPlayer::currentTime()
 void QMusicPlayer::setCurrentTime(qint64 time)
 {
     _newTime = time;
+
+    seekOnStateChange();
 }
 
 QString QMusicPlayer::source()
@@ -206,6 +213,8 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
                 albumManager->setCurrentAlbum(albumName);
             }
         }
+
+        stateChange();
     }
     else {
         notLoaded = true;
@@ -537,7 +546,7 @@ void QMusicPlayer::load(int index)
     }
 }
 
-void QMusicPlayer::playRequestedByUser()
+void QMusicPlayer::playRequestedByUser(bool play)
 {
     if (!mediaObject) {
         return;
@@ -546,7 +555,11 @@ void QMusicPlayer::playRequestedByUser()
     QString album;
     albumContains(currentID, &album);
     albumManager->albumList()->setCurrentIndex(albumManager->albumList()->findText(album));
-    mediaObject->play();
+    notLoaded = mediaObject->media().isNull();
+
+    if (play) {
+        mediaObject->play();
+    }
 }
 
 void QMusicPlayer::startLyricSyncer()
@@ -935,14 +948,21 @@ void QMusicPlayer::setupUi()
     seekSlider = new Phonon::SeekSlider(this);
     seekSlider->setMediaObject(mediaObject);
 
-
-    infoLabel->resize(seekSlider->width(), infoLabel->height());
-
     volumeSlider = new Phonon::VolumeSlider(this);
     volumeSlider->setAudioOutput(audioOutput);
+#else
+    seekSlider = new SeekSlider(mediaObject, this);
+    connect(this, SIGNAL(orientationChanged(Qt::Orientation)), seekSlider, SLOT(playerOrientationChanged(Qt::Orientation)));
+    seekSlider->playerOrientationChanged(orientation());
 
-    volumeSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+    volumeSlider = new VolumeSlider(mediaObject, this);
+    connect(this, SIGNAL(orientationChanged(Qt::Orientation)), volumeSlider, SLOT(playerOrientationChanged(Qt::Orientation)));
+    volumeSlider->playerOrientationChanged(orientation());
 #endif
+
+    infoLabel->resize(seekSlider->width(), infoLabel->height());
+    volumeSlider->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
+
 
     QPalette palette;
     palette.setBrush(QPalette::Light, Qt::darkGray);
@@ -957,19 +977,17 @@ void QMusicPlayer::setupUi()
     QWidget* infoWidget = new QWidget;
     infoWidget->setLayout(infoLayout);
 
-#ifdef USE_PHONON
+
     infoLayout->addWidget(seekSlider);
     infoLayout->addWidget(infoLabel/*tmpLabel*/, 0, 0 /* Qt::AlignCenter*/);
 
     addWidget(infoWidget);
     addWidget(timeLcd);
     addWidget(volumeSlider);
-#else
-    infoLayout->addWidget(infoLabel/*tmpLabel*/, 0, 0 /* Qt::AlignCenter*/);
 
-    addWidget(infoWidget);
-    addWidget(timeLcd);
-#endif
+    layout()->setAlignment(options, Qt::AlignCenter);
+    layout()->setAlignment(timeLcd, Qt::AlignCenter);
+    layout()->setAlignment(volumeSlider, Qt::AlignCenter);
 
     setLayoutDirection(Qt::LeftToRight);
 }
@@ -1956,4 +1974,84 @@ void ScrollText::timer_timeout()
     scrollPos = (scrollPos + 2)
                 % wholeTextSize.width();
     update();
+}
+
+SeekSlider::SeekSlider(QMediaPlayer *mediaPlayer, QWidget *parent)
+    : QSlider(parent),
+      m_mediaPlayer(mediaPlayer),
+      m_seeking(false)
+{
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    setRange(0, 1000);
+    setTickInterval(10);
+    setTickPosition(QSlider::TicksRight);
+
+    connect(m_mediaPlayer, SIGNAL(positionChanged(qint64)), this, SLOT(setPosition(qint64)));
+    connect(this, SIGNAL(valueChanged(int)), this, SLOT(seekPosition(int)));
+}
+
+void SeekSlider::setPosition(qint64 position)
+{
+    if (m_seeking) {
+        return;
+    }
+    m_seeking = true;
+    setValue((position*1000)/(1+m_mediaPlayer->duration()));
+    m_seeking = false;
+}
+
+void SeekSlider::seekPosition(int value)
+{
+    if (m_seeking) {
+        return;
+    }
+
+    m_seeking = true;
+    m_mediaPlayer->setPosition((m_mediaPlayer->duration()/1000)*value);
+    m_seeking = false;
+}
+
+void SeekSlider::playerOrientationChanged(Qt::Orientation orintation)
+{
+    setOrientation(orintation);
+}
+
+VolumeSlider::VolumeSlider(QMediaPlayer *mediaPlayer, QWidget *parent)
+    : QWidget(parent),
+      m_mediaPlayer(mediaPlayer)
+{
+    setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    m_muteButton = new QToolButton(this);
+    m_muteButton->setCheckable(true);
+
+    volumeMute(m_mediaPlayer->isMuted());
+
+    m_slider = new QSlider(this);
+    m_slider->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    m_slider->setRange(0, 100);
+
+    m_layout = new QBoxLayout(QBoxLayout::LeftToRight);
+    m_layout->setSpacing(0);
+    m_layout->setContentsMargins(0, 0, 0, 0);
+    m_layout->addWidget(m_muteButton, 0, Qt::AlignVCenter);
+    m_layout->addWidget(m_slider, 0, Qt::AlignVCenter);
+    setLayout(m_layout);
+
+    connect(m_muteButton, SIGNAL(toggled(bool)), m_mediaPlayer, SLOT(setMuted(bool)));
+    connect(m_mediaPlayer, SIGNAL(mutedChanged(bool)), this, SLOT(volumeMute(bool)));
+
+    connect(m_mediaPlayer, SIGNAL(volumeChanged(int)), m_slider, SLOT(setValue(int)));
+    connect(m_slider, SIGNAL(valueChanged(int)), m_mediaPlayer, SLOT(setVolume(int)));
+}
+
+void VolumeSlider::playerOrientationChanged(Qt::Orientation orintation)
+{
+    m_layout->setDirection(orintation == Qt::Horizontal ? QBoxLayout::LeftToRight : QBoxLayout::BottomToTop);
+    m_slider->setOrientation(orintation);
+}
+
+void VolumeSlider::volumeMute(bool mute)
+{
+    m_muteButton->setChecked(mute);
+    m_muteButton->setIcon(style()->standardIcon(mute ? QStyle::SP_MediaVolumeMuted : QStyle::SP_MediaVolume));
 }

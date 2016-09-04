@@ -68,6 +68,11 @@ class ScrollText;
 class AlbumManager;
 class LyricsManager;
 
+#ifndef USE_PHONON
+class SeekSlider;
+class VolumeSlider;
+#endif
+
 class QMusicPlayer : public QToolBar
 {
     Q_OBJECT
@@ -152,7 +157,7 @@ private slots:
     void tick(qint64 time);
     void aboutToFinish();
     void load(int index);
-    void playRequestedByUser();
+    void playRequestedByUser(bool play = true);
     void startLyricSyncer();
     void stopLyricSyncer(bool cancel = false);
     void recordTimeForVerse(int vorder);
@@ -183,6 +188,9 @@ private:
     Phonon::VolumeSlider* volumeSlider;
     QList<Phonon::MediaSource> sources;
 #else
+    SeekSlider* seekSlider;
+    VolumeSlider* volumeSlider;
+
     QMediaPlayer* mediaObject;
     QMediaPlayer* metaInformationResolver;
     QList<QMediaContent> sources;
@@ -325,6 +333,52 @@ private:
 private slots:
     virtual void timer_timeout();
 };
+
+#ifndef USE_PHONON
+#include <QSlider>
+
+class QBoxLayout;
+class QToolButton;
+
+class SeekSlider : public QSlider
+{
+    Q_OBJECT
+
+public:
+    explicit SeekSlider(QMediaPlayer* mediaPlayer, QWidget* parent = 0);
+
+private slots:
+    void setPosition(qint64 position);
+    void seekPosition(int value);
+
+public slots:
+    void playerOrientationChanged(Qt::Orientation orintation);
+
+private:
+    QMediaPlayer* m_mediaPlayer;
+    bool m_seeking;
+};
+
+class VolumeSlider : public QWidget
+{
+    Q_OBJECT
+
+public:
+    explicit VolumeSlider(QMediaPlayer* mediaPlayer, QWidget* parent = 0);
+
+public slots:
+    void playerOrientationChanged(Qt::Orientation orintation);
+
+private slots:
+    void volumeMute(bool mute);
+
+private:
+    QBoxLayout* m_layout;
+    QSlider* m_slider;
+    QToolButton* m_muteButton;
+    QMediaPlayer* m_mediaPlayer;
+};
+#endif
 
 // //link: http://msdn.microsoft.com/en-us/library/dd374921%28VS.85%29.aspx
 // //for future
