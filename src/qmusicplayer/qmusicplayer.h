@@ -108,6 +108,7 @@ public:
     };
 
     QMusicPlayer(QWidget* parent = 0);
+    QString currentFile() const;
     QString source();
     void setSource(const QString &fileName, const QString &title = "", int mediaID = -1, bool newSource = false);
     void readPlayerSettings();
@@ -248,6 +249,7 @@ public:
     void setMediaObject(QMediaPlayer* MediaObject);
 #endif
 
+    inline QString currentFile() { return m_currentFile; }
     inline QString currentAlbumName() { return m_currentAlbum; }
     void setCurrentAlbum(const QString &albumName);
     QMusicPlayer::SaagharAlbum* albumByName(QString albumName = QString());

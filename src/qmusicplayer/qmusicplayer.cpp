@@ -143,6 +143,11 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     stateChange();
 }
 
+QString QMusicPlayer::currentFile() const
+{
+    return albumManager ? albumManager->currentFile() : QString();
+}
+
 void QMusicPlayer::seekOnStateChange()
 {
     if (_newTime > 0) {
@@ -173,11 +178,18 @@ void QMusicPlayer::setCurrentTime(qint64 time)
 
 QString QMusicPlayer::source()
 {
-#ifdef USE_PHONON
-    return metaInformationResolver->currentSource().fileName();
-#else
-    return metaInformationResolver->currentMedia().canonicalUrl().toLocalFile();
-#endif
+    return currentFile();
+//#ifdef USE_PHONON
+//    return metaInformationResolver->currentSource().fileName();
+//#else
+//    qDebug() << __LINE__ << __FUNCTION__ << mediaObject->media().canonicalUrl().toLocalFile()
+//             << mediaObject->currentMedia().canonicalUrl().toLocalFile()
+//             << metaInformationResolver->media().canonicalUrl().toLocalFile()
+//             << metaInformationResolver->currentMedia().canonicalUrl().toLocalFile()
+//             << (sources.isEmpty() ? "SOURCE EMPTY" : sources.at(0).canonicalUrl().toLocalFile())
+//             << albumManager->currentFile();
+//    return mediaObject->currentMedia().canonicalUrl().toLocalFile();
+//#endif
 }
 
 void QMusicPlayer::setSource(const QString &fileName, const QString &title, int mediaID, bool newSource)
@@ -581,7 +593,15 @@ void QMusicPlayer::stopLyricSyncer(bool cancel)
 {
     disconnect(this, SIGNAL(verseSelectedByUser(int)), this, SLOT(recordTimeForVerse(int)));
 
-    QString gLyricName = source().left(source().lastIndexOf(QLatin1Char('.'))) + QLatin1String(".xml");
+    QString gLyricName = source().left(source().lastIndexOf(QLatin1Char('.')));
+
+    if (gLyricName.isEmpty()) {
+        qWarning() << "stopLyricSyncer: gLyricName is empty.";
+        setLyricSyncerState(true, true);
+        return;
+    }
+
+    gLyricName +=  QLatin1String(".xml");
 
     QFile file(gLyricName);
     if (file.exists()) {

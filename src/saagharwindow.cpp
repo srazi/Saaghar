@@ -2007,7 +2007,7 @@ void SaagharWindow::loadAudioForCurrentTab(SaagharWidget* old_saagharWidget)
     title = "";
     qint64 time = 0;
     SaagharWidget::musicPlayer->getFromAlbum(saagharWidget->currentPoem, &path, &title, &time);
-    if (SaagharWidget::musicPlayer->source() != path) {
+    if (!path.isEmpty() && SaagharWidget::musicPlayer->source() != path) {
         SaagharWidget::musicPlayer->setSource(path, saagharWidget->currentLocationList.join(">") + ">" + saagharWidget->currentPoemTitle, saagharWidget->currentPoem);
         SaagharWidget::musicPlayer->setCurrentTime(time);
     }
