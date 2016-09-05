@@ -47,6 +47,7 @@
 
 #include <QToolBar>
 #include <QList>
+#include <QTimer>
 
 #ifdef USE_PHONON
 #include <phonon/audiooutput.h>
@@ -218,6 +219,8 @@ private:
 
     QMap<qint64, int> m_syncMap;
     bool m_lyricSyncerRuninng;
+
+    QTimer saveCurrentPosition;
 
 protected:
     virtual void resizeEvent(QResizeEvent* e);

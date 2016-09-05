@@ -137,6 +137,8 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     setupUi();
     timeLcd->display("00:00");
 
+    saveCurrentPosition.setSingleShot(true);
+
     createConnections();
 
     playRequestedByUser(false);
@@ -528,6 +530,11 @@ void QMusicPlayer::tick(qint64 time)
     QTime displayTime(0, (time / 60000) % 60, (time / 1000) % 60);
 
     timeLcd->display(displayTime.toString("mm:ss"));
+
+    if (!saveCurrentPosition.isActive()) {
+        insertToAlbum(currentID, currentFile(), currentTitle, time, albumManager->currentAlbumName());
+        saveCurrentPosition.start(1000);
+    }
 }
 
 void QMusicPlayer::load(int index)
@@ -1330,6 +1337,7 @@ void QMusicPlayer::insertToAlbum(int mediaID, const QString &mediaPath, const QS
         pushAlbum(album, albumName);
     }
     else {
+        delete album->mediaItems.take(mediaID);
         album->mediaItems.insert(mediaID, mediaTag);
     }
 }
