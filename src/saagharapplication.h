@@ -56,6 +56,7 @@ public:
         SettingsFile,
         BookmarksFile,
         AlbumFile,
+        AlbumDir,
         ResourcesDir,
         UserDataDir
     };

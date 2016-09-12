@@ -36,6 +36,7 @@
 #include "saagharapplication.h"
 #include "settingsmanager.h"
 #include "outlinemodel.h"
+#include "audiorepodownloader.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -1790,7 +1791,9 @@ void SaagharWindow::setupUi()
         break;
     }
 
-    actionInstance("DownloadRepositories", ICON_PATH + "/download-sets-repositories.png", QObject::tr("&Download From Repositories..."));
+    actionInstance("DownloadRepositories", ICON_PATH + "/download-sets-repositories.png", QObject::tr("&Dataset Repositories..."));
+
+    actionInstance("DownloadAudioRepositories", ICON_PATH + "/download-audio-repositories.png", QObject::tr("&Audio Repositories..."));
 #if 0
     actionInstance("Registeration", ICON_PATH + "/registeration.png", QObject::tr("&Registeration..."));
 #endif
@@ -1905,7 +1908,9 @@ void SaagharWindow::setupUi()
     menuTools->addSeparator();
     menuTools->addAction(actionInstance("actionImportNewSet"));
     menuTools->addAction(actionInstance("actionRemovePoet"));
+    menuTools->addSeparator();
     menuTools->addAction(actionInstance("DownloadRepositories"));
+    menuTools->addAction(actionInstance("DownloadAudioRepositories"));
     menuTools->addSeparator();
     menuTools->addAction(actionInstance("actionSettings"));
 
@@ -1978,6 +1983,7 @@ QMenu* SaagharWindow::cornerMenu()
         m_cornerMenu->addSeparator();
         m_cornerMenu->addAction(actionInstance("actionSettings"));
         m_cornerMenu->addAction(actionInstance("DownloadRepositories"));
+        m_cornerMenu->addAction(actionInstance("DownloadAudioRepositories"));
         m_cornerMenu->addAction(actionInstance("actionCheckUpdates"));
 #if 0
         m_cornerMenu->addAction(actionInstance("Registeration"));
@@ -3107,6 +3113,15 @@ void SaagharWindow::namedActionTriggered(bool checked)
         QtWin::easyBlurUnBlur(DatabaseBrowser::dbUpdater, VARB("SaagharWindow/UseTransparecy"));
 
         DatabaseBrowser::dbUpdater->exec();
+    }
+    else if (actionName == "DownloadAudioRepositories") {
+        if (!m_audioRepoDownloader) {
+            m_audioRepoDownloader = new AudioRepoDownloader(this);
+        }
+
+        QtWin::easyBlurUnBlur(m_audioRepoDownloader, VARB("SaagharWindow/UseTransparecy"));
+
+        m_audioRepoDownloader->exec();
     }
     else if (actionName == "actionFaal") {
         openRandomPoem(24, VARB("SaagharWindow/RandomOpenNewTab"));// '24' is for Hafez!
