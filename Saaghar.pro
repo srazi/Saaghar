@@ -43,9 +43,9 @@ DEFINES += GIT_REVISION=\\\"""$$rev"\\\""
 win32 {
 
 win32-msvc*{
-    DEFINES += D_MSVC_CC
+    DEFINES += D_MSVC_CC ZLIB_WINAPI
     #QTPLUGIN += qsqlite
-    LIBS += -lzdll
+    LIBS += -l"D:/Qt/Qt5.7.0_msvc_32/5.7/msvc2013/lib/zdll"
 }
 
 win32-g++{

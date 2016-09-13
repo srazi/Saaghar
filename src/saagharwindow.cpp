@@ -36,6 +36,8 @@
 #include "saagharapplication.h"
 #include "settingsmanager.h"
 #include "outlinemodel.h"
+#include "importer/importermanager.h"
+#include "importer/importer_interface.h"
 #include "audiorepodownloader.h"
 
 #include <QTextBrowserDialog>
@@ -1675,6 +1677,10 @@ void SaagharWindow::setupUi()
 
     actionInstance("actionPrintPreview", ICON_PATH + "/print-preview.png", tr("Print Pre&view..."));
 
+    if (ImporterManager::instance()->importerIsAvailable()) {
+        actionInstance("actionImport", ICON_PATH + "/import.png", tr("&Import..."));
+    }
+
     actionInstance("actionExport", ICON_PATH + "/export.png", tr("&Export As..."))->setShortcuts(QKeySequence::SaveAs);
 
     actionInstance("actionExportAsPDF", ICON_PATH + "/export-pdf.png", tr("Exp&ort As PDF..."));
@@ -1841,6 +1847,9 @@ void SaagharWindow::setupUi()
     menuFile->addMenu(menuOpenedTabs);
     menuFile->addMenu(menuClosedTabs);
     menuFile->addSeparator();
+    if (ImporterManager::instance()->importerIsAvailable()) {
+        menuFile->addAction(actionInstance("actionImport"));
+    }
     menuFile->addAction(actionInstance("actionExportAsPDF"));
     menuFile->addAction(actionInstance("actionExport"));
     menuFile->addSeparator();
@@ -3103,6 +3112,28 @@ void SaagharWindow::namedActionTriggered(bool checked)
             if (saagharWidget && saagharWidget->currentPoem != 0) {
                 saagharWidget->refresh();
             }
+        }
+    }
+    else if (actionName == "actionImport") {
+        if (!saagharWidget || !ImporterManager::instance()->importerIsAvailable()) {
+            return;
+        }
+        // "HTML Document (*.html);;TeX - XePersian (*.tex);;Tab Separated (*.csv);;UTF-8 Text (*.txt)"
+        QString importFileName = QFileDialog::getOpenFileName(this, tr("Import..."), QDir::homePath(), ImporterManager::instance()->availableFormats().join(";;"));
+        QFile file(importFileName);
+        qDebug() << __LINE__ << "Import file open: "
+                 << file.open(QFile::ReadOnly);
+        const QString content = QString::fromUtf8(file.readAll());
+        ImporterInterface* importer = ImporterManager::instance()->importer(QFileInfo(file).suffix().toLower());
+        if (importer) {
+            importer->import(content);
+            QTextEdit* doc = new QTextEdit;
+            doc->setAttribute(Qt::WA_DeleteOnClose, true);
+            doc->setPlainText(importer->preview());
+            doc->show();
+        }
+        else {
+            qDebug() << "No importer for: " << QFileInfo(file).suffix().toLower();
         }
     }
     else if (actionName == "DownloadRepositories") {
