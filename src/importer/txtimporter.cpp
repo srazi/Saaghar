@@ -44,13 +44,13 @@ QString TxtImporter::suffix() const
     return "txt";
 }
 
-void TxtImporter::import(const QString &data) const
+void TxtImporter::import(const QString &data)
 {
     m_catContents.clear();
 
     QString rawdata = data;
-    rawdata = rawdata.replace(QChar('\r\n'), QLatin1String("\n"));
-    rawdata = rawdata.replace(QChar('\r'), QLatin1String("\n"));
+    rawdata = rawdata.replace("\r\n", "\n");
+    rawdata = rawdata.replace("\r", "\n");
 
     QStringList lines = rawdata.split("\n");
 m_options.poemStartPattern = "Chapter [0-9]+"; //"  [A-Z][A-Z]+";//       +[^\w]+";
@@ -74,6 +74,7 @@ m_options.contentTypes = Options::NormalText;
     bool noTitle = false;
     bool maybeParagraph = false;
     bool maybePoem = false;
+    GanjoorVerse verse;
     GanjoorPoem poem;
     QList<GanjoorVerse> verses;
     int emptyLineCount = 0;
@@ -89,7 +90,7 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
         startPassed = true;
 
 
-        qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
+ //       qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
         if (createNewPoem) {
             if (!poem.isNull()) {
                 m_catContents.verses.insert(poem._ID, verses);
@@ -108,7 +109,7 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
             continue;
         }
 
-        qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
+  //      qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
         if (!line.trimmed().isEmpty() && line.trimmed().size() < 50 && ((maybePoem && m_options.poemStartPattern.isEmpty()) ||
                 (!m_options.poemStartPattern.isEmpty() &&
                 line.contains(QRegularExpression(m_options.poemStartPattern))))) {
@@ -129,9 +130,19 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
             continue;
         }
 
-        qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
+        qDebug() << "\n============\n" << __LINE__  << emptyLineCount  << (i+1) << "Line: " << line << "++++++" << line.size() << "\n============\n";
         if (line.trimmed().isEmpty()) {
+            qDebug() << "\n============\n" << __LINE__  << emptyLineCount  << (i+1) << "Line: " << line << "++++++" << line.size() << "\n============\n";
             ++emptyLineCount;
+
+            if (!verse._Text.isEmpty()) {
+                verse._Order = vorder;
+                verse._Text += " [---END OF PARAGRAPH---] ";
+                verses.append(verse);
+                ++vorder;
+                verse._Text.clear();
+            }
+
 //            GanjoorVerse verse;
 //            verse._PoemID = poem._ID;
 //            verse._Order = vorder;
@@ -140,8 +151,9 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
 //            verses.append(verse);
             continue;
         }
+        qDebug() << "\n============\n" << __LINE__  << emptyLineCount  << (i+1) << "Line: " << line << "++++++" << line.size() << "\n============\n";
 
-        qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
+    //    qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
         if (!noTitle && poem._Title.isEmpty()) {
             if (line.size() < 50) {
                 poem._Title = line.trimmed();
@@ -161,86 +173,67 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
             maybePoem = true;
         }
 
-        emptyLineCount = 0;
-
-        qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
+   //     qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
         if (!noTitle && line.size() > 100) {
             noTitle = true;
             poem._Title = QObject::tr("New Poem %1").arg(m_catContents.poems.size() + 1);
         }
 
-        GanjoorVerse verse;
         verse._PoemID = poem._ID;
-        verse._Order = vorder;
         if (justWhitePoem) {
+            verse._Order = vorder;
             verse._Text = line;
             verse._Position = VersePosition::Single;
+            ++vorder;
+            verses.append(verse);
+            verse._Text.clear();
         }
         else if (justClassicalPoem) {
+            verse._Order = vorder;
             verse._Text = line.trimmed();
             verse._Position = VersePosition(vorder % 2);
+            ++vorder;
+            verses.append(verse);
+            verse._Text.clear();
         }
         else if (justNormalText || maybeParagraph || maybePoem) {
-            verse._Text = line.trimmed();
+            verse._Text += line.trimmed();
             verse._Position = VersePosition::Paragraph;
             maybeParagraph = false;
+
+//            if (emptyLineCount > 0 || verse._Text.size() > 3000) {
+//                verse._Order = vorder;
+//                verse._Text += " [---END OF PARAGRAPH---] ";
+//                verses.append(verse);
+//                ++vorder;
+//                verse._Text.clear();
+//                emptyLineCount = 0;
+//            }
         }
         else {
-            verse._Text = "Error: " + line.trimmed();
+            verse._Text += " [---CONTINUE---] Error: " + line.trimmed();
             verse._Position = VersePosition::Paragraph;
             maybeParagraph = false;
+
+//            if (emptyLineCount > 0 || verse._Text.size() > 3000) {
+//                verse._Order = vorder;
+//                verses.append(verse);
+//                ++vorder;
+//                verse._Text.clear();
+//                emptyLineCount = 0;
+//            }
         }
-        ++vorder;
 
-        verses.append(verse);
-    }
-}
-//#include "databasebrowser.h"
-QString TxtImporter::preview() const
-{
-    if (m_catContents.isNull()) {
-        return "EMPTY PREVIEW";
+        emptyLineCount = 0;
     }
 
-//    QList<GanjoorPoem*> ppoems = DatabaseBrowser::instance()->getPoems(24);
-//    QString content;
-//    int count = 0;
-//    foreach (GanjoorPoem *poem, ppoems) {
-//        ++count;
-//        QList<GanjoorVerse*> pverses = DatabaseBrowser::instance()->getVerses(poem->_ID);
-//        content += QString("Poem Title: %1\nPoem ID: %2\nPoem Verse Count: %3\n----------------\n")
-//                .arg(poem->_Title).arg(poem->_ID).arg(pverses.count());
-
-//        foreach (GanjoorVerse *verse, pverses) {
-//            content += QString("%1 - %2\n")
-//                    .arg(verse->_Order + 1).arg(verse->_Text);
-//        }
-//        content += "\n=================================\n\n";
-//        if (count > 4) {
-//            break;
-//        }
-//    }
-
-    QString content;
-    foreach (const GanjoorPoem &poem, m_catContents.poems) {
-        QList<GanjoorVerse> verses = m_catContents.verses.value(poem._ID);
-        content += QString("Poem Title: %1\nPoem ID: %2\nPoem Verse Count: %3\n----------------\n")
-                .arg(poem._Title).arg(poem._ID).arg(verses.count());
-
-        foreach (const GanjoorVerse &verse, verses) {
-            content += QString("%1 - %2\n")
-                    .arg(verse._Order).arg(verse._Text);
-        }
-        content += "\n=================================\n\n";
-    }
-
-    return content;
+    setState(Success);
 }
 
 ImporterInterface::CatContents TxtImporter::importData() const
 {
     if (state() != Success) {
-        m_catContents.clear();
+        return CatContents();
     }
 
     return m_catContents;

@@ -3129,7 +3129,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
             importer->import(content);
             QTextEdit* doc = new QTextEdit;
             doc->setAttribute(Qt::WA_DeleteOnClose, true);
-            doc->setPlainText(importer->preview());
+            doc->setPlainText(ImporterManager::instance()->convertTo(importer->importData(), ImporterManager::PlainText));
             doc->show();
         }
         else {

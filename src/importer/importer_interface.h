@@ -56,7 +56,8 @@ public:
         QList<GanjoorPoem> poems;
         QMap<int, QList<GanjoorVerse> > verses;
 
-        bool isNull() { return poems.isEmpty() || verses.isEmpty(); }
+        CatContents() {}
+        bool isNull() const { return poems.isEmpty() || verses.isEmpty(); }
         void clear() { poems.clear(); verses.clear(); }
     };
 
@@ -65,8 +66,7 @@ public:
 
     virtual QString readableName() const = 0;
     virtual QString suffix() const = 0;
-    virtual void import(const QString &data) const = 0;
-    virtual QString preview() const = 0;
+    virtual void import(const QString &data) = 0;
     virtual CatContents importData() const = 0;
 
     State state() const { return m_state; }
@@ -79,8 +79,8 @@ private:
     State m_state;
 
 protected:
-    mutable CatContents m_catContents;
-    mutable Options m_options;
+    CatContents m_catContents;
+    Options m_options;
 
 };
 

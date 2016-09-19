@@ -31,8 +31,7 @@ public:
 
     QString readableName() const;
     QString suffix() const;
-    void import(const QString &data) const;
-    QString preview() const;
+    void import(const QString &data);
     CatContents importData() const;
 };
 

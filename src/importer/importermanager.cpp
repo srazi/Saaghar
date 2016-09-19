@@ -19,8 +19,9 @@
  *                                                                         *
  ***************************************************************************/
 #include "importermanager.h"
-#include "importer_interface.h"
 #include "txtimporter.h"
+
+#include <QDebug>
 
 ImporterManager* ImporterManager::s_importerManager = 0;
 
@@ -84,4 +85,49 @@ QStringList ImporterManager::availableFormats()
     }
 
     return formats;
+}
+
+QString ImporterManager::convertTo(const ImporterInterface::CatContents &importData, ImporterManager::ConvertType type) const
+{
+    if (type != PlainText) {
+        qWarning() << "Not implemented!";
+    }
+
+    if (importData.isNull()) {
+        return "EMPTY PREVIEW";
+    }
+
+//    QList<GanjoorPoem*> ppoems = DatabaseBrowser::instance()->getPoems(24);
+//    QString content;
+//    int count = 0;
+//    foreach (GanjoorPoem *poem, ppoems) {
+//        ++count;
+//        QList<GanjoorVerse*> pverses = DatabaseBrowser::instance()->getVerses(poem->_ID);
+//        content += QString("Poem Title: %1\nPoem ID: %2\nPoem Verse Count: %3\n----------------\n")
+//                .arg(poem->_Title).arg(poem->_ID).arg(pverses.count());
+
+//        foreach (GanjoorVerse *verse, pverses) {
+//            content += QString("%1 - %2\n")
+//                    .arg(verse->_Order + 1).arg(verse->_Text);
+//        }
+//        content += "\n=================================\n\n";
+//        if (count > 4) {
+//            break;
+//        }
+//    }
+
+    QString content;
+    foreach (const GanjoorPoem &poem, importData.poems) {
+        QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
+        content += QString("Poem Title: %1\nPoem ID: %2\nPoem Verse Count: %3\n----------------\n")
+                .arg(poem._Title).arg(poem._ID).arg(verses.count());
+
+        foreach (const GanjoorVerse &verse, verses) {
+            content += QString("%1 - %2\n")
+                    .arg(verse._Order).arg(verse._Text);
+        }
+        content += "\n=================================\n\n";
+    }
+
+    return content;
 }

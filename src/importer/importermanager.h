@@ -24,13 +24,18 @@
 #include <QString>
 #include <QMap>
 
-class ImporterInterface;
+#include "importer_interface.h"
 
 class ImporterManager
 {
 public:
     static ImporterManager* instance();
     ~ImporterManager();
+    enum ConvertType {
+        EditingText,
+        PlainText,
+        HtmlText
+    };
 
     ImporterInterface* importer(const QString &id);
 
@@ -39,6 +44,7 @@ public:
     bool registerImporter(const QString &id, ImporterInterface* importer);
     void unRegisterImporter(const QString &id);
     QStringList availableFormats();
+    QString convertTo(const ImporterInterface::CatContents &importData, ConvertType type) const;
 
 private:
     Q_DISABLE_COPY(ImporterManager)
