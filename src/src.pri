@@ -32,7 +32,8 @@ HEADERS += \
     $$PWD/audiorepodownloader.h \
     $$PWD/importer/importermanager.h \
     $$PWD/importer/importer_interface.h \
-    $$PWD/importer/txtimporter.h
+    $$PWD/importer/txtimporter.h \
+    $$PWD/importer/importeroptionsdialog.h
 
 FORMS += \
     $$PWD/saagharwindow.ui \
@@ -41,7 +42,8 @@ FORMS += \
     $$PWD/nodatabasedialog.ui \
     $$PWD/searchoptionsdialog.ui \
     $$PWD/selectionmanager.ui \
-    $$PWD/audiorepodownloader.ui
+    $$PWD/audiorepodownloader.ui \
+    $$PWD/importer/importeroptionsdialog.ui
 
 SOURCES += \
     $$PWD/main.cpp \
@@ -69,7 +71,8 @@ SOURCES += \
     $$PWD/selectionmanager.cpp \
     $$PWD/audiorepodownloader.cpp \
     $$PWD/importer/importermanager.cpp \
-    $$PWD/importer/txtimporter.cpp
+    $$PWD/importer/txtimporter.cpp \
+    $$PWD/importer/importeroptionsdialog.cpp
 
 include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)

@@ -20,7 +20,10 @@
  ***************************************************************************/
 #include "importermanager.h"
 #include "txtimporter.h"
+#include "importeroptionsdialog.h"
 
+#include <QFile>
+#include <QFileInfo>
 #include <QDebug>
 
 ImporterManager* ImporterManager::s_importerManager = 0;
@@ -130,4 +133,32 @@ QString ImporterManager::convertTo(const ImporterInterface::CatContents &importD
     }
 
     return content;
+}
+
+bool ImporterManager::initializeImport(const QString &fileName)
+{
+    if (fileName.isEmpty()) {
+        return false;
+    }
+
+    QFile file(fileName);
+    QFileInfo fileInfo(fileName);
+
+    if (!file.open(QFile::ReadOnly)) {
+        return false;
+    }
+
+    const QString content = QString::fromUtf8(file.readAll());
+    const QString suffix = fileInfo.suffix().toLower();
+
+    ImporterInterface* fileImporter = importer(suffix);
+
+    ImporterOptionsDialog* optionDialog = new ImporterOptionsDialog(fileImporter, fileInfo.canonicalFilePath(), content);
+
+    return optionDialog->exec() == QDialog::Accepted;
+//    if (optionDialog->exec() != QDialog::Accepted) {
+//        return false;
+//    }
+
+//    fileImporter->import(content);
 }

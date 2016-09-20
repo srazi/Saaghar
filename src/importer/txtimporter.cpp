@@ -53,8 +53,8 @@ void TxtImporter::import(const QString &data)
     rawdata = rawdata.replace("\r", "\n");
 
     QStringList lines = rawdata.split("\n");
-m_options.poemStartPattern = "Chapter [0-9]+"; //"  [A-Z][A-Z]+";//       +[^\w]+";
-m_options.contentTypes = Options::NormalText;
+//m_options.poemStartPattern = "Chapter [0-9]+"; //"  [A-Z][A-Z]+";//       +[^\w]+";
+//m_options.contentTypes = Options::NormalText;
     const bool justWhitePoem = m_options.contentTypes == Options::WhitePoem;
     const bool justNormalText = m_options.contentTypes == Options::NormalText;
     const bool justClassicalPoem = m_options.contentTypes == Options::Poem;

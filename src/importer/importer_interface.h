@@ -37,10 +37,10 @@ public:
 
     struct Options {
         enum ContentType {
-            NormalText,
-            WhitePoem,
-            Poem,
-            Unknown = -1
+            Unknown = 0x0,
+            NormalText = 0x1,
+            WhitePoem = 0x2,
+            Poem = 0x4
         };
         Q_DECLARE_FLAGS(ContentTypes, ContentType)
 
@@ -61,6 +61,29 @@ public:
         void clear() { poems.clear(); verses.clear(); }
     };
 
+//    static QString contentTypeReadableForm(Options::ContentTypes type) const {
+//        QStringList text;
+//        if (type & Options::NormalText) {
+//            text << QObject::tr("Normal Text");
+//        }
+//        if (type & Options::Poem) {
+//            text << QObject::tr("Classical Poem");
+//        }
+//        if (type & Options::WhitePoem) {
+//            text << QObject::tr("White Poem");
+//        }
+//        if (type == Options::Unknown) {
+//            text << QObject::tr("Undefined");
+//        }
+
+//        return text.join(QObject::tr(" & "));
+//    }
+//    static QStringList contentTypesReadableForm() const {
+//        return QStringList() << QObject::tr("Normal Text")
+//                             << QObject::tr("Classical Poem")
+//                             << QObject::tr("White Poem")
+//    }
+
     ImporterInterface() : m_state(Unknown) {}
     virtual ~ImporterInterface() {}
 
@@ -73,7 +96,7 @@ public:
     void setState(State state) { m_state = state; }
 
     Options options() const { return m_options; }
-    Options setOptions(const Options &options) { m_options = options; }
+    void setOptions(const Options &options) { m_options = options; }
 
 private:
     State m_state;

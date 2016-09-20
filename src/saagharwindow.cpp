@@ -3120,21 +3120,24 @@ void SaagharWindow::namedActionTriggered(bool checked)
         }
         // "HTML Document (*.html);;TeX - XePersian (*.tex);;Tab Separated (*.csv);;UTF-8 Text (*.txt)"
         QString importFileName = QFileDialog::getOpenFileName(this, tr("Import..."), QDir::homePath(), ImporterManager::instance()->availableFormats().join(";;"));
-        QFile file(importFileName);
-        qDebug() << __LINE__ << "Import file open: "
-                 << file.open(QFile::ReadOnly);
-        const QString content = QString::fromUtf8(file.readAll());
-        ImporterInterface* importer = ImporterManager::instance()->importer(QFileInfo(file).suffix().toLower());
-        if (importer) {
-            importer->import(content);
-            QTextEdit* doc = new QTextEdit;
-            doc->setAttribute(Qt::WA_DeleteOnClose, true);
-            doc->setPlainText(ImporterManager::instance()->convertTo(importer->importData(), ImporterManager::PlainText));
-            doc->show();
-        }
-        else {
-            qDebug() << "No importer for: " << QFileInfo(file).suffix().toLower();
-        }
+        ImporterManager::instance()->initializeImport(importFileName);
+//        QFile file(importFileName);
+//        qDebug() << __LINE__ << "Import file open: "
+//                 << file.open(QFile::ReadOnly);
+//        const QString content = QString::fromUtf8(file.readAll());
+//        ImporterInterface* importer = ImporterManager::instance()->importer(QFileInfo(file).suffix().toLower());
+//        if (importer) {
+//            if (ImporterManager::instance()->initializeImport(importer, importFileName)) {
+//                importer->import(content);
+//                QTextEdit* doc = new QTextEdit;
+//                doc->setAttribute(Qt::WA_DeleteOnClose, true);
+//                doc->setPlainText(ImporterManager::instance()->convertTo(importer->importData(), ImporterManager::PlainText));
+//                doc->show();
+//            }
+//        }
+//        else {
+//            qDebug() << "No importer for: " << QFileInfo(file).suffix().toLower();
+//        }
     }
     else if (actionName == "DownloadRepositories") {
         if (!DatabaseBrowser::dbUpdater) {
