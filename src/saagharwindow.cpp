@@ -3119,8 +3119,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
             return;
         }
         // "HTML Document (*.html);;TeX - XePersian (*.tex);;Tab Separated (*.csv);;UTF-8 Text (*.txt)"
-        QString importFileName = QFileDialog::getOpenFileName(this, tr("Import..."), QDir::homePath(), ImporterManager::instance()->availableFormats().join(";;"));
-        ImporterManager::instance()->initializeImport(importFileName);
+        ImporterManager::instance()->initializeImport();
 //        QFile file(importFileName);
 //        qDebug() << __LINE__ << "Import file open: "
 //                 << file.open(QFile::ReadOnly);

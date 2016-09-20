@@ -46,7 +46,7 @@ public:
     QStringList availableFormats();
     QString convertTo(const ImporterInterface::CatContents &importData, ConvertType type) const;
 
-    bool initializeImport(const QString &fileName);
+    bool initializeImport();//const QString &fileName);
 
 private:
     Q_DISABLE_COPY(ImporterManager)
