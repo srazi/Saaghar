@@ -53,18 +53,10 @@ void TxtImporter::import(const QString &data)
     rawdata = rawdata.replace("\r", "\n");
 
     QStringList lines = rawdata.split("\n");
-//m_options.poemStartPattern = "Chapter [0-9]+"; //"  [A-Z][A-Z]+";//       +[^\w]+";
-//m_options.contentTypes = Options::NormalText;
+
     const bool justWhitePoem = m_options.contentTypes == Options::WhitePoem;
     const bool justNormalText = m_options.contentTypes == Options::NormalText;
     const bool justClassicalPoem = m_options.contentTypes == Options::Poem;
-//    const bool justNormalText = m_options.contentTypes == Options::NormalText;
-//    const bool justClassicalPoem = m_options.contentTypes == Options::Poem;
-
-//    m_catContents.poet._ID = 1000000;
-//    m_catContents.poet._CatID = 10000000;
-//    m_catContents.poet._Name = QObject::tr("New Poet");
-
 
     const int catId = 1000000 + (qrand()/2);
     const int poemId = 10000000 + (qrand()/100);
@@ -79,7 +71,7 @@ void TxtImporter::import(const QString &data)
     QList<GanjoorVerse> verses;
     int emptyLineCount = 0;
     int vorder = 0;
-qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n";
+
     for (int i = 0; i < lines.size(); ++i) {
         const QString &line = lines.at(i);
 
@@ -89,8 +81,6 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
 
         startPassed = true;
 
-
- //       qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
         if (createNewPoem) {
             if (!poem.isNull()) {
                 m_catContents.verses.insert(poem._ID, verses);
@@ -100,7 +90,6 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
             poem.setNull();
             poem._CatID = catId ;
             poem._ID = poemId + i;
-            //poem._Title = QObject::tr("New Poem %1").arg(m_catContents.poems.size() + 1);
             createNewPoem = false;
             noTitle = false;
             maybePoem = false;
@@ -109,7 +98,6 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
             continue;
         }
 
-  //      qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
         if (!line.trimmed().isEmpty() && ((maybePoem && line.trimmed().size() < 50 && m_options.poemStartPattern.isEmpty()) ||
                 (!m_options.poemStartPattern.isEmpty() &&
                 line.contains(QRegularExpression(m_options.poemStartPattern))))) {
@@ -135,23 +123,14 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
 
             if (!verse._Text.isEmpty()) {
                 verse._Order = vorder;
-                verse._Text += " [---END OF PARAGRAPH---] ";
                 verses.append(verse);
                 ++vorder;
                 verse._Text.clear();
             }
 
-//            GanjoorVerse verse;
-//            verse._PoemID = poem._ID;
-//            verse._Order = vorder;
-//            ++vorder;
-
-//            verses.append(verse);
             continue;
         }
 
-
-    //    qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
         if (!noTitle && poem._Title.isEmpty()) {
             if (line.size() < 50) {
                 poem._Title = line.trimmed();
@@ -176,7 +155,6 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
             maybePoem = true;
         }
 
-   //     qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
         if (!noTitle && line.size() > 100) {
             noTitle = true;
             poem._Title = QObject::tr("New Poem %1").arg(m_catContents.poems.size() + 1);
@@ -204,29 +182,12 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
             verse._Text += prefix + line.trimmed();
             verse._Position = VersePosition::Paragraph;
             maybeParagraph = false;
-
-//            if (emptyLineCount > 0 || verse._Text.size() > 3000) {
-//                verse._Order = vorder;
-//                verse._Text += " [---END OF PARAGRAPH---] ";
-//                verses.append(verse);
-//                ++vorder;
-//                verse._Text.clear();
-//                emptyLineCount = 0;
-//            }
         }
         else {
-            QString prefix = verse._Text.isEmpty() ? "" : " [---CONTINUE---] Error: ";
+            QString prefix = verse._Text.isEmpty() ? "" : " ";
             verse._Text += prefix + line.trimmed();
             verse._Position = VersePosition::Paragraph;
             maybeParagraph = false;
-
-//            if (emptyLineCount > 0 || verse._Text.size() > 3000) {
-//                verse._Order = vorder;
-//                verses.append(verse);
-//                ++vorder;
-//                verse._Text.clear();
-//                emptyLineCount = 0;
-//            }
         }
 
         emptyLineCount = 0;

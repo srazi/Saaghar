@@ -14,7 +14,7 @@ class ImporterOptionsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ImporterOptionsDialog(QWidget *parent = 0);//ImporterInterface* importer=0, const QString &fileName=QString(), const QString &content, QWidget *parent = 0);
+    explicit ImporterOptionsDialog(QWidget *parent = 0);
     ~ImporterOptionsDialog();
 
 public slots:

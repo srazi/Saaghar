@@ -3,43 +3,31 @@
 #include "importer_interface.h"
 #include "importermanager.h"
 
+#include <QDebug>
 #include <QFile>
 #include <QFileInfo>
 #include <QFileDialog>
 
-ImporterOptionsDialog::ImporterOptionsDialog(QWidget *parent) : //ImporterInterface* importer, const QString &fileName, const QString &content, QWidget *parent) :
+ImporterOptionsDialog::ImporterOptionsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ImporterOptionsDialog),
     m_importer(0)
-  //,  m_content(content)
 {
     setAttribute(Qt::WA_DeleteOnClose, true);
     ui->setupUi(this);
 
-    //ui->fileNameLineEdit->setText(fileName);
-    //ui->contentTextEdit->setText(m_content);
     ui->contentTextEdit->setReadOnly(true);
     ui->previewTextEdit->setReadOnly(true);
     ui->previewHtmlEdit->setReadOnly(true);
 
     setDisableElements(true);
     ui->importPushButton->setDisabled(true);
-//    ui->poemTitleLineEdit->setText(m_importer->options().poemStartPattern);
-
-//    ui->normalTextCheckBox->setChecked(m_importer->options().contentTypes & ImporterInterface::Options::NormalText);
-//    ui->classicCheckBox->setChecked(m_importer->options().contentTypes & ImporterInterface::Options::Poem);
-//    ui->whiteCheckBox->setChecked(m_importer->options().contentTypes & ImporterInterface::Options::WhitePoem);
-
 
     connect(ui->browsePushButton, SIGNAL(clicked(bool)), this, SLOT(doLoadFile()));
     connect(ui->previewPushButton, SIGNAL(clicked(bool)), this, SLOT(doImportPreview()));
     connect(ui->importPushButton, SIGNAL(clicked(bool)), this, SLOT(doSaveImport()));
     connect(ui->cancelPushButton, SIGNAL(clicked(bool)), this, SLOT(reject()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged()));
-
-    ui->tabWidget->widget(1)->setProperty("type", QVariant(ImporterManager::PlainText));
-    ui->tabWidget->widget(2)->setProperty("type", QVariant(ImporterManager::HtmlText));
-    ui->tabWidget->widget(3)->setProperty("type", QVariant(ImporterManager::EditingText));
 }
 
 ImporterOptionsDialog::~ImporterOptionsDialog()
@@ -72,18 +60,9 @@ void ImporterOptionsDialog::doImportPreview()
 
     m_importer->setOptions(options);
     m_importer->import(m_content);
-    //ui->previewTextEdit->setText(ImporterManager::instance()->convertTo(m_importer->importData(), ImporterManager::PlainText));
 
-    //ui->importPushButton->setText(tr("Close"));
     ui->importPushButton->setDisabled(false);
-//    disconnect(ui->importPushButton, SIGNAL(clicked(bool)), this, SLOT(doImport()));
-    //    connect(ui->importPushButton, SIGNAL(clicked(bool)), this, SLOT(accept()));
 
-
-    //ui->contentTextEdit->setProperty("dirty", QVariant(true));
-//    ui->previewTextEdit->setProperty("dirty", QVariant(true));
-//    ui->previewHtmlEdit->setProperty("dirty", QVariant(true));
-//    ui->editTextEdit->setProperty("dirty", QVariant(true));
     ui->tabWidget->widget(1)->setProperty("dirty", QVariant(true));
     ui->tabWidget->widget(2)->setProperty("dirty", QVariant(true));
     ui->tabWidget->widget(3)->setProperty("dirty", QVariant(true));
@@ -106,15 +85,11 @@ void ImporterOptionsDialog::doLoadFile()
     ui->previewHtmlEdit->clear();
     ui->tabWidget->setCurrentWidget(ui->contentTab);
 
-    //ui->contentTextEdit->setProperty("dirty", QVariant(false));
-//    ui->previewTextEdit->setProperty("dirty", QVariant(false));
-//    ui->previewHtmlEdit->setProperty("dirty", QVariant(false));
-//    ui->editTextEdit->setProperty("dirty", QVariant(false));
     ui->tabWidget->widget(1)->setProperty("dirty", QVariant(false));
     ui->tabWidget->widget(2)->setProperty("dirty", QVariant(false));
     ui->tabWidget->widget(3)->setProperty("dirty", QVariant(false));
 
-    QString fileName = QFileDialog::getOpenFileName(this, tr("Import..."), QDir::homePath(), ImporterManager::instance()->availableFormats().join(";;"));
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Select File To Import..."), QDir::homePath(), ImporterManager::instance()->availableFormats().join(";;"));
 
     QFile file(fileName);
     QFileInfo fileInfo(fileName);
@@ -141,32 +116,21 @@ void ImporterOptionsDialog::doLoadFile()
         ui->whiteCheckBox->setChecked(m_importer->options().contentTypes & ImporterInterface::Options::WhitePoem);
     }
 }
-#include <QDebug>
+
 void ImporterOptionsDialog::currentTabChanged()
 {
-//    qDebug() << "\n\n\n\n IS DIRTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY: "
-//             << ui->tabWidget->currentWidget()->property("dirty")
-//             << ui->tabWidget->currentWidget()->property("type")
-//             << ui->previewTextEdit->property("dirty")
-//             << ui->previewTextEdit->property("type")
-//             << index;
     if (ui->tabWidget->currentWidget()->property("dirty").toBool()) {
         ui->tabWidget->currentWidget()->setProperty("dirty", QVariant(false));
 
         if (ui->tabWidget->currentWidget() == ui->previewPlainTextTab) {
-            qDebug() << "\n\n\n\n IS DIRTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY: previewPlainTextTab";
             ui->previewTextEdit->setText(ImporterManager::instance()->convertTo(m_importer->importData(), ImporterManager::PlainText));
         }
         else if (ui->tabWidget->currentWidget() == ui->previewHtmlTab) {
-            qDebug() << "\n\n\n\n IS DIRTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY: previewHtmlTab";
             ui->previewHtmlEdit->setHtml(ImporterManager::instance()->convertTo(m_importer->importData(), ImporterManager::HtmlText));
         }
         else if (ui->tabWidget->currentWidget() == ui->editTab) {
-            qDebug() << "\n\n\n\n IS DIRTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY: editTab";
             ui->editTextEdit->setText(ImporterManager::instance()->convertTo(m_importer->importData(), ImporterManager::EditingText));
         }
-//        qDebug() << "\n\n\n\n IS DIRTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY: "
-//                 << ui->tabWidget->currentWidget()->property("type");
     }
 }
 

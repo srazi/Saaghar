@@ -23,6 +23,7 @@
 #include "importeroptionsdialog.h"
 
 #include <QDebug>
+#include <QApplication>
 
 ImporterManager* ImporterManager::s_importerManager = 0;
 
@@ -92,25 +93,6 @@ QString ImporterManager::convertTo(const ImporterInterface::CatContents &importD
         return "<EMPTY PREVIEW>";
     }
 
-//    QList<GanjoorPoem*> ppoems = DatabaseBrowser::instance()->getPoems(24);
-//    QString content;
-//    int count = 0;
-//    foreach (GanjoorPoem *poem, ppoems) {
-//        ++count;
-//        QList<GanjoorVerse*> pverses = DatabaseBrowser::instance()->getVerses(poem->_ID);
-//        content += QString("Poem Title: %1\nPoem ID: %2\nPoem Verse Count: %3\n----------------\n")
-//                .arg(poem->_Title).arg(poem->_ID).arg(pverses.count());
-
-//        foreach (GanjoorVerse *verse, pverses) {
-//            content += QString("%1 - %2\n")
-//                    .arg(verse->_Order + 1).arg(verse->_Text);
-//        }
-//        content += "\n=================================\n\n";
-//        if (count > 4) {
-//            break;
-//        }
-//    }
-
     QString content;
 
     if (type == PlainText) {
@@ -131,7 +113,7 @@ QString ImporterManager::convertTo(const ImporterInterface::CatContents &importD
 
         foreach (const GanjoorPoem &poem, importData.poems) {
             QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
-            content += QString("<br><center><h2><b>%1</b></h2><br><h4>Poem ID: %2</h4><br><br><h4>Poem Verse Count: %3</h4><br>--------------------------------<br></center>")//--------------------------------<br></center>")
+            content += QString("<br><center><h2><b>%1</b></h2><br><h4>Poem ID: %2</h4><br><br><h4>Poem Verse Count: %3</h4><br>--------------------------------<br></center>")
                     .arg(poem._Title).arg(poem._ID).arg(verses.count());
 
             foreach (const GanjoorVerse &verse, verses) {
@@ -165,7 +147,7 @@ QString ImporterManager::convertTo(const ImporterInterface::CatContents &importD
                 content += QString("%1%3%2")
                         .arg(openTags).arg(closeTags).arg(verse._Text);
             }
-            //content += "<br><center>==================================================</center><br><br><hr>";
+
             content += "<hr>";
         }
 
@@ -178,17 +160,9 @@ QString ImporterManager::convertTo(const ImporterInterface::CatContents &importD
     return content;
 }
 
-bool ImporterManager::initializeImport()//const QString &fileName)
+bool ImporterManager::initializeImport()
 {
-
-    //ImporterInterface* fileImporter = importer(suffix);
-
-    ImporterOptionsDialog* optionDialog = new ImporterOptionsDialog();//(fileImporter, fileInfo.canonicalFilePath(), content);
+    ImporterOptionsDialog* optionDialog = new ImporterOptionsDialog(qApp->activeWindow());
 
     return optionDialog->exec() == QDialog::Accepted;
-//    if (optionDialog->exec() != QDialog::Accepted) {
-//        return false;
-//    }
-
-//    fileImporter->import(content);
 }

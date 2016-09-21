@@ -61,29 +61,6 @@ public:
         void clear() { poems.clear(); verses.clear(); }
     };
 
-//    static QString contentTypeReadableForm(Options::ContentTypes type) const {
-//        QStringList text;
-//        if (type & Options::NormalText) {
-//            text << QObject::tr("Normal Text");
-//        }
-//        if (type & Options::Poem) {
-//            text << QObject::tr("Classical Poem");
-//        }
-//        if (type & Options::WhitePoem) {
-//            text << QObject::tr("White Poem");
-//        }
-//        if (type == Options::Unknown) {
-//            text << QObject::tr("Undefined");
-//        }
-
-//        return text.join(QObject::tr(" & "));
-//    }
-//    static QStringList contentTypesReadableForm() const {
-//        return QStringList() << QObject::tr("Normal Text")
-//                             << QObject::tr("Classical Poem")
-//                             << QObject::tr("White Poem")
-//    }
-
     ImporterInterface() : m_state(Unknown) {}
     virtual ~ImporterInterface() {}
 
