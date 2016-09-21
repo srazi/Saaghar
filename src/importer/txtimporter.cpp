@@ -110,7 +110,7 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
         }
 
   //      qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
-        if (!line.trimmed().isEmpty() && line.trimmed().size() < 50 && ((maybePoem && m_options.poemStartPattern.isEmpty()) ||
+        if (!line.trimmed().isEmpty() && ((maybePoem && line.trimmed().size() < 50 && m_options.poemStartPattern.isEmpty()) ||
                 (!m_options.poemStartPattern.isEmpty() &&
                 line.contains(QRegularExpression(m_options.poemStartPattern))))) {
             if (!poem.isNull()) {
@@ -161,7 +161,12 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
 
         if (emptyLineCount == 1) {
             if (!justWhitePoem && !justClassicalPoem) {
-                maybeParagraph = true;
+                if (line.size() > 70) {
+                    maybeParagraph = true;
+                }
+                else {
+                    maybeParagraph = false;
+                }
             }
             else if (justWhitePoem || justClassicalPoem) {
                 maybePoem = true;
@@ -178,7 +183,7 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
         }
 
         verse._PoemID = poem._ID;
-        if (justWhitePoem) {
+        if ((line.size() <= 70 && m_options.contentTypes & Options::WhitePoem) || justWhitePoem) {
             verse._Order = vorder;
             verse._Text = line;
             verse._Position = VersePosition::Single;
@@ -186,7 +191,7 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
             verses.append(verse);
             verse._Text.clear();
         }
-        else if (justClassicalPoem) {
+        else if ((line.size() <= 70 && m_options.contentTypes & Options::Poem) || justClassicalPoem) {
             verse._Order = vorder;
             verse._Text = line.trimmed();
             verse._Position = VersePosition(vorder % 2);
