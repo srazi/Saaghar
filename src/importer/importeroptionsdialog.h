@@ -23,6 +23,7 @@ public slots:
 
 private slots:
     void doLoadFile();
+    void currentTabChanged();
 
 private:
     void setDisableElements(bool disable);

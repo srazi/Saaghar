@@ -88,12 +88,8 @@ QStringList ImporterManager::availableFormats()
 
 QString ImporterManager::convertTo(const ImporterInterface::CatContents &importData, ImporterManager::ConvertType type) const
 {
-    if (type != PlainText) {
-        qWarning() << "Not implemented!";
-    }
-
     if (importData.isNull()) {
-        return "EMPTY PREVIEW";
+        return "<EMPTY PREVIEW>";
     }
 
 //    QList<GanjoorPoem*> ppoems = DatabaseBrowser::instance()->getPoems(24);
@@ -116,16 +112,67 @@ QString ImporterManager::convertTo(const ImporterInterface::CatContents &importD
 //    }
 
     QString content;
-    foreach (const GanjoorPoem &poem, importData.poems) {
-        QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
-        content += QString("Poem Title: %1\nPoem ID: %2\nPoem Verse Count: %3\n----------------\n")
-                .arg(poem._Title).arg(poem._ID).arg(verses.count());
 
-        foreach (const GanjoorVerse &verse, verses) {
-            content += QString("%1 - %2\n")
-                    .arg(verse._Order).arg(verse._Text);
+    if (type == PlainText) {
+        foreach (const GanjoorPoem &poem, importData.poems) {
+            QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
+            content += QString("Poem Title: %1\nPoem ID: %2\nPoem Verse Count: %3\n----------------\n")
+                    .arg(poem._Title).arg(poem._ID).arg(verses.count());
+
+            foreach (const GanjoorVerse &verse, verses) {
+                content += QString("%1 - %2\n")
+                        .arg(verse._Order).arg(verse._Text);
+            }
+            content += "\n=================================\n\n";
         }
-        content += "\n=================================\n\n";
+    }
+    else if (type == HtmlText) {
+        content += "<html><body>";
+
+        foreach (const GanjoorPoem &poem, importData.poems) {
+            QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
+            content += QString("<br><center><h2><b>%1</b></h2><br><h4>Poem ID: %2</h4><br><br><h4>Poem Verse Count: %3</h4><br>--------------------------------<br></center>")//--------------------------------<br></center>")
+                    .arg(poem._Title).arg(poem._ID).arg(verses.count());
+
+            foreach (const GanjoorVerse &verse, verses) {
+                QString openTags = "<p>";
+                QString closeTags = "</p>";
+                if (verse._Position == VersePosition::Paragraph) {
+                    openTags = "<p style=\"margin-bottom: 0.2cm\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+                    closeTags = "</p>";
+                }
+                else if (verse._Position == VersePosition::Single) {
+                    openTags = "<p>";
+                    closeTags = "</p>";
+                }
+                else if (verse._Position == VersePosition::CenteredVerse1) {
+                    openTags = "<center><p style=\"margin-top: 0.1cm\">";
+                    closeTags = "</p></center>";
+                }
+                else if (verse._Position == VersePosition::CenteredVerse2) {
+                    openTags = "<center><p style=\"margin-bottom: 0.2cm\">";
+                    closeTags = "</p></center><br>";
+                }
+                else if (verse._Position == VersePosition::Right) {
+                    openTags = "<center><p>";
+                    closeTags = "</p></center>";
+                }
+                else if (verse._Position == VersePosition::Left) {
+                    openTags = "<center><p style=\"margin-bottom: 1cm\">";
+                    closeTags = "</p></center><br>";
+                }
+
+                content += QString("%1%3%2")
+                        .arg(openTags).arg(closeTags).arg(verse._Text);
+            }
+            //content += "<br><center>==================================================</center><br><br><hr>";
+            content += "<hr>";
+        }
+
+        content += "</body></html>";
+    }
+    else if (type == EditingText) {
+        return "Not implemented!";
     }
 
     return content;
