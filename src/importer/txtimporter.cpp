@@ -130,9 +130,7 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
             continue;
         }
 
-        qDebug() << "\n============\n" << __LINE__  << emptyLineCount  << (i+1) << "Line: " << line << "++++++" << line.size() << "\n============\n";
         if (line.trimmed().isEmpty()) {
-            qDebug() << "\n============\n" << __LINE__  << emptyLineCount  << (i+1) << "Line: " << line << "++++++" << line.size() << "\n============\n";
             ++emptyLineCount;
 
             if (!verse._Text.isEmpty()) {
@@ -151,7 +149,7 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
 //            verses.append(verse);
             continue;
         }
-        qDebug() << "\n============\n" << __LINE__  << emptyLineCount  << (i+1) << "Line: " << line << "++++++" << line.size() << "\n============\n";
+
 
     //    qDebug() << __LINE__ << "\n============\nLine: " << line << "++++++" << line.size() << "\n============\n";
         if (!noTitle && poem._Title.isEmpty()) {
@@ -197,7 +195,8 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
             verse._Text.clear();
         }
         else if (justNormalText || maybeParagraph || maybePoem) {
-            verse._Text += line.trimmed();
+            QString prefix = verse._Text.isEmpty() ? "" : " ";
+            verse._Text += prefix + line.trimmed();
             verse._Position = VersePosition::Paragraph;
             maybeParagraph = false;
 
@@ -211,7 +210,8 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
 //            }
         }
         else {
-            verse._Text += " [---CONTINUE---] Error: " + line.trimmed();
+            QString prefix = verse._Text.isEmpty() ? "" : " [---CONTINUE---] Error: ";
+            verse._Text += prefix + line.trimmed();
             verse._Position = VersePosition::Paragraph;
             maybeParagraph = false;
 
@@ -225,6 +225,15 @@ qDebug() << "\n============\nLine count: " <<  lines.size() << "\n============\n
         }
 
         emptyLineCount = 0;
+    }
+
+    if (!verse._Text.isEmpty()) {
+        verse._Order = vorder;
+        verses.append(verse);
+    }
+    if (!poem.isNull()) {
+        m_catContents.verses.insert(poem._ID, verses);
+        m_catContents.poems.append(poem);
     }
 
     setState(Success);
