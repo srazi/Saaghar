@@ -16,7 +16,7 @@ ImporterOptionsDialog::ImporterOptionsDialog(QWidget *parent) :
     setAttribute(Qt::WA_DeleteOnClose, true);
     ui->setupUi(this);
 
-    ui->contentTextEdit->setReadOnly(true);
+    // ui->contentTextEdit->setReadOnly(true);
     ui->previewTextEdit->setReadOnly(true);
     ui->previewHtmlEdit->setReadOnly(true);
 
@@ -38,9 +38,12 @@ ImporterOptionsDialog::~ImporterOptionsDialog()
 
 void ImporterOptionsDialog::doImportPreview()
 {
+    m_content = ui->contentTextEdit->toPlainText();
+
     if (m_content.isEmpty() || !m_importer) {
         return;
     }
+
     ui->tabWidget->setCurrentWidget(ui->contentTab);
 
     ImporterInterface::Options options;
