@@ -221,22 +221,22 @@ QString ImporterManager::convertToSED(const ImporterInterface::CatContents &impo
     QString catTitle = "catTitle";
 
     content += "#SAAGHAR!SED!v0.1\n#SED!LANGUAGE!FA_IR\n";
-    content += QString("#SED!CAT!START!\n#CAT!UID!%1\n#CAT!CATID!0\n#CAT!TITLE!%2\n"
-                       "#SED!CAT!START!\n#CAT!UID!%3\n#CAT!CATUID!%1\n#CAT!TITLE!%4\n")
+    content += QString("#SED!CAT!START!#CAT!UID!%1#CAT!CATID!0\n#CAT!TITLE!%2\n"
+                       "#SED!CAT!START!#CAT!UID!%3#CAT!CATUID!%1\n#CAT!TITLE!%4\n")
             .arg(poetUID).arg(poetTitle).arg(catUID).arg(catTitle);
 
-    content += "\n######################\n######################\n";
+    content += "######################\n######################\n";
 
     foreach (const GanjoorPoem &poem, importData.poems) {
         QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
-        content += QString("#SED!POEM!START!\n#POEM!CATUID!%1\n#POEM!ID!%2\n#POEM!TITLE!%3\n#POEM!VERSECOUNT!%4\n")
+        content += QString("#SED!POEM!START!#POEM!CATUID!%1#POEM!ID!%2#POEM!VERSECOUNT!%4\n#POEM!TITLE!%3\n")
                 .arg(catUID).arg(poem._ID).arg(poem._Title).arg(verses.count());
 
         foreach (const GanjoorVerse &verse, verses) {
-            content += QString("#SED!VERSE!START!\n#VERSE!ORDER!%1\n#VERSE!POSITION!%2\n#VERSE!TEXT!%3\n")
+            content += QString("#SED!VERSE!START!#VERSE!ORDER!%1#VERSE!POSITION!%2\n#VERSE!TEXT!%3\n")
                     .arg(verse._Order).arg(versePositionToString(verse._Position)).arg(verse._Text);
         }
-        content += "\n######################\n";
+        content += "######################\n";
     }
 
     return content;
