@@ -22,6 +22,7 @@ ImporterOptionsDialog::ImporterOptionsDialog(QWidget *parent) :
 
     setDisableElements(true);
     ui->importPushButton->setDisabled(true);
+    ui->tabWidget->removeTab(3);
 
     connect(ui->browsePushButton, SIGNAL(clicked(bool)), this, SLOT(doLoadFile()));
     connect(ui->previewPushButton, SIGNAL(clicked(bool)), this, SLOT(doImportPreview()));
@@ -65,7 +66,7 @@ void ImporterOptionsDialog::doImportPreview()
 
     ui->tabWidget->widget(1)->setProperty("dirty", QVariant(true));
     ui->tabWidget->widget(2)->setProperty("dirty", QVariant(true));
-    ui->tabWidget->widget(3)->setProperty("dirty", QVariant(true));
+//    ui->tabWidget->widget(3)->setProperty("dirty", QVariant(true));
 }
 
 void ImporterOptionsDialog::doSaveImport()
@@ -87,7 +88,7 @@ void ImporterOptionsDialog::doLoadFile()
 
     ui->tabWidget->widget(1)->setProperty("dirty", QVariant(false));
     ui->tabWidget->widget(2)->setProperty("dirty", QVariant(false));
-    ui->tabWidget->widget(3)->setProperty("dirty", QVariant(false));
+//    ui->tabWidget->widget(3)->setProperty("dirty", QVariant(false));
 
     QString fileName = QFileDialog::getOpenFileName(this, tr("Select File To Import..."), QDir::homePath(), ImporterManager::instance()->availableFormats().join(";;"));
 
@@ -128,9 +129,9 @@ void ImporterOptionsDialog::currentTabChanged()
         else if (ui->tabWidget->currentWidget() == ui->previewHtmlTab) {
             ui->previewHtmlEdit->setHtml(ImporterManager::instance()->convertTo(m_importer->importData(), ImporterManager::HtmlText));
         }
-        else if (ui->tabWidget->currentWidget() == ui->editTab) {
-            ui->editTextEdit->setText(ImporterManager::instance()->convertTo(m_importer->importData(), ImporterManager::EditingText));
-        }
+//        else if (ui->tabWidget->currentWidget() == ui->editTab) {
+//            ui->editTextEdit->setText(ImporterManager::instance()->convertTo(m_importer->importData(), ImporterManager::EditingText));
+//        }
     }
 }
 
