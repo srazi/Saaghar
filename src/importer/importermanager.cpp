@@ -90,7 +90,7 @@ QStringList ImporterManager::availableFormats()
 QString ImporterManager::convertTo(const ImporterInterface::CatContents &importData, ImporterManager::ConvertType type) const
 {
     if (importData.isNull()) {
-        return "<EMPTY PREVIEW>";
+        return QObject::tr("<EMPTY PREVIEW>");
     }
 
     QString content;
@@ -154,7 +154,89 @@ QString ImporterManager::convertTo(const ImporterInterface::CatContents &importD
         content += "</body></html>";
     }
     else if (type == EditingText) {
-        return "Not implemented!";
+        content = convertToSED(importData);
+    }
+
+    return content;
+}
+
+static QString versePositionToString(VersePosition position) {
+    switch (position) {
+    case Right:
+        return "_RIGHT_";
+        break;
+    case Left:
+        return "_LEFT_";
+        break;
+    case CenteredVerse1:
+        return "_CENTERED_VERSE_1_";
+        break;
+    case CenteredVerse2:
+        return "_CENTERED_VERSE_2_";
+        break;
+    case Single:
+        return "_SINGLE_";
+        break;
+    case Paragraph:
+        return "_PARAGRAPH_";
+        break;
+    default:
+        break;
+    }
+    return "_UNKNOWN_";
+}
+
+/*******************************************************************************/
+// tags for Version-0.1 of Saaghar Easy Editable Dataset Format (SED)
+// #SAAGHAR!SED!         // start of SED file
+// #SED!LANGUAGE!        // SED file language
+// #SED!CAT!START!       // start of cat
+// #CAT!ID!              // ganjoor id of category
+// #CAT!UID!             // unique id of category
+// #CAT!CATID!           // ganjoor id of toplevel category of current category
+// #CAT!CATUID!          // unique id of toplevel category of current category
+// #CAT!TITLE!           // title of category
+// #SED!POEM!START!      // start of poem
+// #POEM!CATID!          // ganjoor id of toplevel category of current poem
+// #POEM!CATUID!         // unique id of toplevel category of current poem
+// #POEM!ID!             // ganjoor id of poem
+// #POEM!UID!            // unique id of poem
+// #POEM!TITLE!          // title of poem
+// #POEM!VERSECOUNT!     // title of poem
+// #SED!VERSE!START!     // start of verse
+// #VERSE!ORDER!         // verse order within poem
+// #VERSE!POSITION!      // verse type and position
+// #VERSE!TEXT!          // verse text
+// #SED!VERSE!END!       // end of verse
+// #SED!POEM!END!        // end of poem
+// #SED!CAT!END!         // end of cat
+/*******************************************************************************/
+QString ImporterManager::convertToSED(const ImporterInterface::CatContents &importData) const
+{
+    QString content;
+
+    QString poetUID = "poetUID";
+    QString catUID = "catUID";
+    QString poetTitle = "poetTitle";
+    QString catTitle = "catTitle";
+
+    content += "#SAAGHAR!SED!v0.1\n#SED!LANGUAGE!FA_IR\n";
+    content += QString("#SED!CAT!START!\n#CAT!UID!%1\n#CAT!CATID!0\n#CAT!TITLE!%2\n"
+                       "#SED!CAT!START!\n#CAT!UID!%3\n#CAT!CATUID!%1\n#CAT!TITLE!%4\n")
+            .arg(poetUID).arg(poetTitle).arg(catUID).arg(catTitle);
+
+    content += "\n######################\n######################\n";
+
+    foreach (const GanjoorPoem &poem, importData.poems) {
+        QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
+        content += QString("#SED!POEM!START!\n#POEM!CATUID!%1\n#POEM!ID!%2\n#POEM!TITLE!%3\n#POEM!VERSECOUNT!%4\n")
+                .arg(catUID).arg(poem._ID).arg(poem._Title).arg(verses.count());
+
+        foreach (const GanjoorVerse &verse, verses) {
+            content += QString("#SED!VERSE!START!\n#VERSE!ORDER!%1\n#VERSE!POSITION!%2\n#VERSE!TEXT!%3\n")
+                    .arg(verse._Order).arg(versePositionToString(verse._Position)).arg(verse._Text);
+        }
+        content += "\n######################\n";
     }
 
     return content;

@@ -45,6 +45,7 @@ public:
     void unRegisterImporter(const QString &id);
     QStringList availableFormats();
     QString convertTo(const ImporterInterface::CatContents &importData, ConvertType type) const;
+    QString convertToSED(const ImporterInterface::CatContents &importData) const;
 
     bool initializeImport();
 
