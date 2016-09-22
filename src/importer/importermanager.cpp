@@ -98,12 +98,12 @@ QString ImporterManager::convertTo(const ImporterInterface::CatContents &importD
     if (type == PlainText) {
         foreach (const GanjoorPoem &poem, importData.poems) {
             QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
-            content += QString("Poem Title: %1\nPoem ID: %2\nPoem Verse Count: %3\n----------------\n")
-                    .arg(poem._Title).arg(poem._ID).arg(verses.count());
+            content += QString("Poem Title: %1\n----------------\n")
+                    .arg(poem._Title);
 
             foreach (const GanjoorVerse &verse, verses) {
                 content += QString("%1 - %2\n")
-                        .arg(verse._Order).arg(verse._Text);
+                        .arg(verse._Order + 1).arg(verse._Text);
             }
             content += "\n=================================\n\n";
         }
@@ -113,8 +113,8 @@ QString ImporterManager::convertTo(const ImporterInterface::CatContents &importD
 
         foreach (const GanjoorPoem &poem, importData.poems) {
             QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
-            content += QString("<br><center><h2><b>%1</b></h2><br><h4>Poem ID: %2</h4><br><br><h4>Poem Verse Count: %3</h4><br>--------------------------------<br></center>")
-                    .arg(poem._Title).arg(poem._ID).arg(verses.count());
+            content += QString("<br><center><h2><b>%1</b></h2><br>--------------------------------<br></center>")
+                    .arg(poem._Title);
 
             foreach (const GanjoorVerse &verse, verses) {
                 QString openTags = "<p>";
@@ -160,19 +160,19 @@ QString ImporterManager::convertTo(const ImporterInterface::CatContents &importD
     return content;
 }
 
-static QString versePositionToString(VersePosition position) {
+static QString lineTypeFromPosition(VersePosition position) {
     switch (position) {
     case Right:
-        return "_RIGHT_";
+        return "_CLASSIC_POEM_";
         break;
     case Left:
-        return "_LEFT_";
+        return "_CLASSIC_POEM_";
         break;
     case CenteredVerse1:
-        return "_CENTERED_VERSE_1_";
+        return "_CLASSIC_POEM_";
         break;
     case CenteredVerse2:
-        return "_CENTERED_VERSE_2_";
+        return "_CLASSIC_POEM_";
         break;
     case Single:
         return "_SINGLE_";
@@ -203,6 +203,7 @@ static QString versePositionToString(VersePosition position) {
 // #POEM!UID!            // unique id of poem
 // #POEM!TITLE!          // title of poem
 // #POEM!VERSECOUNT!     // title of poem
+// #SED!VERSES!START!    // start of verses
 // #SED!VERSE!START!     // start of verse
 // #VERSE!ORDER!         // verse order within poem
 // #VERSE!POSITION!      // verse type and position
@@ -220,21 +221,29 @@ QString ImporterManager::convertToSED(const ImporterInterface::CatContents &impo
     QString poetTitle = "poetTitle";
     QString catTitle = "catTitle";
 
-    content += "#SAAGHAR!SED!v0.1\n#SED!LANGUAGE!FA_IR\n";
-    content += QString("#SED!CAT!START!#CAT!UID!%1#CAT!CATID!0\n#CAT!TITLE!%2\n"
-                       "#SED!CAT!START!#CAT!UID!%3#CAT!CATUID!%1\n#CAT!TITLE!%4\n")
-            .arg(poetUID).arg(poetTitle).arg(catUID).arg(catTitle);
+    content += "#SAAGHAR!SED!v0.1\n";
+//    content += QString("#SED!LANGUAGE!FA_IR\n#SED!CAT!START!#CAT!UID!%1#CAT!CATID!0\n#CAT!TITLE!%2\n"
+//                       "#SED!CAT!START!#CAT!UID!%3#CAT!CATUID!%1\n#CAT!TITLE!%4\n")
+//            .arg(poetUID).arg(poetTitle).arg(catUID).arg(catTitle);
 
     content += "######################\n######################\n";
 
     foreach (const GanjoorPoem &poem, importData.poems) {
         QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
-        content += QString("#SED!POEM!START!#POEM!CATUID!%1#POEM!ID!%2#POEM!VERSECOUNT!%4\n#POEM!TITLE!%3\n")
-                .arg(catUID).arg(poem._ID).arg(poem._Title).arg(verses.count());
+//        content += QString("#SED!POEM!START!#POEM!CATUID!%1#POEM!ID!%2#POEM!VERSECOUNT!%4\n#POEM!TITLE!%3\n")
+//                .arg(catUID).arg(poem._ID).arg(poem._Title).arg(verses.count());
+        content += QString("#POEM!TITLE!%3\n").arg(poem._Title);
 
+        QString lastPosition;
+        // content += QString("#SED!VERSES!START!\n");
         foreach (const GanjoorVerse &verse, verses) {
-            content += QString("#SED!VERSE!START!#VERSE!ORDER!%1#VERSE!POSITION!%2\n#VERSE!TEXT!%3\n")
-                    .arg(verse._Order).arg(versePositionToString(verse._Position)).arg(verse._Text);
+            if (lastPosition != lineTypeFromPosition(verse._Position)) {
+                lastPosition = lineTypeFromPosition(verse._Position);
+                content += QString("###\n#VERSE!POSITION!%1\n").arg(lastPosition);
+            }
+            content += QString("%1\n").arg(verse._Text);
+//            content += QString("#SED!VERSE!START!#VERSE!ORDER!%1#VERSE!POSITION!%2\n#VERSE!TEXT!%3\n")
+//                    .arg(verse._Order).arg(versePositionToString(verse._Position)).arg(verse._Text);
         }
         content += "######################\n";
     }
