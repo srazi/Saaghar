@@ -21,7 +21,7 @@ ImporterOptionsDialog::ImporterOptionsDialog(QWidget *parent) :
     ui->previewHtmlEdit->setReadOnly(true);
 
     setDisableElements(true);
-    ui->importPushButton->setDisabled(true);
+    //ui->importPushButton->setDisabled(true);
     ui->tabWidget->removeTab(3);
 
     connect(ui->browsePushButton, SIGNAL(clicked(bool)), this, SLOT(doLoadFile()));
@@ -74,6 +74,33 @@ void ImporterOptionsDialog::doImportPreview()
 
 void ImporterOptionsDialog::doSaveImport()
 {
+    m_content = ui->contentTextEdit->toPlainText();
+
+    if (m_content.isEmpty() || !m_importer) {
+        return;
+    }
+
+    ImporterInterface::Options options;
+
+    options.contentTypes = ImporterInterface::Options::Unknown;
+
+    if (ui->normalTextCheckBox->isChecked()) {
+        options.contentTypes |= ImporterInterface::Options::NormalText;
+    }
+    else if (ui->classicCheckBox->isChecked()) {
+        options.contentTypes |= ImporterInterface::Options::Poem;
+    }
+    else if (ui->whiteCheckBox->isChecked()) {
+        options.contentTypes |= ImporterInterface::Options::WhitePoem;
+    }
+
+    options.poemStartPattern = ui->poemTitleLineEdit->text();
+
+    m_importer->setOptions(options);
+    m_importer->import(m_content);
+
+    ImporterManager::instance()->storeAsDataset(m_importer->importData());
+
     QDialog::accept();
 }
 

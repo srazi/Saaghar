@@ -23,11 +23,17 @@
 
 #include <QString>
 #include <QMap>
+#include <QPointer>
 
 #include "importer_interface.h"
 
-class ImporterManager
+class QLabel;
+class QTreeWidget;
+
+class ImporterManager : public QObject
 {
+    Q_OBJECT
+
 public:
     static ImporterManager* instance();
     ~ImporterManager();
@@ -44,17 +50,30 @@ public:
     bool registerImporter(const QString &id, ImporterInterface* importer);
     void unRegisterImporter(const QString &id);
     QStringList availableFormats();
+    void storeAsDataset(const ImporterInterface::CatContents &importData, bool storeAsGDB = false);
     QString convertTo(const ImporterInterface::CatContents &importData, ConvertType type) const;
     QString convertToSED(const ImporterInterface::CatContents &importData) const;
 
     bool initializeImport();
 
+private slots:
+    void importPathChanged();
+    void clearImportPath();
+    void importHere();
+
+signals:
+    void importDialogDone();
 private:
     Q_DISABLE_COPY(ImporterManager)
     ImporterManager();
     QMap<QString, ImporterInterface*> m_registeredImporters;
 
     static ImporterManager* s_importerManager;
+
+    bool m_forceCreateNew;
+    QList<int> m_importPath;
+    QPointer<QLabel> m_importPathLabel;
+    QPointer<QTreeWidget> m_importPathView;
 };
 
 #endif // IMPORTERMANAGER_H

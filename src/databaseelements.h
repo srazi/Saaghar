@@ -23,7 +23,7 @@
 #define DATABASEELEMENTS_H
 
 #include <QString>
-
+#include <QMetaType>
 
 inline QString qStringMacHelper(const QString &str)
 {
@@ -140,9 +140,8 @@ public:
     inline bool isNull() const {return _ID == -1;}
 };
 
-class GanjoorCat
+struct GanjoorCat
 {
-public:
     int _ID;
     int _PoetID;
     QString _Text;
@@ -177,4 +176,7 @@ public:
         _Url = Url;
     }
 };
+
+Q_DECLARE_METATYPE(GanjoorCat)
+
 #endif // DATABASEELEMENTS_H

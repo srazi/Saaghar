@@ -144,6 +144,23 @@ QModelIndex OutlineModel::find(const QString &key, const QModelIndex &parent) co
     return QModelIndex();
 }
 
+QModelIndex OutlineModel::find(int id, const QModelIndex &parent) const
+{
+    OutlineNode* n = node(parent);
+
+    QVector<OutlineNode*> parentChildren = children(n, true);
+
+    for (int i = 0; i < parentChildren.size(); ++i) {
+        OutlineNode* child = parentChildren.at(i);
+
+        if (child && child->cat && child->cat->_ID == id) {
+            return index(i, 0, parent);
+        }
+    }
+
+    return QModelIndex();
+}
+
 OutlineModel* OutlineModel::instance()
 {
     if (!s_instance) {
@@ -238,6 +255,10 @@ QVariant OutlineModel::data(const QModelIndex &index, int role) const
     case TitleRole:
     case Qt::DisplayRole:
         return cat->_Text;
+    case CategoryRole:
+        QVariant var;
+        var.setValue(*cat);
+        return var;
     }
 }
 
@@ -288,4 +309,44 @@ QModelIndex OutlineModel::index(const QStringList &pathSections, bool* ok) const
     }
 
     return QModelIndex();
+}
+
+QModelIndex OutlineModel::indexFromPath(const QList<int> &path) const
+{
+    QModelIndex parent;
+
+    foreach (int id, path) {
+        parent = find(id, parent);
+    }
+
+    qDebug() << "\n===========\n"  << __LINE__ << __FUNCTION__ << path << parent.data(TitleRole).toString()<< "\n===========\n" ;
+    return parent;
+}
+
+QList<int> OutlineModel::pathFromIndex(const QModelIndex &index) const
+{
+    QList<int> path;
+    QModelIndex ind = index;
+
+    while (ind.isValid()) {
+        path.append(ind.data(IDRole).toInt());
+        ind = parent(ind);
+    }
+
+    qDebug() << "\n===========\n" << __LINE__ << __FUNCTION__ << path << index.data(TitleRole).toString() << "\n===========\n" ;
+    return path;
+}
+
+QStringList OutlineModel::titlePathFromIndex(const QModelIndex &index) const
+{
+    QStringList titlePath;
+    QModelIndex ind = index;
+
+    while (ind.isValid()) {
+        titlePath.prepend(ind.data(TitleRole).toString());
+        ind = parent(ind);
+    }
+
+    qDebug() << "\n===========\n" << __LINE__ << __FUNCTION__ << titlePath << index.data(IDRole).toInt() << "\n===========\n" ;
+    return titlePath;
 }

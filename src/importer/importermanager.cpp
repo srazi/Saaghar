@@ -21,6 +21,7 @@
 #include "importermanager.h"
 #include "txtimporter.h"
 #include "importeroptionsdialog.h"
+#include "databasebrowser.h"
 
 #include <QDebug>
 #include <QApplication>
@@ -28,6 +29,7 @@
 ImporterManager* ImporterManager::s_importerManager = 0;
 
 ImporterManager::ImporterManager()
+    : m_importPathLabel(0)
 {
     registerImporter("txt", new TxtImporter);
 }
@@ -85,6 +87,69 @@ QStringList ImporterManager::availableFormats()
     }
 
     return formats;
+}
+#include "outlinemodel.h"
+#include "saagharwidget.h"
+#include <QTreeView>
+#include <QTreeWidget>
+void ImporterManager::storeAsDataset(const ImporterInterface::CatContents &importData, bool storeAsGDB)
+{
+    if (importData.isNull()) {
+        return;
+    }
+
+
+    if (storeAsGDB) {
+        // ask for file name to save
+    }
+
+    m_importPath.clear();
+    m_forceCreateNew = false;
+
+    QDialog importPath(qApp->activeWindow());
+    QVBoxLayout layout;
+    QLabel infoLabel(tr("The poems will import to the following category:"), &importPath);
+    m_importPathView = new QTreeWidget(&importPath);
+    m_importPathView.data()->header()->hide();
+    QTreeWidgetItem* rootItem = new QTreeWidgetItem(m_importPathView, QStringList(SaagharWidget::rootTitle()));
+    m_importPathView.data()->addTopLevelItem(rootItem);
+    m_importPathView.data()->setCurrentItem(rootItem);
+    //m_importPathView.data()->setModel(OutlineModel::instance());
+    m_importPathLabel = new QLabel(&importPath);
+    QPushButton selectCat(tr("Select or Create a Poet or Book..."), &importPath);
+    QPushButton importNow(tr("Import..."), &importPath);
+    QPushButton clear(tr("Clear"), &importPath);
+    importNow.hide();
+    clear.hide();
+    // selectCat.hide();
+    layout.addWidget(&infoLabel);
+    layout.addWidget(m_importPathView);
+    layout.addWidget(m_importPathLabel);
+    layout.addWidget(&selectCat);
+    layout.addWidget(&clear);
+    layout.addWidget(&importNow);
+    importPath.setLayout(&layout);
+    connect(&selectCat, SIGNAL(clicked(bool)), this, SLOT(importPathChanged()));
+    connect(&clear, SIGNAL(clicked(bool)), this, SLOT(clearImportPath()));
+    connect(&importNow, SIGNAL(clicked(bool)), this, SLOT(importHere()));
+    connect(this, SIGNAL(importDialogDone()), &importPath, SLOT(accept()));
+    // connect(m_importPathView.data()->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), &importNow, SLOT(show()));
+    // connect(m_importPathView.data()->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), &selectCat, SLOT(show()));
+
+    connect(&selectCat, SIGNAL(clicked(bool)), &importNow, SLOT(show()));
+    connect(&selectCat, SIGNAL(clicked(bool)), &clear, SLOT(show()));
+    importPath.exec();
+//    foreach (const GanjoorPoem &poem, importData.poems) {
+//        QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
+//        content += QString("Poem Title: %1\n----------------\n")
+//                .arg(poem._Title);
+
+//        foreach (const GanjoorVerse &verse, verses) {
+//            content += QString("%1 - %2\n")
+//                    .arg(verse._Order + 1).arg(verse._Text);
+//        }
+//        content += "\n=================================\n\n";
+//    }
 }
 
 QString ImporterManager::convertTo(const ImporterInterface::CatContents &importData, ImporterManager::ConvertType type) const
@@ -256,4 +321,98 @@ bool ImporterManager::initializeImport()
     ImporterOptionsDialog* optionDialog = new ImporterOptionsDialog(qApp->activeWindow());
 
     return optionDialog->exec() == QDialog::Accepted;
+}
+#include "selectcreatedialog.h"
+#include <QInputDialog>
+void ImporterManager::importPathChanged()
+{
+    QPushButton* selectCat = qobject_cast<QPushButton*>(sender());
+    if (m_importPathView && !m_importPathView.data()->selectionModel()->selectedIndexes().isEmpty()) {
+        SelectCreateDialog selectCatDialog(qApp->activeWindow());
+        selectCatDialog.setForceCreate(m_forceCreateNew);
+        selectCatDialog.adjustSize();
+
+        if (selectCatDialog.exec() == QDialog::Accepted) {
+            if (selectCatDialog.createNewCat()) {
+                m_forceCreateNew = true;
+                QTreeWidgetItem* childItem = new QTreeWidgetItem(m_importPathView.data()->selectedItems().at(0)
+                                                                 ? m_importPathView.data()->selectedItems().at(0)
+                                                                 : m_importPathView.data()->topLevelItem(0), QStringList(selectCatDialog.newTitle()));
+                m_importPathView.data()->selectedItems().at(0)->addChild(childItem);
+                m_importPathView.data()->setCurrentItem(childItem);
+            }
+            else {
+                m_importPath = selectCatDialog.selectedPath();
+                QList<QTreeWidgetItem*> children = m_importPathView.data()->topLevelItem(0)->takeChildren();
+                qDeleteAll(children);
+                QTreeWidgetItem* rootItem = m_importPathView.data()->topLevelItem(0);
+                foreach (const QString &title, selectCatDialog.selectedTitlePath()) {
+                    QTreeWidgetItem* childItem = new QTreeWidgetItem(rootItem, QStringList(title));
+                    rootItem->addChild(childItem);
+                    m_importPathView.data()->setCurrentItem(childItem);
+                    rootItem = childItem;
+                }
+            }
+        }
+//        QString title = QInputDialog::getText(qApp->activeWindow(), tr("Create New Category"), tr("Enter title:"));
+//        m_importPathView.data()->model()->insertRow(0, m_importPathView.data()->selectionModel()->selectedIndexes().at(0));
+    }
+
+    return;
+    if (m_importPathLabel) {
+        SelectCreateDialog selectCatDialog(qApp->activeWindow(), m_importPath);
+        selectCatDialog.setForceCreate(m_forceCreateNew);
+
+        if (selectCatDialog.exec() == QDialog::Accepted) {
+            if (selectCatDialog.createNewCat()) {
+                m_forceCreateNew = true;
+            }
+            else {
+                m_importPath = selectCatDialog.selectedPath();
+            }
+        }
+//        QDialog selectCatDialog(qApp->activeWindow());
+//        QVBoxLayout layout;
+//        QLabel infoLabel(tr("The poems will import to the following category:"), &importPath);
+
+//        m_importPathLabel.data()->setText(m_importPathLabel.data()->text() + "\nADD PATH");
+//        selectCat->setText(tr("Select or Create a Category or Book..."));
+    }
+}
+
+void ImporterManager::clearImportPath()
+{
+    if (m_importPathView) {
+        QPushButton* clear = qobject_cast<QPushButton*>(sender());
+        QList<QTreeWidgetItem*> children = m_importPathView.data()->topLevelItem(0)->takeChildren();
+        qDeleteAll(children);
+        m_importPathView.data()->setCurrentItem(m_importPathView.data()->topLevelItem(0));
+        m_forceCreateNew = false;
+        clear->hide();
+    }
+}
+#include <QMessageBox>
+void ImporterManager::importHere()
+{
+    if (!m_importPathView || m_importPathView.data()->selectedItems().isEmpty()) {
+        emit importDialogDone();
+        return;
+    }
+
+    QStringList titlePath;
+    QTreeWidgetItem* homeItem = m_importPathView.data()->topLevelItem(0);
+    QTreeWidgetItem* item = m_importPathView.data()->selectedItems().at(0);
+    while (item && item != homeItem) {
+        titlePath.prepend(item->text(0));
+        item = item->parent();
+    }
+    qDebug() << "\n===========\n" << __LINE__ << __FUNCTION__ << m_importPathView.data()->selectionModel()->selectedIndexes();
+    if (QMessageBox::Cancel == QMessageBox::information(
+                qApp->activeWindow(), tr("Import"),
+                tr("Data will import as subsections of the following category:\n%1")
+                .arg(titlePath.join(tr(" > \n\t"))), // FIXME: Add LRM
+                QMessageBox::Ok, QMessageBox::Cancel)) {
+        emit importDialogDone();
+        return;
+    }
 }
