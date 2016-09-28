@@ -65,6 +65,7 @@ void TxtImporter::import(const QString &data)
     bool createNewPoem = true;
     bool noTitle = false;
     bool maybeParagraph = false;
+    bool maybeSingle = false;
     bool maybePoem = false;
     GanjoorVerse verse;
     GanjoorPoem poem;
@@ -161,7 +162,21 @@ void TxtImporter::import(const QString &data)
         }
 
         verse._PoemID = poem._ID;
-        if ((line.size() <= 70 && m_options.contentTypes & Options::WhitePoem) || justWhitePoem) {
+//        if (!maybePoem && !maybeParagraph && !(m_options.contentTypes & Options::Poem) && ((line.startsWith(QChar(' ')) && line.size() <= 70) || line.trimmed().size() < 50)) {
+//            maybeSingle = true;
+//        }
+        if (!(m_options.contentTypes & Options::Poem) && (line.startsWith(QLatin1String("  ")) && line.size() <= 70)) {
+            maybeSingle = true;
+
+            if (!verse._Text.isEmpty()) {
+                verse._Order = vorder;
+                verses.append(verse);
+                ++vorder;
+                verse._Text.clear();
+            }
+        }
+
+        if (maybeSingle || (line.size() <= 70 && m_options.contentTypes & Options::WhitePoem) || justWhitePoem) {
             verse._Order = vorder;
             verse._Text = line;
             verse._Position = VersePosition::Single;
@@ -189,6 +204,8 @@ void TxtImporter::import(const QString &data)
             verse._Position = VersePosition::Paragraph;
             maybeParagraph = false;
         }
+
+        maybeSingle = false;
 
         emptyLineCount = 0;
     }
