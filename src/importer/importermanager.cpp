@@ -192,24 +192,24 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
                     closeTags = "</p>";
                 }
                 else if (verse._Position == VersePosition::Single) {
-                    openTags = "<p>";
+                    openTags = "<p style=\"font-size: 50%; color: #007;\">&nbsp;&nbsp;&nbsp;&nbsp;";
                     closeTags = "</p>";
                 }
                 else if (verse._Position == VersePosition::CenteredVerse1) {
-                    openTags = "<center><p style=\"margin-top: 0.1cm\">";
-                    closeTags = "</p></center>";
+                    openTags = "<center><p style=\"margin-top: 0.1cm\"><i>";
+                    closeTags = "</i></p></center>";
                 }
                 else if (verse._Position == VersePosition::CenteredVerse2) {
-                    openTags = "<center><p style=\"margin-bottom: 0.2cm\">";
-                    closeTags = "</p></center><br>";
+                    openTags = "<center><p style=\"margin-bottom: 0.2cm\"><i>";
+                    closeTags = "</i></p></center><br>";
                 }
                 else if (verse._Position == VersePosition::Right) {
-                    openTags = "<center><p>";
-                    closeTags = "</p></center>";
+                    openTags = "<center><p><i>";
+                    closeTags = "</i></p></center>";
                 }
                 else if (verse._Position == VersePosition::Left) {
-                    openTags = "<center><p style=\"margin-bottom: 1cm\">";
-                    closeTags = "</p></center><br>";
+                    openTags = "<center><p style=\"margin-bottom: 1cm\"><i>";
+                    closeTags = "</i></p></center><br>";
                 }
 
                 content += QString("%1%3%2")
