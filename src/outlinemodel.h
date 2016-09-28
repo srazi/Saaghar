@@ -25,6 +25,7 @@
 #include <QAbstractItemModel>
 
 struct OutlineNode;
+struct GanjoorCat;
 
 class OutlineModel : public QAbstractItemModel
 {
@@ -54,7 +55,7 @@ public:
 
     QModelIndex indexFromPath(const QList<int> &path) const;
     QList<int> pathFromIndex(const QModelIndex &index) const;
-    QStringList titlePathFromIndex(const QModelIndex &index) const;
+    QList<GanjoorCat> catPathFromIndex(const QModelIndex &index, bool reversed = false) const;
 
 private:
     Q_DISABLE_COPY(OutlineModel)

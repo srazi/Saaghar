@@ -337,16 +337,21 @@ QList<int> OutlineModel::pathFromIndex(const QModelIndex &index) const
     return path;
 }
 
-QStringList OutlineModel::titlePathFromIndex(const QModelIndex &index) const
+QList<GanjoorCat> OutlineModel::catPathFromIndex(const QModelIndex &index, bool reversed) const
 {
-    QStringList titlePath;
+    QList<GanjoorCat> cats;
     QModelIndex ind = index;
 
     while (ind.isValid()) {
-        titlePath.prepend(ind.data(TitleRole).toString());
+        if (!reversed) {
+            cats << ind.data(CategoryRole).value<GanjoorCat>();
+        }
+        else {
+            cats.prepend(ind.data(CategoryRole).value<GanjoorCat>());
+        }
         ind = parent(ind);
     }
 
-    qDebug() << "\n===========\n" << __LINE__ << __FUNCTION__ << titlePath << index.data(IDRole).toInt() << "\n===========\n" ;
-    return titlePath;
+    qDebug() << "\n===========\n" << __LINE__ << __FUNCTION__ << cats.size() << index.data(IDRole).toInt() << "\n===========\n" ;
+    return cats;
 }

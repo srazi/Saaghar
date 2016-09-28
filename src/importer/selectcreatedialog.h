@@ -19,7 +19,7 @@ public:
     QString newTitle() const;
     GanjoorCat selectedCat() const;
     QList<int> selectedPath() const;
-    QStringList selectedTitlePath() const;
+    QList<GanjoorCat> selectedCatPath(bool reversed = false) const;
 
     void setForceCreate(bool force);
     void setForceSelect(bool force);

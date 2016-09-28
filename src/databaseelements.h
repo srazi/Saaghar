@@ -177,6 +177,18 @@ struct GanjoorCat
     }
 };
 
+#include <QList>
+#include <QMap>
+
+struct CatContents {
+    QList<GanjoorPoem> poems;
+    QMap<int, QList<GanjoorVerse> > verses;
+
+    CatContents() {}
+    bool isNull() const { return poems.isEmpty() || verses.isEmpty(); }
+    void clear() { poems.clear(); verses.clear(); }
+};
+
 Q_DECLARE_METATYPE(GanjoorCat)
 
 #endif // DATABASEELEMENTS_H

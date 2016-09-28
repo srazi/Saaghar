@@ -205,7 +205,7 @@ void TxtImporter::import(const QString &data)
     setState(Success);
 }
 
-ImporterInterface::CatContents TxtImporter::importData() const
+CatContents TxtImporter::importData() const
 {
     if (state() != Success) {
         return CatContents();

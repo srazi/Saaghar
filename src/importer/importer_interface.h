@@ -52,15 +52,6 @@ public:
         void clear() { contentTypes = Unknown; poemStartPattern.clear(); }
     };
 
-    struct CatContents {
-        QList<GanjoorPoem> poems;
-        QMap<int, QList<GanjoorVerse> > verses;
-
-        CatContents() {}
-        bool isNull() const { return poems.isEmpty() || verses.isEmpty(); }
-        void clear() { poems.clear(); verses.clear(); }
-    };
-
     ImporterInterface() : m_state(Unknown) {}
     virtual ~ImporterInterface() {}
 

@@ -109,6 +109,9 @@ public:
     // Returns database connection for thread, creates new connection if not exists
     QSqlDatabase databaseForThread(QThread* thread, const QString &baseConnectionID = defaultConnectionId());
 
+
+    void storeAsDataset(const CatContents &importData, const QList<GanjoorCat> &catPath, bool storeAsGDB = false);
+
     //STATIC Variables
     static DataBaseUpdater* dbUpdater;
 
@@ -130,6 +133,7 @@ private:
     int getNewPoemID();
     int getNewPoetID();
     int getNewCatID();
+    void createCatPathOnNeed(QList<GanjoorCat> &catPath);
     void removeCatFromDataBase(const GanjoorCat &gCat);
     static QString defaultConnectionId();
     static QString getIdForDataBase(const QString &fileName, QThread* thread = 0);

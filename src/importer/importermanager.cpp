@@ -92,9 +92,12 @@ QStringList ImporterManager::availableFormats()
 #include "saagharwidget.h"
 #include <QTreeView>
 #include <QTreeWidget>
-void ImporterManager::storeAsDataset(const ImporterInterface::CatContents &importData, bool storeAsGDB)
+void ImporterManager::storeAsDataset(const CatContents &importData, bool storeAsGDB)
 {
-    if (importData.isNull()) {
+    m_importData.clear();
+    m_importData = importData;
+
+    if (m_importData.isNull()) {
         return;
     }
 
@@ -152,7 +155,7 @@ void ImporterManager::storeAsDataset(const ImporterInterface::CatContents &impor
 //    }
 }
 
-QString ImporterManager::convertTo(const ImporterInterface::CatContents &importData, ImporterManager::ConvertType type) const
+QString ImporterManager::convertTo(const CatContents &importData, ImporterManager::ConvertType type) const
 {
     if (importData.isNull()) {
         return QObject::tr("<EMPTY PREVIEW>");
@@ -277,7 +280,7 @@ static QString lineTypeFromPosition(VersePosition position) {
 // #SED!POEM!END!        // end of poem
 // #SED!CAT!END!         // end of cat
 /*******************************************************************************/
-QString ImporterManager::convertToSED(const ImporterInterface::CatContents &importData) const
+QString ImporterManager::convertToSED(const CatContents &importData) const
 {
     QString content;
 
@@ -338,6 +341,10 @@ void ImporterManager::importPathChanged()
                 QTreeWidgetItem* childItem = new QTreeWidgetItem(m_importPathView.data()->selectedItems().at(0)
                                                                  ? m_importPathView.data()->selectedItems().at(0)
                                                                  : m_importPathView.data()->topLevelItem(0), QStringList(selectCatDialog.newTitle()));
+                GanjoorCat cat;
+                cat._ID = -1;
+                cat._Text = childItem->text(0);
+                childItem->setData(0, OutlineModel::CategoryRole, QVariant::fromValue(cat));
                 m_importPathView.data()->selectedItems().at(0)->addChild(childItem);
                 m_importPathView.data()->setCurrentItem(childItem);
             }
@@ -346,8 +353,9 @@ void ImporterManager::importPathChanged()
                 QList<QTreeWidgetItem*> children = m_importPathView.data()->topLevelItem(0)->takeChildren();
                 qDeleteAll(children);
                 QTreeWidgetItem* rootItem = m_importPathView.data()->topLevelItem(0);
-                foreach (const QString &title, selectCatDialog.selectedTitlePath()) {
-                    QTreeWidgetItem* childItem = new QTreeWidgetItem(rootItem, QStringList(title));
+                foreach (const GanjoorCat &cat, selectCatDialog.selectedCatPath(true)) {
+                    QTreeWidgetItem* childItem = new QTreeWidgetItem(rootItem, QStringList(cat._Text));
+                    childItem->setData(0, OutlineModel::CategoryRole, QVariant::fromValue(cat));
                     rootItem->addChild(childItem);
                     m_importPathView.data()->setCurrentItem(childItem);
                     rootItem = childItem;
@@ -394,15 +402,23 @@ void ImporterManager::clearImportPath()
 #include <QMessageBox>
 void ImporterManager::importHere()
 {
-    if (!m_importPathView || m_importPathView.data()->selectedItems().isEmpty()) {
-        emit importDialogDone();
+    if (m_importData.isNull() || !m_importPathView || m_importPathView.data()->selectedItems().isEmpty()) {
         return;
     }
 
+    QList<GanjoorCat> catPath;
     QStringList titlePath;
     QTreeWidgetItem* homeItem = m_importPathView.data()->topLevelItem(0);
     QTreeWidgetItem* item = m_importPathView.data()->selectedItems().at(0);
     while (item && item != homeItem) {
+        GanjoorCat cat = item->data(0, OutlineModel::CategoryRole).value<GanjoorCat>();
+        qDebug() << "\n@@@@@@@@@@@@@@@@@@@@@@@@\n" << __LINE__ << __FUNCTION__ << "\n"
+                 << cat._Text << "\n"
+                 << cat._ID << "\n"
+                 << cat._ParentID << "\n"
+                 << cat._PoetID << "\n"
+                   << "\n@@@@@@@@@@@@@@@@@@@@@@@@\n" ;
+        catPath.prepend(cat);
         titlePath.prepend(item->text(0));
         item = item->parent();
     }
@@ -412,7 +428,11 @@ void ImporterManager::importHere()
                 tr("Data will import as subsections of the following category:\n%1")
                 .arg(titlePath.join(tr(" > \n\t"))), // FIXME: Add LRM
                 QMessageBox::Ok, QMessageBox::Cancel)) {
-        emit importDialogDone();
         return;
     }
+
+    DatabaseBrowser::instance()->storeAsDataset(m_importData, catPath);
+    m_importData.clear();
+
+    emit importDialogDone();
 }

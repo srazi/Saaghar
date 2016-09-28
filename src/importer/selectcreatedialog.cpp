@@ -34,12 +34,12 @@ QList<int> SelectCreateDialog::selectedPath() const
             : sApp->outlineModel()->pathFromIndex(ui->treeView->selectionModel()->selectedIndexes().at(0));
 }
 
-QStringList SelectCreateDialog::selectedTitlePath() const
+QList<GanjoorCat> SelectCreateDialog::selectedCatPath(bool reversed) const
 {
     qDebug() << __LINE__ << __FUNCTION__ << ui->treeView->selectionModel()->selectedIndexes();
     return ui->treeView->selectionModel()->selectedIndexes().isEmpty()
-            ? QStringList()
-            : sApp->outlineModel()->titlePathFromIndex(ui->treeView->selectionModel()->selectedIndexes().at(0));
+            ? QList<GanjoorCat>()
+            : sApp->outlineModel()->catPathFromIndex(ui->treeView->selectionModel()->selectedIndexes().at(0), reversed);
 }
 
 GanjoorCat SelectCreateDialog::selectedCat() const

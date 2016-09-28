@@ -50,9 +50,9 @@ public:
     bool registerImporter(const QString &id, ImporterInterface* importer);
     void unRegisterImporter(const QString &id);
     QStringList availableFormats();
-    void storeAsDataset(const ImporterInterface::CatContents &importData, bool storeAsGDB = false);
-    QString convertTo(const ImporterInterface::CatContents &importData, ConvertType type) const;
-    QString convertToSED(const ImporterInterface::CatContents &importData) const;
+    void storeAsDataset(const CatContents &importData, bool storeAsGDB = false);
+    QString convertTo(const CatContents &importData, ConvertType type) const;
+    QString convertToSED(const CatContents &importData) const;
 
     bool initializeImport();
 
@@ -74,6 +74,7 @@ private:
     QList<int> m_importPath;
     QPointer<QLabel> m_importPathLabel;
     QPointer<QTreeWidget> m_importPathView;
+    CatContents m_importData;
 };
 
 #endif // IMPORTERMANAGER_H
