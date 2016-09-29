@@ -1678,7 +1678,7 @@ QSqlDatabase DatabaseBrowser::databaseForThread(QThread* thread, const QString &
     return database(id);
 }
 
-void DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
+int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
 {
     int newPoetID = -1;
     int newCatID = -1;
@@ -1728,6 +1728,8 @@ void DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
             }
         }
     }
+
+    return newCatID;
 }
 
 static void debugCatPath(const QList<GanjoorCat> &catPath, const QString &extra)
@@ -1758,7 +1760,7 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
 
     QList<GanjoorCat> initCatPath = catPath;
     debugCatPath(initCatPath, "1-BEFORE");
-    createCatPathOnNeed(initCatPath);
+    int newCatID = createCatPathOnNeed(initCatPath);
     debugCatPath(initCatPath, "22-AFTER");
 
 //    struct CatContents {
@@ -1777,13 +1779,47 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
     qv.prepare(verseQuery);
 
     int newPoemId = getNewPoemID();
-    const int catId = initCatPath.last()._ID;
+    GanjoorCat topLevelCat = initCatPath.last();
+    QHash<int, int> createdCatsIdMap;
+    int catId;
 
     foreach (const GanjoorPoem &poem, importData.poems) {
         QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
 
         if (verses.isEmpty()) {
             continue;
+        }
+
+        QList<GanjoorCat> parentCats = importData.catParents(poem._CatID);
+
+        if (!parentCats.isEmpty()) {
+            foreach (const GanjoorCat &cat, parentCats) {
+                if (!createdCatsIdMap.contains(cat._ID)) {
+                    Q_ASSERT(cat._ParentID == -1 || createdCatsIdMap.contains(cat._ParentID));
+
+                    int parentId = cat._ParentID == -1 ? topLevelCat._ID : createdCatsIdMap.value(cat._ParentID);
+
+                    if (newCatID == -1) {
+                        newCatID = getNewCatID();
+                    }
+
+                    createdCatsIdMap.insert(cat._ID, newCatID);
+                    catId = newCatID;
+
+                    strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id) VALUES (%1, %2, \"%3\", %4);")
+                            .arg(newCatID).arg(topLevelCat._PoetID).arg(cat._Text).arg(parentId);
+                    QSqlQuery q(database());
+                    q.exec(strQuery);
+
+                    ++newCatID;
+                }
+                else {
+                    catId = createdCatsIdMap.value(cat._ID);
+                }
+            }
+        }
+        else {
+            catId = topLevelCat._ID;
         }
 
         strQuery = QString("INSERT INTO poem (id, cat_id, title, url) VALUES (%1, %2, \"%3\", \"%4\");")

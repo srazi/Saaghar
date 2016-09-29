@@ -133,7 +133,8 @@ private:
     int getNewPoemID();
     int getNewPoetID();
     int getNewCatID();
-    void createCatPathOnNeed(QList<GanjoorCat> &catPath);
+    // return the first id for creating new category
+    int createCatPathOnNeed(QList<GanjoorCat> &catPath);
     void removeCatFromDataBase(const GanjoorCat &gCat);
     static QString defaultConnectionId();
     static QString getIdForDataBase(const QString &fileName, QThread* thread = 0);

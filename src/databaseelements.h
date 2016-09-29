@@ -190,6 +190,25 @@ struct CatContents {
     CatContents() {}
     bool isNull() const { return cats.isEmpty() || poems.isEmpty() || verses.isEmpty(); }
     void clear() { cats.clear(); poems.clear(); verses.clear(); }
+    QList<GanjoorCat> catParents(int catId) const {
+        QList<GanjoorCat> catList;
+        while (catId != -1) {
+            GanjoorCat cat = cats.value(catId);
+            catList.prepend(cat);
+            catId = cat._ParentID;
+        }
+        return catList;
+    }
+
+    QStringList catParentsTitles(int catId) const {
+        QStringList titles;
+        while (catId != -1) {
+            GanjoorCat cat = cats.value(catId);
+            titles.prepend(cat._Text);
+            catId = cat._ParentID;
+        }
+        return titles;
+    }
 };
 
 Q_DECLARE_METATYPE(GanjoorCat)

@@ -166,8 +166,16 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
     if (type == PlainText) {
         foreach (const GanjoorPoem &poem, importData.poems) {
             QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
-            content += QString("Poem Title: %1\n----------------\n")
-                    .arg(poem._Title);
+
+            if (verses.isEmpty()) {
+                continue;
+            }
+
+            QStringList parentsTitles = importData.catParentsTitles(poem._CatID);
+
+            content += QString("Top Level Categories: %1\n---\nPoem Title: %2\n----------------\n")
+                    .arg(parentsTitles.isEmpty() ? tr("N/A") : parentsTitles.join(tr(" > ")))
+                    .arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
 
             foreach (const GanjoorVerse &verse, verses) {
                 content += QString("%1 - %2\n")
@@ -186,9 +194,11 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
                 continue;
             }
 
+            QStringList parentsTitles = importData.catParentsTitles(poem._CatID);
+
             toc += QString("<li><a href=\"#%1\"><i>%2</i></a>").arg(poem._ID).arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
             content += QString("<br><h3>%1:</h3><center><br><h2><b><a id=\"%2\" name=\"%2\">%3</a></b></h2><br>--------------------------------<br></center>")
-                    .arg(poem._CatID == -1 ? tr("N/A") : (importData.cats.value(poem._CatID)._Text.isEmpty() ? tr("No category title detected!") : importData.cats.value(poem._CatID)._Text))
+                    .arg(parentsTitles.isEmpty() ? tr("N/A") : parentsTitles.join(tr(" > ")))
                     .arg(poem._ID)
                     .arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
 
@@ -308,7 +318,12 @@ QString ImporterManager::convertToSED(const CatContents &importData) const
         QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
 //        content += QString("#SED!POEM!START!#POEM!CATUID!%1#POEM!ID!%2#POEM!VERSECOUNT!%4\n#POEM!TITLE!%3\n")
 //                .arg(catUID).arg(poem._ID).arg(poem._Title).arg(verses.count());
-        content += QString("#POEM!TITLE!%3\n").arg(poem._Title);
+
+        QStringList parentsTitles = importData.catParentsTitles(poem._CatID);
+
+        content += QString("#CAT!TITLE!%1\n###\n#POEM!TITLE!%2\n")
+                .arg(parentsTitles.isEmpty() ? "NO_CAT" : parentsTitles.join("\n#CAT!TITLE!"))
+                .arg(poem._Title.isEmpty() ? "UNKNOWN_POEM_TITLE" : poem._Title);
 
         QString lastPosition;
         // content += QString("#SED!VERSES!START!\n");
