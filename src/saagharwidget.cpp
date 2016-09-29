@@ -545,7 +545,10 @@ void SaagharWidget::showCategory(GanjoorCat category)
     if (category._ParentID == 0) {
         poetForCathasDescription = !sApp->databaseBrowser()->getPoetForCat(category._ID)._Description.isEmpty();
     }
-    if (subcatsSize == 1 && (category._ParentID != 0 || (category._ParentID == 0 && !poetForCathasDescription))) {
+
+    QList<GanjoorPoem*> poems = sApp->databaseBrowser()->getPoems(category._ID);
+
+    if (subcatsSize == 1 && poems.isEmpty() && (category._ParentID != 0 || (category._ParentID == 0 && !poetForCathasDescription))) {
         GanjoorCat firstCat;
         firstCat.init(subcats.at(0)->_ID, subcats.at(0)->_PoetID, subcats.at(0)->_Text, subcats.at(0)->_ParentID,  subcats.at(0)->_Url);
         clearSaagharWidget();
@@ -553,8 +556,6 @@ void SaagharWidget::showCategory(GanjoorCat category)
         QApplication::restoreOverrideCursor();
         return;
     }
-
-    QList<GanjoorPoem*> poems = sApp->databaseBrowser()->getPoems(category._ID);
 
     if (poems.size() == 1 && subcatsSize == 0 && (category._ParentID != 0 || (category._ParentID == 0 && !poetForCathasDescription))) {
         GanjoorPoem firstPoem;
