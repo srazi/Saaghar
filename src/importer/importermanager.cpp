@@ -177,12 +177,20 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
         }
     }
     else if (type == HtmlText) {
-        content += "<html><body>";
+        QString toc = "<html><body><ul>";
 
         foreach (const GanjoorPoem &poem, importData.poems) {
             QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
-            content += QString("<br><center><h2><b>%1</b></h2><br>--------------------------------<br></center>")
-                    .arg(poem._Title);
+
+            if (verses.isEmpty()) {
+                continue;
+            }
+
+            toc += QString("<li><a href=\"#%1\"><i>%2</i></a>").arg(poem._ID).arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
+            content += QString("<br><h3>%1:</h3><center><br><h2><b><a id=\"%2\" name=\"%2\">%3</a></b></h2><br>--------------------------------<br></center>")
+                    .arg(poem._CatID == -1 ? tr("N/A") : (importData.cats.value(poem._CatID)._Text.isEmpty() ? tr("No category title detected!") : importData.cats.value(poem._CatID)._Text))
+                    .arg(poem._ID)
+                    .arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
 
             foreach (const GanjoorVerse &verse, verses) {
                 QString openTags = "<p>";
@@ -219,7 +227,7 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
             content += "<hr>";
         }
 
-        content += "</body></html>";
+        content = toc + "</ul><hr><hr>" + content + "</body></html>";
     }
     else if (type == EditingText) {
         content = convertToSED(importData);
