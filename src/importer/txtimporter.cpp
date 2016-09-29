@@ -58,11 +58,11 @@ void TxtImporter::import(const QString &data)
     const bool justNormalText = m_options.contentTypes == Options::NormalText;
     const bool justClassicalPoem = m_options.contentTypes == Options::Poem;
 
-    const int catId = 1000000 + (qrand()/2);
-    const int poemId = 10000000 + (qrand()/100);
+    const int catId = 10000;
+    const int poemId = 100000;
 
-    bool startPassed = false;
     bool createNewPoem = true;
+    bool startPassed = false;
     bool noTitle = false;
     bool maybeParagraph = false;
     bool maybeSingle = false;
@@ -83,22 +83,6 @@ void TxtImporter::import(const QString &data)
         startPassed = true;
 
         if (createNewPoem) {
-            if (!poem.isNull()) {
-                m_catContents.verses.insert(poem._ID, verses);
-                m_catContents.poems.append(poem);
-            }
-            verses.clear();
-            poem.setNull();
-            poem._CatID = catId ;
-            poem._ID = poemId + i;
-            createNewPoem = false;
-            noTitle = false;
-            maybePoem = false;
-            maybeParagraph = false;
-            vorder = 0;
-            continue;
-        }
-
         if (!line.trimmed().isEmpty() && ((maybePoem && line.trimmed().size() < 50 && m_options.poemStartPattern.isEmpty()) ||
                 (!m_options.poemStartPattern.isEmpty() &&
                 line.contains(QRegularExpression(m_options.poemStartPattern))))) {
@@ -108,11 +92,28 @@ void TxtImporter::import(const QString &data)
             }
             verses.clear();
             poem.setNull();
-            poem._CatID = catId;
+            poem._CatID = catId ;
             poem._ID = poemId + i;
             poem._Title = line.trimmed();
             createNewPoem = false;
             noTitle = true;
+            maybePoem = false;
+            maybeParagraph = false;
+            vorder = 0;
+            continue;
+        }
+
+        if (createNewPoem) {
+            if (!poem.isNull()) {
+                m_catContents.verses.insert(poem._ID, verses);
+                m_catContents.poems.append(poem);
+            }
+            verses.clear();
+            poem.setNull();
+            poem._CatID = catId;
+            poem._ID = poemId + i;
+            createNewPoem = false;
+            noTitle = false;
             maybePoem = false;
             maybeParagraph = false;
             vorder = 0;
@@ -132,7 +133,7 @@ void TxtImporter::import(const QString &data)
             continue;
         }
 
-        if (!noTitle && poem._Title.isEmpty()) {
+        if (m_options.poemStartPattern.isEmpty() && !noTitle && poem._Title.isEmpty()) {
             if (line.size() < 50) {
                 poem._Title = line.trimmed();
                 continue;
@@ -156,7 +157,7 @@ void TxtImporter::import(const QString &data)
             maybePoem = true;
         }
 
-        if (!noTitle && line.size() > 100) {
+        if (m_options.poemStartPattern.isEmpty() && !noTitle && line.size() > 100) {
             noTitle = true;
             poem._Title = QObject::tr("New Poem %1").arg(m_catContents.poems.size() + 1);
         }
