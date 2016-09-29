@@ -24,14 +24,18 @@ public slots:
 private slots:
     void doLoadFile();
     void currentTabChanged();
+    void contentChanghed();
 
 private:
+    void reset();
+    void init(const QString &content, const QString &type = QLatin1String("txt"));
     void setDisableElements(bool disable);
 
     Ui::ImporterOptionsDialog *ui;
     ImporterInterface* m_importer;
 
     QString m_content;
+    bool m_contentViewInDirtyState;
 };
 
 #endif // IMPORTEROPTIONSDIALOG_H

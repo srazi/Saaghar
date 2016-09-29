@@ -11,7 +11,8 @@
 ImporterOptionsDialog::ImporterOptionsDialog(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ImporterOptionsDialog),
-    m_importer(0)
+    m_importer(0),
+    m_contentViewInDirtyState(true)
 {
     setAttribute(Qt::WA_DeleteOnClose, true);
     ui->setupUi(this);
@@ -24,6 +25,7 @@ ImporterOptionsDialog::ImporterOptionsDialog(QWidget *parent) :
     //ui->importPushButton->setDisabled(true);
     ui->tabWidget->removeTab(3);
 
+    connect(ui->contentTextEdit, SIGNAL(textChanged()), this, SLOT(contentChanghed()));
     connect(ui->browsePushButton, SIGNAL(clicked(bool)), this, SLOT(doLoadFile()));
     connect(ui->previewPushButton, SIGNAL(clicked(bool)), this, SLOT(doImportPreview()));
     connect(ui->importPushButton, SIGNAL(clicked(bool)), this, SLOT(doSaveImport()));
@@ -104,7 +106,22 @@ void ImporterOptionsDialog::doSaveImport()
     QDialog::accept();
 }
 
-void ImporterOptionsDialog::doLoadFile()
+void ImporterOptionsDialog::contentChanghed()
+{
+    if (!m_contentViewInDirtyState) {
+        return;
+    }
+
+    const QString content = ui->contentTextEdit->toPlainText();
+
+    if (content.isEmpty() || content == m_content) {
+        return;
+    }
+
+    init(content);
+}
+
+void ImporterOptionsDialog::reset()
 {
     m_importer = 0;
     setDisableElements(true);
@@ -120,6 +137,33 @@ void ImporterOptionsDialog::doLoadFile()
     ui->tabWidget->widget(2)->setProperty("dirty", QVariant(false));
 //    ui->tabWidget->widget(3)->setProperty("dirty", QVariant(false));
 
+    m_contentViewInDirtyState = true;
+}
+
+void ImporterOptionsDialog::init(const QString &content, const QString &type)
+{
+    m_content = content;
+
+    m_importer = ImporterManager::instance()->importer(type);
+
+    if (m_importer && !m_content.isEmpty()) {
+        setDisableElements(false);
+
+        ui->contentTextEdit->setText(m_content);
+        ui->poemTitleLineEdit->setText(m_importer->options().poemStartPattern);
+
+        ui->normalTextCheckBox->setChecked(m_importer->options().contentTypes & ImporterInterface::Options::NormalText);
+        ui->classicCheckBox->setChecked(m_importer->options().contentTypes & ImporterInterface::Options::Poem);
+        ui->whiteCheckBox->setChecked(m_importer->options().contentTypes & ImporterInterface::Options::WhitePoem);
+    }
+
+    m_contentViewInDirtyState = false;
+}
+
+void ImporterOptionsDialog::doLoadFile()
+{
+    reset();
+
     QString fileName = QFileDialog::getOpenFileName(this, tr("Select File To Import..."), QDir::homePath(), ImporterManager::instance()->availableFormats().join(";;"));
 
     QFile file(fileName);
@@ -129,23 +173,9 @@ void ImporterOptionsDialog::doLoadFile()
         return;
     }
 
-    m_content = QString::fromUtf8(file.readAll());
-    const QString suffix = fileInfo.suffix().toLower();
+    init(QString::fromUtf8(file.readAll()), fileInfo.suffix().toLower());
 
-    m_importer = ImporterManager::instance()->importer(suffix);
-
-    if (m_importer && !m_content.isEmpty()) {
-        setDisableElements(false);
-
-        ui->fileNameLineEdit->setText(fileInfo.canonicalFilePath());
-        ui->contentTextEdit->setText(m_content);
-
-        ui->poemTitleLineEdit->setText(m_importer->options().poemStartPattern);
-
-        ui->normalTextCheckBox->setChecked(m_importer->options().contentTypes & ImporterInterface::Options::NormalText);
-        ui->classicCheckBox->setChecked(m_importer->options().contentTypes & ImporterInterface::Options::Poem);
-        ui->whiteCheckBox->setChecked(m_importer->options().contentTypes & ImporterInterface::Options::WhitePoem);
-    }
+    ui->fileNameLineEdit->setText(fileInfo.canonicalFilePath());
 }
 
 void ImporterOptionsDialog::currentTabChanged()
