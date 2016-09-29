@@ -188,7 +188,7 @@ struct CatContents {
     QMap<int, QList<GanjoorVerse> > verses;
 
     CatContents() {}
-    bool isNull() const { return cats.isEmpty() || poems.isEmpty() || verses.isEmpty(); }
+    bool isNull() const { return poems.isEmpty() || verses.isEmpty(); }
     void clear() { cats.clear(); poems.clear(); verses.clear(); }
     QList<GanjoorCat> catParents(int catId) const {
         QList<GanjoorCat> catList;

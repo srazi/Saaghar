@@ -203,7 +203,7 @@ void TxtImporter::import(const QString &data)
             }
             verses.clear();
             poem.setNull();
-            poem._CatID = catId;
+            poem._CatID = cat._ID;
             poem._ID = poemId + i;
             createNewPoem = false;
             noTitle = false;

@@ -8,6 +8,8 @@ SelectCreateDialog::SelectCreateDialog(QWidget* parent, QList<int> path) :
     ui(new Ui::SelectCreateDialog)
 {
     ui->setupUi(this);
+    ui->lineEdit->setDisabled(true);
+
     ui->treeView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->treeView->setModel(sApp->outlineModel());
     ui->treeView->setRootIndex(sApp->outlineModel()->indexFromPath(path));
@@ -28,7 +30,6 @@ QString SelectCreateDialog::newTitle() const
 
 QList<int> SelectCreateDialog::selectedPath() const
 {
-    qDebug() << __LINE__ << __FUNCTION__ << ui->treeView->selectionModel()->selectedIndexes();
     return ui->treeView->selectionModel()->selectedIndexes().isEmpty()
             ? QList<int>()
             : sApp->outlineModel()->pathFromIndex(ui->treeView->selectionModel()->selectedIndexes().at(0));
@@ -36,7 +37,6 @@ QList<int> SelectCreateDialog::selectedPath() const
 
 QList<GanjoorCat> SelectCreateDialog::selectedCatPath(bool reversed) const
 {
-    qDebug() << __LINE__ << __FUNCTION__ << ui->treeView->selectionModel()->selectedIndexes();
     return ui->treeView->selectionModel()->selectedIndexes().isEmpty()
             ? QList<GanjoorCat>()
             : sApp->outlineModel()->catPathFromIndex(ui->treeView->selectionModel()->selectedIndexes().at(0), reversed);
@@ -44,7 +44,6 @@ QList<GanjoorCat> SelectCreateDialog::selectedCatPath(bool reversed) const
 
 GanjoorCat SelectCreateDialog::selectedCat() const
 {
-    qDebug() << __LINE__ << __FUNCTION__ << ui->treeView->selectionModel()->selectedIndexes();
     return ui->treeView->selectionModel()->selectedIndexes().isEmpty()
             ? GanjoorCat()
             : ui->treeView->selectionModel()->selectedIndexes().at(0).data(OutlineModel::CategoryRole).value<GanjoorCat>();
