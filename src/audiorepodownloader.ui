@@ -24,7 +24,7 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Download Location:</string>
+          <string>Download to Album:</string>
          </property>
         </widget>
        </item>
@@ -34,7 +34,7 @@
           <string/>
          </property>
          <property name="placeholderText">
-          <string>You have to set download location...</string>
+          <string>You have to set album location...</string>
          </property>
         </widget>
        </item>

@@ -399,6 +399,8 @@ void SaagharApplication::setupInitialValues()
     VAR_INIT("QMusicPlayer/ListOfAlbum", QVariant());
     VAR_INIT("QMusicPlayer/Muted", false);
     VAR_INIT("QMusicPlayer/Volume", 0.4);
+
+    VAR_INIT("AudioRepoDownloader/DownloadAlbumPath", defaultPath(SaagharApplication::AlbumFile));
 }
 
 void SaagharApplication::loadSettings()

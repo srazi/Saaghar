@@ -89,6 +89,8 @@ private:
     void fillRepositoryList();
     void importDataBase(const QString &fileName, bool* ok = 0);
 
+    void setDisabledAll(bool disable);
+
     QHash<QString, QPair<QTreeWidgetItem*, QTreeWidgetItem*> > itemsCache;
     const static QStringList defaultRepositories;
     static QStringList repositoriesUrls;

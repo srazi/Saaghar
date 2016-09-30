@@ -39,6 +39,8 @@
 #include "saagharwindow.h"
 #include "saagharapplication.h"
 
+#include "settingsmanager.h"
+
 QString AudioRepoDownloader::downloadLocation;
 bool AudioRepoDownloader::keepDownloadedFiles = false;
 QStringList AudioRepoDownloader::repositoriesUrls = QStringList();
@@ -66,11 +68,14 @@ AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
     connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
     connect(ui->pushButtonBrowse, SIGNAL(clicked()), this, SLOT(getDownloadLocation()));
     connect(downloaderObject, SIGNAL(downloadStopped()), this, SLOT(forceStopDownload()));
-qDebug() << __LINE__ << downloadLocation << downloadLocation.isEmpty();
+
     if (downloadLocation.isEmpty()) {
-        downloadLocation = sApp->defaultPath(SaagharApplication::AlbumDir);
-        qDebug() << __LINE__ << downloadLocation << downloadLocation.isEmpty();
+        downloadLocation = VARS("AudioRepoDownloader/DownloadAlbumPath");
     }
+
+    ui->lineEditDownloadLocation->setText(downloadLocation);
+
+    setDisabledAll(downloadLocation.isEmpty());
 }
 
 bool AudioRepoDownloader::read(QIODevice* device)
@@ -250,6 +255,14 @@ void AudioRepoDownloader::importDataBase(const QString &fileName, bool* ok)
     //QApplication::restoreOverrideCursor();
 }
 
+void AudioRepoDownloader::setDisabledAll(bool disable)
+{
+    ui->refreshPushButton->setDisabled(disable);
+    ui->pushButtonDownload->setDisabled(disable);
+    ui->repoSelectTree->setDisabled(disable);
+    ui->labelSubtitle->setDisabled(disable);
+}
+
 void AudioRepoDownloader::setRepositories(const QStringList &urls)
 {
     repositoriesUrls.clear();
@@ -416,8 +429,22 @@ void AudioRepoDownloader::itemDataChanged(QTreeWidgetItem* /*item*/, int /*colum
 
 void AudioRepoDownloader::getDownloadLocation()
 {
-    AudioRepoDownloader::downloadLocation = QFileDialog::getExistingDirectory(this, tr("Select Download Location"), AudioRepoDownloader::downloadLocation.isEmpty() ? QDir::homePath() : AudioRepoDownloader::downloadLocation);
-    ui->lineEditDownloadLocation->setText(AudioRepoDownloader::downloadLocation);
+    QString fileName = QFileDialog::getSaveFileName(
+                this,
+                tr("Select Album to Download Audios"),
+                downloadLocation.isEmpty()
+                ? QDir::homePath()
+                : QFileInfo(downloadLocation).absolutePath(), QLatin1String("Saaghar Album (*.sal)")
+                , NULL, QFileDialog::DontConfirmOverwrite);
+
+    if (!fileName.isEmpty()) {
+        downloadLocation = fileName;
+        ui->lineEditDownloadLocation->setText(downloadLocation);
+
+        VAR_DECL("AudioRepoDownloader/DownloadAlbumPath", downloadLocation);
+
+        setDisabledAll(false);
+    }
 }
 
 void AudioRepoDownloader::initDownload()
