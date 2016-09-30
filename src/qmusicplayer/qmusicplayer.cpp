@@ -329,24 +329,40 @@ void QMusicPlayer::newAlbum(QString fileName, QString albumName)
 
     SaagharAlbum* album = new SaagharAlbum;
     album->PATH = fileName;
-    pushAlbum(album, albumName);
-    saveAlbum(fileName, albumName);
-    albumManager->setCurrentAlbum(albumName);
+    album->title = albumName;
+
+    if (saveAlbum(album)) {
+        pushAlbum(album);
+        albumsPathList.insert(album->title, album->PATH);
+        albumManager->setCurrentAlbum(album->title);
+    }
+    else {
+        delete album;
+    }
 }
 
 void QMusicPlayer::loadAlbumFile()
 {
-    QString file = QFileDialog::getOpenFileName(window(), tr("Select Saaghar Album"), startDir,
+    QString fileName = QFileDialog::getOpenFileName(window(), tr("Select Saaghar Album"), startDir,
                    "Saaghar Album (*.sal *.m3u8 *.m3u);;All Files (*.*)");
 
-    if (file.isEmpty()) {
+    if (fileName.isEmpty()) {
         return;
     }
 
-    QFileInfo selectedFile(file);
+    QFileInfo selectedFile(fileName);
     startDir = selectedFile.absolutePath();
 
-    loadAlbum(file);
+    SaagharAlbum* album = new SaagharAlbum;
+    if (loadAlbum(fileName, album)) {
+        albumsPathList.insert(album->title, album->PATH);
+        pushAlbum(album);
+        albumManager->setCurrentAlbum(album->title);
+    }
+    else {
+        QMessageBox::information(window(), tr("Read Error!"), tr("It is not an album file or can not read it!"));
+        delete album;
+    }
 }
 
 void QMusicPlayer::renameAlbum(const QString &albumName)
@@ -417,7 +433,11 @@ void QMusicPlayer::removeAlbum(const QString &albumName)
 void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
 {
     if (!saveAs) {
-        saveAlbum(albumsPathList.value(albumName).toString(), albumName);
+        SaagharAlbum* album = albumManager->albumByName(albumName);
+                //SaagharAlbum* album = albumManager->albumByName(albumName);
+        if (saveAlbum(album)) {
+            albumsPathList.insert(album->title, album->PATH);
+        }
     }
     else {
         QString file = QFileDialog::getSaveFileName(window(), tr("New Saaghar Album"), startDir,
@@ -445,10 +465,18 @@ void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
         SaagharAlbum* album = albumManager->albumByName(albumName);
         SaagharAlbum* copyAlbum = new SaagharAlbum;
         copyAlbum->PATH = file;
+        copyAlbum->title = name;
         copyAlbum->mediaItems = album->mediaItems;
-        pushAlbum(copyAlbum, name);
-        saveAlbum(file, name);
-        albumManager->setCurrentAlbum(name);
+
+        if (saveAlbum(copyAlbum)) {
+            albumsPathList.insert(copyAlbum->title, copyAlbum->PATH);
+            pushAlbum(copyAlbum);
+            albumManager->setCurrentAlbum(copyAlbum->title);
+        }
+        else {
+            QMessageBox::information(window(), tr("Save Error!"), tr("Can't save album!"));
+            delete copyAlbum;
+        }
     }
 }
 
@@ -1074,7 +1102,7 @@ void QMusicPlayer::savePlayerSettings()
 #endif
 }
 
-void QMusicPlayer::loadAlbum(const QString &fileName, bool inserToPathList)
+bool QMusicPlayer::loadAlbum(const QString &fileName, SaagharAlbum* album)
 {
     /*******************************************************************************/
     //tags for Version-0.1 of Saaghar media album
@@ -1087,44 +1115,43 @@ void QMusicPlayer::loadAlbum(const QString &fileName, bool inserToPathList)
     //#MD5SUM!              //item's MD5SUM hash
     //<last property>               //item's path relative to album file
     /*******************************************************************************/
+
+    if (!album) {
+        return false;
+    }
+
     QFile file(fileName);
     if (!file.exists()) {
-        return;
+        return false;
     }
 
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
-        QMessageBox::information(this->parentWidget(), tr("Read Error!"), tr("Can't load album!\nError: %1").arg(file.errorString()));
-        return;
+        return false;
     }
 
     QTextStream out(&file);
     out.setCodec("UTF-8");
     QString line = out.readLine();
     if (!line.startsWith("#SAAGHAR!ALBUM!")) {
-        return;
+        return false;
     }
 
     line = out.readLine();
     while (!line.startsWith("#ALBUM!TITLE!")) {
         if (out.atEnd()) {
-            return;
+            return false;
         }
         line = out.readLine();
     }
 
     QString albumName = line.remove("#ALBUM!TITLE!");
     if (albumName.isEmpty()) {
-        return;
-    }
-    SaagharAlbum* album = new SaagharAlbum;
-    album->PATH = fileName;
-    if (inserToPathList) {
-        albumsPathList.insert(albumName, fileName);
+        return false;
     }
 
     while (!line.startsWith("#ITEMS!")) { //start of items
         if (out.atEnd()) {
-            return;
+            return false;
         }
         line = out.readLine();
     }
@@ -1199,42 +1226,31 @@ void QMusicPlayer::loadAlbum(const QString &fileName, bool inserToPathList)
     }
 
     file.close();
-    pushAlbum(album, albumName);
-    albumManager->setCurrentAlbum(albumName);
+
+    album->title = albumName;
+    album->PATH = fileName;
+
+    return true;
 }
 
-void QMusicPlayer::saveAlbum(const QString &fileName, const QString &albumName, bool inserToPathList, const QString &)
+bool QMusicPlayer::saveAlbum(SaagharAlbum* album, const QString &, const QString &fileName)
 {
-    if (albumName.isEmpty()) {
-        return;
+    if (!album || album->title.isEmpty() || (album->PATH.isEmpty() && fileName.isEmpty())) {
+        return false;
     }
 
-    SaagharAlbum* album = albumManager->albumByName(albumName);
+    QString savePath = fileName.isEmpty() ? album->PATH : fileName;
 
-    if (!album) {
-        return;
-    }
-
-    QString albumFileName = fileName;
-    if (albumFileName.isEmpty()) {
-        albumFileName = album->PATH;
-    }
-
-    if (inserToPathList) {
-        albumsPathList.insert(albumName, albumFileName);
-    }
-
-    QFile file(fileName);
+    QFile file(savePath);
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
-        QMessageBox::information(this->parentWidget(), tr("Save Error!"), tr("Can't save album!\nError: %1").arg(file.errorString()));
-        return;
+        return false;
     }
 
-    QFileInfo albumFileInfo(fileName);
+    QFileInfo albumFileInfo(savePath);
     QDir albumInfo(albumFileInfo.absolutePath());
     QTextStream out(&file);
     out.setCodec("UTF-8");
-    QString albumContent = QString("#SAAGHAR!ALBUM!V%1\n#ALBUM!TITLE!%2\n##################\n#ITEMS!\n").arg("0.1").arg(albumName);
+    QString albumContent = QString("#SAAGHAR!ALBUM!V%1\n#ALBUM!TITLE!%2\n##################\n#ITEMS!\n").arg("0.1").arg(album->title);
     QHash<int, SaagharMediaTag*>::const_iterator it = album->mediaItems.constBegin();
     while (it != album->mediaItems.constEnd()) {
         QString relativePath = albumInfo.relativeFilePath(it.value()->PATH);
@@ -1258,6 +1274,8 @@ void QMusicPlayer::saveAlbum(const QString &fileName, const QString &albumName, 
 
     out << albumContent;
     file.close();
+
+    return true;
 }
 
 void QMusicPlayer::loadAllAlbums()
@@ -1265,7 +1283,15 @@ void QMusicPlayer::loadAllAlbums()
     QHash<QString, QVariant>::const_iterator albumsIterator = albumsPathList.constBegin();
     while (albumsIterator != albumsPathList.constEnd()) {
         if (!albumsIterator.key().isEmpty()) {
-            loadAlbum(albumsIterator.value().toString(), false);
+            QString fileName = albumsIterator.value().toString();
+            SaagharAlbum* album = new SaagharAlbum;
+            if (loadAlbum(fileName, album)) {
+                pushAlbum(album);
+                albumManager->setCurrentAlbum(album->title);
+            }
+            else {
+                delete album;
+            }
         }
         ++albumsIterator;
     }
@@ -1276,7 +1302,7 @@ void QMusicPlayer::saveAllAlbums(const QString &format)
     QHash<QString, QVariant>::const_iterator albumsIterator = albumsPathList.constBegin();
     while (albumsIterator != albumsPathList.constEnd()) {
         if (!albumsIterator.key().isEmpty()) {
-            saveAlbum(albumsIterator.value().toString(), albumsIterator.key(), false, format);
+            saveAlbum(albumsMediaHash.value(albumsIterator.key()), format);
         }
         ++albumsIterator;
     }
@@ -1332,9 +1358,10 @@ void QMusicPlayer::insertToAlbum(int mediaID, const QString &mediaPath, const QS
 
     if (!album) {
         album = new SaagharAlbum;
-        album->PATH = albumsPathList.value(albumName).toString();
+        album->title = albumName;
+        album->PATH = albumsPathList.value(album->title).toString();
         album->mediaItems.insert(mediaID, mediaTag);
-        pushAlbum(album, albumName);
+        pushAlbum(album);
     }
     else {
         delete album->mediaItems.take(mediaID);

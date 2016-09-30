@@ -104,6 +104,7 @@ public:
     };
 
     struct SaagharAlbum {
+        QString title;
         QString PATH;
         QHash<int, SaagharMediaTag*> mediaItems;
     };
@@ -116,11 +117,9 @@ public:
     void savePlayerSettings();
     qint64 currentTime();
     void setCurrentTime(qint64 time);
-    void loadAlbum(const QString &fileName, bool inserToPathList = true);
-    void saveAlbum(const QString &fileName, const QString &albumName, bool inserToPathList = true, const QString &format = "M3U8");
 
     void loadAllAlbums();
-    void saveAllAlbums(const QString &format = "M3U8");
+    void saveAllAlbums(const QString &format = "SAL");
 
     void insertToAlbum(int mediaID, const QString &mediaPath, const QString &mediaTitle = "",
                        qint64 mediaCurrentTime = 0, QString albumName = QString());
@@ -129,12 +128,17 @@ public:
     void getFromAlbum(int mediaID, QString* mediaPath, QString* mediaTitle = 0,
                       qint64* mediaCurrentTime = 0, QString* albumName = 0);
 
+    QDockWidget* albumManagerDock();
+
     static QHash<QString, QVariant> albumsPathList;
     static QStringList commonSupportedMedia(const QString &type = "");//"" or "audio" or "video"
 
     inline static QHash<QString, SaagharAlbum*> albumsHash() { return albumsMediaHash; }
 
-    QDockWidget* albumManagerDock();
+    // load file to album
+    static bool loadAlbum(const QString &fileName, SaagharAlbum* album);
+    // save album to file
+    static bool saveAlbum(SaagharAlbum *album, const QString &format = "SAL", const QString &fileName = QString());
 
 public slots:
     void stop();
@@ -172,8 +176,7 @@ private:
     QString currentTitle;
     QDockWidget* dockList;
     AlbumManager* albumManager;
-    inline static void pushAlbum(SaagharAlbum* album, const QString &albumName)
-    {albumsMediaHash.insert(albumName, album);}
+    inline static void pushAlbum(SaagharAlbum* album) { albumsMediaHash.insert(album->title, album); }
 
     static QHash<QString, SaagharAlbum*> albumsMediaHash;
 
