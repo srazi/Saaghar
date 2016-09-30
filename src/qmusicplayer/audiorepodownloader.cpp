@@ -258,9 +258,12 @@ void AudioRepoDownloader::importDataBase(const QString &fileName, bool* ok)
 void AudioRepoDownloader::setDisabledAll(bool disable)
 {
     ui->refreshPushButton->setDisabled(disable);
-    ui->pushButtonDownload->setDisabled(disable);
     ui->repoSelectTree->setDisabled(disable);
     ui->labelSubtitle->setDisabled(disable);
+
+    if (disable) {
+        ui->pushButtonDownload->setDisabled(disable);
+    }
 }
 
 void AudioRepoDownloader::setRepositories(const QStringList &urls)

@@ -28,8 +28,7 @@ HEADERS += \
     $$PWD/saagharapplication.h \
     $$PWD/settingsmanager.h \
     $$PWD/outlinemodel.h \
-    $$PWD/selectionmanager.h \
-    $$PWD/audiorepodownloader.h
+    $$PWD/selectionmanager.h
 
 FORMS += \
     $$PWD/saagharwindow.ui \
@@ -37,8 +36,7 @@ FORMS += \
     $$PWD/databaseupdater.ui \
     $$PWD/nodatabasedialog.ui \
     $$PWD/searchoptionsdialog.ui \
-    $$PWD/selectionmanager.ui \
-    $$PWD/audiorepodownloader.ui
+    $$PWD/selectionmanager.ui
 
 SOURCES += \
     $$PWD/main.cpp \
@@ -63,8 +61,7 @@ SOURCES += \
     $$PWD/saagharapplication.cpp \
     $$PWD/settingsmanager.cpp \
     $$PWD/outlinemodel.cpp \
-    $$PWD/selectionmanager.cpp \
-    $$PWD/audiorepodownloader.cpp
+    $$PWD/selectionmanager.cpp
 
 include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)

@@ -14,9 +14,13 @@ INCLUDEPATH += $$PWD
 
 HEADERS   += \
     $$PWD/qmusicplayer.h \
-    $$PWD/lyricsmanager.h
+    $$PWD/lyricsmanager.h \
+    $$PWD/audiorepodownloader.h
 SOURCES   += \
     $$PWD/qmusicplayer.cpp \
-    $$PWD/lyricsmanager.cpp
+    $$PWD/lyricsmanager.cpp \
+    $$PWD/audiorepodownloader.cpp
+FORMS +=  \
+    $$PWD/audiorepodownloader.ui
 
 RESOURCES += $${PWD}/qmusicplayer.qrc

@@ -36,7 +36,6 @@
 #include "saagharapplication.h"
 #include "settingsmanager.h"
 #include "outlinemodel.h"
-#include "audiorepodownloader.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -76,6 +75,7 @@
 
 #ifdef MEDIA_PLAYER
 #include "qmusicplayer.h"
+#include "audiorepodownloader.h"
 #endif
 
 SaagharWindow::SaagharWindow(QWidget* parent)
@@ -92,6 +92,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     bool fresh = QCoreApplication::arguments().contains("-fresh", Qt::CaseInsensitive);
 
 #ifdef MEDIA_PLAYER
+    m_audioRepoDownloader = 0;
     SaagharWidget::musicPlayer = new QMusicPlayer(this);
     SaagharWidget::musicPlayer->setWindowTitle(tr("Audio Player"));
     addDockWidget(Qt::RightDockWidgetArea, SaagharWidget::musicPlayer->albumManagerDock());
@@ -1792,8 +1793,10 @@ void SaagharWindow::setupUi()
     }
 
     actionInstance("DownloadRepositories", ICON_PATH + "/download-sets-repositories.png", QObject::tr("&Dataset Repositories..."));
-
+#ifdef MEDIA_PLAYER
     actionInstance("DownloadAudioRepositories", ICON_PATH + "/download-audio-repositories.png", QObject::tr("&Audio Repositories..."));
+#endif
+
 #if 0
     actionInstance("Registeration", ICON_PATH + "/registeration.png", QObject::tr("&Registeration..."));
 #endif
@@ -1910,7 +1913,9 @@ void SaagharWindow::setupUi()
     menuTools->addAction(actionInstance("actionRemovePoet"));
     menuTools->addSeparator();
     menuTools->addAction(actionInstance("DownloadRepositories"));
+#ifdef MEDIA_PLAYER
     menuTools->addAction(actionInstance("DownloadAudioRepositories"));
+#endif
     menuTools->addSeparator();
     menuTools->addAction(actionInstance("actionSettings"));
 
@@ -1983,7 +1988,9 @@ QMenu* SaagharWindow::cornerMenu()
         m_cornerMenu->addSeparator();
         m_cornerMenu->addAction(actionInstance("actionSettings"));
         m_cornerMenu->addAction(actionInstance("DownloadRepositories"));
+#ifdef MEDIA_PLAYER
         m_cornerMenu->addAction(actionInstance("DownloadAudioRepositories"));
+#endif
         m_cornerMenu->addAction(actionInstance("actionCheckUpdates"));
 #if 0
         m_cornerMenu->addAction(actionInstance("Registeration"));
@@ -3114,6 +3121,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
 
         DatabaseBrowser::dbUpdater->exec();
     }
+#ifdef MEDIA_PLAYER
     else if (actionName == "DownloadAudioRepositories") {
         if (!m_audioRepoDownloader) {
             m_audioRepoDownloader = new AudioRepoDownloader(this);
@@ -3123,6 +3131,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
 
         m_audioRepoDownloader->exec();
     }
+#endif
     else if (actionName == "actionFaal") {
         openRandomPoem(24, VARB("SaagharWindow/RandomOpenNewTab"));// '24' is for Hafez!
     }
