@@ -77,7 +77,7 @@
 
 QHash<QString, QVariant> QMusicPlayer::albumsPathList = QHash<QString, QVariant>();
 QHash<QString, QMusicPlayer::SaagharAlbum*> QMusicPlayer::albumsMediaHash = QHash<QString, QMusicPlayer::SaagharAlbum*>();
-
+QMusicPlayer* QMusicPlayer::s_instance = 0;
 
 const bool itemsAsTopItem = true;
 
@@ -143,6 +143,8 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
 
     playRequestedByUser(false);
     stateChange();
+
+    s_instance = this;
 }
 
 QString QMusicPlayer::currentFile() const
@@ -1278,6 +1280,34 @@ bool QMusicPlayer::saveAlbum(SaagharAlbum* album, const QString &, const QString
     return true;
 }
 
+void QMusicPlayer::albumEdited(QMusicPlayer::SaagharAlbum* album)
+{
+    if (!album || album->title.isEmpty() || album->PATH.isEmpty()) {
+        return;
+    }
+
+    bool alreadyLoaded = albumsPathList.values().contains(album->PATH);
+
+    if (!alreadyLoaded) {
+        qDebug() << __FUNCTION__ << "Album is not loaded.";
+        return;
+    }
+
+    SaagharAlbum* loadedAlbum = albumsMediaHash.value(album->title);
+
+    if (loadedAlbum->PATH != album->PATH) {
+        qDebug() << __FUNCTION__ << "Same album title but different album path!";
+        return;
+    }
+
+    loadedAlbum->clear();
+    loadedAlbum->clone(album);
+
+    if (s_instance && s_instance->albumManager->currentAlbumName() == album->title) {
+        s_instance->albumManager->setCurrentAlbum(album->title, true);
+    }
+}
+
 void QMusicPlayer::loadAllAlbums()
 {
     QHash<QString, QVariant>::const_iterator albumsIterator = albumsPathList.constBegin();
@@ -1612,9 +1642,9 @@ void AlbumManager::setAlbums(const QHash<QString, QMusicPlayer::SaagharAlbum*> &
     }
 }
 
-void AlbumManager::setCurrentAlbum(const QString &albumName)
+void AlbumManager::setCurrentAlbum(const QString &albumName, bool forceUpdate)
 {
-    if (albumName.isEmpty() || albumName == m_currentAlbum) {
+    if (albumName.isEmpty() || (albumName == m_currentAlbum && !forceUpdate)) {
         return;
     }
 

@@ -29,6 +29,7 @@
 #include <QTextEdit>
 #include <QDialogButtonBox>
 #include <QPushButton>
+#include <QInputDialog>
 
 #include "audiorepodownloader.h"
 #include "unzip.h"
@@ -50,7 +51,11 @@ const QStringList AudioRepoDownloader::defaultRepositories = QStringList()
 
 
 AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
-    : QDialog(parent, f), ui(new Ui::AudioRepoDownloader)
+    : QDialog(parent, f)
+    , ui(new Ui::AudioRepoDownloader)
+    , m_saagharAlbum(new QMusicPlayer::SaagharAlbum)
+    , oldRootItem(0)
+    , newRootItem(0)
 {
     downloadStarted = downloadAboutToStart = false;
 
@@ -76,6 +81,16 @@ AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
     ui->lineEditDownloadLocation->setText(downloadLocation);
 
     setDisabledAll(downloadLocation.isEmpty());
+
+    if (!loadPresentAudios()) {
+        downloadLocation.clear();
+        m_saagharAlbum->clear();
+        ui->lineEditDownloadLocation->clear();
+
+        VAR_DECL("AudioRepoDownloader/DownloadAlbumPath", QString());
+
+        setDisabledAll(true);
+    }
 }
 
 bool AudioRepoDownloader::read(QIODevice* device)
@@ -140,7 +155,7 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
     audio_mp3bsize = audio_mp3bsize / 1024;
     QString fileSizeKB = QString::number(audio_mp3bsize) == "0" ? "" : QString::number(audio_mp3bsize) + " " + tr("KB");
 
-    bool isNew = false;
+    bool isNew = !m_saagharAlbum->mediaItems.contains(audio_post_ID.toInt());
 
     const QString key = audio_post_ID + ":" + audio_order;
     if (insertedToList.contains(key) && insertedToList.value(key) == audio_mp3) {
@@ -266,6 +281,53 @@ void AudioRepoDownloader::setDisabledAll(bool disable)
     }
 }
 
+bool AudioRepoDownloader::loadPresentAudios()
+{
+    if (downloadLocation.isEmpty()) {
+        return false;
+    }
+
+    m_saagharAlbum->clear();
+
+    if (!QFile::exists(downloadLocation)) {
+        const QString name = QInputDialog::getText(
+                    this, QMusicPlayer::tr("Name Of Album"),
+                    QMusicPlayer::tr("Enter name for this Album:"),
+                    QLineEdit::Normal, QFileInfo(downloadLocation).baseName());
+        if (!name.isEmpty()) {
+            m_saagharAlbum->title = name;
+            m_saagharAlbum->PATH = downloadLocation;
+            if (!QMusicPlayer::saveAlbum(m_saagharAlbum)) {
+                return false;
+            }
+        }
+        else {
+            return false;
+        }
+    }
+
+    if (!QMusicPlayer::loadAlbum(downloadLocation, m_saagharAlbum)) {
+        m_saagharAlbum->clear();
+        return false;
+    }
+
+
+    if (oldRootItem && newRootItem) {
+        QList<QTreeWidgetItem*> items;
+        items << oldRootItem->takeChildren() << newRootItem->takeChildren();
+        foreach (QTreeWidgetItem* item, items) {
+            if (!m_saagharAlbum->mediaItems.contains(item->data(0, AudioPostIDRole).toInt())) {
+                newRootItem->addChild(item);
+            }
+            else {
+                oldRootItem->addChild(item);
+            }
+        }
+
+        return true;
+    }
+}
+
 void AudioRepoDownloader::setRepositories(const QStringList &urls)
 {
     repositoriesUrls.clear();
@@ -304,7 +366,7 @@ void AudioRepoDownloader::setupTreeRootItems()
     font.setBold(true);
 
     oldRootItem = new QTreeWidgetItem(ui->repoSelectTree);
-    oldRootItem->setText(0, tr("Installed"));
+    oldRootItem->setText(0, tr("Present in Album"));
     oldRootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
     oldRootItem->setCheckState(0, Qt::Unchecked);
     oldRootItem->setFont(0, font);
@@ -312,7 +374,7 @@ void AudioRepoDownloader::setupTreeRootItems()
     oldRootItem->setDisabled(true);
 
     newRootItem = new QTreeWidgetItem(ui->repoSelectTree);
-    newRootItem->setText(0, tr("Ready To Install"));
+    newRootItem->setText(0, tr("Not in Album"));
     newRootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
     newRootItem->setCheckState(0, Qt::Unchecked);
     newRootItem->setFont(0, font);
@@ -442,11 +504,22 @@ void AudioRepoDownloader::getDownloadLocation()
 
     if (!fileName.isEmpty()) {
         downloadLocation = fileName;
-        ui->lineEditDownloadLocation->setText(downloadLocation);
+        if (loadPresentAudios()) {
+            ui->lineEditDownloadLocation->setText(downloadLocation);
 
-        VAR_DECL("AudioRepoDownloader/DownloadAlbumPath", downloadLocation);
+            VAR_DECL("AudioRepoDownloader/DownloadAlbumPath", downloadLocation);
 
-        setDisabledAll(false);
+            setDisabledAll(false);
+        }
+        else {
+            downloadLocation.clear();
+            m_saagharAlbum->clear();
+            ui->lineEditDownloadLocation->clear();
+
+            VAR_DECL("AudioRepoDownloader/DownloadAlbumPath", QString());
+
+            setDisabledAll(true);
+        }
     }
 }
 
@@ -458,18 +531,18 @@ void AudioRepoDownloader::initDownload()
     connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
     connect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
 
-    sessionDownloadFolder = AudioRepoDownloader::downloadLocation;
+    sessionDownloadFolder = QFileInfo(AudioRepoDownloader::downloadLocation).absolutePath();
     QDir downDir;
-    if (ui->groupBoxKeepDownload->isChecked()) {
-        if (sessionDownloadFolder.isEmpty()) {
-            QMessageBox::information(this, tr("Warning!"), tr("Please select download location."));
-            doStopDownload();
-            return;
-        }
-    }
-    else {
-        randomFolder = sessionDownloadFolder = getTempDir();
-    }
+//    if (ui->groupBoxKeepDownload->isChecked()) {
+//        if (sessionDownloadFolder.isEmpty()) {
+//            QMessageBox::information(this, tr("Warning!"), tr("Please select download location."));
+//            doStopDownload();
+//            return;
+//        }
+//    }
+//    else {
+//        randomFolder = sessionDownloadFolder = getTempDir();
+//    }
 
     downDir.setPath(sessionDownloadFolder);
     if (!downDir.exists() && !downDir.mkpath(sessionDownloadFolder)) {
@@ -483,44 +556,64 @@ void AudioRepoDownloader::initDownload()
     ui->refreshPushButton->setEnabled(false);
     ui->groupBoxKeepDownload->setEnabled(false);
 
+    QList<QTreeWidgetItem*> moved;
     for (int i = 0; i < newRootItem->childCount(); ++i) {
         QTreeWidgetItem* child = newRootItem->child(i);
         if (!child || child->checkState(0) != Qt::Checked) {
             continue;
         }
-        installCompleted = false;
-        downloadItem(child, true);
 
-        if (installCompleted) {
-            //after install we change the parent
-            newRootItem->removeChild(child);
-            oldRootItem->addChild(child);
-            child->setCheckState(0, Qt::Unchecked);
-            child->setFlags(Qt::NoItemFlags);
-            --i;
+        if (downloadItem(child, true)) {
+            moved << child;
         }
     }
 
+    for (int i = 0; i < moved.size(); ++i) {
+        QTreeWidgetItem* child = moved.at(i);
+        //after install we change the parent
+        qDebug() << __LINE__ << __FUNCTION__ << i;
+        newRootItem->removeChild(child);
+        qDebug() << __LINE__ << __FUNCTION__ << i;
+        oldRootItem->addChild(child);
+        qDebug() << __LINE__ << __FUNCTION__ << i;
+        child->setCheckState(0, Qt::Unchecked);
+        qDebug() << __LINE__ << __FUNCTION__ << i;
+        child->setFlags(Qt::NoItemFlags);
+        qDebug() << __LINE__ << __FUNCTION__ << i;
+    }
+
+//    moved.clear();
     for (int i = 0; i < oldRootItem->childCount(); ++i) {
         QTreeWidgetItem* child = oldRootItem->child(i);
         if (!child || child->checkState(0) != Qt::Checked) {
             continue;
         }
-        installCompleted = false;
-        downloadItem(child, true);
 
-        if (installCompleted) {
+        if (downloadItem(child, true)) {
+//            moved << child;
             child->setCheckState(0, Qt::Unchecked);
             child->setFlags(Qt::NoItemFlags);
         }
     }
 
-    if (!ui->groupBoxKeepDownload->isChecked()) {
-        //TODO: Fix me!
-        //QFile::remove(sessionDownloadFolder+"/"+fileName);
-        QDir downDir(sessionDownloadFolder);
-        downDir.rmdir(sessionDownloadFolder);
-    }
+//    for (int i = 0; i < moved.size(); ++i) {
+//        QTreeWidgetItem* child = moved.at(i);
+//        qDebug() << __LINE__ << __FUNCTION__ << i;
+//        child->setCheckState(0, Qt::Unchecked);
+//        qDebug() << __LINE__ << __FUNCTION__ << i;
+//        child->setFlags(Qt::NoItemFlags);
+//        qDebug() << __LINE__ << __FUNCTION__ << i;
+//    }
+
+    QMusicPlayer::albumEdited(m_saagharAlbum);
+    QMusicPlayer::saveAlbum(m_saagharAlbum);
+
+//    if (!ui->groupBoxKeepDownload->isChecked()) {
+//        //TODO: Fix me!
+//        //QFile::remove(sessionDownloadFolder+"/"+fileName);
+//        QDir downDir(sessionDownloadFolder);
+//        downDir.rmdir(sessionDownloadFolder);
+//    }
 
     ui->labelDownloadStatus->setText(tr("Finished!"));
 
@@ -563,37 +656,50 @@ void AudioRepoDownloader::closeEvent(QCloseEvent* e)
     }
 }
 
-void AudioRepoDownloader::downloadItem(QTreeWidgetItem* item, bool install)
+bool AudioRepoDownloader::downloadItem(QTreeWidgetItem* item, bool addToAlbum)
 {
     if (!item) {
-        return;
+        return false;
     }
     item->treeWidget()->setCurrentItem(item);
-    bool keepDownlaodedFiles = ui->groupBoxKeepDownload->isChecked();
+   // bool keepDownlaodedFiles = ui->groupBoxKeepDownload->isChecked();
     downloadStarted = true;
-    QString urlStr = item->data(0, AudioSrcUrlRole).toString();
-    QUrl downloadUrl(urlStr);
-    downloaderObject->downloadFile(downloadUrl, sessionDownloadFolder, item->text(0));
+    QString urlAudioMP3 = item->data(0, AudioMP3Role).toString();
+    QString urlAudioXml = item->data(0, AudioXmlRole).toString();
 
-    QFileInfo fileInfo(downloadUrl.path());
+    QUrl downloadMP3Url(urlAudioMP3);
+    downloaderObject->downloadFile(downloadMP3Url, sessionDownloadFolder, item->text(0) + " " + tr("MP3 file"));
+    downloaderObject->downloadFile(QUrl(urlAudioXml), sessionDownloadFolder, item->text(0) + " " + tr("sync. file"));
+
+    QFileInfo fileInfo(downloadMP3Url.path());
     QString fileName = fileInfo.fileName();
     if (fileName.isEmpty()) {
-        fileName = "index.html";
+        return false;
     }
 
-    if (install) {
-        ui->labelDownloadStatus->setText(tr("Installing..."));
-        QString fileType = item->data(0, AudioChecksumRole).toString();
-        installItemToDB(fileName, sessionDownloadFolder, fileType);
-        ui->labelDownloadStatus->setText(tr("Installed."));
+    if (addToAlbum) {
+        QMusicPlayer::SaagharMediaTag* mediaTag = new QMusicPlayer::SaagharMediaTag;
+        mediaTag->time = 0;
+        mediaTag->PATH = QFileInfo(sessionDownloadFolder + "/" + fileName).canonicalFilePath();
+        mediaTag->TITLE = item->text(0);
+        mediaTag->MD5SUM = item->data(0, AudioChecksumRole).toString();
+        m_saagharAlbum->mediaItems.insert(item->data(0, AudioPostIDRole).toInt(), mediaTag);
     }
 
-    if (!keepDownlaodedFiles) {
-        QFile::remove(sessionDownloadFolder + "/" + fileName);
-        //TODO: Fix me!
-        //QDir downDir(sessionDownloadFolder);
-        //downDir.rmdir(sessionDownloadFolder);
-    }
+    return true;
+//    if (install) {
+//        ui->labelDownloadStatus->setText(tr("Installing..."));
+//        QString fileType = item->data(0, AudioChecksumRole).toString();
+//        installItemToDB(fileName, sessionDownloadFolder, fileType);
+//        ui->labelDownloadStatus->setText(tr("Installed."));
+//    }
+
+//    if (!keepDownlaodedFiles) {
+//        QFile::remove(sessionDownloadFolder + "/" + fileName);
+//        //TODO: Fix me!
+//        //QDir downDir(sessionDownloadFolder);
+//        //downDir.rmdir(sessionDownloadFolder);
+//    }
 }
 
 void AudioRepoDownloader::forceStopDownload()
@@ -605,8 +711,8 @@ void AudioRepoDownloader::forceStopDownload()
     disconnect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
     disconnect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
 
-    QDir tmpDir(randomFolder);
-    tmpDir.rmdir(randomFolder);
+//    QDir tmpDir(randomFolder);
+//    tmpDir.rmdir(randomFolder);
 }
 
 QString AudioRepoDownloader::getTempDir(const QString &path, bool makeDir)
@@ -627,114 +733,6 @@ QString AudioRepoDownloader::getTempDir(const QString &path, bool makeDir)
     }
 
     return tmpPath;
-}
-
-void AudioRepoDownloader::installItemToDB(const QString &fullFilePath, const QString &fileType)
-{
-    if (fullFilePath.isEmpty()) {
-        return;
-    }
-    QFileInfo file(fullFilePath);
-    installItemToDB(file.fileName(), file.canonicalPath(), fileType);
-}
-
-void AudioRepoDownloader::installItemToDB(const QString &fileName, const QString &path, const QString &fileType)
-{
-    QString type = fileType;
-    if (type == ".gdb" || type == "gdb" || type == ".s3db") {
-        type = "s3db";
-    }
-
-    if (type == ".zip") {
-        type = "zip";
-    }
-
-    if (type.isEmpty()) {
-        if (fileName.endsWith(".gdb") || fileName.endsWith(".s3db")) {
-            type = "s3db";
-        }
-        else {
-            type = "zip";
-        }
-    }
-
-    QString file = path + "/" + fileName;
-
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-
-    if (type == "zip") {
-        if (!QFile::exists(file)) {
-            qDebug() << "File does not exist.";
-            QApplication::restoreOverrideCursor();
-            installCompleted = false;
-            return;
-        }
-
-        UnZip::ErrorCode ec;
-        UnZip uz;
-
-        ec = uz.openArchive(file);
-        if (ec != UnZip::Ok) {
-            qDebug() << "Unable to open archive: " << uz.formatError(ec);
-            uz.closeArchive();
-            installCompleted = false;
-            //try open it as SQLite database!
-            installItemToDB(fileName, path, "s3db");
-            QApplication::restoreOverrideCursor();
-            return;
-        }
-        else {
-            QList<UnZip::ZipEntry> list = uz.entryList();
-            if (list.isEmpty()) {
-                installCompleted = false;
-                QApplication::restoreOverrideCursor();
-                return;
-            }
-
-            QString tmpExtractPath = getTempDir(path, true);
-            for (int i = 0; i < list.size(); ++i) {
-                QString extractPath = tmpExtractPath;
-                const UnZip::ZipEntry &entry = list.at(i);
-                QString entryFileName = entry.filename;
-
-                if (entry.type == UnZip::Directory ||
-                        (!entryFileName.endsWith(".png") &&
-                         !entryFileName.endsWith(".gdb") &&
-                         !entryFileName.endsWith(".s3db"))) {
-                    continue;
-                }
-
-                if (entryFileName.endsWith(".png")) {
-                    extractPath = SaagharWidget::poetsImagesDir;
-                    QDir photoDir(extractPath);
-                    qDebug() << "make photo dir =>" << photoDir.mkpath(extractPath);
-                    qDebug() << "The author's photo =>" << extractPath + "/" + entryFileName;
-                }
-
-                ec = uz.extractFile(entryFileName, extractPath, UnZip::SkipPaths);
-                qDebug() << "extract-ErrorCode=" << uz.formatError(ec) << entryFileName << extractPath;
-
-                if (entryFileName.endsWith(".gdb") || entryFileName.endsWith(".s3db")) {
-                    importDataBase(extractPath + "/" + entryFileName, &installCompleted);
-                    QFile::remove(extractPath + "/" + entryFileName);
-                    QDir extractDir(extractPath);
-                    extractDir.rmdir(extractPath);
-                }
-            }
-            //TODO: Fix me!
-            //QDir extractDir(extractPath);
-            //qDebug() <<"remove Extract Dir--"<<extractDir.rmdir(extractPath);
-
-            uz.closeArchive();
-            QApplication::restoreOverrideCursor();
-        }
-    } // end "zip" type
-    else if (type == "s3db") {
-        qDebug() << "FILE TYPE IS S3DB! [SQLite 3 Data Base]";
-        importDataBase(file, &installCompleted);
-    }
-
-    QApplication::restoreOverrideCursor();
 }
 
 void AudioRepoDownloader::resizeColumnsToContents()

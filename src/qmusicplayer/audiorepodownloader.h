@@ -23,6 +23,7 @@
 #define AUDIOREPODOWNLOADER_H
 
 #include "ui_audiorepodownloader.h"
+#include "qmusicplayer.h"
 
 #include <QDomDocument>
 #include <QHash>
@@ -46,8 +47,6 @@ public:
     static QStringList repositories();
     static void setRepositories(const QStringList &urls);
 
-    void installItemToDB(const QString &fileName, const QString &filePath, const QString &fileType);
-    void installItemToDB(const QString &fullFilePath, const QString &fileType = "");
     bool read(QIODevice* device);
     bool read(const QByteArray &data);
     static QString downloadLocation;
@@ -83,18 +82,19 @@ private:
     bool parseDocument();
     void setupTreeRootItems();
     QString getTempDir(const QString &path = "", bool makeDir = false);
-    void downloadItem(QTreeWidgetItem* item, bool install = false);
+    bool downloadItem(QTreeWidgetItem* item, bool addToAlbum = false);
     void setupUi();
     void parseElement(const QDomElement &element);
     void fillRepositoryList();
     void importDataBase(const QString &fileName, bool* ok = 0);
 
     void setDisabledAll(bool disable);
+    bool loadPresentAudios();
 
     QHash<QString, QPair<QTreeWidgetItem*, QTreeWidgetItem*> > itemsCache;
     const static QStringList defaultRepositories;
     static QStringList repositoriesUrls;
-    bool installCompleted;
+
     QString randomFolder;
     Downloader* downloaderObject;
     QString sessionDownloadFolder;
@@ -106,6 +106,8 @@ private:
     QTreeWidgetItem* oldRootItem;
     QTreeWidgetItem* newRootItem;
     QDomDocument domDocument;
+
+    QMusicPlayer::SaagharAlbum* m_saagharAlbum;
 
 protected:
     void closeEvent(QCloseEvent*);

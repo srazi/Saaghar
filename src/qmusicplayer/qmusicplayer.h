@@ -107,6 +107,25 @@ public:
         QString title;
         QString PATH;
         QHash<int, SaagharMediaTag*> mediaItems;
+
+        void clear() { title.clear(); PATH.clear(); qDeleteAll(mediaItems); mediaItems.clear(); }
+
+        void clone(SaagharAlbum* other) {
+            title = other->title;
+            PATH = other->PATH;
+            QHash<int, SaagharMediaTag*>::const_iterator it = other->mediaItems.constBegin();
+            while (it != other->mediaItems.constEnd()) {
+                SaagharMediaTag* mediaTag = new SaagharMediaTag;
+                mediaTag->time = it.value()->time;
+                mediaTag->TITLE = it.value()->TITLE;
+                mediaTag->PATH = it.value()->PATH;
+                mediaTag->MD5SUM = it.value()->MD5SUM;
+
+                mediaItems.insert(it.key(), mediaTag);
+
+                ++it;
+            }
+        }
     };
 
     QMusicPlayer(QWidget* parent = 0);
@@ -139,6 +158,8 @@ public:
     static bool loadAlbum(const QString &fileName, SaagharAlbum* album);
     // save album to file
     static bool saveAlbum(SaagharAlbum *album, const QString &format = "SAL", const QString &fileName = QString());
+    // album edited and should be updated if it is already loaded
+    static void albumEdited(SaagharAlbum* album);
 
 public slots:
     void stop();
@@ -225,6 +246,8 @@ private:
 
     QTimer saveCurrentPosition;
 
+    static QMusicPlayer* s_instance;
+
 protected:
     virtual void resizeEvent(QResizeEvent* e);
 
@@ -257,7 +280,7 @@ public:
 
     inline QString currentFile() { return m_currentFile; }
     inline QString currentAlbumName() { return m_currentAlbum; }
-    void setCurrentAlbum(const QString &albumName);
+    void setCurrentAlbum(const QString &albumName, bool forceUpdate = false);
     QMusicPlayer::SaagharAlbum* albumByName(QString albumName = QString());
     void setCurrentMedia(int currentID, const QString &currentFile);
     inline QComboBox* albumList() { return m_albumList; }
