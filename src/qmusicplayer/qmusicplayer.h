@@ -188,6 +188,7 @@ private slots:
     void startLyricSyncer();
     void stopLyricSyncer(bool cancel = false);
     void recordTimeForVerse(int vorder);
+    void durationChanged(qint64 duration);
 
 private:
     void setLyricSyncerState(bool startState, bool enabled = true);

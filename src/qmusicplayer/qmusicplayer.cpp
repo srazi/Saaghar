@@ -86,7 +86,7 @@ QMusicPlayer::QMusicPlayer(QWidget* parent)
     , albumManager(new AlbumManager(this, parent))
     , m_lyricSyncer(0)
     , m_lyricReader(new LyricsManager(this))
-    , m_lastVorder(-2)
+    , m_lastVorder(-1)
     , m_lyricSyncerRuninng(false)
 {
     setObjectName("QMusicPlayer");
@@ -202,6 +202,7 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
         stopLyricSyncer();
     }
     _newTime = -1;
+    m_lastVorder = -1;
 
 #ifdef USE_PHONON
     Phonon::MediaSource source(fileName);
@@ -742,6 +743,15 @@ void QMusicPlayer::recordTimeForVerse(int vorder)
     m_syncMap.insert(time, vorder - 1);
 }
 
+void QMusicPlayer::durationChanged(qint64 duration)
+{
+    m_lastVorder = -1;
+
+    if (duration > 0) {
+        m_lyricReader->setScaleFactor(mediaObject->duration());
+    }
+}
+
 void QMusicPlayer::setLyricSyncerState(bool startState, bool enabled)
 {
     if (!m_lyricSyncer) {
@@ -1059,6 +1069,7 @@ void QMusicPlayer::createConnections()
     connect(metaInformationResolver, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(metaStateChange()));
     connect(mediaObject, SIGNAL(finished()), this, SLOT(aboutToFinish()));
 #else
+    connect(mediaObject, SIGNAL(durationChanged(qint64)), this, SLOT(durationChanged(qint64)));
     connect(mediaObject, SIGNAL(currentMediaChanged(QMediaContent)), this, SLOT(sourceChanged()));
     connect(mediaObject, SIGNAL(positionChanged(qint64)), this, SLOT(tick(qint64)));
     connect(mediaObject, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(seekOnStateChange()));
@@ -2081,7 +2092,7 @@ void SeekSlider::setPosition(qint64 position)
         return;
     }
     m_seeking = true;
-    setValue((position*1000)/(1+m_mediaPlayer->duration()));
+    setValue((position * 1000) / (1 + m_mediaPlayer->duration()));
     m_seeking = false;
 }
 
@@ -2092,7 +2103,7 @@ void SeekSlider::seekPosition(int value)
     }
 
     m_seeking = true;
-    m_mediaPlayer->setPosition((m_mediaPlayer->duration()/1000)*value);
+    m_mediaPlayer->setPosition((m_mediaPlayer->duration() / 1000) * value);
     m_seeking = false;
 }
 
