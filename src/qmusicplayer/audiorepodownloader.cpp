@@ -552,8 +552,31 @@ void AudioRepoDownloader::readRepository(const QString &url)
 
 void AudioRepoDownloader::itemDataChanged(QTreeWidgetItem* /*item*/, int /*column*/)
 {
-    bool itemsChecked = (newRootItem->checkState(0) != Qt::Unchecked) || (oldRootItem->checkState(0) != Qt::Unchecked);
-    ui->pushButtonDownload->setEnabled(itemsChecked);
+    static bool isChecking = false;
+
+    if (isChecking) {
+        return;
+    }
+
+    isChecking = true;
+
+    for (int i = 0; i < ui->repoSelectTree->topLevelItemCount(); ++i) {
+        QTreeWidgetItem* rootItem = ui->repoSelectTree->topLevelItem(i);
+        for (int j = 0; j < rootItem->childCount(); ++j) {
+            QTreeWidgetItem* parentItem = rootItem->child(j);
+            for (int k = 0; k < parentItem->childCount(); ++k) {
+                QTreeWidgetItem* child = parentItem->child(k);
+                if (!child->isDisabled() && child->checkState(0) == Qt::Checked) {
+                    ui->pushButtonDownload->setEnabled(true);
+                    isChecking = false;
+                    return;
+                }
+            }
+        }
+    }
+
+    ui->pushButtonDownload->setEnabled(false);
+    isChecking = false;
 }
 
 void AudioRepoDownloader::getDownloadLocation()
@@ -587,6 +610,38 @@ void AudioRepoDownloader::getDownloadLocation()
     }
 }
 
+void AudioRepoDownloader::downloadCheckedItem(QTreeWidgetItem* rootItem)
+{
+    if (!rootItem || rootItem->checkState(0) == Qt::Unchecked || rootItem->isDisabled()) {
+        return;
+    }
+
+    QFont font(rootItem->font(0));
+    font.setBold(true);
+    font.setItalic(true);
+
+    for (int i = 0; i < rootItem->childCount(); ++i) {
+        QTreeWidgetItem* parent = rootItem->child(i);
+        if (!parent || parent->checkState(0) == Qt::Unchecked || parent->isDisabled()) {
+            continue;
+        }
+
+        for (int i = 0; i < parent->childCount(); ++i) {
+            QTreeWidgetItem* child = parent->child(i);
+            if (!child || child->checkState(0) != Qt::Checked || child->isDisabled()) {
+                continue;
+            }
+
+            if (downloadItem(child, true)) {
+                child->setCheckState(0, Qt::Unchecked);
+                child->setFont(0, font);
+                child->setFont(1, font);
+                child->setDisabled(true);
+            }
+        }
+    }
+}
+
 void AudioRepoDownloader::initDownload()
 {
     downloadAboutToStart = true;
@@ -597,17 +652,6 @@ void AudioRepoDownloader::initDownload()
 
     sessionDownloadFolder = QFileInfo(AudioRepoDownloader::downloadLocation).absolutePath();
     QDir downDir;
-//    if (ui->groupBoxKeepDownload->isChecked()) {
-//        if (sessionDownloadFolder.isEmpty()) {
-//            QMessageBox::information(this, tr("Warning!"), tr("Please select download location."));
-//            doStopDownload();
-//            return;
-//        }
-//    }
-//    else {
-//        randomFolder = sessionDownloadFolder = getTempDir();
-//    }
-
     downDir.setPath(sessionDownloadFolder);
     if (!downDir.exists() && !downDir.mkpath(sessionDownloadFolder)) {
         QMessageBox::information(this, tr("Error!"), tr("Can not create download path."));
@@ -620,66 +664,11 @@ void AudioRepoDownloader::initDownload()
     ui->refreshPushButton->setEnabled(false);
     ui->groupBoxKeepDownload->setEnabled(false);
 
-    QList<QTreeWidgetItem*> moved;
-    for (int i = 0; i < newRootItem->childCount(); ++i) {
-        QTreeWidgetItem* parent = newRootItem->child(i);
-        if (!parent || parent->checkState(0) == Qt::Unchecked) {
-            continue;
-        }
-
-        for (int i = 0; i < parent->childCount(); ++i) {
-            QTreeWidgetItem* child = parent->child(i);
-            if (!child || child->checkState(0) != Qt::Checked) {
-                continue;
-            }
-
-            if (downloadItem(child, true)) {
-                moved << child;
-            }
-        }
-    }
-
-    for (int i = 0; i < moved.size(); ++i) {
-        QTreeWidgetItem* child = moved.at(i);
-        //after install we change the parent
-        newRootItem->removeChild(child);
-        oldRootItem->addChild(child);
-        child->setCheckState(0, Qt::Unchecked);
-        child->setFlags(Qt::NoItemFlags);
-    }
-
-//    moved.clear();
-    for (int i = 0; i < oldRootItem->childCount(); ++i) {
-        QTreeWidgetItem* child = oldRootItem->child(i);
-        if (!child || child->checkState(0) != Qt::Checked) {
-            continue;
-        }
-
-        if (downloadItem(child, true)) {
-//            moved << child;
-            child->setCheckState(0, Qt::Unchecked);
-            child->setFlags(Qt::NoItemFlags);
-        }
-    }
-
-//    for (int i = 0; i < moved.size(); ++i) {
-//        QTreeWidgetItem* child = moved.at(i);
-//        qDebug() << __LINE__ << __FUNCTION__ << i;
-//        child->setCheckState(0, Qt::Unchecked);
-//        qDebug() << __LINE__ << __FUNCTION__ << i;
-//        child->setFlags(Qt::NoItemFlags);
-//        qDebug() << __LINE__ << __FUNCTION__ << i;
-//    }
+    downloadCheckedItem(newRootItem);
+    downloadCheckedItem(oldRootItem);
 
     QMusicPlayer::albumEdited(m_saagharAlbum);
     QMusicPlayer::saveAlbum(m_saagharAlbum);
-
-//    if (!ui->groupBoxKeepDownload->isChecked()) {
-//        //TODO: Fix me!
-//        //QFile::remove(sessionDownloadFolder+"/"+fileName);
-//        QDir downDir(sessionDownloadFolder);
-//        downDir.rmdir(sessionDownloadFolder);
-//    }
 
     ui->labelDownloadStatus->setText(tr("Finished!"));
 

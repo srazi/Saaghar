@@ -90,6 +90,7 @@ private:
 
     void setDisabledAll(bool disable);
     bool loadPresentAudios();
+    void downloadCheckedItem(QTreeWidgetItem* rootItem);
 
     QHash<QString, QPair<QTreeWidgetItem*, QTreeWidgetItem*> > itemsCache;
     QHash<int, QString> poemToPoetCache;
