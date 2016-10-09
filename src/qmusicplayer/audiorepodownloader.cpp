@@ -201,8 +201,9 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
         insertedToList.insert(key, audio_mp3);
     }
 
+    const QString title = tr("%1 (voice: %2)").arg(audio_title).arg(audio_artist);
     QStringList visibleInfo = QStringList()
-            << audio_title
+            << title
             << fileSizeKB
             << audio_post_ID
             << audio_order
