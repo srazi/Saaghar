@@ -151,6 +151,28 @@ static QTreeWidgetItem* findParentItem(QTreeWidgetItem* rootItem, const QString 
     return 0;
 }
 
+static void itemSetDisable(QTreeWidgetItem* item, bool disable)
+{
+    static QFont fontDisable;
+    static QFont fontEnable;
+    static bool fontInit = false;
+    if (!fontInit) {
+        fontInit = true;
+        fontDisable = item->font(0);
+        fontDisable.setBold(true);
+        fontDisable.setItalic(true);
+
+        fontEnable = fontDisable;
+        fontEnable.setBold(false);
+        fontEnable.setItalic(false);
+    }
+
+    item->setCheckState(0, Qt::Unchecked);
+    item->setFont(0, disable ? fontDisable : fontEnable);
+    item->setFont(1, disable ? fontDisable : fontEnable);
+    item->setDisabled(disable);
+}
+
 void AudioRepoDownloader::parseElement(const QDomElement &element)
 {
     QString audio_post_ID = element.firstChildElement("audio_post_ID").text();
@@ -201,6 +223,9 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
     item->setToolTip(0, audio_title);
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     item->setCheckState(0, Qt::Unchecked);
+
+    itemSetDisable(item, !isNew);
+
     item->setData(0, AudioPostIDRole, audio_post_ID);
     item->setData(0, AudioOrderRole, audio_order);
     item->setData(0, AudioChecksumRole, audio_fchecksum);
@@ -386,6 +411,7 @@ bool AudioRepoDownloader::loadPresentAudios()
             }
 
             rootItem->addChild(item);
+            itemSetDisable(item, m_saagharAlbum->mediaItems.contains(audio_post_ID));
         }
 
         return true;
@@ -540,7 +566,7 @@ void AudioRepoDownloader::readRepository(const QString &url)
     }
 
     newRootItem->setDisabled(newRootItem->childCount() == 0);
-    oldRootItem->setDisabled(oldRootItem->childCount() == 0);
+    //oldRootItem->setDisabled(oldRootItem->childCount() == 0);
     if (newRootItem->childCount() == 0 && oldRootItem->childCount() == 0) {
         ui->repoSelectTree->clear();
         newRootItem = 0;
@@ -616,10 +642,6 @@ void AudioRepoDownloader::downloadCheckedItem(QTreeWidgetItem* rootItem)
         return;
     }
 
-    QFont font(rootItem->font(0));
-    font.setBold(true);
-    font.setItalic(true);
-
     for (int i = 0; i < rootItem->childCount(); ++i) {
         QTreeWidgetItem* parent = rootItem->child(i);
         if (!parent || parent->checkState(0) == Qt::Unchecked || parent->isDisabled()) {
@@ -633,10 +655,7 @@ void AudioRepoDownloader::downloadCheckedItem(QTreeWidgetItem* rootItem)
             }
 
             if (downloadItem(child, true)) {
-                child->setCheckState(0, Qt::Unchecked);
-                child->setFont(0, font);
-                child->setFont(1, font);
-                child->setDisabled(true);
+                itemSetDisable(child, true);
             }
         }
     }
