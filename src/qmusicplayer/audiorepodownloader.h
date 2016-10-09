@@ -62,8 +62,15 @@ private slots:
     bool doStopDownload();
     void getDownloadLocation();
     void itemDataChanged(QTreeWidgetItem* item, int column);
+    void switchGroupingType();
+    void lighRefreshTree();
 
 private:
+    enum GroupType {
+        GroupByPoet,
+        GroupByVoice
+    };
+
     enum AudioItemRole {
         AudioPostIDRole = Qt::UserRole + 1,
         AudioOrderRole = Qt::UserRole + 2,
@@ -74,7 +81,8 @@ private:
         AudioArtistUrlRole = Qt::UserRole + 7,
         AudioXmlRole = Qt::UserRole + 8,
         AudioMP3Role = Qt::UserRole + 9,
-        AudioGuidRole = Qt::UserRole + 10
+        AudioGuidRole = Qt::UserRole + 10,
+        AudioTitleRole = Qt::UserRole + 11
     };
 
     void addRemoveRepository();
@@ -110,6 +118,7 @@ private:
     QDomDocument domDocument;
 
     QMusicPlayer::SaagharAlbum* m_saagharAlbum;
+    GroupType m_groupType;
 
 protected:
     void closeEvent(QCloseEvent*);

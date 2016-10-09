@@ -56,10 +56,12 @@ AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
     , m_saagharAlbum(new QMusicPlayer::SaagharAlbum)
     , oldRootItem(0)
     , newRootItem(0)
+    , m_groupType(GroupByPoet)
 {
     downloadStarted = downloadAboutToStart = false;
 
     ui->setupUi(this);
+    ui->poetGroupRadioButton->setChecked(true);
     ui->refreshPushButton->setIcon(QIcon(ICON_PATH + "/refresh.png"));
     ui->comboBoxRepoList->hide();
     ui->groupBoxKeepDownload->hide();
@@ -76,6 +78,9 @@ AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
 
     connect(ui->expandPushButton, SIGNAL(clicked(bool)), ui->repoSelectTree, SLOT(expandAll()));
     connect(ui->collapsePushButton, SIGNAL(clicked(bool)), ui->repoSelectTree, SLOT(collapseAll()));
+
+    connect(ui->poetGroupRadioButton, SIGNAL(clicked(bool)), this, SLOT(switchGroupingType()));
+    connect(ui->voiceGroupRadioButton, SIGNAL(clicked(bool)), this, SLOT(switchGroupingType()));
 
     if (downloadLocation.isEmpty()) {
         downloadLocation = VARS("AudioRepoDownloader/DownloadAlbumPath");
@@ -204,27 +209,32 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
         insertedToList.insert(key, audio_mp3);
     }
 
-    const QString title = tr("%1 (voice: %2)").arg(audio_title).arg(audio_artist);
+    const QString poetName = poemToPoetCache.value(audio_post_ID.toInt(), sApp->databaseBrowser()->getPoetForPoem(audio_post_ID.toInt())._Name);
+
+    const QString title = m_groupType == GroupByPoet
+            ? tr("%1 (voice: %2)").arg(audio_title).arg(audio_artist)
+            : tr("%1 (poet: %2)").arg(audio_title).arg(poetName);
+
     QStringList visibleInfo = QStringList()
             << title
-            << fileSizeKB
-            << audio_post_ID
-            << audio_order
-            << audio_artist
-            << audio_artist_url;
+            << fileSizeKB;
+//            << audio_post_ID
+//            << audio_order
+//            << audio_artist
+//            << audio_artist_url;
 
-    const QString poetName = poemToPoetCache.value(audio_post_ID.toInt(), sApp->databaseBrowser()->getPoetForPoem(audio_post_ID.toInt())._Name);
-    QTreeWidgetItem* rootItem = findParentItem(isNew ? newRootItem : oldRootItem, poetName);
+    const QString parentTitle = m_groupType == GroupByPoet ? poetName : audio_artist;
+    QTreeWidgetItem* rootItem = findParentItem(isNew ? newRootItem : oldRootItem, parentTitle);
 
     if (!rootItem) {
         rootItem = new QTreeWidgetItem(isNew ? newRootItem : oldRootItem);
-        rootItem->setText(0, poetName);
+        rootItem->setText(0, parentTitle);
         rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
         rootItem->setCheckState(0, Qt::Unchecked);
     }
 
     QTreeWidgetItem* item = new QTreeWidgetItem(rootItem , visibleInfo);
-    item->setToolTip(0, audio_title);
+    item->setToolTip(0, title);
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     item->setCheckState(0, Qt::Unchecked);
 
@@ -240,6 +250,7 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
     item->setData(0, AudioXmlRole, audio_xml);
     item->setData(0, AudioMP3Role, audio_mp3);
     item->setData(0, AudioGuidRole, audio_guid);
+    item->setData(0, AudioTitleRole, audio_title);
 
     if (!audio_artist_url.isEmpty()) {
         QLabel* link = new QLabel(ui->repoSelectTree);
@@ -267,6 +278,11 @@ void AudioRepoDownloader::setDisabledAll(bool disable)
     ui->refreshPushButton->setDisabled(disable);
     ui->repoSelectTree->setDisabled(disable);
     ui->labelSubtitle->setDisabled(disable);
+    ui->groupLabel->setDisabled(disable);
+    ui->poetGroupRadioButton->setDisabled(disable);
+    ui->voiceGroupRadioButton->setDisabled(disable);
+    ui->expandPushButton->setDisabled(disable);
+    ui->collapsePushButton->setDisabled(disable);
 
     if (disable) {
         ui->pushButtonDownload->setDisabled(disable);
@@ -314,31 +330,9 @@ bool AudioRepoDownloader::loadPresentAudios()
         return false;
     }
 
-    if (oldRootItem && newRootItem) {
-        QList<QTreeWidgetItem*> items;
-        items << allChildren(oldRootItem->takeChildren()) << allChildren(newRootItem->takeChildren());
-        QHash<QPair<QTreeWidgetItem*, QString>, QTreeWidgetItem*> parentCache;
-        foreach (QTreeWidgetItem* item, items) {
-            int audio_post_ID = item->data(0, AudioPostIDRole).toInt();
-            const QString poetName = poemToPoetCache.value(audio_post_ID, sApp->databaseBrowser()->getPoetForPoem(audio_post_ID)._Name);
-            QTreeWidgetItem* rootItem = !m_saagharAlbum->mediaItems.contains(audio_post_ID) ? newRootItem : oldRootItem;
+    lighRefreshTree();
 
-            const QPair<QTreeWidgetItem*, QString> key = qMakePair(rootItem, poetName);
-            rootItem = parentCache.value(key, 0);
-            if (!rootItem) {
-                rootItem = new QTreeWidgetItem(!m_saagharAlbum->mediaItems.contains(audio_post_ID) ? newRootItem : oldRootItem);
-                rootItem->setText(0, poetName);
-                rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
-                rootItem->setCheckState(0, Qt::Unchecked);
-                parentCache.insert(key, rootItem);
-            }
-
-            rootItem->addChild(item);
-            itemSetDisable(item, m_saagharAlbum->mediaItems.contains(audio_post_ID));
-        }
-
-        return true;
-    }
+    return true;
 }
 
 void AudioRepoDownloader::setRepositories(const QStringList &urls)
@@ -526,6 +520,53 @@ void AudioRepoDownloader::itemDataChanged(QTreeWidgetItem* /*item*/, int /*colum
 
     ui->pushButtonDownload->setEnabled(false);
     isChecking = false;
+}
+
+void AudioRepoDownloader::switchGroupingType()
+{
+    GroupType type = ui->poetGroupRadioButton->isChecked() ? GroupByPoet : GroupByVoice;
+
+    if (type != m_groupType) {
+        m_groupType = type;
+        lighRefreshTree();
+    }
+}
+
+void AudioRepoDownloader::lighRefreshTree()
+{
+    if (oldRootItem && newRootItem) {
+        QList<QTreeWidgetItem*> items;
+        items << allChildren(oldRootItem->takeChildren()) << allChildren(newRootItem->takeChildren());
+        QHash<QPair<QTreeWidgetItem*, QString>, QTreeWidgetItem*> parentCache;
+        foreach (QTreeWidgetItem* item, items) {
+            int audio_post_ID = item->data(0, AudioPostIDRole).toInt();
+            const QString audioTitle = item->data(0, AudioTitleRole).toString();
+            const QString audioArtist = item->data(0, AudioArtistRole).toString();
+            const QString poetName = poemToPoetCache.value(audio_post_ID, sApp->databaseBrowser()->getPoetForPoem(audio_post_ID)._Name);
+
+            const QString title = m_groupType == GroupByPoet
+                        ? tr("%1 (voice: %2)").arg(audioTitle).arg(audioArtist)
+                        : tr("%1 (poet: %2)").arg(audioTitle).arg(poetName);
+            item->setText(0, title);
+            item->setToolTip(0, title);
+
+            const QString parentTitle = m_groupType == GroupByPoet ? poetName : audioArtist;
+            QTreeWidgetItem* rootItem = !m_saagharAlbum->mediaItems.contains(audio_post_ID) ? newRootItem : oldRootItem;
+
+            const QPair<QTreeWidgetItem*, QString> key = qMakePair(rootItem, parentTitle);
+            rootItem = parentCache.value(key, 0);
+            if (!rootItem) {
+                rootItem = new QTreeWidgetItem(!m_saagharAlbum->mediaItems.contains(audio_post_ID) ? newRootItem : oldRootItem);
+                rootItem->setText(0, parentTitle);
+                rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
+                rootItem->setCheckState(0, Qt::Unchecked);
+                parentCache.insert(key, rootItem);
+            }
+
+            rootItem->addChild(item);
+            itemSetDisable(item, m_saagharAlbum->mediaItems.contains(audio_post_ID));
+        }
+    }
 }
 
 void AudioRepoDownloader::getDownloadLocation()
