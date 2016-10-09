@@ -293,6 +293,11 @@ void SaagharApplication::setupTranslators()
             installTranslator(basicTranslator);
         }
     }
+
+    if (tr("LTR") == QLatin1String("RTL")) {
+        setLayoutDirection(Qt::RightToLeft);
+        qDebug() << "Set layout direction to RTL";
+    }
 }
 
 void SaagharApplication::setupInitialValues()

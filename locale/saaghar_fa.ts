@@ -72,145 +72,175 @@
         <translation>اندازه</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="125"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="129"/>
+        <source>Group By:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="136"/>
+        <source>Poet</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="143"/>
+        <source>Voice</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="154"/>
+        <source>Collapse All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="161"/>
+        <source>Expand All</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="185"/>
         <source>Keep Downloaded Files</source>
         <translation>بایگانی پرونده‌های دریافت شده</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="148"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="208"/>
         <source>Download Progress:</source>
         <translation>پیشرفت دریافت:</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="181"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="241"/>
         <source>Download &amp;&amp; Add to Album</source>
         <translation>دریافت و اضافه کردن به آلبوم</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="188"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="248"/>
         <source>Cancel</source>
         <translation>رد</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="192"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="200"/>
         <source>KB</source>
         <translation>کیلو بایت</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="254"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="215"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="548"/>
+        <source>%1 (voice: %2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="216"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="549"/>
+        <source>%1 (poet: %2)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="269"/>
         <source>Select From Repositories List...</source>
         <translation>از بین فهرست مخزن‌ها انتخاب کنید...</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="256"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="271"/>
         <source>Click To Add/Remove...</source>
         <translation>برای حذف/اضافه کلیک کنید...</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="266"/>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="315"/>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="536"/>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="676"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="453"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="640"/>
         <source>Error!</source>
         <translation>خطا!</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="266"/>
         <source>You have not write permission to database file, the import procedure can not proceed.
 DataBase Path: %2</source>
-        <translation>به پرونده پایگاه‌داده دسترسی نوشتنی ندارید، فرایند افزودن نَسک تازه نمی‌تواند ادامه پیدا کند.
+        <translation type="vanished">به پرونده پایگاه‌داده دسترسی نوشتنی ندارید، فرایند افزودن نَسک تازه نمی‌تواند ادامه پیدا کند.
 مسیر پایگاه‌داده: %2</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="278"/>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="711"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="675"/>
         <source>Warning!</source>
         <translation>هشدار!‏ </translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="280"/>
         <source>There are some conflict with your installed database. If you continue, these poets will be removed!</source>
-        <translation>بخش‌هایی از نَسک تازه در پایگاه‌داده نصب شده موجودند. اگر ادامه دهید سخن‌سرایانی که این بخش‌ها را دربرمی‌گیرند از پایگاه‌داده فعلی حذف خواهند شد!</translation>
+        <translation type="vanished">بخش‌هایی از نَسک تازه در پایگاه‌داده نصب شده موجودند. اگر ادامه دهید سخن‌سرایانی که این بخش‌ها را دربرمی‌گیرند از پایگاه‌داده فعلی حذف خواهند شد!</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="281"/>
         <source>These poets are present in installed database:
 </source>
-        <translation>سخن‌سراهایی که در پایگاه‌داده فعلی موجودند:</translation>
+        <translation type="vanished">سخن‌سراهایی که در پایگاه‌داده فعلی موجودند:</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="315"/>
         <source>There are some errors, the import procedure was not completed</source>
-        <translation>خطایی رخ داده است، فرایند افزودن نَسک تازه کامل نشد</translation>
+        <translation type="vanished">خطایی رخ داده است، فرایند افزودن نَسک تازه کامل نشد</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="436"/>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="438"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="353"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="355"/>
         <source>Please select download location...</source>
         <translation>لطفا مکان دریافت را انتخاب کنید...</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="459"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="376"/>
         <source>Present in Album</source>
         <translation>موجود در آلبوم</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="467"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="384"/>
         <source>Not in Album</source>
         <translation>جدید</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="536"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="453"/>
         <source>Can not create temp path.</source>
         <translation>نمی‌تواند مسیر موقت را بسازد.</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="612"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="576"/>
         <source>Select Album to Download Audios</source>
         <translation>برای دریافت خوانش‌ها آلبومی را انتخاب کنید</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="667"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="631"/>
         <source>Stop</source>
         <translation>توقف</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="676"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="640"/>
         <source>Can not create download path.</source>
         <translation>نمی‌تواند مسیر دریافت را بسازد.</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="692"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="656"/>
         <source>Finished!</source>
         <translation>تمام!</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="712"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="676"/>
         <source>Download in progress! Are you sure to stop downloading?</source>
         <translation>فرایند دریافت در جریان است! آیا از متوقف کردن دریافت اطمینان داری؟</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="745"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="710"/>
         <source>MP3 file</source>
         <translation>پرونده MP3</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="746"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="711"/>
         <source>sync. file</source>
         <translation>پرونده همگام‌سازی</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="783"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="735"/>
         <source>Download &amp;&amp; Install</source>
         <translation>دریافت و نصب</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="835"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="784"/>
         <source>Add/Remove Repository Address</source>
         <translation>حذف/اضافه آدرس مخزن</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="837"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="786"/>
         <source>Insert each address in a separate line!</source>
         <translation>هر آدرس را در خط جداگانه‌ای وارد کنید!</translation>
     </message>
@@ -1047,7 +1077,7 @@ DataBase Path=%2</source>
         <translation>آلبوم قبلا بارگذاری شده است.</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="354"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="313"/>
         <location filename="../src/qmusicplayer/qmusicplayer.cpp" line="328"/>
         <location filename="../src/qmusicplayer/qmusicplayer.cpp" line="379"/>
         <location filename="../src/qmusicplayer/qmusicplayer.cpp" line="459"/>
@@ -1055,7 +1085,7 @@ DataBase Path=%2</source>
         <translation>نام آلبوم</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="355"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="314"/>
         <location filename="../src/qmusicplayer/qmusicplayer.cpp" line="329"/>
         <location filename="../src/qmusicplayer/qmusicplayer.cpp" line="460"/>
         <source>Enter name for this Album:</source>
@@ -1360,13 +1390,19 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>SaagharApplication</name>
     <message>
-        <location filename="../src/saagharapplication.cpp" line="415"/>
-        <location filename="../src/saagharapplication.cpp" line="503"/>
+        <location filename="../src/saagharapplication.cpp" line="93"/>
+        <source>LTR</source>
+        <translatorcomment>For right to left language translate it to RTL</translatorcomment>
+        <translation type="unfinished">RTL</translation>
+    </message>
+    <message>
+        <location filename="../src/saagharapplication.cpp" line="419"/>
+        <location filename="../src/saagharapplication.cpp" line="507"/>
         <source>Warning!</source>
         <translation>هشدار!‏</translation>
     </message>
     <message>
-        <location filename="../src/saagharapplication.cpp" line="416"/>
+        <location filename="../src/saagharapplication.cpp" line="420"/>
         <source>Settings could not be loaded!
 File: %1
 Error: %2</source>
@@ -1375,7 +1411,7 @@ Error: %2</source>
 خطا: %2</translation>
     </message>
     <message>
-        <location filename="../src/saagharapplication.cpp" line="504"/>
+        <location filename="../src/saagharapplication.cpp" line="508"/>
         <source>Settings could not be saved!
 File: %1
 Error: %2</source>
@@ -1384,7 +1420,7 @@ Error: %2</source>
 خطا: %2</translation>
     </message>
     <message>
-        <location filename="../src/saagharapplication.cpp" line="537"/>
+        <location filename="../src/saagharapplication.cpp" line="541"/>
         <source>Customize this menu...</source>
         <translation>شخصی‌سازی این منو...</translation>
     </message>
