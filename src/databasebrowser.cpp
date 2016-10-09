@@ -837,29 +837,22 @@ int DatabaseBrowser::getNewPoemID()
 {
     int newPoemID = -1;
 
-    if (cachedMaxPoemID == 0) {
-        if (isConnected()) {
-            QString strQuery = "SELECT MAX(id) FROM poem";
-            QSqlQuery q(database());
-            q.exec(strQuery);
+    if (isConnected()) {
+        QString strQuery = "SELECT MAX(id) FROM poem";
+        QSqlQuery q(database());
+        q.exec(strQuery);
 
-            if (q.first()) {
-                bool ok = false;
-                newPoemID = q.value(0).toInt(&ok) + 1;
-                if (!ok) {
-                    newPoemID = minNewPoemID + 1;
-                }
+        if (q.first()) {
+            bool ok = false;
+            newPoemID = q.value(0).toInt(&ok) + 1;
+            if (!ok) {
+                newPoemID = minNewPoemID + 1;
             }
         }
-
-        if (newPoemID < minNewPoemID) {
-            newPoemID = minNewPoemID + 1;
-        }
-
-        cachedMaxPoemID = newPoemID;
     }
-    else {
-        newPoemID = ++cachedMaxPoemID;
+
+    if (newPoemID < minNewPoemID) {
+        newPoemID = minNewPoemID + 1;
     }
 
     return newPoemID;
@@ -869,29 +862,22 @@ int DatabaseBrowser::getNewCatID()
 {
     int newCatID = -1;
 
-    if (cachedMaxCatID == 0) {
-        if (isConnected()) {
-            QString strQuery = "SELECT MAX(id) FROM cat";
-            QSqlQuery q(database());
-            q.exec(strQuery);
+    if (isConnected()) {
+        QString strQuery = "SELECT MAX(id) FROM cat";
+        QSqlQuery q(database());
+        q.exec(strQuery);
 
-            if (q.first()) {
-                bool ok = false;
-                newCatID = q.value(0).toInt(&ok) + 1;
-                if (!ok) {
-                    newCatID = minNewCatID + 1;
-                }
+        if (q.first()) {
+            bool ok = false;
+            newCatID = q.value(0).toInt(&ok) + 1;
+            if (!ok) {
+                newCatID = minNewCatID + 1;
             }
         }
-
-        if (newCatID < minNewCatID) {
-            newCatID = minNewCatID + 1;
-        }
-
-        cachedMaxCatID = newCatID;
     }
-    else {
-        newCatID = ++cachedMaxCatID;
+
+    if (newCatID < minNewCatID) {
+        newCatID = minNewCatID + 1;
     }
 
     return newCatID;
@@ -1701,4 +1687,171 @@ QSqlDatabase DatabaseBrowser::databaseForThread(QThread* thread, const QString &
     id = getIdForDataBase(id, thread);
 
     return database(id);
+}
+
+int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
+{
+    int newPoetID = -1;
+    int newCatID = -1;
+
+    for (int i = 0; i < catPath.size(); ++i) {
+        GanjoorCat &cat = catPath[i];
+        if (cat._ID == -1) {
+            if (i == 0) {
+                // new poet
+                if (newPoetID == -1) {
+                    newPoetID = getNewPoetID();
+                }
+                if (newCatID == -1) {
+                    newCatID = getNewCatID();
+                }
+                cat._ID = newCatID;
+                cat._ParentID = 0;
+                cat._PoetID = newPoetID;
+
+                ++newCatID;
+                ++newPoetID;
+
+                QString strQuery = QString("INSERT INTO poet (id, name, cat_id) VALUES (%1, \"%2\", %3);")
+                        .arg(cat._PoetID).arg(cat._Text).arg(cat._ID);
+                QSqlQuery q(database());
+                q.exec(strQuery);
+
+                strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id, url) VALUES (%1, %2, \"%3\", %4, \"%5\");")
+                        .arg(cat._ID).arg(cat._PoetID).arg(cat._Text).arg(cat._ParentID).arg(cat._Url);
+
+                q.exec(strQuery);
+            }
+            else {
+                if (newCatID == -1) {
+                    newCatID = getNewCatID();
+                }
+                cat._ID = newCatID;
+                cat._ParentID = catPath.at(i - 1)._ID;
+                cat._PoetID = catPath.at(i - 1)._PoetID;
+
+                ++newCatID;
+
+                QString strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id) VALUES (%1, %2, \"%3\", %4);")
+                        .arg(cat._ID).arg(cat._PoetID).arg(cat._Text).arg(cat._ParentID);
+                QSqlQuery q(database());
+                q.exec(strQuery);
+            }
+        }
+    }
+
+    return newCatID;
+}
+
+static void debugCatPath(const QList<GanjoorCat> &catPath, const QString &extra)
+{
+    qDebug() << "\n" << extra << "@@@@@@@ START @@@@@@@@@\n";
+    for (int i = 0; i < catPath.size(); ++i) {
+        GanjoorCat cat = catPath.at(i);
+        qDebug() << (i + 1) << " - " << cat._Text << "\n"
+                 << (i + 1) << " - " << cat._PoetID << "\n"
+                 << (i + 1) << " - " << cat._ParentID << "\n"
+                 << (i + 1) << " - " << cat._ID << "\n";
+    }
+    qDebug() << extra << "@@@@@@@@ END @@@@@@@@@@\n";
+}
+
+void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<GanjoorCat> &catPath, bool storeAsGDB)
+{
+    if (!isConnected() || catPath.isEmpty() || importData.isNull()) {
+        return;
+    }
+
+    if (storeAsGDB) {
+        //
+    }
+
+    QSqlDatabase dataBaseObject = database();
+    bool inTransaction = dataBaseObject.transaction();
+
+    QList<GanjoorCat> initCatPath = catPath;
+    debugCatPath(initCatPath, "1-BEFORE");
+    int newCatID = createCatPathOnNeed(initCatPath);
+    debugCatPath(initCatPath, "22-AFTER");
+
+//    struct CatContents {
+//        QList<GanjoorPoem> poems;
+//        QMap<int, QList<GanjoorVerse> > verses;
+
+//        CatContents() {}
+//        bool isNull() const { return poems.isEmpty() || verses.isEmpty(); }
+//        void clear() { poems.clear(); verses.clear(); }
+//    };
+    QString strQuery;
+    QSqlQuery qp(database());
+
+    QSqlQuery qv(database());
+    QString verseQuery = "INSERT INTO verse (poem_id, vorder, position, text) VALUES (:poem_id,:vorder,:position,:text)";
+    qv.prepare(verseQuery);
+
+    int newPoemId = getNewPoemID();
+    GanjoorCat topLevelCat = initCatPath.last();
+    QHash<int, int> createdCatsIdMap;
+    int catId;
+
+    foreach (const GanjoorPoem &poem, importData.poems) {
+        QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
+
+        if (verses.isEmpty()) {
+            continue;
+        }
+
+        QList<GanjoorCat> parentCats = importData.catParents(poem._CatID);
+
+        if (!parentCats.isEmpty()) {
+            foreach (const GanjoorCat &cat, parentCats) {
+                if (!createdCatsIdMap.contains(cat._ID)) {
+                    Q_ASSERT(cat._ParentID == -1 || createdCatsIdMap.contains(cat._ParentID));
+
+                    int parentId = cat._ParentID == -1 ? topLevelCat._ID : createdCatsIdMap.value(cat._ParentID);
+
+                    if (newCatID == -1) {
+                        newCatID = getNewCatID();
+                    }
+
+                    createdCatsIdMap.insert(cat._ID, newCatID);
+                    catId = newCatID;
+
+                    strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id) VALUES (%1, %2, \"%3\", %4);")
+                            .arg(newCatID).arg(topLevelCat._PoetID).arg(cat._Text).arg(parentId);
+                    QSqlQuery q(database());
+                    q.exec(strQuery);
+
+                    ++newCatID;
+                }
+                else {
+                    catId = createdCatsIdMap.value(cat._ID);
+                }
+            }
+        }
+        else {
+            catId = topLevelCat._ID;
+        }
+
+        strQuery = QString("INSERT INTO poem (id, cat_id, title, url) VALUES (%1, %2, \"%3\", \"%4\");")
+                .arg(newPoemId).arg(catId).arg(poem._Title).arg(poem._Url);
+        qp.exec(strQuery);
+
+        foreach (const GanjoorVerse &verse, verses) {
+            qv.bindValue(":poem_id", newPoemId);
+            qv.bindValue(":vorder", verse._Order);
+            qv.bindValue(":position", verse._Position);
+            qv.bindValue(":text", verse._Text);
+            qv.exec();
+        }
+
+        ++newPoemId;
+    }
+
+    if (!inTransaction || dataBaseObject.commit()) {
+        emit databaseUpdated();
+    }
+    else {
+        dataBaseObject.rollback();
+    }
 }

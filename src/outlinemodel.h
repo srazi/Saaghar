@@ -25,6 +25,7 @@
 #include <QAbstractItemModel>
 
 struct OutlineNode;
+struct GanjoorCat;
 
 class OutlineModel : public QAbstractItemModel
 {
@@ -34,7 +35,8 @@ public:
 
     enum DataRole {
         IDRole = Qt::UserRole + 1,
-        TitleRole
+        TitleRole,
+        CategoryRole
     };
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
@@ -51,6 +53,10 @@ public:
     bool isPathValid(const QStringList &pathSections);
     QModelIndex index(const QStringList &pathSections, bool* ok = 0) const;
 
+    QModelIndex indexFromPath(const QList<int> &path) const;
+    QList<int> pathFromIndex(const QModelIndex &index) const;
+    QList<GanjoorCat> catPathFromIndex(const QModelIndex &index, bool reversed = false) const;
+
 private:
     Q_DISABLE_COPY(OutlineModel)
     OutlineModel(QObject* parent = 0);
@@ -66,6 +72,7 @@ private:
     QVector<OutlineNode*> children(OutlineNode* parent, bool useCache = false) const;
 
     QModelIndex find(const QString &key, const QModelIndex &parent) const;
+    QModelIndex find(int id, const QModelIndex &parent) const;
 };
 
 #endif // OUTLINEMODEL_H

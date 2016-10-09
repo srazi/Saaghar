@@ -23,7 +23,7 @@
 #define DATABASEELEMENTS_H
 
 #include <QString>
-
+#include <QMetaType>
 
 inline QString qStringMacHelper(const QString &str)
 {
@@ -140,9 +140,8 @@ public:
     inline bool isNull() const {return _ID == -1;}
 };
 
-class GanjoorCat
+struct GanjoorCat
 {
-public:
     int _ID;
     int _PoetID;
     QString _Text;
@@ -177,4 +176,41 @@ public:
         _Url = Url;
     }
 };
+
+#include <QList>
+#include <QMap>
+// We just interested to cats that have poems with non-empty verses.
+// So we just track poem's verses. The poems with catId == -1 are
+//  considered as poems of root category.
+struct CatContents {
+    QMap<int, GanjoorCat> cats;
+    QList<GanjoorPoem> poems;
+    QMap<int, QList<GanjoorVerse> > verses;
+
+    CatContents() {}
+    bool isNull() const { return poems.isEmpty() || verses.isEmpty(); }
+    void clear() { cats.clear(); poems.clear(); verses.clear(); }
+    QList<GanjoorCat> catParents(int catId) const {
+        QList<GanjoorCat> catList;
+        while (catId != -1) {
+            GanjoorCat cat = cats.value(catId);
+            catList.prepend(cat);
+            catId = cat._ParentID;
+        }
+        return catList;
+    }
+
+    QStringList catParentsTitles(int catId) const {
+        QStringList titles;
+        while (catId != -1) {
+            GanjoorCat cat = cats.value(catId);
+            titles.prepend(cat._Text);
+            catId = cat._ParentID;
+        }
+        return titles;
+    }
+};
+
+Q_DECLARE_METATYPE(GanjoorCat)
+
 #endif // DATABASEELEMENTS_H

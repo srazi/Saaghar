@@ -36,6 +36,8 @@
 #include "saagharapplication.h"
 #include "settingsmanager.h"
 #include "outlinemodel.h"
+#include "importer/importermanager.h"
+#include "importer/importer_interface.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -1676,6 +1678,10 @@ void SaagharWindow::setupUi()
 
     actionInstance("actionPrintPreview", ICON_PATH + "/print-preview.png", tr("Print Pre&view..."));
 
+    if (ImporterManager::instance()->importerIsAvailable()) {
+        actionInstance("actionImport", ICON_PATH + "/import.png", tr("&Import..."));
+    }
+
     actionInstance("actionExport", ICON_PATH + "/export.png", tr("&Export As..."))->setShortcuts(QKeySequence::SaveAs);
 
     actionInstance("actionExportAsPDF", ICON_PATH + "/export-pdf.png", tr("Exp&ort As PDF..."));
@@ -1844,6 +1850,9 @@ void SaagharWindow::setupUi()
     menuFile->addMenu(menuOpenedTabs);
     menuFile->addMenu(menuClosedTabs);
     menuFile->addSeparator();
+    if (ImporterManager::instance()->importerIsAvailable()) {
+        menuFile->addAction(actionInstance("actionImport"));
+    }
     menuFile->addAction(actionInstance("actionExportAsPDF"));
     menuFile->addAction(actionInstance("actionExport"));
     menuFile->addSeparator();
@@ -3111,6 +3120,13 @@ void SaagharWindow::namedActionTriggered(bool checked)
                 saagharWidget->refresh();
             }
         }
+    }
+    else if (actionName == "actionImport") {
+        if (!saagharWidget || !ImporterManager::instance()->importerIsAvailable()) {
+            return;
+        }
+
+        ImporterManager::instance()->initializeImport();
     }
     else if (actionName == "DownloadRepositories") {
         if (!DatabaseBrowser::dbUpdater) {
