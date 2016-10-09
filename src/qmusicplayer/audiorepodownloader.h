@@ -86,7 +86,6 @@ private:
     void setupUi();
     void parseElement(const QDomElement &element);
     void fillRepositoryList();
-    void importDataBase(const QString &fileName, bool* ok = 0);
 
     void setDisabledAll(bool disable);
     bool loadPresentAudios();

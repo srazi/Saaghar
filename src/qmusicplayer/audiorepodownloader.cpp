@@ -259,67 +259,6 @@ void AudioRepoDownloader::fillRepositoryList()
     ui->comboBoxRepoList->insertSeparator(ui->comboBoxRepoList->count() - 1);
 }
 
-void AudioRepoDownloader::importDataBase(const QString &fileName, bool* ok)
-{
-    QSqlDatabase dataBaseObject = DatabaseBrowser::database();
-    QFileInfo dataBaseFile(dataBaseObject.databaseName());
-    if (!dataBaseFile.isWritable()) {
-        QMessageBox::warning(sApp->activeWindow(), tr("Error!"), tr("You have not write permission to database file, the import procedure can not proceed.\nDataBase Path: %2").arg(dataBaseFile.fileName()));
-        if (ok) {
-            *ok = false;
-        }
-        return;
-    }
-    QList<GanjoorPoet*> poetsConflictList = sApp->databaseBrowser()->getConflictingPoets(fileName);
-
-    dataBaseObject.transaction();
-
-    if (!poetsConflictList.isEmpty()) {
-        QMessageBox warnAboutConflict(sApp->activeWindow());
-        warnAboutConflict.setWindowTitle(tr("Warning!"));
-        warnAboutConflict.setIcon(QMessageBox::Warning);
-        warnAboutConflict.setText(tr("There are some conflict with your installed database. If you continue, these poets will be removed!"));
-        QString details = tr("These poets are present in installed database:\n");
-        for (int i = 0; i < poetsConflictList.size(); ++i) {
-            details += poetsConflictList.at(i)->_Name + "\n";
-        }
-        warnAboutConflict.setDetailedText(details);
-        warnAboutConflict.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
-        warnAboutConflict.setEscapeButton(QMessageBox::Cancel);
-        warnAboutConflict.setDefaultButton(QMessageBox::Cancel);
-        int ret = warnAboutConflict.exec();
-        if (ret == QMessageBox::Cancel) {
-            if (ok) {
-                *ok = false;
-            }
-            return;
-        }
-
-        foreach (GanjoorPoet* poet, poetsConflictList) {
-            sApp->databaseBrowser()->removePoetFromDataBase(poet->_ID);
-        }
-    }
-
-    //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-
-    if (sApp->databaseBrowser()->importDataBase(fileName)) {
-        dataBaseObject.commit();
-        if (ok) {
-            *ok = true;
-        }
-    }
-    else {
-        if (ok) {
-            *ok = false;
-        }
-        dataBaseObject.rollback();
-        QMessageBox warning(QMessageBox::Warning, tr("Error!"), tr("There are some errors, the import procedure was not completed"), QMessageBox::Ok
-                            , DatabaseBrowser::dbUpdater, Qt::Dialog | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowStaysOnTopHint);
-        warning.exec();
-    }
-    //QApplication::restoreOverrideCursor();
-}
-
 void AudioRepoDownloader::setDisabledAll(bool disable)
 {
     ui->refreshPushButton->setDisabled(disable);
@@ -372,26 +311,6 @@ bool AudioRepoDownloader::loadPresentAudios()
         return false;
     }
 
-/*
- *  const QString poetName = poemToPoetCache.value(audio_post_ID, sApp->databaseBrowser()->getPoetForPoem(audio_post_ID));
-    QTreeWidgetItem* rootItem = isNew ? newRootItem : oldRootItem;
-    bool createChild = true;
-    for (int i = 0; i < rootItem->childCount(); ++i) {
-        QTreeWidgetItem* child = rootItem->child(i);
-        if (child->text(0) == poetName) {
-            rootItem = child;
-            createChild = false;
-            break;
-        }
-    }
-
-    if (createChild) {
-        rootItem = new QTreeWidgetItem(rootItem);
-        rootItem->setText(0, poetName);
-        rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
-        rootItem->setCheckState(0, Qt::Unchecked);
-    }
-    */
     if (oldRootItem && newRootItem) {
         QList<QTreeWidgetItem*> items;
         items << allChildren(oldRootItem->takeChildren()) << allChildren(newRootItem->takeChildren());
@@ -736,8 +655,9 @@ bool AudioRepoDownloader::downloadItem(QTreeWidgetItem* item, bool addToAlbum)
     if (!item) {
         return false;
     }
+
     item->treeWidget()->setCurrentItem(item);
-   // bool keepDownlaodedFiles = ui->groupBoxKeepDownload->isChecked();
+
     downloadStarted = true;
     QString urlAudioMP3 = item->data(0, AudioMP3Role).toString();
     QString urlAudioXml = item->data(0, AudioXmlRole).toString();
@@ -762,19 +682,6 @@ bool AudioRepoDownloader::downloadItem(QTreeWidgetItem* item, bool addToAlbum)
     }
 
     return true;
-//    if (install) {
-//        ui->labelDownloadStatus->setText(tr("Installing..."));
-//        QString fileType = item->data(0, AudioChecksumRole).toString();
-//        installItemToDB(fileName, sessionDownloadFolder, fileType);
-//        ui->labelDownloadStatus->setText(tr("Installed."));
-//    }
-
-//    if (!keepDownlaodedFiles) {
-//        QFile::remove(sessionDownloadFolder + "/" + fileName);
-//        //TODO: Fix me!
-//        //QDir downDir(sessionDownloadFolder);
-//        //downDir.rmdir(sessionDownloadFolder);
-//    }
 }
 
 void AudioRepoDownloader::forceStopDownload()
@@ -785,9 +692,6 @@ void AudioRepoDownloader::forceStopDownload()
     connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
     disconnect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
     disconnect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
-
-//    QDir tmpDir(randomFolder);
-//    tmpDir.rmdir(randomFolder);
 }
 
 QString AudioRepoDownloader::getTempDir(const QString &path, bool makeDir)
@@ -797,7 +701,7 @@ QString AudioRepoDownloader::getTempDir(const QString &path, bool makeDir)
     if (!currentPathInfo.isDir()) {
         currentPath = QDir::tempPath();
     }
-    QString tmpPath = currentPath + "/~tmp_saaghar_0"; //+QString::number(qrand());
+    QString tmpPath = currentPath + "/~tmp_saaghar_0";
     QDir tmpDir(tmpPath);
     while (tmpDir.exists()) {
         tmpPath += QString::number(qrand());
