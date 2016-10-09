@@ -26,7 +26,8 @@
 const int ID_DATA = Qt::UserRole + 1;
 
 LyricsManager::LyricsManager(QObject* parent)
-    : QObject(parent)
+    : QObject(parent),
+      m_scaleFactor(1)
 {
 }
 
@@ -81,9 +82,9 @@ int LyricsManager::vorderByTime(qint64 time)
     }
 
     QMap<qint64, int>::const_iterator it = m_syncMap.constBegin();
-    qint64 key = time;
+    qint64 key = time * m_scaleFactor;
     while (it != m_syncMap.constEnd()) {
-        if (it.key() >= time) {
+        if (it.key() >= time * m_scaleFactor) {
             break;
         }
         key = it.key();
@@ -91,4 +92,21 @@ int LyricsManager::vorderByTime(qint64 time)
     }
 
     return m_syncMap.value(key, -3);
+}
+
+int LyricsManager::setScaleFactor(qint64 totalDuration)
+{
+    if (totalDuration <= 0 || m_syncMap.isEmpty()) {
+        m_scaleFactor = 1;
+        return -1;
+    }
+
+    if (totalDuration < m_syncMap.keys().last()) {
+        m_scaleFactor = 2;
+    }
+    else {
+        m_scaleFactor = 1;
+    }
+
+    return m_scaleFactor;
 }

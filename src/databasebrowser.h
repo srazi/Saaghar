@@ -87,6 +87,7 @@ public:
     GanjoorPoem getNextPoem(GanjoorPoem poem);
     GanjoorPoem getPreviousPoem(int PoemID, int CatID);
     GanjoorPoem getPreviousPoem(GanjoorPoem poem);
+    GanjoorPoet getPoetForPoem(int poemID);
     GanjoorPoet getPoetForCat(int CatID);
     GanjoorPoet getPoet(int PoetID);
     GanjoorPoet getPoet(QString PoetName);

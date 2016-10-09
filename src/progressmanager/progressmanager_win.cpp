@@ -139,7 +139,7 @@ void ProgressManagerPrivate::cleanup()
 
 void ProgressManagerPrivate::doSetApplicationLabel(const QString &text)
 {
-    if (!pITask) {
+    if (!pITask || !qApp->activeWindow()) {
         return;
     }
 
@@ -175,7 +175,7 @@ void ProgressManagerPrivate::setApplicationProgressRange(int min, int max)
 
 void ProgressManagerPrivate::setApplicationProgressValue(int value)
 {
-    if (pITask) {
+    if (pITask && qApp->activeWindow()) {
         const HWND winId = hwndOfWidget(qApp->activeWindow());
         pITask->SetProgressValue(winId, value, total);
     }
@@ -183,7 +183,7 @@ void ProgressManagerPrivate::setApplicationProgressValue(int value)
 
 void ProgressManagerPrivate::setApplicationProgressVisible(bool visible)
 {
-    if (!pITask) {
+    if (!pITask || !qApp->activeWindow()) {
         return;
     }
 

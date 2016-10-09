@@ -35,10 +35,13 @@ public:
 
     bool read(QIODevice* device, const QString &format);
     int vorderByTime(qint64 time);
+    int setScaleFactor(qint64 totalDuration);
 
 private:
     QDomDocument m_domDocument;
     QMap<qint64, int> m_syncMap;
+
+    int m_scaleFactor;
 };
 
 #endif // LYRICSMANAGER_H

@@ -64,6 +64,7 @@ static const QString DATABASE_FILE_NAME = QLatin1String("ganjoor.s3db");
 static const QString SETTINGS_FILE_NAME = QLatin1String("settings.ini");
 static const QString BOOKMARKS_FILE_NAME = QLatin1String("bookmarks.xbel");
 static const QString ALBUM_FILE_NAME = QLatin1String("default.sal");
+static const QString ALBUM_DIR_NAME = QLatin1String("audio");
 
 #ifdef Q_OS_MAC
 static const QString PORTABLE_SETTINGS_PATH = QLatin1String("/../Resources/settings.ini");
@@ -241,6 +242,7 @@ void SaagharApplication::setupPaths()
     // dirs
     m_paths.insert(ResourcesDir, resourcesPath);
     m_paths.insert(UserDataDir, dataPath);
+    m_paths.insert(AlbumDir, (dataPath + "/" + ALBUM_DIR_NAME + "/"));
 
     // files
     m_paths.insert(SettingsFile, (dataPath + "/" + SETTINGS_FILE_NAME));
@@ -290,6 +292,11 @@ void SaagharApplication::setupTranslators()
         if (basicTranslator->load(QString("qt_") + VARS("General/UILanguage"), sApp->defaultPath(SaagharApplication::ResourcesDir))) {
             installTranslator(basicTranslator);
         }
+    }
+
+    if (tr("LTR") == QLatin1String("RTL")) {
+        setLayoutDirection(Qt::RightToLeft);
+        qDebug() << "Set layout direction to RTL";
     }
 }
 
@@ -397,6 +404,8 @@ void SaagharApplication::setupInitialValues()
     VAR_INIT("QMusicPlayer/ListOfAlbum", QVariant());
     VAR_INIT("QMusicPlayer/Muted", false);
     VAR_INIT("QMusicPlayer/Volume", 0.4);
+
+    VAR_INIT("AudioRepoDownloader/DownloadAlbumPath", defaultPath(SaagharApplication::AlbumFile));
 }
 
 void SaagharApplication::loadSettings()

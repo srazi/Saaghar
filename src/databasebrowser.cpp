@@ -481,6 +481,17 @@ GanjoorPoem DatabaseBrowser::getPreviousPoem(GanjoorPoem poem)
     return getPreviousPoem(poem._ID, poem._CatID);
 }
 
+GanjoorPoet DatabaseBrowser::getPoetForPoem(int poemID)
+{
+    const GanjoorPoem poem = getPoem(poemID);
+
+    if (poem.isNull()) {
+        return GanjoorPoet();
+    }
+
+    return getPoetForCat(poem._CatID);
+}
+
 GanjoorPoet DatabaseBrowser::getPoetForCat(int CatID)
 {
     GanjoorPoet gPoet;

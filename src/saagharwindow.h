@@ -37,6 +37,7 @@ class OutlineTree;
 class Settings;
 class TabWidget;
 class QIrBreadCrumbBar;
+class AudioRepoDownloader;
 
 namespace Ui
 {
@@ -139,7 +140,9 @@ private:
     QString m_compareSettings;
     QDockWidget* m_outlineDock;
     QDockWidget* m_bookmarkManagerDock;
-
+#ifdef MEDIA_PLAYER
+    AudioRepoDownloader* m_audioRepoDownloader;
+#endif
     bool m_updateTaskScheduled;
 
 public slots:
