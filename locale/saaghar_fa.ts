@@ -74,27 +74,27 @@
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="129"/>
         <source>Group By:</source>
-        <translation type="unfinished"></translation>
+        <translation>گروه‌بندی برحسب:</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="136"/>
         <source>Poet</source>
-        <translation type="unfinished"></translation>
+        <translation>سخن‌سرا</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="143"/>
         <source>Voice</source>
-        <translation type="unfinished"></translation>
+        <translation>صدا</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="154"/>
         <source>Collapse All</source>
-        <translation type="unfinished"></translation>
+        <translation>جمع کردن</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="161"/>
         <source>Expand All</source>
-        <translation type="unfinished"></translation>
+        <translation>گستردن</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="185"/>
@@ -108,13 +108,18 @@
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="241"/>
+        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="735"/>
         <source>Download &amp;&amp; Add to Album</source>
         <translation>دریافت و اضافه کردن به آلبوم</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="248"/>
+        <source>Close</source>
+        <translation>بستن</translation>
+    </message>
+    <message>
         <source>Cancel</source>
-        <translation>رد</translation>
+        <translation type="vanished">رد</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="200"/>
@@ -125,13 +130,13 @@
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="215"/>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="548"/>
         <source>%1 (voice: %2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (صدا: %2)</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="216"/>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="549"/>
         <source>%1 (poet: %2)</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 (سخن‌سرا: %2)</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="269"/>
@@ -187,7 +192,7 @@ DataBase Path: %2</source>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="384"/>
         <source>Not in Album</source>
-        <translation>جدید</translation>
+        <translation>ناموجود در آلبوم</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="453"/>
@@ -230,9 +235,8 @@ DataBase Path: %2</source>
         <translation>پرونده همگام‌سازی</translation>
     </message>
     <message>
-        <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="735"/>
         <source>Download &amp;&amp; Install</source>
-        <translation>دریافت و نصب</translation>
+        <translation type="vanished">دریافت و نصب</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="784"/>
@@ -1390,19 +1394,19 @@ p, li { white-space: pre-wrap; }
 <context>
     <name>SaagharApplication</name>
     <message>
-        <location filename="../src/saagharapplication.cpp" line="93"/>
+        <location filename="../src/saagharapplication.cpp" line="297"/>
         <source>LTR</source>
         <translatorcomment>For right to left language translate it to RTL</translatorcomment>
-        <translation type="unfinished">RTL</translation>
+        <translation>RTL</translation>
     </message>
     <message>
-        <location filename="../src/saagharapplication.cpp" line="419"/>
-        <location filename="../src/saagharapplication.cpp" line="507"/>
+        <location filename="../src/saagharapplication.cpp" line="420"/>
+        <location filename="../src/saagharapplication.cpp" line="508"/>
         <source>Warning!</source>
         <translation>هشدار!‏</translation>
     </message>
     <message>
-        <location filename="../src/saagharapplication.cpp" line="420"/>
+        <location filename="../src/saagharapplication.cpp" line="421"/>
         <source>Settings could not be loaded!
 File: %1
 Error: %2</source>
@@ -1411,7 +1415,7 @@ Error: %2</source>
 خطا: %2</translation>
     </message>
     <message>
-        <location filename="../src/saagharapplication.cpp" line="508"/>
+        <location filename="../src/saagharapplication.cpp" line="509"/>
         <source>Settings could not be saved!
 File: %1
 Error: %2</source>
@@ -1420,7 +1424,7 @@ Error: %2</source>
 خطا: %2</translation>
     </message>
     <message>
-        <location filename="../src/saagharapplication.cpp" line="541"/>
+        <location filename="../src/saagharapplication.cpp" line="542"/>
         <source>Customize this menu...</source>
         <translation>شخصی‌سازی این منو...</translation>
     </message>

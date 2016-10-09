@@ -732,7 +732,7 @@ void AudioRepoDownloader::forceStopDownload()
 {
     downloadStarted = downloadAboutToStart = false;
 
-    ui->pushButtonDownload->setText(tr("Download && Install"));
+    ui->pushButtonDownload->setText(tr("Download && Add to Album"));
     connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
     disconnect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
     disconnect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
