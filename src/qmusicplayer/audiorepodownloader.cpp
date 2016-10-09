@@ -91,6 +91,8 @@ AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
 
         setDisabledAll(true);
     }
+
+    ui->repoSelectTree->setSizeAdjustPolicy(QTreeWidget::AdjustToContentsOnFirstShow);
 }
 
 bool AudioRepoDownloader::read(QIODevice* device)
@@ -137,6 +139,18 @@ bool AudioRepoDownloader::parseDocument()
     return true;
 }
 
+static QTreeWidgetItem* findParentItem(QTreeWidgetItem* rootItem, const QString &title)
+{
+    for (int i = 0; i < rootItem->childCount(); ++i) {
+        QTreeWidgetItem* child = rootItem->child(i);
+        if (child->text(0) == title) {
+            return child;
+        }
+    }
+
+    return 0;
+}
+
 void AudioRepoDownloader::parseElement(const QDomElement &element)
 {
     QString audio_post_ID = element.firstChildElement("audio_post_ID").text();
@@ -173,7 +187,17 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
             << audio_artist
             << audio_artist_url;
 
-    QTreeWidgetItem* item = new QTreeWidgetItem(isNew ? newRootItem : oldRootItem , visibleInfo);
+    const QString poetName = poemToPoetCache.value(audio_post_ID.toInt(), sApp->databaseBrowser()->getPoetForPoem(audio_post_ID.toInt())._Name);
+    QTreeWidgetItem* rootItem = findParentItem(isNew ? newRootItem : oldRootItem, poetName);
+
+    if (!rootItem) {
+        rootItem = new QTreeWidgetItem(isNew ? newRootItem : oldRootItem);
+        rootItem->setText(0, poetName);
+        rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
+        rootItem->setCheckState(0, Qt::Unchecked);
+    }
+
+    QTreeWidgetItem* item = new QTreeWidgetItem(rootItem , visibleInfo);
     item->setToolTip(0, audio_title);
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     item->setCheckState(0, Qt::Unchecked);
@@ -281,6 +305,17 @@ void AudioRepoDownloader::setDisabledAll(bool disable)
     }
 }
 
+static QList<QTreeWidgetItem*> allChildren(QList<QTreeWidgetItem*> parentChildren)
+{
+    QList<QTreeWidgetItem*> list;
+    foreach (QTreeWidgetItem* item, parentChildren) {
+        list << item->takeChildren();
+        delete item;
+    }
+
+    return list;
+}
+
 bool AudioRepoDownloader::loadPresentAudios()
 {
     if (downloadLocation.isEmpty()) {
@@ -311,17 +346,46 @@ bool AudioRepoDownloader::loadPresentAudios()
         return false;
     }
 
+/*
+ *  const QString poetName = poemToPoetCache.value(audio_post_ID, sApp->databaseBrowser()->getPoetForPoem(audio_post_ID));
+    QTreeWidgetItem* rootItem = isNew ? newRootItem : oldRootItem;
+    bool createChild = true;
+    for (int i = 0; i < rootItem->childCount(); ++i) {
+        QTreeWidgetItem* child = rootItem->child(i);
+        if (child->text(0) == poetName) {
+            rootItem = child;
+            createChild = false;
+            break;
+        }
+    }
 
+    if (createChild) {
+        rootItem = new QTreeWidgetItem(rootItem);
+        rootItem->setText(0, poetName);
+        rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
+        rootItem->setCheckState(0, Qt::Unchecked);
+    }
+    */
     if (oldRootItem && newRootItem) {
         QList<QTreeWidgetItem*> items;
-        items << oldRootItem->takeChildren() << newRootItem->takeChildren();
+        items << allChildren(oldRootItem->takeChildren()) << allChildren(newRootItem->takeChildren());
+        QHash<QPair<QTreeWidgetItem*, QString>, QTreeWidgetItem*> parentCache;
         foreach (QTreeWidgetItem* item, items) {
-            if (!m_saagharAlbum->mediaItems.contains(item->data(0, AudioPostIDRole).toInt())) {
-                newRootItem->addChild(item);
+            int audio_post_ID = item->data(0, AudioPostIDRole).toInt();
+            const QString poetName = poemToPoetCache.value(audio_post_ID, sApp->databaseBrowser()->getPoetForPoem(audio_post_ID)._Name);
+            QTreeWidgetItem* rootItem = !m_saagharAlbum->mediaItems.contains(audio_post_ID) ? newRootItem : oldRootItem;
+
+            const QPair<QTreeWidgetItem*, QString> key = qMakePair(rootItem, poetName);
+            rootItem = parentCache.value(key, 0);
+            if (!rootItem) {
+                rootItem = new QTreeWidgetItem(!m_saagharAlbum->mediaItems.contains(audio_post_ID) ? newRootItem : oldRootItem);
+                rootItem->setText(0, poetName);
+                rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
+                rootItem->setCheckState(0, Qt::Unchecked);
+                parentCache.insert(key, rootItem);
             }
-            else {
-                oldRootItem->addChild(item);
-            }
+
+            rootItem->addChild(item);
         }
 
         return true;
@@ -558,28 +622,30 @@ void AudioRepoDownloader::initDownload()
 
     QList<QTreeWidgetItem*> moved;
     for (int i = 0; i < newRootItem->childCount(); ++i) {
-        QTreeWidgetItem* child = newRootItem->child(i);
-        if (!child || child->checkState(0) != Qt::Checked) {
+        QTreeWidgetItem* parent = newRootItem->child(i);
+        if (!parent || parent->checkState(0) == Qt::Unchecked) {
             continue;
         }
 
-        if (downloadItem(child, true)) {
-            moved << child;
+        for (int i = 0; i < parent->childCount(); ++i) {
+            QTreeWidgetItem* child = parent->child(i);
+            if (!child || child->checkState(0) != Qt::Checked) {
+                continue;
+            }
+
+            if (downloadItem(child, true)) {
+                moved << child;
+            }
         }
     }
 
     for (int i = 0; i < moved.size(); ++i) {
         QTreeWidgetItem* child = moved.at(i);
         //after install we change the parent
-        qDebug() << __LINE__ << __FUNCTION__ << i;
         newRootItem->removeChild(child);
-        qDebug() << __LINE__ << __FUNCTION__ << i;
         oldRootItem->addChild(child);
-        qDebug() << __LINE__ << __FUNCTION__ << i;
         child->setCheckState(0, Qt::Unchecked);
-        qDebug() << __LINE__ << __FUNCTION__ << i;
         child->setFlags(Qt::NoItemFlags);
-        qDebug() << __LINE__ << __FUNCTION__ << i;
     }
 
 //    moved.clear();

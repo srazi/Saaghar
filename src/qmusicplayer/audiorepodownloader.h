@@ -92,6 +92,8 @@ private:
     bool loadPresentAudios();
 
     QHash<QString, QPair<QTreeWidgetItem*, QTreeWidgetItem*> > itemsCache;
+    QHash<int, QString> poemToPoetCache;
+
     const static QStringList defaultRepositories;
     static QStringList repositoriesUrls;
 
