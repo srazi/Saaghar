@@ -660,7 +660,7 @@ void QIrBreadCrumbComboBox::showBreadCrumbs(bool popupError, bool changeLocation
                     caption += " - ";
                 }
                 caption += objectName();
-                QMessageBox::critical(this, caption, QString("Location '%1' cannot be found. Check the spelling and try again.").arg(text));
+                QMessageBox::critical(this, caption, tr("Location '%1' cannot be found. Check the spelling and try again.").arg(text));
                 lineEdit()->selectAll();
                 setFocus(Qt::OtherFocusReason);
             }

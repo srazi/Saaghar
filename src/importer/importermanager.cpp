@@ -173,7 +173,7 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
 
             QStringList parentsTitles = importData.catParentsTitles(poem._CatID);
 
-            content += QString("Top Level Categories: %1\n---\nPoem Title: %2\n----------------\n")
+            content += QObject::tr("Top Level Categories: %1\n---\nPoem Title: %2\n----------------\n")
                     .arg(parentsTitles.isEmpty() ? tr("N/A") : parentsTitles.join(tr(" > ")))
                     .arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
 

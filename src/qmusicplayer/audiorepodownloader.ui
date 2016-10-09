@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Data Base Updater</string>
+   <string>Get New Audios</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>

@@ -212,7 +212,7 @@
    <item row="5" column="7">
     <widget class="QPushButton" name="cancelPushButton">
      <property name="text">
-      <string>Cancel</string>
+      <string>Close</string>
      </property>
     </widget>
    </item>
