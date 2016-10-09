@@ -74,6 +74,9 @@ AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
     connect(ui->pushButtonBrowse, SIGNAL(clicked()), this, SLOT(getDownloadLocation()));
     connect(downloaderObject, SIGNAL(downloadStopped()), this, SLOT(forceStopDownload()));
 
+    connect(ui->expandPushButton, SIGNAL(clicked(bool)), ui->repoSelectTree, SLOT(expandAll()));
+    connect(ui->collapsePushButton, SIGNAL(clicked(bool)), ui->repoSelectTree, SLOT(collapseAll()));
+
     if (downloadLocation.isEmpty()) {
         downloadLocation = VARS("AudioRepoDownloader/DownloadAlbumPath");
     }
