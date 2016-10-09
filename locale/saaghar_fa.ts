@@ -39,72 +39,72 @@
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="17"/>
         <source>Data Base Updater</source>
-        <translation type="unfinished">بروز رسان پایگاه‌داده</translation>
+        <translation>بروز رسان پایگاه‌داده</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="27"/>
         <source>Download to Album:</source>
-        <translation type="unfinished"></translation>
+        <translation>دریافت به آلبوم:</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="37"/>
         <source>You have to set album location...</source>
-        <translation type="unfinished"></translation>
+        <translation>باید پرونده آلبوم را انتخاب کنید...</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="44"/>
         <source>Browse</source>
-        <translation type="unfinished">گزیدن</translation>
+        <translation>گزیدن</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="55"/>
         <source>Select and click &apos;Download &amp; Add to Album&apos; button.</source>
-        <translation type="unfinished"></translation>
+        <translation>انتخاب کرده و بر روی دکمه «دریافت و اضافه کردن به آلبوم» کلیک کنید.</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="112"/>
         <source>Title</source>
-        <translation type="unfinished">سرنویس</translation>
+        <translation>سرنویس</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="117"/>
         <source>Size</source>
-        <translation type="unfinished">اندازه</translation>
+        <translation>اندازه</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="125"/>
         <source>Keep Downloaded Files</source>
-        <translation type="unfinished">بایگانی پرونده‌های دریافت شده</translation>
+        <translation>بایگانی پرونده‌های دریافت شده</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="148"/>
         <source>Download Progress:</source>
-        <translation type="unfinished">پیشرفت دریافت:</translation>
+        <translation>پیشرفت دریافت:</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="181"/>
         <source>Download &amp;&amp; Add to Album</source>
-        <translation type="unfinished"></translation>
+        <translation>دریافت و اضافه کردن به آلبوم</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.ui" line="188"/>
         <source>Cancel</source>
-        <translation type="unfinished">رد</translation>
+        <translation>رد</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="192"/>
         <source>KB</source>
-        <translation type="unfinished">کیلو بایت</translation>
+        <translation>کیلو بایت</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="254"/>
         <source>Select From Repositories List...</source>
-        <translation type="unfinished">از بین فهرست مخزن‌ها انتخاب کنید...</translation>
+        <translation>از بین فهرست مخزن‌ها انتخاب کنید...</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="256"/>
         <source>Click To Add/Remove...</source>
-        <translation type="unfinished">برای حذف/اضافه کلیک کنید...</translation>
+        <translation>برای حذف/اضافه کلیک کنید...</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="266"/>
@@ -112,107 +112,107 @@
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="536"/>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="676"/>
         <source>Error!</source>
-        <translation type="unfinished">خطا!</translation>
+        <translation>خطا!</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="266"/>
         <source>You have not write permission to database file, the import procedure can not proceed.
 DataBase Path: %2</source>
-        <translation type="unfinished">به پرونده پایگاه‌داده دسترسی نوشتنی ندارید، فرایند افزودن نَسک تازه نمی‌تواند ادامه پیدا کند.
+        <translation>به پرونده پایگاه‌داده دسترسی نوشتنی ندارید، فرایند افزودن نَسک تازه نمی‌تواند ادامه پیدا کند.
 مسیر پایگاه‌داده: %2</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="278"/>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="711"/>
         <source>Warning!</source>
-        <translation type="unfinished"></translation>
+        <translation>هشدار!‏ </translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="280"/>
         <source>There are some conflict with your installed database. If you continue, these poets will be removed!</source>
-        <translation type="unfinished">بخش‌هایی از نَسک تازه در پایگاه‌داده نصب شده موجودند. اگر ادامه دهید سخن‌سرایانی که این بخش‌ها را دربرمی‌گیرند از پایگاه‌داده فعلی حذف خواهند شد!</translation>
+        <translation>بخش‌هایی از نَسک تازه در پایگاه‌داده نصب شده موجودند. اگر ادامه دهید سخن‌سرایانی که این بخش‌ها را دربرمی‌گیرند از پایگاه‌داده فعلی حذف خواهند شد!</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="281"/>
         <source>These poets are present in installed database:
 </source>
-        <translation type="unfinished">سخن‌سراهایی که در پایگاه‌داده فعلی موجودند:</translation>
+        <translation>سخن‌سراهایی که در پایگاه‌داده فعلی موجودند:</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="315"/>
         <source>There are some errors, the import procedure was not completed</source>
-        <translation type="unfinished">خطایی رخ داده است، فرایند افزودن نَسک تازه کامل نشد</translation>
+        <translation>خطایی رخ داده است، فرایند افزودن نَسک تازه کامل نشد</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="436"/>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="438"/>
         <source>Please select download location...</source>
-        <translation type="unfinished">لطفا مکان دریافت را انتخاب کنید...</translation>
+        <translation>لطفا مکان دریافت را انتخاب کنید...</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="459"/>
         <source>Present in Album</source>
-        <translation type="unfinished"></translation>
+        <translation>موجود در آلبوم</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="467"/>
         <source>Not in Album</source>
-        <translation type="unfinished"></translation>
+        <translation>جدید</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="536"/>
         <source>Can not create temp path.</source>
-        <translation type="unfinished">نمی‌تواند مسیر موقت را بسازد.</translation>
+        <translation>نمی‌تواند مسیر موقت را بسازد.</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="612"/>
         <source>Select Album to Download Audios</source>
-        <translation type="unfinished"></translation>
+        <translation>برای دریافت خوانش‌ها آلبومی را انتخاب کنید</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="667"/>
         <source>Stop</source>
-        <translation type="unfinished">توقف</translation>
+        <translation>توقف</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="676"/>
         <source>Can not create download path.</source>
-        <translation type="unfinished">نمی‌تواند مسیر دریافت را بسازد.</translation>
+        <translation>نمی‌تواند مسیر دریافت را بسازد.</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="692"/>
         <source>Finished!</source>
-        <translation type="unfinished">تمام!</translation>
+        <translation>تمام!</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="712"/>
         <source>Download in progress! Are you sure to stop downloading?</source>
-        <translation type="unfinished">دریافت در جریان است! آیا از متوقف کردن دریافت اطمینان داری؟</translation>
+        <translation>فرایند دریافت در جریان است! آیا از متوقف کردن دریافت اطمینان داری؟</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="745"/>
         <source>MP3 file</source>
-        <translation type="unfinished"></translation>
+        <translation>پرونده MP3</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="746"/>
         <source>sync. file</source>
-        <translation type="unfinished"></translation>
+        <translation>پرونده همگام‌سازی</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="783"/>
         <source>Download &amp;&amp; Install</source>
-        <translation type="unfinished">دریافت و نصب</translation>
+        <translation>دریافت و نصب</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="835"/>
         <source>Add/Remove Repository Address</source>
-        <translation type="unfinished">حذف/اضافه آدرس مخزن</translation>
+        <translation>حذف/اضافه آدرس مخزن</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/audiorepodownloader.cpp" line="837"/>
         <source>Insert each address in a separate line!</source>
-        <translation type="unfinished">هر آدرس را در خط جداگانه‌ای وارد کنید!</translation>
+        <translation>هر آدرس را در خط جداگانه‌ای وارد کنید!</translation>
     </message>
 </context>
 <context>
@@ -264,17 +264,17 @@ Bookmark&apos;s Comment:
     <message>
         <location filename="../src/concurrenttasks.cpp" line="412"/>
         <source>Update: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>بروزرسانی: %1</translation>
     </message>
     <message>
         <location filename="../src/concurrenttasks.cpp" line="412"/>
         <source>Canceled by user</source>
-        <translation type="unfinished"></translation>
+        <translation>توسط کاربر باطل شد</translation>
     </message>
     <message>
         <location filename="../src/concurrenttasks.cpp" line="412"/>
         <source>Error ocurred</source>
-        <translation type="unfinished"></translation>
+        <translation>خطا رخ داد</translation>
     </message>
 </context>
 <context>
@@ -438,24 +438,24 @@ Bookmark&apos;s Comment:
         <location filename="../src/databaseupdater.cpp" line="191"/>
         <source>You have not write permission to database file, the import procedure can not proceed.
 DataBase Path: %2</source>
-        <translation type="unfinished">به پرونده پایگاه‌داده دسترسی نوشتنی ندارید، فرایند افزودن نَسک تازه نمی‌تواند ادامه پیدا کند.
+        <translation>به پرونده پایگاه‌داده دسترسی نوشتنی ندارید، فرایند افزودن نَسک تازه نمی‌تواند ادامه پیدا کند.
 مسیر پایگاه‌داده: %2</translation>
     </message>
     <message>
         <location filename="../src/databaseupdater.cpp" line="205"/>
         <source>There are some conflict with your installed database. If you continue, these poets will be removed!</source>
-        <translation type="unfinished">بخش‌هایی از نَسک تازه در پایگاه‌داده نصب شده موجودند. اگر ادامه دهید سخن‌سرایانی که این بخش‌ها را دربرمی‌گیرند از پایگاه‌داده فعلی حذف خواهند شد!</translation>
+        <translation>بخش‌هایی از نَسک تازه در پایگاه‌داده نصب شده موجودند. اگر ادامه دهید سخن‌سرایانی که این بخش‌ها را دربرمی‌گیرند از پایگاه‌داده فعلی حذف خواهند شد!</translation>
     </message>
     <message>
         <location filename="../src/databaseupdater.cpp" line="206"/>
         <source>These poets are present in installed database:
 </source>
-        <translation type="unfinished">سخن‌سراهایی که در پایگاه‌داده فعلی موجودند:</translation>
+        <translation>سخن‌سراهایی که در پایگاه‌داده فعلی موجودند:</translation>
     </message>
     <message>
         <location filename="../src/databaseupdater.cpp" line="240"/>
         <source>There are some errors, the import procedure was not completed</source>
-        <translation type="unfinished">خطایی رخ داده است، فرایند افزودن نَسک تازه کامل نشد</translation>
+        <translation>خطایی رخ داده است، فرایند افزودن نَسک تازه کامل نشد</translation>
     </message>
     <message>
         <location filename="../src/databaseupdater.cpp" line="426"/>
@@ -513,49 +513,49 @@ DataBase Path: %2</source>
         <location filename="../src/databasebrowser.cpp" line="1529"/>
         <location filename="../src/databasebrowser.cpp" line="1644"/>
         <source>Search Result(s): %1</source>
-        <translation type="unfinished">یافته‌ها: %1</translation>
+        <translation>یافته‌ها: %1</translation>
     </message>
     <message>
         <location filename="../src/concurrenttasks.cpp" line="365"/>
         <source>Last-Search Result(s): %1</source>
-        <translation type="unfinished"></translation>
+        <translation>آخرین یافته‌ها: %1</translation>
     </message>
     <message>
         <location filename="../src/databasebrowser.cpp" line="99"/>
         <source>Data Base Path:</source>
-        <translation type="unfinished">مسیر پایگاه‌داده:</translation>
+        <translation>مسیر پایگاه‌داده:</translation>
     </message>
     <message>
         <location filename="../src/databasebrowser.cpp" line="100"/>
         <source>Error:</source>
-        <translation type="unfinished">خطا:</translation>
+        <translation>خطا:</translation>
     </message>
     <message>
         <location filename="../src/databasebrowser.cpp" line="100"/>
         <source>No Error!</source>
-        <translation type="unfinished">بدون خطا!</translation>
+        <translation>بدون خطا!</translation>
     </message>
     <message>
         <location filename="../src/databasebrowser.cpp" line="109"/>
         <source>Add Path For Data Base</source>
-        <translation type="unfinished">اضافه کردن مسیر برای پایگاه‌داده</translation>
+        <translation>اضافه کردن مسیر برای پایگاه‌داده</translation>
     </message>
     <message>
         <location filename="../src/databasebrowser.cpp" line="130"/>
         <source>Select Save Location</source>
-        <translation type="unfinished">انتخاب مکان برای رونوشت</translation>
+        <translation>انتخاب مکان برای رونوشت</translation>
     </message>
     <message>
         <location filename="../src/databasebrowser.cpp" line="158"/>
         <source>Cannot open Database File!</source>
-        <translation type="unfinished">پرونده پایگاه‌داده باز نمی‌شود!</translation>
+        <translation>پرونده پایگاه‌داده باز نمی‌شود!</translation>
     </message>
     <message>
         <location filename="../src/databasebrowser.cpp" line="158"/>
         <source>Cannot open database file, please check if you have write permisson.
 Error: %1
 DataBase Path=%2</source>
-        <translation type="unfinished">فایل پایگاه‌داده باز نمی‌شود، لطفا بررسی کنید که آیا دسترسی نوشتنی دارید.
+        <translation>پرونده پایگاه‌داده باز نمی‌شود، لطفا بررسی کنید که آیا دسترسی نوشتنی دارید.
 خطا: %1
 مسیر پایگاه‌داده: %2</translation>
     </message>
@@ -564,22 +564,22 @@ DataBase Path=%2</source>
         <location filename="../src/databasebrowser.cpp" line="520"/>
         <location filename="../src/databasebrowser.cpp" line="1162"/>
         <source>All</source>
-        <translation type="unfinished">همه</translation>
+        <translation>همه</translation>
     </message>
     <message>
         <location filename="../src/databasebrowser.cpp" line="1166"/>
         <source>Titles</source>
-        <translation type="unfinished">سرنویس‌ها</translation>
+        <translation>سرنویس‌ها</translation>
     </message>
     <message>
         <location filename="../src/databasebrowser.cpp" line="1177"/>
         <source>Search in: </source>
-        <translation type="unfinished"></translation>
+        <translation>جستجو در</translation>
     </message>
     <message>
         <location filename="../src/databasebrowser.cpp" line="1659"/>
         <source>Select data sets to install</source>
-        <translation type="unfinished">انتخاب مجموعه‌داده برای نصب</translation>
+        <translation>انتخاب مجموعه‌داده برای نصب</translation>
     </message>
 </context>
 <context>
@@ -824,59 +824,59 @@ DataBase Path=%2</source>
     <message>
         <location filename="../src/outline.cpp" line="77"/>
         <source>Title</source>
-        <translation type="unfinished">سرنویس</translation>
+        <translation>سرنویس</translation>
     </message>
     <message>
         <location filename="../src/outline.cpp" line="77"/>
         <source>Comments</source>
-        <translation type="unfinished">توضیحات</translation>
+        <translation>توضیحات</translation>
     </message>
     <message>
         <location filename="../src/outline.cpp" line="86"/>
         <source>Filter:</source>
-        <translation type="unfinished">پرویزن:</translation>
+        <translation>پرویزن:</translation>
     </message>
     <message>
         <location filename="../src/outline.cpp" line="90"/>
         <location filename="../src/outline.cpp" line="92"/>
         <source>Filter</source>
-        <translation type="unfinished">پرویزن</translation>
+        <translation>پرویزن</translation>
     </message>
     <message>
         <location filename="../src/outline.cpp" line="209"/>
         <location filename="../src/outline.cpp" line="232"/>
         <source>Open in New Tab</source>
-        <translation type="unfinished">باز کردن در صفحه جدید</translation>
+        <translation>باز کردن در صفحه جدید</translation>
     </message>
     <message>
         <location filename="../src/outline.cpp" line="210"/>
         <location filename="../src/outline.cpp" line="235"/>
         <source>Open</source>
-        <translation type="unfinished">باز کردن</translation>
+        <translation>باز کردن</translation>
     </message>
     <message>
         <location filename="../src/outline.cpp" line="212"/>
         <location filename="../src/outline.cpp" line="241"/>
         <source>Random in New Tab</source>
-        <translation type="unfinished">بخت‌آورد در برگه تازه</translation>
+        <translation>بخت‌آورد در برگه تازه</translation>
     </message>
     <message>
         <location filename="../src/outline.cpp" line="213"/>
         <location filename="../src/outline.cpp" line="244"/>
         <source>Random</source>
-        <translation type="unfinished">بخت‌آورد</translation>
+        <translation>بخت‌آورد</translation>
     </message>
     <message>
         <location filename="../src/outline.cpp" line="217"/>
         <location filename="../src/outline.cpp" line="238"/>
         <source>Collapse</source>
-        <translation type="unfinished">کوچک کردن</translation>
+        <translation>کوچک کردن</translation>
     </message>
     <message>
         <location filename="../src/outline.cpp" line="220"/>
         <location filename="../src/outline.cpp" line="238"/>
         <source>Expand</source>
-        <translation type="unfinished">گستردن</translation>
+        <translation>گستردن</translation>
     </message>
 </context>
 <context>
@@ -884,7 +884,7 @@ DataBase Path=%2</source>
     <message>
         <location filename="../src/progressmanager/progressmanager.cpp" line="792"/>
         <source>All Tasks (%1):</source>
-        <translation type="unfinished"></translation>
+        <translation>همه کارها (%1):</translation>
     </message>
 </context>
 <context>
@@ -892,7 +892,7 @@ DataBase Path=%2</source>
     <message>
         <location filename="../src/progressmanager/progressview.cpp" line="80"/>
         <source>Processes</source>
-        <translation type="unfinished"></translation>
+        <translation>فرایندها</translation>
     </message>
 </context>
 <context>
@@ -1109,12 +1109,12 @@ DataBase Path=%2</source>
     <message>
         <location filename="../src/qmusicplayer/qmusicplayer.cpp" line="366"/>
         <source>It is not an album file or can not read it!</source>
-        <translation type="unfinished"></translation>
+        <translation>پرونده در قالب آلبوم نیست و یا قابل خواندن نیست!</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/qmusicplayer.cpp" line="480"/>
         <source>Can&apos;t save album!</source>
-        <translation type="unfinished"></translation>
+        <translation>آلبوم قابل رونوشتن نیست!</translation>
     </message>
     <message>
         <location filename="../src/qmusicplayer/qmusicplayer.cpp" line="726"/>
@@ -1254,12 +1254,12 @@ Error: %1</source>
     <message>
         <location filename="../src/saagharwindow.cpp" line="1795"/>
         <source>&amp;Dataset Repositories...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;مخزن مجموعه‌ها...</translation>
     </message>
     <message>
         <location filename="../src/saagharwindow.cpp" line="1797"/>
         <source>&amp;Audio Repositories...</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;مخزن خوانش‌ها...</translation>
     </message>
     <message>
         <location filename="../src/saagharwindow.cpp" line="1801"/>
@@ -1363,26 +1363,30 @@ p, li { white-space: pre-wrap; }
         <location filename="../src/saagharapplication.cpp" line="415"/>
         <location filename="../src/saagharapplication.cpp" line="503"/>
         <source>Warning!</source>
-        <translation type="unfinished"></translation>
+        <translation>هشدار!‏</translation>
     </message>
     <message>
         <location filename="../src/saagharapplication.cpp" line="416"/>
         <source>Settings could not be loaded!
 File: %1
 Error: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>پرونده سامانش قابل بارگذاری نیست!
+پرونده: %1
+خطا: %2</translation>
     </message>
     <message>
         <location filename="../src/saagharapplication.cpp" line="504"/>
         <source>Settings could not be saved!
 File: %1
 Error: %2</source>
-        <translation type="unfinished"></translation>
+        <translation>پرونده سامانش قابل رونوشتن نیست!
+پرونده: %1
+خطا: %2</translation>
     </message>
     <message>
         <location filename="../src/saagharapplication.cpp" line="537"/>
         <source>Customize this menu...</source>
-        <translation type="unfinished"></translation>
+        <translation>شخصی‌سازی این منو...</translation>
     </message>
 </context>
 <context>
@@ -1535,7 +1539,7 @@ Check your internet connection and try again.</source>
     <message>
         <location filename="../src/saagharwindow.cpp" line="698"/>
         <source>Check for update...</source>
-        <translation type="unfinished"></translation>
+        <translation>بررسی برای بروز رسانی</translation>
     </message>
     <message>
         <location filename="../src/saagharwindow.cpp" line="1508"/>
@@ -1707,12 +1711,12 @@ Error: %1</source>
     <message>
         <location filename="../src/saagharwindow.cpp" line="169"/>
         <source>Classic navigation bar</source>
-        <translation type="unfinished"></translation>
+        <translation>نوار ناوبری ساده</translation>
     </message>
     <message>
         <location filename="../src/saagharwindow.cpp" line="185"/>
         <source>Modern navigation bar</source>
-        <translation type="unfinished"></translation>
+        <translation>نوار ناوبری مدرن</translation>
     </message>
     <message>
         <location filename="../src/saagharwindow.cpp" line="1724"/>
@@ -2318,22 +2322,22 @@ DataBase Path: %2</source>
     <message>
         <location filename="../src/selectionmanager.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation></translation>
     </message>
     <message>
         <location filename="../src/selectionmanager.ui" line="46"/>
         <source>Current selection:</source>
-        <translation type="unfinished"></translation>
+        <translation>انتخاب فعلی</translation>
     </message>
     <message>
         <location filename="../src/selectionmanager.ui" line="53"/>
         <source>Select some items:</source>
-        <translation type="unfinished"></translation>
+        <translation>موردهای مورد نظرتان را انتخاب کنید:</translation>
     </message>
     <message>
         <location filename="../src/selectionmanager.cpp" line="35"/>
         <source>Selection Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>مدیر انتخاب</translation>
     </message>
 </context>
 <context>
@@ -2448,65 +2452,65 @@ DataBase Path: %2</source>
     <message>
         <location filename="../src/settings.ui" line="246"/>
         <source>Task Manager</source>
-        <translation type="unfinished"></translation>
+        <translation>مدیر کارها</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="264"/>
         <source>Mode:</source>
-        <translation type="unfinished"></translation>
+        <translation>حالت:</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="281"/>
         <location filename="../src/settings.cpp" line="201"/>
         <source>Slow</source>
-        <translation type="unfinished"></translation>
+        <translation>کند</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="286"/>
         <location filename="../src/settings.cpp" line="202"/>
         <source>Normal (Recommended)</source>
-        <translation type="unfinished"></translation>
+        <translation>عادی (توصیه شده)</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="291"/>
         <location filename="../src/settings.cpp" line="203"/>
         <source>Fast</source>
-        <translation type="unfinished"></translation>
+        <translation>سریع</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="303"/>
         <location filename="../src/settings.cpp" line="206"/>
         <source>Disabled</source>
-        <translation type="unfinished"></translation>
+        <translation>غیرفعال</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="308"/>
         <location filename="../src/settings.cpp" line="207"/>
         <source>Saaghar Bottom Right</source>
-        <translation type="unfinished"></translation>
+        <translation>پایین سمت راست پنجره ساغر</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="313"/>
         <location filename="../src/settings.cpp" line="208"/>
         <source>Saaghar Bottom Left</source>
-        <translation type="unfinished"></translation>
+        <translation>پایین سمت چپ پنجره ساغر</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="318"/>
         <location filename="../src/settings.cpp" line="209"/>
         <source>Desktop Bottom Right</source>
-        <translation type="unfinished"></translation>
+        <translation>پایین سمت راست میزکار</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="323"/>
         <location filename="../src/settings.cpp" line="210"/>
         <source>Desktop Top Right</source>
-        <translation type="unfinished"></translation>
+        <translation>بالا سمت راست میزکار</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="331"/>
         <source>Notification:</source>
-        <translation type="unfinished"></translation>
+        <translation>اعلان:</translation>
     </message>
     <message>
         <location filename="../src/settings.ui" line="351"/>
