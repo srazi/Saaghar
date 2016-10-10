@@ -720,7 +720,7 @@ bool AudioRepoDownloader::downloadItem(QTreeWidgetItem* item, bool addToAlbum)
         QMusicPlayer::SaagharMediaTag* mediaTag = new QMusicPlayer::SaagharMediaTag;
         mediaTag->time = 0;
         mediaTag->PATH = QFileInfo(sessionDownloadFolder + "/" + fileName).canonicalFilePath();
-        mediaTag->TITLE = item->text(0);
+        mediaTag->TITLE = item->data(0, AudioTitleRole).toString();
         mediaTag->MD5SUM = item->data(0, AudioChecksumRole).toString();
         m_saagharAlbum->mediaItems.insert(item->data(0, AudioPostIDRole).toInt(), mediaTag);
     }
