@@ -367,6 +367,11 @@ void SaagharWindow::searchStart()
         //  }
         //}
         else {
+            if (SearchResultWidget::currentSearchWidgetCount() >= 200) {
+                QMessageBox::information(this, tr("Search"), tr("There are more than 200 opened search windows, please before start new searches, close some of them."));
+                break;
+            }
+
             //phrase = Tools::cleanString(SaagharWidget::lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
             //int poetID = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt();
             SearchPatternManager::instance()->setInputPhrase(phrase);

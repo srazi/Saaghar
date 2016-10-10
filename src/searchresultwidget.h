@@ -43,6 +43,8 @@ public:
     ~SearchResultWidget();
 
     void setResultList(const QMap<int, QString> &map);
+
+    static int currentSearchWidgetCount();
     //static void setMaxItemPerPage(int max);
     QTableWidget* searchTable;
     static int maxItemPerPage;
@@ -69,6 +71,8 @@ private:
     QStringList viewedItems;
 
     Qt::DockWidgetArea m_dockWidgetArea;
+
+    static int s_searchWidgetCount;
 
 private slots:
     void currentRowColumnChanged(int currentRow, int currentColumn, int previousRow, int previousColumn);

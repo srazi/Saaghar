@@ -39,6 +39,8 @@ bool SearchResultWidget::nonPagedSearch = false;
 bool SearchResultWidget::skipVowelSigns = false;
 bool SearchResultWidget::skipVowelLetters = false;
 
+int SearchResultWidget::s_searchWidgetCount = 0;
+
 SearchResultWidget::SearchResultWidget(QMainWindow* qmw, const QString &iconThemePath, QWidget* parent, const QString &searchPhrase, const QString &poetName)
     : QWidget(parent)
     , searchResultContents(parent)
@@ -56,10 +58,13 @@ SearchResultWidget::SearchResultWidget(QMainWindow* qmw, const QString &iconThem
     searchResultWidget->setWindowTitle(dockTitle);
 
     maxItemPerPageChange();
+
+    ++s_searchWidgetCount;
 }
 
 SearchResultWidget::~SearchResultWidget()
 {
+    --s_searchWidgetCount;
     //qDebug() << "SearchResultWidget is destroyed!";
 }
 
@@ -83,6 +88,11 @@ void SearchResultWidget::setResultList(const QMap<int, QString> &map)
 
     searchResultWidget->show();
     searchResultWidget->raise();
+}
+
+int SearchResultWidget::currentSearchWidgetCount()
+{
+    return s_searchWidgetCount;
 }
 
 void SearchResultWidget::setupUi(QMainWindow* qmw, const QString &iconThemePath)
