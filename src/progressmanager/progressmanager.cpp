@@ -430,9 +430,9 @@ void ProgressManagerPrivate::init()
     toggleButton->hide();
     m_progressView->addSummeryProgressWidget(m_statusBarWidget);
 
-    m_progressView->setVisible(m_progressViewPinned);
-    m_statusBarWidget->show();
-    m_summaryProgressWidget->show();
+//    m_progressView->setVisible(m_progressViewPinned);
+//    m_statusBarWidget->show();
+//    m_summaryProgressWidget->show();
 
     initInternal();
 }
@@ -575,6 +575,11 @@ FutureProgress* ProgressManagerPrivate::doAddTask(const QFuture<void> &future, c
     connect(progress, SIGNAL(removeMe()), this, SLOT(slotRemoveTask()));
     connect(progress, SIGNAL(fadeStarted()), this, SLOT(updateSummaryProgressBar()));
     connect(progress, SIGNAL(statusBarWidgetChanged()), this, SLOT(updateStatusDetailsWidget()));
+
+    m_progressView->setVisible(m_progressViewPinned);
+    m_statusBarWidget->show();
+    m_summaryProgressWidget->show();
+
     updateStatusDetailsWidget();
 
     emit taskStarted(type);
@@ -897,6 +902,7 @@ FutureProgress* ProgressManager::addTimedTask(const QFutureInterface<void> &futu
     QFutureInterface<void> dummy(futureInterface); // Need mutable to access .future()
     FutureProgress* fp = m_instance->doAddTask(dummy.future(), title, type, flags);
     (void) new ProgressTimer(fp, futureInterface, expectedSeconds);
+
     return fp;
 }
 
