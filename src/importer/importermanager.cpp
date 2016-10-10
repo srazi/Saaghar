@@ -205,27 +205,27 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
             foreach (const GanjoorVerse &verse, verses) {
                 QString openTags = "<p>";
                 QString closeTags = "</p>";
-                if (verse._Position == VersePosition::Paragraph) {
+                if (verse._Position == Paragraph) {
                     openTags = "<p style=\"margin-bottom: 0.2cm\">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
                     closeTags = "</p>";
                 }
-                else if (verse._Position == VersePosition::Single) {
+                else if (verse._Position == Single) {
                     openTags = "<p style=\"font-size: 50%; color: #007;\">&nbsp;&nbsp;&nbsp;&nbsp;";
                     closeTags = "</p>";
                 }
-                else if (verse._Position == VersePosition::CenteredVerse1) {
+                else if (verse._Position == CenteredVerse1) {
                     openTags = "<center><p style=\"margin-top: 0.1cm\"><i>";
                     closeTags = "</i></p></center>";
                 }
-                else if (verse._Position == VersePosition::CenteredVerse2) {
+                else if (verse._Position == CenteredVerse2) {
                     openTags = "<center><p style=\"margin-bottom: 0.2cm\"><i>";
                     closeTags = "</i></p></center><br>";
                 }
-                else if (verse._Position == VersePosition::Right) {
+                else if (verse._Position == Right) {
                     openTags = "<center><p><i>";
                     closeTags = "</i></p></center>";
                 }
-                else if (verse._Position == VersePosition::Left) {
+                else if (verse._Position == Left) {
                     openTags = "<center><p style=\"margin-bottom: 1cm\"><i>";
                     closeTags = "</i></p></center><br>";
                 }

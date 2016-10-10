@@ -179,6 +179,7 @@ struct GanjoorCat
 
 #include <QList>
 #include <QMap>
+#include <QStringList>
 // We just interested to cats that have poems with non-empty verses.
 // So we just track poem's verses. The poems with catId == -1 are
 //  considered as poems of root category.

@@ -99,8 +99,9 @@ AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
 
         setDisabledAll(true);
     }
-
+#if QT_VERSION >= 0x050000
     ui->repoSelectTree->setSizeAdjustPolicy(QTreeWidget::AdjustToContentsOnFirstShow);
+#endif
 }
 
 bool AudioRepoDownloader::read(QIODevice* device)
@@ -168,8 +169,10 @@ static void itemSetDisable(QTreeWidgetItem* item, bool disable)
         fontInit = true;
         fontDisable = item->font(0);
         fontDisable.setBold(true);
+        // Qt 4.8.6 had issue with showing bold italic
+#if QT_VERSION >= 0x050000
         fontDisable.setItalic(true);
-
+#endif
         fontEnable = fontDisable;
         fontEnable.setBold(false);
         fontEnable.setItalic(false);

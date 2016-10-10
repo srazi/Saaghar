@@ -605,7 +605,12 @@ void QMusicPlayer::playRequestedByUser(bool play)
     QString album;
     albumContains(currentID, &album);
     albumManager->albumList()->setCurrentIndex(albumManager->albumList()->findText(album));
+#ifdef USE_PHONON
+    notLoaded = mediaObject->currentSource().type() == Phonon::MediaSource::Empty ||
+            mediaObject->currentSource().type() == Phonon::MediaSource::Invalid;
+#else
     notLoaded = mediaObject->media().isNull();
+#endif
 
     if (play) {
         mediaObject->play();
@@ -748,7 +753,11 @@ void QMusicPlayer::durationChanged(qint64 duration)
     m_lastVorder = -1;
 
     if (duration > 0) {
+#ifdef USE_PHONON
+        m_lyricReader->setScaleFactor(mediaObject->totalTime());
+#else
         m_lyricReader->setScaleFactor(mediaObject->duration());
+#endif
     }
 }
 
@@ -1062,6 +1071,7 @@ void QMusicPlayer::setupUi()
 void QMusicPlayer::createConnections()
 {
 #if USE_PHONON
+    connect(mediaObject, SIGNAL(totalTimeChanged(qint64)), this, SLOT(durationChanged(qint64)));
     connect(mediaObject, SIGNAL(currentSourceChanged(Phonon::MediaSource)), this, SLOT(sourceChanged()));
     connect(mediaObject, SIGNAL(tick(qint64)), this, SLOT(tick(qint64)));
     connect(mediaObject, SIGNAL(stateChanged(Phonon::State,Phonon::State)), this, SLOT(seekOnStateChange()));
@@ -2072,6 +2082,7 @@ void ScrollText::timer_timeout()
     update();
 }
 
+#ifndef USE_PHONON
 SeekSlider::SeekSlider(QMediaPlayer *mediaPlayer, QWidget *parent)
     : QSlider(parent),
       m_mediaPlayer(mediaPlayer),
@@ -2151,3 +2162,4 @@ void VolumeSlider::volumeMute(bool mute)
     m_muteButton->setChecked(mute);
     m_muteButton->setIcon(style()->standardIcon(mute ? QStyle::SP_MediaVolumeMuted : QStyle::SP_MediaVolume));
 }
+#endif

@@ -22,8 +22,13 @@
 #include "importermanager.h"
 
 #include <QObject>
-#include <QRegularExpression>
 #include <QDebug>
+
+#if QT_VERSION >= 0x050000
+#include <QRegularExpression>
+#else
+#include <QRegExp>
+#endif
 
 TxtImporter::TxtImporter() : ImporterInterface()
 {
@@ -55,7 +60,12 @@ void TxtImporter::import(const QString &data)
     QStringList lines = rawdata.split("\n");
 
     const QString catEndMark = QLatin1String("#SED!CAT!END!");
+
+#if QT_VERSION >= 0x050000
     const QRegularExpression catTitleRegExp("^#CAT!TITLE!(.+)$");
+#else
+    const QRegExp catTitleRegExp("^#CAT!TITLE!(.+)$");
+#endif
 
     const bool justWhitePoem = m_options.contentTypes == Options::WhitePoem;
     const bool justNormalText = m_options.contentTypes == Options::NormalText;
@@ -125,9 +135,14 @@ void TxtImporter::import(const QString &data)
             createNewPoem = true;
             continue;
         }
-
+#if QT_VERSION >= 0x050000
         QRegularExpressionMatch match = catTitleRegExp.match(line);
         if (match.hasMatch()) {
+            QString cap1 = match.captured(1);
+#else
+        if (catTitleRegExp.indexIn(line) >= 0) {
+            QString cap1 = catTitleRegExp.cap(1);
+#endif
             ++matchCatTitleCount;
 
             if (!cat.isNull() && !m_catContents.cats.contains(cat._ID)) {
@@ -148,7 +163,7 @@ void TxtImporter::import(const QString &data)
 //            }
 
             cat.setNull();
-            cat._Text = match.captured(1);
+            cat._Text = cap1;
             cat._ID = catId + i;
             cat._ParentID = parentCats.at(0)._ID;
             qDebug() << "\n----- 7 ------\n"
@@ -168,7 +183,11 @@ void TxtImporter::import(const QString &data)
 
         if (!line.trimmed().isEmpty() && ((maybePoem && line.trimmed().size() < 50 && m_options.poemStartPattern.isEmpty()) ||
                 (!m_options.poemStartPattern.isEmpty() &&
+#if QT_VERSION >= 0x050000
                 line.contains(QRegularExpression(m_options.poemStartPattern))))) {
+#else
+                line.contains(QRegExp(m_options.poemStartPattern))))) {
+#endif
             if (!poem.isNull()) {
                 m_catContents.verses.insert(poem._ID, verses);
                 m_catContents.poems.append(poem);
@@ -283,7 +302,7 @@ void TxtImporter::import(const QString &data)
         if (maybeSingle || (line.size() <= 70 && m_options.contentTypes & Options::WhitePoem) || justWhitePoem) {
             verse._Order = vorder;
             verse._Text = line;
-            verse._Position = VersePosition::Single;
+            verse._Position = Single;
             ++vorder;
             verses.append(verse);
             verse._Text.clear();
@@ -299,13 +318,13 @@ void TxtImporter::import(const QString &data)
         else if (justNormalText || maybeParagraph || maybePoem) {
             QString prefix = verse._Text.isEmpty() ? "" : " ";
             verse._Text += prefix + line.trimmed();
-            verse._Position = VersePosition::Paragraph;
+            verse._Position = Paragraph;
             maybeParagraph = false;
         }
         else {
             QString prefix = verse._Text.isEmpty() ? "" : " ";
             verse._Text += prefix + line.trimmed();
-            verse._Position = VersePosition::Paragraph;
+            verse._Position = Paragraph;
             maybeParagraph = false;
         }
 
