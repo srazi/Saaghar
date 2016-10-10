@@ -763,19 +763,8 @@ void AudioRepoDownloader::resizeColumnsToContents()
     if (!newRootItem || !oldRootItem) {
         return;
     }
-    bool newItemState = newRootItem->isExpanded();
-    bool oldItemState = oldRootItem->isExpanded();
 
-    newRootItem->setExpanded(true);
-    oldRootItem->setExpanded(true);
-
-    ui->repoSelectTree->resizeColumnToContents(0);
-    ui->repoSelectTree->resizeColumnToContents(1);
-    ui->repoSelectTree->resizeColumnToContents(2);
-    ui->repoSelectTree->resizeColumnToContents(3);
-
-    newRootItem->setExpanded(newItemState);
-    oldRootItem->setExpanded(oldItemState);
+    ui->repoSelectTree->setColumnWidth(0, (ui->repoSelectTree->viewport()->width() * 70) /100);
 }
 
 void AudioRepoDownloader::addRemoveRepository()
