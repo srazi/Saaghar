@@ -372,6 +372,7 @@ ProgressManagerPrivate::ProgressManagerPrivate()
 {
     m_instance = this;
     m_progressView = new ProgressView;
+    m_progressView->setAttribute(Qt::WA_ShowWithoutActivating);
     // withDelay, so the statusBarWidget has the chance to get the enter event
     connect(m_progressView, SIGNAL(hoveredChanged(bool)), this, SLOT(updateVisibilityWithDelay()));
     connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(cancelAllRunningTasks()));
@@ -398,11 +399,13 @@ void ProgressManagerPrivate::init()
     readSettings();
 
     m_statusBarWidget = new QWidget;
+    m_statusBarWidget->setAttribute(Qt::WA_ShowWithoutActivating);
     QHBoxLayout* layout = new QHBoxLayout(m_statusBarWidget);
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
     m_statusBarWidget->setLayout(layout);
     m_summaryProgressWidget = new QWidget(m_statusBarWidget);
+    m_summaryProgressWidget->setAttribute(Qt::WA_ShowWithoutActivating);
     m_summaryProgressWidget->setVisible(!m_progressViewPinned);
     m_summaryProgressWidget->setGraphicsEffect(m_opacityEffect);
     m_summaryProgressLayout = new QHBoxLayout(m_summaryProgressWidget);
@@ -411,6 +414,7 @@ void ProgressManagerPrivate::init()
     m_summaryProgressWidget->setLayout(m_summaryProgressLayout);
 
     m_summaryProgressBar = new ProgressBar(m_summaryProgressWidget);
+    m_summaryProgressBar->setAttribute(Qt::WA_ShowWithoutActivating);
     m_summaryProgressBar->setMinimumWidth(70);
     m_summaryProgressBar->setTitleVisible(true);
     m_summaryProgressBar->setSeparatorVisible(false);
