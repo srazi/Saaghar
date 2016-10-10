@@ -320,7 +320,7 @@ void SearchResultWidget::showSearchResult(int start)
         searchPreviousPage->show();
     }
 
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    //QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
 
     QProgressDialog progress(tr("Initializing Results Table..."), tr("Cancel"), 0, count, this);
     progress.setWindowModality(Qt::WindowModal);
@@ -481,7 +481,7 @@ void SearchResultWidget::showSearchResult(int start)
         searchNextPage->setEnabled(false);
     }
 
-    QApplication::restoreOverrideCursor();
+    //QApplication::restoreOverrideCursor();
 }
 
 void SearchResultWidget::searchPageNavigationClicked(QAction* action)
