@@ -1713,12 +1713,12 @@ int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
                 ++newPoetID;
 
                 QString strQuery = QString("INSERT INTO poet (id, name, cat_id) VALUES (%1, \"%2\", %3);")
-                        .arg(cat._PoetID).arg(cat._Text).arg(cat._ID);
+                                   .arg(cat._PoetID).arg(cat._Text).arg(cat._ID);
                 QSqlQuery q(database());
                 q.exec(strQuery);
 
                 strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id, url) VALUES (%1, %2, \"%3\", %4, \"%5\");")
-                        .arg(cat._ID).arg(cat._PoetID).arg(cat._Text).arg(cat._ParentID).arg(cat._Url);
+                           .arg(cat._ID).arg(cat._PoetID).arg(cat._Text).arg(cat._ParentID).arg(cat._Url);
 
                 q.exec(strQuery);
             }
@@ -1733,7 +1733,7 @@ int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
                 ++newCatID;
 
                 QString strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id) VALUES (%1, %2, \"%3\", %4);")
-                        .arg(cat._ID).arg(cat._PoetID).arg(cat._Text).arg(cat._ParentID);
+                                   .arg(cat._ID).arg(cat._PoetID).arg(cat._Text).arg(cat._ParentID);
                 QSqlQuery q(database());
                 q.exec(strQuery);
             }
@@ -1818,7 +1818,7 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
                     catId = newCatID;
 
                     strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id) VALUES (%1, %2, \"%3\", %4);")
-                            .arg(newCatID).arg(topLevelCat._PoetID).arg(cat._Text).arg(parentId);
+                               .arg(newCatID).arg(topLevelCat._PoetID).arg(cat._Text).arg(parentId);
                     QSqlQuery q(database());
                     q.exec(strQuery);
 
@@ -1834,7 +1834,7 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
         }
 
         strQuery = QString("INSERT INTO poem (id, cat_id, title, url) VALUES (%1, %2, \"%3\", \"%4\");")
-                .arg(newPoemId).arg(catId).arg(poem._Title).arg(poem._Url);
+                   .arg(newPoemId).arg(catId).arg(poem._Title).arg(poem._Url);
         qp.exec(strQuery);
 
         foreach (const GanjoorVerse &verse, verses) {

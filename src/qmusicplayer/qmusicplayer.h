@@ -157,7 +157,7 @@ public:
     // load file to album
     static bool loadAlbum(const QString &fileName, SaagharAlbum* album);
     // save album to file
-    static bool saveAlbum(SaagharAlbum *album, const QString &format = "SAL", const QString &fileName = QString());
+    static bool saveAlbum(SaagharAlbum* album, const QString &format = "SAL", const QString &fileName = QString());
     // album edited and should be updated if it is already loaded
     static void albumEdited(SaagharAlbum* album);
 

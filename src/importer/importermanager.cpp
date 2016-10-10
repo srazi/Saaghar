@@ -63,7 +63,7 @@ bool ImporterManager::importerIsAvailable()
     return !m_registeredImporters.isEmpty();
 }
 
-bool ImporterManager::registerImporter(const QString &id, ImporterInterface *importer)
+bool ImporterManager::registerImporter(const QString &id, ImporterInterface* importer)
 {
     if (!m_registeredImporters.contains(id)) {
         m_registeredImporters.insert(id, importer);
@@ -82,7 +82,7 @@ void ImporterManager::unRegisterImporter(const QString &id)
 QStringList ImporterManager::availableFormats()
 {
     QStringList formats;
-    foreach (ImporterInterface *importer, m_registeredImporters) {
+    foreach (ImporterInterface* importer, m_registeredImporters) {
         formats << QString("%1 (*.%2)").arg(importer->readableName()).arg(importer->suffix());
     }
 
@@ -174,12 +174,12 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
             QStringList parentsTitles = importData.catParentsTitles(poem._CatID);
 
             content += QObject::tr("Top Level Categories: %1\n---\nPoem Title: %2\n----------------\n")
-                    .arg(parentsTitles.isEmpty() ? tr("N/A") : parentsTitles.join(tr(" > ")))
-                    .arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
+                       .arg(parentsTitles.isEmpty() ? tr("N/A") : parentsTitles.join(tr(" > ")))
+                       .arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
 
             foreach (const GanjoorVerse &verse, verses) {
                 content += QString("%1 - %2\n")
-                        .arg(verse._Order + 1).arg(verse._Text);
+                           .arg(verse._Order + 1).arg(verse._Text);
             }
             content += "\n=================================\n\n";
         }
@@ -198,9 +198,9 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
 
             toc += QString("<li><a href=\"#%1\"><i>%2</i></a>").arg(poem._ID).arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
             content += QString("<br><h3>%1:</h3><center><br><h2><b><a id=\"%2\" name=\"%2\">%3</a></b></h2><br>--------------------------------<br></center>")
-                    .arg(parentsTitles.isEmpty() ? tr("N/A") : parentsTitles.join(tr(" > ")))
-                    .arg(poem._ID)
-                    .arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
+                       .arg(parentsTitles.isEmpty() ? tr("N/A") : parentsTitles.join(tr(" > ")))
+                       .arg(poem._ID)
+                       .arg(poem._Title.isEmpty() ? tr("No poem title detected!") : poem._Title);
 
             foreach (const GanjoorVerse &verse, verses) {
                 QString openTags = "<p>";
@@ -231,7 +231,7 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
                 }
 
                 content += QString("%1%3%2")
-                        .arg(openTags).arg(closeTags).arg(verse._Text);
+                           .arg(openTags).arg(closeTags).arg(verse._Text);
             }
 
             content += "<hr>";
@@ -246,7 +246,8 @@ QString ImporterManager::convertTo(const CatContents &importData, ImporterManage
     return content;
 }
 
-static QString lineTypeFromPosition(VersePosition position) {
+static QString lineTypeFromPosition(VersePosition position)
+{
     switch (position) {
     case Right:
         return "_CLASSIC_POEM_";
@@ -322,8 +323,8 @@ QString ImporterManager::convertToSED(const CatContents &importData) const
         QStringList parentsTitles = importData.catParentsTitles(poem._CatID);
 
         content += QString("#CAT!TITLE!%1\n###\n#POEM!TITLE!%2\n")
-                .arg(parentsTitles.isEmpty() ? "NO_CAT" : parentsTitles.join("\n#CAT!TITLE!"))
-                .arg(poem._Title.isEmpty() ? "UNKNOWN_POEM_TITLE" : poem._Title);
+                   .arg(parentsTitles.isEmpty() ? "NO_CAT" : parentsTitles.join("\n#CAT!TITLE!"))
+                   .arg(poem._Title.isEmpty() ? "UNKNOWN_POEM_TITLE" : poem._Title);
 
         QString lastPosition;
         // content += QString("#SED!VERSES!START!\n");
@@ -362,8 +363,8 @@ void ImporterManager::importPathChanged()
             if (selectCatDialog.createNewCat()) {
                 m_forceCreateNew = true;
                 QTreeWidgetItem* childItem = new QTreeWidgetItem(m_importPathView.data()->selectedItems().at(0)
-                                                                 ? m_importPathView.data()->selectedItems().at(0)
-                                                                 : m_importPathView.data()->topLevelItem(0), QStringList(selectCatDialog.newTitle()));
+                        ? m_importPathView.data()->selectedItems().at(0)
+                        : m_importPathView.data()->topLevelItem(0), QStringList(selectCatDialog.newTitle()));
                 GanjoorCat cat;
                 cat._ID = -1;
                 cat._Text = childItem->text(0);
@@ -440,7 +441,7 @@ void ImporterManager::importHere()
                  << cat._ID << "\n"
                  << cat._ParentID << "\n"
                  << cat._PoetID << "\n"
-                   << "\n@@@@@@@@@@@@@@@@@@@@@@@@\n" ;
+                 << "\n@@@@@@@@@@@@@@@@@@@@@@@@\n" ;
         catPath.prepend(cat);
         titlePath.prepend(item->text(0));
         item = item->parent();

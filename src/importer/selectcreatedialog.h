@@ -4,7 +4,8 @@
 #include <QDialog>
 #include "databaseelements.h"
 
-namespace Ui {
+namespace Ui
+{
 class SelectCreateDialog;
 }
 
@@ -27,7 +28,7 @@ public:
     bool createNewCat() const;
 
 private:
-    Ui::SelectCreateDialog *ui;
+    Ui::SelectCreateDialog* ui;
 };
 
 #endif // SELECTCREATEDIALOG_H

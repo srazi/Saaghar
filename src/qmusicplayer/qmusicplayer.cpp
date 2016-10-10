@@ -347,7 +347,7 @@ void QMusicPlayer::newAlbum(QString fileName, QString albumName)
 void QMusicPlayer::loadAlbumFile()
 {
     QString fileName = QFileDialog::getOpenFileName(window(), tr("Select Saaghar Album"), startDir,
-                   "Saaghar Album (*.sal *.m3u8 *.m3u);;All Files (*.*)");
+                       "Saaghar Album (*.sal *.m3u8 *.m3u);;All Files (*.*)");
 
     if (fileName.isEmpty()) {
         return;
@@ -437,7 +437,7 @@ void QMusicPlayer::saveAsAlbum(const QString &albumName, bool saveAs)
 {
     if (!saveAs) {
         SaagharAlbum* album = albumManager->albumByName(albumName);
-                //SaagharAlbum* album = albumManager->albumByName(albumName);
+        //SaagharAlbum* album = albumManager->albumByName(albumName);
         if (saveAlbum(album)) {
             albumsPathList.insert(album->title, album->PATH);
         }
@@ -607,7 +607,7 @@ void QMusicPlayer::playRequestedByUser(bool play)
     albumManager->albumList()->setCurrentIndex(albumManager->albumList()->findText(album));
 #ifdef USE_PHONON
     notLoaded = mediaObject->currentSource().type() == Phonon::MediaSource::Empty ||
-            mediaObject->currentSource().type() == Phonon::MediaSource::Invalid;
+                mediaObject->currentSource().type() == Phonon::MediaSource::Invalid;
 #else
     notLoaded = mediaObject->media().isNull();
 #endif
@@ -2083,7 +2083,7 @@ void ScrollText::timer_timeout()
 }
 
 #ifndef USE_PHONON
-SeekSlider::SeekSlider(QMediaPlayer *mediaPlayer, QWidget *parent)
+SeekSlider::SeekSlider(QMediaPlayer* mediaPlayer, QWidget* parent)
     : QSlider(parent),
       m_mediaPlayer(mediaPlayer),
       m_seeking(false)
@@ -2123,7 +2123,7 @@ void SeekSlider::playerOrientationChanged(Qt::Orientation orintation)
     setOrientation(orintation);
 }
 
-VolumeSlider::VolumeSlider(QMediaPlayer *mediaPlayer, QWidget *parent)
+VolumeSlider::VolumeSlider(QMediaPlayer* mediaPlayer, QWidget* parent)
     : QWidget(parent),
       m_mediaPlayer(mediaPlayer)
 {

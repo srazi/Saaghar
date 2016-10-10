@@ -3,7 +3,8 @@
 
 #include <QDialog>
 
-namespace Ui {
+namespace Ui
+{
 class ImporterOptionsDialog;
 }
 
@@ -14,7 +15,7 @@ class ImporterOptionsDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ImporterOptionsDialog(QWidget *parent = 0);
+    explicit ImporterOptionsDialog(QWidget* parent = 0);
     ~ImporterOptionsDialog();
 
 public slots:
@@ -31,7 +32,7 @@ private:
     void init(const QString &content, const QString &type = QLatin1String("txt"));
     void setDisableElements(bool disable);
 
-    Ui::ImporterOptionsDialog *ui;
+    Ui::ImporterOptionsDialog* ui;
     ImporterInterface* m_importer;
 
     QString m_content;

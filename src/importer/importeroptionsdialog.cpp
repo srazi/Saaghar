@@ -8,7 +8,7 @@
 #include <QFileInfo>
 #include <QFileDialog>
 
-ImporterOptionsDialog::ImporterOptionsDialog(QWidget *parent) :
+ImporterOptionsDialog::ImporterOptionsDialog(QWidget* parent) :
     QDialog(parent),
     ui(new Ui::ImporterOptionsDialog),
     m_importer(0),

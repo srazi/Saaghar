@@ -140,8 +140,7 @@ public:
     inline bool isNull() const {return _ID == -1;}
 };
 
-struct GanjoorCat
-{
+struct GanjoorCat {
     int _ID;
     int _PoetID;
     QString _Text;

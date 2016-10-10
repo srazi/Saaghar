@@ -215,12 +215,12 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
     const QString poetName = poemToPoetCache.value(audio_post_ID.toInt(), sApp->databaseBrowser()->getPoetForPoem(audio_post_ID.toInt())._Name);
 
     const QString title = m_groupType == GroupByPoet
-            ? tr("%1 (voice: %2)").arg(audio_title).arg(audio_artist)
-            : tr("%1 (poet: %2)").arg(audio_title).arg(poetName);
+                          ? tr("%1 (voice: %2)").arg(audio_title).arg(audio_artist)
+                          : tr("%1 (poet: %2)").arg(audio_title).arg(poetName);
 
     QStringList visibleInfo = QStringList()
-            << title
-            << fileSizeKB;
+                              << title
+                              << fileSizeKB;
 //            << audio_post_ID
 //            << audio_order
 //            << audio_artist
@@ -314,9 +314,9 @@ bool AudioRepoDownloader::loadPresentAudios(bool create)
     if (!QFile::exists(downloadLocation)) {
         if (create) {
             const QString name = QInputDialog::getText(
-                        this, QMusicPlayer::tr("Name Of Album"),
-                        QMusicPlayer::tr("Enter name for this Album:"),
-                        QLineEdit::Normal, QFileInfo(downloadLocation).baseName());
+                                     this, QMusicPlayer::tr("Name Of Album"),
+                                     QMusicPlayer::tr("Enter name for this Album:"),
+                                     QLineEdit::Normal, QFileInfo(downloadLocation).baseName());
             if (!name.isEmpty()) {
                 m_saagharAlbum->title = name;
                 m_saagharAlbum->PATH = downloadLocation;
@@ -553,8 +553,8 @@ void AudioRepoDownloader::lighRefreshTree()
             const QString poetName = poemToPoetCache.value(audio_post_ID, sApp->databaseBrowser()->getPoetForPoem(audio_post_ID)._Name);
 
             const QString title = m_groupType == GroupByPoet
-                        ? tr("%1 (voice: %2)").arg(audioTitle).arg(audioArtist)
-                        : tr("%1 (poet: %2)").arg(audioTitle).arg(poetName);
+                                  ? tr("%1 (voice: %2)").arg(audioTitle).arg(audioArtist)
+                                  : tr("%1 (poet: %2)").arg(audioTitle).arg(poetName);
             item->setText(0, title);
             item->setToolTip(0, title);
 
@@ -580,12 +580,12 @@ void AudioRepoDownloader::lighRefreshTree()
 void AudioRepoDownloader::getDownloadLocation()
 {
     QString fileName = QFileDialog::getSaveFileName(
-                this,
-                tr("Select Album to Download Audios"),
-                downloadLocation.isEmpty()
-                ? QDir::homePath()
-                : QFileInfo(downloadLocation).absolutePath(), QLatin1String("Saaghar Album (*.sal)")
-                , NULL, QFileDialog::DontConfirmOverwrite);
+                           this,
+                           tr("Select Album to Download Audios"),
+                           downloadLocation.isEmpty()
+                           ? QDir::homePath()
+                           : QFileInfo(downloadLocation).absolutePath(), QLatin1String("Saaghar Album (*.sal)")
+                           , NULL, QFileDialog::DontConfirmOverwrite);
 
     if (!fileName.isEmpty()) {
         downloadLocation = fileName;
@@ -772,7 +772,7 @@ void AudioRepoDownloader::resizeColumnsToContents()
         return;
     }
 
-    ui->repoSelectTree->setColumnWidth(0, (ui->repoSelectTree->viewport()->width() * 70) /100);
+    ui->repoSelectTree->setColumnWidth(0, (ui->repoSelectTree->viewport()->width() * 70) / 100);
 }
 
 void AudioRepoDownloader::addRemoveRepository()

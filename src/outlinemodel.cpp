@@ -319,7 +319,7 @@ QModelIndex OutlineModel::indexFromPath(const QList<int> &path) const
         parent = find(id, parent);
     }
 
-    qDebug() << "\n===========\n"  << __LINE__ << __FUNCTION__ << path << parent.data(TitleRole).toString()<< "\n===========\n" ;
+    qDebug() << "\n===========\n"  << __LINE__ << __FUNCTION__ << path << parent.data(TitleRole).toString() << "\n===========\n" ;
     return parent;
 }
 

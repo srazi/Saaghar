@@ -48,7 +48,7 @@ static void msleep(unsigned long msecs)
 #else
 #include <sys/time.h>
 
-static void thread_sleep(struct timespec *ti)
+static void thread_sleep(struct timespec* ti)
 {
     pthread_mutex_t mtx;
     pthread_cond_t cnd;

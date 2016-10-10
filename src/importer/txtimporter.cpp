@@ -182,11 +182,11 @@ void TxtImporter::import(const QString &data)
         matchCatTitleCount = 0;
 
         if (!line.trimmed().isEmpty() && ((maybePoem && line.trimmed().size() < 50 && m_options.poemStartPattern.isEmpty()) ||
-                (!m_options.poemStartPattern.isEmpty() &&
+                                          (!m_options.poemStartPattern.isEmpty() &&
 #if QT_VERSION >= 0x050000
-                line.contains(QRegularExpression(m_options.poemStartPattern))))) {
+                                           line.contains(QRegularExpression(m_options.poemStartPattern))))) {
 #else
-                line.contains(QRegExp(m_options.poemStartPattern))))) {
+                                           line.contains(QRegExp(m_options.poemStartPattern))))) {
 #endif
             if (!poem.isNull()) {
                 m_catContents.verses.insert(poem._ID, verses);
@@ -288,7 +288,7 @@ void TxtImporter::import(const QString &data)
 //        if (!maybePoem && !maybeParagraph && !(m_options.contentTypes & Options::Poem) && ((line.startsWith(QChar(' ')) && line.size() <= 70) || line.trimmed().size() < 50)) {
 //            maybeSingle = true;
 //        }
-        if (!(m_options.contentTypes & Options::Poem) && (line.startsWith(QLatin1String("  ")) && line.size() <= 70)) {
+        if (!(m_options.contentTypes &Options::Poem) && (line.startsWith(QLatin1String("  ")) && line.size() <= 70)) {
             maybeSingle = true;
 
             if (!verse._Text.isEmpty()) {
@@ -299,7 +299,7 @@ void TxtImporter::import(const QString &data)
             }
         }
 
-        if (maybeSingle || (line.size() <= 70 && m_options.contentTypes & Options::WhitePoem) || justWhitePoem) {
+        if (maybeSingle || (line.size() <= 70 && m_options.contentTypes &Options::WhitePoem) || justWhitePoem) {
             verse._Order = vorder;
             verse._Text = line;
             verse._Position = Single;
@@ -307,7 +307,7 @@ void TxtImporter::import(const QString &data)
             verses.append(verse);
             verse._Text.clear();
         }
-        else if ((line.size() <= 70 && m_options.contentTypes & Options::Poem) || justClassicalPoem) {
+        else if ((line.size() <= 70 && m_options.contentTypes &Options::Poem) || justClassicalPoem) {
             verse._Order = vorder;
             verse._Text = line.trimmed();
             verse._Position = VersePosition(vorder % 2);

@@ -31,22 +31,22 @@ QString SelectCreateDialog::newTitle() const
 QList<int> SelectCreateDialog::selectedPath() const
 {
     return ui->treeView->selectionModel()->selectedIndexes().isEmpty()
-            ? QList<int>()
-            : sApp->outlineModel()->pathFromIndex(ui->treeView->selectionModel()->selectedIndexes().at(0));
+           ? QList<int>()
+           : sApp->outlineModel()->pathFromIndex(ui->treeView->selectionModel()->selectedIndexes().at(0));
 }
 
 QList<GanjoorCat> SelectCreateDialog::selectedCatPath(bool reversed) const
 {
     return ui->treeView->selectionModel()->selectedIndexes().isEmpty()
-            ? QList<GanjoorCat>()
-            : sApp->outlineModel()->catPathFromIndex(ui->treeView->selectionModel()->selectedIndexes().at(0), reversed);
+           ? QList<GanjoorCat>()
+           : sApp->outlineModel()->catPathFromIndex(ui->treeView->selectionModel()->selectedIndexes().at(0), reversed);
 }
 
 GanjoorCat SelectCreateDialog::selectedCat() const
 {
     return ui->treeView->selectionModel()->selectedIndexes().isEmpty()
-            ? GanjoorCat()
-            : ui->treeView->selectionModel()->selectedIndexes().at(0).data(OutlineModel::CategoryRole).value<GanjoorCat>();
+           ? GanjoorCat()
+           : ui->treeView->selectionModel()->selectedIndexes().at(0).data(OutlineModel::CategoryRole).value<GanjoorCat>();
 }
 
 void SelectCreateDialog::setForceCreate(bool force)
