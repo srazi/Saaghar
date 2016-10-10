@@ -54,7 +54,7 @@ Q_IMPORT_PLUGIN(qsqlite)
 namespace
 {
 QThread::Priority TASKS_PRIORITY = QThread::LowPriority;
-static const int NORMAL_TASKS_THREADS = QThread::idealThreadCount();
+static const int NORMAL_TASKS_THREADS = qBound(1, (QThread::idealThreadCount() > 2 ? (QThread::idealThreadCount() - 1) : QThread::idealThreadCount()), 4);
 
 static const QString APPLICATION_NAME = QLatin1String("Saaghar");
 static const QString ORGANIZATION_NAME = QLatin1String("Pozh");
@@ -465,12 +465,12 @@ void SaagharApplication::applySettings()
     const QString mode = VARS("TaskManager/Mode");
 
     if (mode == "SLOW") {
-        m_tasksThreads = QThread::idealThreadCount() > 1 ? (QThread::idealThreadCount() - 1) : 1;
+        m_tasksThreads = qBound(1, QThread::idealThreadCount() / 2, 2);
         TASKS_PRIORITY = QThread::LowPriority;
         m_displayFullNotification = true;
     }
     else if (mode == "FAST") {
-        m_tasksThreads = QThread::idealThreadCount();
+        m_tasksThreads = qBound(1, (QThread::idealThreadCount() > 4 ? (QThread::idealThreadCount() - 1) : QThread::idealThreadCount()), 8);
         TASKS_PRIORITY = QThread::NormalPriority;
         m_displayFullNotification = false;
     }
