@@ -86,11 +86,11 @@ AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
         downloadLocation = VARS("AudioRepoDownloader/DownloadAlbumPath");
     }
 
-    ui->lineEditDownloadLocation->setText(downloadLocation);
+    ui->lineEditDownloadLocation->setText(QDir::toNativeSeparators(downloadLocation));
 
     setDisabledAll(downloadLocation.isEmpty());
 
-    if (!loadPresentAudios()) {
+    if (!loadPresentAudios(false)) {
         downloadLocation.clear();
         m_saagharAlbum->clear();
         ui->lineEditDownloadLocation->clear();
@@ -303,7 +303,7 @@ static QList<QTreeWidgetItem*> allChildren(QList<QTreeWidgetItem*> parentChildre
     return list;
 }
 
-bool AudioRepoDownloader::loadPresentAudios()
+bool AudioRepoDownloader::loadPresentAudios(bool create)
 {
     if (downloadLocation.isEmpty()) {
         return false;
@@ -312,14 +312,19 @@ bool AudioRepoDownloader::loadPresentAudios()
     m_saagharAlbum->clear();
 
     if (!QFile::exists(downloadLocation)) {
-        const QString name = QInputDialog::getText(
-                    this, QMusicPlayer::tr("Name Of Album"),
-                    QMusicPlayer::tr("Enter name for this Album:"),
-                    QLineEdit::Normal, QFileInfo(downloadLocation).baseName());
-        if (!name.isEmpty()) {
-            m_saagharAlbum->title = name;
-            m_saagharAlbum->PATH = downloadLocation;
-            if (!QMusicPlayer::saveAlbum(m_saagharAlbum)) {
+        if (create) {
+            const QString name = QInputDialog::getText(
+                        this, QMusicPlayer::tr("Name Of Album"),
+                        QMusicPlayer::tr("Enter name for this Album:"),
+                        QLineEdit::Normal, QFileInfo(downloadLocation).baseName());
+            if (!name.isEmpty()) {
+                m_saagharAlbum->title = name;
+                m_saagharAlbum->PATH = downloadLocation;
+                if (!QMusicPlayer::saveAlbum(m_saagharAlbum)) {
+                    return false;
+                }
+            }
+            else {
                 return false;
             }
         }
@@ -360,7 +365,7 @@ void AudioRepoDownloader::setupUi()
 
     fillRepositoryList();
 
-    ui->lineEditDownloadLocation->setText(AudioRepoDownloader::downloadLocation);
+    ui->lineEditDownloadLocation->setText(QDir::toNativeSeparators(downloadLocation));
     keepDownloadedFiles = keepDownloadedFiles && !downloadLocation.isEmpty();
     ui->groupBoxKeepDownload->setChecked(keepDownloadedFiles);
     ui->downloadProgressBar->hide();
@@ -585,7 +590,7 @@ void AudioRepoDownloader::getDownloadLocation()
     if (!fileName.isEmpty()) {
         downloadLocation = fileName;
         if (loadPresentAudios()) {
-            ui->lineEditDownloadLocation->setText(downloadLocation);
+            ui->lineEditDownloadLocation->setText(QDir::toNativeSeparators(downloadLocation));
 
             VAR_DECL("AudioRepoDownloader/DownloadAlbumPath", downloadLocation);
 

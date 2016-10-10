@@ -96,7 +96,7 @@ private:
     void fillRepositoryList();
 
     void setDisabledAll(bool disable);
-    bool loadPresentAudios();
+    bool loadPresentAudios(bool create = true);
     void downloadCheckedItem(QTreeWidgetItem* rootItem);
 
     QHash<QString, QPair<QTreeWidgetItem*, QTreeWidgetItem*> > itemsCache;
