@@ -1657,10 +1657,7 @@ void SaagharWindow::setupUi()
 
     actionInstance("actionCopy", ICON_PATH + "/copy.png", tr("&Copy"))->setShortcuts(QKeySequence::Copy);
 
-    allActionMap.insert("searchToolbarAction", ui->searchToolBar->toggleViewAction());
-    actionInstance("searchToolbarAction")->setIcon(QIcon(ICON_PATH + "/search.png"));
-    actionInstance("searchToolbarAction")->setObjectName(QString::fromUtf8("searchToolbarAction"));
-    actionInstance("searchToolbarAction")->setShortcuts(QKeySequence::Find);
+    actionInstance("searchToolbarAction", ICON_PATH + "/search.png", tr("&Find"))->setShortcuts(QKeySequence::Find);
 
     actionInstance("actionSettings", ICON_PATH + "/settings.png", tr("S&ettings"))->setMenuRole(QAction::PreferencesRole); //needed for Mac OS X
 
@@ -3200,9 +3197,9 @@ void SaagharWindow::namedActionTriggered(bool checked)
 #endif
     }
     else if (actionName == "searchToolbarAction") {
-        if (action->isChecked()) {
-            SaagharWidget::lineEditSearchText->setFocus();
-        }
+        ui->searchToolBar->show();
+        SaagharWidget::lineEditSearchText->startUoUoAnimation(true, true);
+        SaagharWidget::lineEditSearchText->setFocus();
     }
 #ifdef MEDIA_PLAYER
     else if (actionName == "albumDockAction") {

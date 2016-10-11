@@ -27,6 +27,7 @@
 #include <QLineEdit>
 
 class QToolButton;
+class QPropertyAnimation;
 
 //embeded progress-bar
 #include <QProgressBar>
@@ -46,6 +47,8 @@ public:
 
 public slots:
     void resetNotFound();
+    void startUoUoAnimation(bool doSelectAll, bool big, int duration = 300);
+    void stopUoUoAnimation();
 
 protected:
     void resizeEvent(QResizeEvent*);
@@ -59,6 +62,9 @@ private:
     QToolButton* clearButton;
     QToolButton* optionButton;
     bool maybeFound;
+    QPropertyAnimation* m_geometryAnimation;
+    QRect m_optionButtonRect;
+    QRect m_geometryRect;
 
 signals:
     void clearButtonPressed();

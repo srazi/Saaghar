@@ -23,6 +23,7 @@
 
 #include "qsearchlineedit.h"
 
+#include <QPropertyAnimation>
 #include <QToolButton>
 #include <QStyle>
 //#include <QDebug>
@@ -32,6 +33,7 @@ QSearchLineEdit::QSearchLineEdit(QWidget* parent,
                                  const QString &optionsIconFileName,
                                  const QString &cancelIconFileName)
     : QLineEdit(parent)
+    , m_geometryAnimation(0)
 {
     maybeFound = true;
 
@@ -128,6 +130,44 @@ void QSearchLineEdit::resetNotFound()
 {
     setStyleSheet(QString("QLineEdit { padding-left: %1px; padding-right: %2px; } ").arg(clearButton->sizeHint().width()).arg(optionButton->sizeHint().width()));
     maybeFound = true;
+}
+
+void QSearchLineEdit::startUoUoAnimation(bool doSelectAll, bool big, int duration)
+{
+    stopUoUoAnimation();
+    m_geometryAnimation = new QPropertyAnimation((big ? (QWidget*)this : (QWidget*)optionButton), "geometry");
+    m_geometryAnimation->setDuration(duration);
+
+    m_optionButtonRect = optionButton->geometry();
+    m_geometryRect = this->geometry();
+
+    QRect end = big ? m_geometryRect : m_optionButtonRect;
+    const int width = big ? (end.width() / 2 - 1) : 5;
+    const int height = big ? 0 : 5;
+    end.adjust(width, height, -width, -height);
+
+    m_geometryAnimation->setEndValue(end);
+    m_geometryAnimation->setEasingCurve(big ? QEasingCurve::InOutElastic : QEasingCurve::Linear);
+
+    connect(m_geometryAnimation, SIGNAL(finished()), this, SLOT(stopUoUoAnimation()));
+    m_geometryAnimation->setProperty("doSelectAll", QVariant(doSelectAll));
+
+    m_geometryAnimation->start();
+}
+
+void QSearchLineEdit::stopUoUoAnimation()
+{
+    if (m_geometryAnimation) {
+        m_geometryAnimation->stop();
+        this->setGeometry(m_geometryRect);
+        optionButton->setGeometry(m_optionButtonRect);
+
+        if (m_geometryAnimation->property("doSelectAll").toBool()) {
+            selectAll();
+        }
+        delete m_geometryAnimation;
+        m_geometryAnimation = 0;
+    }
 }
 
 //embeded progress-bar
