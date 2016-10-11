@@ -800,8 +800,16 @@ void DatabaseBrowser::removeCatFromDataBase(const GanjoorCat &gCat)
 QString DatabaseBrowser::defaultConnectionId()
 {
     if (s_defaultConnectionId.isEmpty()) {
-        qFatal("There is no a default connection!");
-        exit(1);
+        if (!s_instance) {
+            if (!s_defaultDatabaseFileName.isEmpty()) {
+                s_instance = new DatabaseBrowser(s_defaultDatabaseFileName);
+            }
+        }
+
+        if (s_defaultConnectionId.isEmpty()) {
+            qFatal("There is no a default connection!");
+            exit(1);
+        }
     }
 
     const QString &id = s_defaultConnectionId.left(s_defaultConnectionId.lastIndexOf(QLatin1String("/thread:")));
