@@ -1097,106 +1097,30 @@ void SaagharWindow::print(QPrinter* printer)
     if (!saagharWidget) {
         return;
     }
-    QPainter painter;
-    painter.begin(printer);
 
-    const int rows = saagharWidget->tableViewWidget->rowCount();
-    const int columns = saagharWidget->tableViewWidget->columnCount();
-    double totalWidth = 0.0;
-    double currentHeight = 10.0;
-
-    if (columns == 4) {
-        totalWidth = qMax(saagharWidget->tableViewWidget->columnWidth(3), saagharWidget->minMesraWidth) + saagharWidget->tableViewWidget->columnWidth(2) + qMax(saagharWidget->tableViewWidget->columnWidth(1), saagharWidget->minMesraWidth);
+    const QString html = convertToHtml(saagharWidget);
+    if (html.isEmpty()) {
+        return;
     }
-    else if (columns == 1) {
-        totalWidth = saagharWidget->tableViewWidget->columnWidth(0);
+
+    int textWidth = saagharWidget->tableViewWidget->viewport()->width();
+    if (SaagharWidget::CurrentViewStyle == SaagharWidget::SteppedHemistichLine) {
+        textWidth = saagharWidget->tableViewWidget->columnWidth(2);
     }
-    int pageWidth = printer->pageRect().width();
-    int pageHeight = printer->pageRect().height();
 
-    const int extendedWidth = SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).pointSize() * 4;
-    const qreal scale = pageWidth / (totalWidth + extendedWidth); //printer->logicalDpiX() / 96;
-    painter.scale(scale, scale);
+    QTextEdit printTextEditHelper;
+    printTextEditHelper.document()->setDefaultFont(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")));
+    printTextEditHelper.document()->setTextWidth(textWidth);
 
-    for (int row = 0; row < rows; ++row) {
-        int thisRowHeight = saagharWidget->tableViewWidget->rowHeight(row);
-        for (int col = 0; col < columns; ++col) {
-            QTableWidgetItem* item = saagharWidget->tableViewWidget->item(row, col);
-            int span = saagharWidget->tableViewWidget->columnSpan(row, col);
-            QString text = "";
-            QTextEdit* textEdit = 0;
+    QTextCursor tc(printTextEditHelper.textCursor());
+    tc.select(QTextCursor::Document);
+    QTextBlockFormat format = tc.blockFormat();
+    format.setForeground(SaagharWidget::resolvedColor(LS("SaagharWidget/Colors/PoemText")));
+    tc.setBlockFormat(format);
+    printTextEditHelper.setTextCursor(tc);
 
-            if (item) {
-                QFont fnt(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")));
-                QColor color(SaagharWidget::resolvedColor(LS("SaagharWidget/Colors/PoemText")));
-                int rectX1 = 0;
-                int rectX2 = 0;
-                if (columns == 4) {
-                    if (span == 1) {
-                        if (col == 1) {
-                            rectX1 = saagharWidget->tableViewWidget->columnWidth(3) + saagharWidget->tableViewWidget->columnWidth(2);
-                            rectX2 = saagharWidget->tableViewWidget->columnWidth(3) + saagharWidget->tableViewWidget->columnWidth(2) + saagharWidget->tableViewWidget->columnWidth(1);
-                        }
-                        else if (col == 3) {
-                            rectX1 = 0;
-                            rectX2 = saagharWidget->tableViewWidget->columnWidth(3);
-                        }
-                    }
-                    else {
-                        //Single or Paragraph
-                        rectX1 = 0;
-                        rectX2 = saagharWidget->tableViewWidget->columnWidth(3) + saagharWidget->tableViewWidget->columnWidth(2) + saagharWidget->tableViewWidget->columnWidth(1);
-                        int textWidth = 0;
-                        QFontMetrics fontMetric(fnt);
-                        if (!item->text().isEmpty()) {
-                            textWidth = fontMetric.boundingRect(item->text()).width();
-                        }
-                        else {
-                            textEdit = qobject_cast<QTextEdit*>(saagharWidget->tableViewWidget->cellWidget(row, col));
-                            if (textEdit) {
-                                fnt = SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/ProseText"));
-                                color = SaagharWidget::resolvedColor(LS("SaagharWidget/Colors/ProseText"));
-                                fontMetric = QFontMetrics(fnt);
-                                textWidth = fontMetric.boundingRect(textEdit->toPlainText()).width();
-                            }
-                        }
-                        int numOfLine = textWidth / rectX2;
-                        thisRowHeight = thisRowHeight + (fontMetric.height() * numOfLine);
-                    }
-                }
-                else if (columns == 1) {
-                    rectX1 = 0;
-                    rectX2 = saagharWidget->tableViewWidget->columnWidth(0);
-                }
-
-                QRect mesraRect;
-                mesraRect.setCoords(rectX1, currentHeight, rectX2, currentHeight + thisRowHeight);
-                col = col + span - 1;
-                text = item->text();
-                if (text.isEmpty() && textEdit) {
-                    text = textEdit->toPlainText();
-                }
-
-                //QFont fnt = SaagharWidget::tableFont;
-                fnt.setPointSizeF(fnt.pointSizeF() / scale);
-                painter.setFont(fnt);
-                painter.setPen(color);
-                painter.setLayoutDirection(Qt::RightToLeft);
-                int flags = item->textAlignment();
-                if (span > 1) {
-                    flags |= Qt::TextWordWrap;
-                }
-                painter.drawText(mesraRect, flags, text);
-            }
-        }
-
-        currentHeight += thisRowHeight;
-        if ((currentHeight + 50)*scale >= pageHeight) {
-            printer->newPage();
-            currentHeight = 10.0;
-        }
-    }
-    painter.end();
+    printTextEditHelper.setHtml(html);
+    printTextEditHelper.print(printer);
 }
 
 void SaagharWindow::actionPrintClicked()
@@ -1240,7 +1164,7 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
     }
     QString columnGroupFormat = QString("<COL WIDTH=%1>").arg(saagharObject->tableViewWidget->columnWidth(0));
     int numberOfCols = saagharObject->tableViewWidget->columnCount() - 1;
-    int totalWidth = saagharObject->tableViewWidget->width();
+    int totalWidth = saagharObject->tableViewWidget->viewport()->width();
     QString tableBody;
     if (numberOfCols == 3) {
         columnGroupFormat = QString("<COL WIDTH=%1><COL WIDTH=%2><COL WIDTH=%3>").arg(saagharObject->tableViewWidget->columnWidth(1)).arg(saagharObject->tableViewWidget->columnWidth(2)).arg(saagharObject->tableViewWidget->columnWidth(3));
