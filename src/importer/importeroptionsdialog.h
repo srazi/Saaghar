@@ -37,6 +37,11 @@ private:
 
     QString m_content;
     bool m_contentViewInDirtyState;
+
+protected:
+#if QT_VERSION >= 0x050000
+    void paintEvent(QPaintEvent* event);
+#endif
 };
 
 #endif // IMPORTEROPTIONSDIALOG_H

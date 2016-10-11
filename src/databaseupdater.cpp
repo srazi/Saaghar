@@ -762,3 +762,18 @@ void DataBaseUpdater::reject()
 
     QDialog::reject();
 }
+
+#if QT_VERSION >= 0x050000
+#include "settingsmanager.h"
+#include <QPainter>
+void DataBaseUpdater::paintEvent(QPaintEvent* event)
+{
+    if (VARB("SaagharWindow/UseTransparecy") && QtWin::isCompositionEnabled()) {
+        QPainter p(this);
+        p.setCompositionMode(QPainter::CompositionMode_Clear);
+        p.fillRect(event->rect(), QColor(0, 0, 0, 0));
+    }
+
+    QDialog::paintEvent(event);
+}
+#endif

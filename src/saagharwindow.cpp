@@ -1226,7 +1226,7 @@ void SaagharWindow::printPreview(QPrinter* printer)
     if (QtWin::isCompositionEnabled()) {
         previewDialog->setStyleSheet("QToolBar{ background-image:url(\":/resources/images/transp.png\"); border:none;}");
     }
-    QtWin::easyBlurUnBlur(previewDialog, VARB("SaagharWindow/UseTransparecy"));
+    //QtWin::easyBlurUnBlur(previewDialog, VARB("SaagharWindow/UseTransparecy"));
 
     connect(previewDialog, SIGNAL(paintRequested(QPrinter*)), this, SLOT(print(QPrinter*)));
     previewDialog->exec();

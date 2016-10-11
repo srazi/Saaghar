@@ -2,6 +2,8 @@
 #include "ui_importeroptionsdialog.h"
 #include "importer_interface.h"
 #include "importermanager.h"
+#include "qtwin.h"
+#include "settingsmanager.h"
 
 #include <QDebug>
 #include <QFile>
@@ -31,6 +33,8 @@ ImporterOptionsDialog::ImporterOptionsDialog(QWidget* parent) :
     connect(ui->importPushButton, SIGNAL(clicked(bool)), this, SLOT(doSaveImport()));
     connect(ui->cancelPushButton, SIGNAL(clicked(bool)), this, SLOT(reject()));
     connect(ui->tabWidget, SIGNAL(currentChanged(int)), this, SLOT(currentTabChanged()));
+
+    QtWin::easyBlurUnBlur(this, VARB("SaagharWindow/UseTransparecy"));
 }
 
 ImporterOptionsDialog::~ImporterOptionsDialog()
@@ -203,3 +207,18 @@ void ImporterOptionsDialog::setDisableElements(bool disable)
     ui->whiteCheckBox->setDisabled(disable);
     ui->previewPushButton->setDisabled(disable);
 }
+
+#if QT_VERSION >= 0x050000
+#include <QPainter>
+#include <QPaintEvent>
+void ImporterOptionsDialog::paintEvent(QPaintEvent* event)
+{
+    if (VARB("SaagharWindow/UseTransparecy") && QtWin::isCompositionEnabled()) {
+        QPainter p(this);
+        p.setCompositionMode(QPainter::CompositionMode_Clear);
+        p.fillRect(event->rect(), QColor(0, 0, 0, 0));
+    }
+
+    QDialog::paintEvent(event);
+}
+#endif

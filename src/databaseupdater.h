@@ -94,6 +94,9 @@ private:
 
 protected:
     void closeEvent(QCloseEvent*);
+#if QT_VERSION >= 0x050000
+    void paintEvent(QPaintEvent* event);
+#endif
 };
 
 #endif
