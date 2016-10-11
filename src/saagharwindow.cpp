@@ -1760,7 +1760,7 @@ void SaagharWindow::setupUi()
     }
 
     menuBarWidth = menuBarWidth + 3; //3 is offset of first item!
-    int styleWidth = ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarHMargin) * 2 + ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth) * 2;
+    int styleWidth = 11 + ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarHMargin) * 2 + ui->menuBar->style()->pixelMetric(QStyle::PM_MenuBarPanelWidth) * 2;
 
     styleWidth = qMax(styleWidth, 5);
     ui->menuBar->setMinimumWidth(menuBarWidth + styleWidth);
