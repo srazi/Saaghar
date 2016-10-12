@@ -51,7 +51,7 @@ class SaagharWidget : public QWidget
     Q_OBJECT
 
 public:
-    SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidget* tableWidget);
+    SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidget* tableWidget, const QString &connectionID);
     ~SaagharWidget();
 
 #ifdef MEDIA_PLAYER
@@ -161,6 +161,8 @@ private:
     QPoint pressedPosition;
     bool dirty;
     int m_vPosition;
+
+    QString m_connectionID;
 
 private slots:
     void createCustomContextMenu(const QPoint &pos);

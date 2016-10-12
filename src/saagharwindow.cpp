@@ -281,7 +281,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
         QtWin::easyBlurUnBlur(this, VARB("SaagharWindow/UseTransparecy"));
     }
 
-    connect(sApp->databaseBrowser(), SIGNAL(databaseUpdated()), this, SLOT(onDatabaseUpdate()));
+    connect(sApp->databaseBrowser(), SIGNAL(databaseUpdated(QString)), this, SLOT(onDatabaseUpdate(QString)));
 
     showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), -1);
 
@@ -873,8 +873,13 @@ void SaagharWindow::tabCloser(int tabIndex)
 
 QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int id,
                                      const QString &type, bool noError,
-                                     bool pushToStack)
+                                     bool pushToStack, const QString &connectionID)
 {
+    QString tabConnectionID = connectionID;
+    if (tabConnectionID.isEmpty()) {
+        tabConnectionID = sApp->databaseBrowser()->defaultConnectionId();
+    }
+
     QWidget* tabContent = new QWidget();
 
     if (tabType == SaagharWindow::SaagharViewerTab) {
@@ -910,7 +915,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         tabTableWidget->setItemDelegate(searchDelegate);
         connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(QString)), searchDelegate, SLOT(keywordChanged(QString)));
 
-        saagharWidget = new SaagharWidget(tabContent, parentCatsToolBar, tabTableWidget);
+        saagharWidget = new SaagharWidget(tabContent, parentCatsToolBar, tabTableWidget, tabConnectionID);
         saagharWidget->setObjectName(QString::fromUtf8("saagharWidget"));
 
         undoGroup->addStack(saagharWidget->undoStack);
@@ -2015,8 +2020,12 @@ void SaagharWindow::showStatusText(const QString &message, int newLevelsCount)
     splashScreen(QExtendedSplashScreen)->showMessage(message);
 }
 
-void SaagharWindow::onDatabaseUpdate()
+void SaagharWindow::onDatabaseUpdate(const QString &connectionID)
 {
+    if (connectionID != DatabaseBrowser::defaultConnectionId()) {
+        return;
+    }
+
     outlineTree->refreshTree();
     selectSearchRange->clear();
     multiSelectInsertItems(selectSearchRange);

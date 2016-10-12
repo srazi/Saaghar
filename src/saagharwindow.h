@@ -102,7 +102,7 @@ private:
     Qt::MouseButtons pressedMouseButton;
     QWidget* insertNewTab(TabType tabType = SaagharWindow::SaagharViewerTab, const QString &title = QString(),
                           int id = -1, const QString &type = "CatID", bool noError = true,
-                          bool pushToStack = true);
+                          bool pushToStack = true, const QString &connectionID = QString());
     Ui::SaagharWindow* ui;
     void createConnections();
     void setupUi();
@@ -214,7 +214,7 @@ private slots:
     void showSearchTips();
     void showStatusText(const QString &message, int newLevelsCount = 0);
 
-    void onDatabaseUpdate();
+    void onDatabaseUpdate(const QString &connectionID);
 
 protected:
 //      void resizeEvent( QResizeEvent * event );

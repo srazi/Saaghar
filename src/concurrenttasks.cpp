@@ -190,6 +190,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 {
     TASK_CANCELED;
 
+    const QString &connectionID = VAR_GET(options, connectionID).toString();
     const QString &strQuery = VAR_GET(options, strQuery).toString();
     int PoetID = VAR_GET(options, PoetID).toInt();
     const QStringList &phraseList = VAR_GET(options, phraseList).toStringList();
@@ -198,7 +199,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
     SearchResults searchResults;
 
-    QSqlDatabase threadDatabase = sApp->databaseBrowser()->databaseForThread(QThread::currentThread());
+    QSqlDatabase threadDatabase = sApp->databaseBrowser()->databaseForThread(QThread::currentThread(), connectionID);
     if (!threadDatabase.isOpen()) {
         qDebug() << QString("ConcurrentTask::startSearch: A database for thread %1 could not be opened!").arg(QString::number((quintptr)QThread::currentThread()));
         return QVariant();
@@ -278,7 +279,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
                         TASK_CANCELED;
 
-                        verses = sApp->databaseBrowser()->getVerses(poemID);
+                        verses = sApp->databaseBrowser()->getVerses(poemID, connectionID);
                     }
 
                     TASK_CANCELED;
@@ -298,7 +299,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
                         TASK_CANCELED;
 
-                        verses = sApp->databaseBrowser()->getVerses(poemID);
+                        verses = sApp->databaseBrowser()->getVerses(poemID, connectionID);
                     }
 
                     TASK_CANCELED;
@@ -356,8 +357,10 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
             emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
         }
 
-        GanjoorPoem gPoem = sApp->databaseBrowser()->getPoem(poemID);
-        searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + sApp->databaseBrowser()->getPoetForCat(gPoem._CatID)._Name);
+        GanjoorPoem gPoem = sApp->databaseBrowser()->getPoem(poemID, connectionID);
+
+        // TODO: Add connectionID to item
+        searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + sApp->databaseBrowser()->getPoetForCat(gPoem._CatID, connectionID)._Name);
     }
 
     //for the last result

@@ -276,12 +276,12 @@ bool DatabaseBrowser::comparePoetsByName(GanjoorPoet* poet1, GanjoorPoet* poet2)
     return (QString::localeAwareCompare(poet1->_Name, poet2->_Name) < 0);
 }
 
-GanjoorCat DatabaseBrowser::getCategory(int CatID)
+GanjoorCat DatabaseBrowser::getCategory(int CatID, const QString &connectionID)
 {
     GanjoorCat gCat;
     gCat.init();
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
         q.exec("SELECT poet_id, text, parent_id, url FROM cat WHERE id = " + QString::number(CatID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -320,11 +320,11 @@ void DatabaseBrowser::removeThreadsConnections(QObject* obj)
     }
 }
 
-QList<GanjoorCat*> DatabaseBrowser::getSubCategories(int CatID)
+QList<GanjoorCat*> DatabaseBrowser::getSubCategories(int CatID, const QString &connectionID)
 {
     QList<GanjoorCat*> lst;
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
         q.exec("SELECT poet_id, text, url, ID FROM cat WHERE parent_id = " + QString::number(CatID));
         q.first();
         while (q.isValid() && q.isActive()) {
@@ -343,12 +343,12 @@ QList<GanjoorCat*> DatabaseBrowser::getSubCategories(int CatID)
     return lst;
 }
 
-QList<GanjoorCat> DatabaseBrowser::getParentCategories(GanjoorCat Cat)
+QList<GanjoorCat> DatabaseBrowser::getParentCategories(GanjoorCat Cat, const QString &connectionID)
 {
     QList<GanjoorCat> lst;
-    if (isConnected()) {
+    if (isConnected(connectionID)) {
         while (!Cat.isNull() && Cat._ParentID != 0) {
-            Cat = getCategory(Cat._ParentID);
+            Cat = getCategory(Cat._ParentID, connectionID);
             lst.insert(0, Cat);
         }
         GanjoorCat gCat;
@@ -358,12 +358,12 @@ QList<GanjoorCat> DatabaseBrowser::getParentCategories(GanjoorCat Cat)
     return lst;
 }
 
-QList<GanjoorPoem*> DatabaseBrowser::getPoems(int CatID)
+QList<GanjoorPoem*> DatabaseBrowser::getPoems(int CatID, const QString &connectionID)
 {
     QList<GanjoorPoem*> lst;
-    if (isConnected()) {
+    if (isConnected(connectionID)) {
         QString selectQuery = QString("SELECT ID, title, url FROM poem WHERE cat_id = %1 ORDER BY ID").arg(CatID);
-        QSqlQuery q(database());
+        QSqlQuery q(database(connectionID));
         q.exec(selectQuery);
         q.first();
         QSqlRecord qrec;
@@ -380,15 +380,15 @@ QList<GanjoorPoem*> DatabaseBrowser::getPoems(int CatID)
     return lst;
 }
 
-QList<GanjoorVerse*> DatabaseBrowser::getVerses(int PoemID)
+QList<GanjoorVerse*> DatabaseBrowser::getVerses(int PoemID, const QString &connectionID)
 {
-    return getVerses(PoemID, 0);
+    return getVerses(PoemID, 0, connectionID);
 }
 
-QString DatabaseBrowser::getFirstMesra(int PoemID) //just first Mesra
+QString DatabaseBrowser::getFirstMesra(int PoemID, const QString &connectionID) //just first Mesra
 {
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
         QString selectQuery = QString("SELECT vorder, text FROM verse WHERE poem_id = %1 order by vorder LIMIT 1").arg(PoemID);
         q.exec(selectQuery);
         q.first();
@@ -396,14 +396,14 @@ QString DatabaseBrowser::getFirstMesra(int PoemID) //just first Mesra
             return Tools::snippedText(q.record().value(1).toString(), "", 0, 12, true);
         }
     }
-    return "";
+    return QString();
 }
 
-QList<GanjoorVerse*> DatabaseBrowser::getVerses(int PoemID, int Count)
+QList<GanjoorVerse*> DatabaseBrowser::getVerses(int PoemID, int Count, const QString &connectionID)
 {
     QList<GanjoorVerse*> lst;
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
         QString selectQuery = QString("SELECT vorder, position, text FROM verse WHERE poem_id = %1 order by vorder" + (Count > 0 ? " LIMIT " + QString::number(Count) : "")).arg(PoemID);
         q.exec(selectQuery);
         q.first();
@@ -420,12 +420,12 @@ QList<GanjoorVerse*> DatabaseBrowser::getVerses(int PoemID, int Count)
     return lst;
 }
 
-GanjoorPoem DatabaseBrowser::getPoem(int PoemID)
+GanjoorPoem DatabaseBrowser::getPoem(int PoemID, const QString &connectionID)
 {
     GanjoorPoem gPoem;
     gPoem.init();
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
         q.exec("SELECT cat_id, title, url FROM poem WHERE ID = " + QString::number(PoemID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -437,12 +437,12 @@ GanjoorPoem DatabaseBrowser::getPoem(int PoemID)
     return gPoem;
 }
 
-GanjoorPoem DatabaseBrowser::getNextPoem(int PoemID, int CatID)
+GanjoorPoem DatabaseBrowser::getNextPoem(int PoemID, int CatID, const QString &connectionID)
 {
     GanjoorPoem gPoem;
     gPoem.init();
-    if (isConnected() && PoemID != -1) { // PoemID==-1 when getNextPoem(GanjoorPoem poem) pass null poem
-        QSqlQuery q(database());
+    if (isConnected(connectionID) && PoemID != -1) { // PoemID==-1 when getNextPoem(GanjoorPoem poem) pass null poem
+        QSqlQuery q(database(connectionID));
         q.exec(QString("SELECT ID FROM poem WHERE cat_id = %1 AND id>%2 LIMIT 1").arg(CatID).arg(PoemID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -454,17 +454,17 @@ GanjoorPoem DatabaseBrowser::getNextPoem(int PoemID, int CatID)
     return gPoem;
 }
 
-GanjoorPoem DatabaseBrowser::getNextPoem(GanjoorPoem poem)
+GanjoorPoem DatabaseBrowser::getNextPoem(GanjoorPoem poem, const QString &connectionID)
 {
-    return getNextPoem(poem._ID, poem._CatID);
+    return getNextPoem(poem._ID, poem._CatID, connectionID);
 }
 
-GanjoorPoem DatabaseBrowser::getPreviousPoem(int PoemID, int CatID)
+GanjoorPoem DatabaseBrowser::getPreviousPoem(int PoemID, int CatID, const QString &connectionID)
 {
     GanjoorPoem gPoem;
     gPoem.init();
-    if (isConnected() && PoemID != -1) { // PoemID==-1 when getPreviousPoem(GanjoorPoem poem) pass null poem
-        QSqlQuery q(database());
+    if (isConnected(connectionID) && PoemID != -1) { // PoemID==-1 when getPreviousPoem(GanjoorPoem poem) pass null poem
+        QSqlQuery q(database(connectionID));
         q.exec(QString("SELECT ID FROM poem WHERE cat_id = %1 AND id<%2 ORDER BY ID DESC LIMIT 1").arg(CatID).arg(PoemID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -476,23 +476,23 @@ GanjoorPoem DatabaseBrowser::getPreviousPoem(int PoemID, int CatID)
     return gPoem;
 }
 
-GanjoorPoem DatabaseBrowser::getPreviousPoem(GanjoorPoem poem)
+GanjoorPoem DatabaseBrowser::getPreviousPoem(GanjoorPoem poem, const QString &connectionID)
 {
-    return getPreviousPoem(poem._ID, poem._CatID);
+    return getPreviousPoem(poem._ID, poem._CatID, connectionID);
 }
 
-GanjoorPoet DatabaseBrowser::getPoetForPoem(int poemID)
+GanjoorPoet DatabaseBrowser::getPoetForPoem(int poemID, const QString &connectionID)
 {
-    const GanjoorPoem poem = getPoem(poemID);
+    const GanjoorPoem poem = getPoem(poemID, connectionID);
 
     if (poem.isNull()) {
         return GanjoorPoet();
     }
 
-    return getPoetForCat(poem._CatID);
+    return getPoetForCat(poem._CatID, connectionID);
 }
 
-GanjoorPoet DatabaseBrowser::getPoetForCat(int CatID)
+GanjoorPoet DatabaseBrowser::getPoetForCat(int CatID, const QString &connectionID)
 {
     GanjoorPoet gPoet;
     gPoet.init();
@@ -500,8 +500,8 @@ GanjoorPoet DatabaseBrowser::getPoetForCat(int CatID)
         gPoet.init(0, tr("All"), 0);
         return gPoet;
     }
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
         q.exec("SELECT poet_id FROM cat WHERE id = " + QString::number(CatID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -512,7 +512,7 @@ GanjoorPoet DatabaseBrowser::getPoetForCat(int CatID)
     return gPoet;
 }
 
-GanjoorPoet DatabaseBrowser::getPoet(int PoetID)
+GanjoorPoet DatabaseBrowser::getPoet(int PoetID, const QString &connectionID)
 {
     GanjoorPoet gPoet;
     gPoet.init();
@@ -520,8 +520,8 @@ GanjoorPoet DatabaseBrowser::getPoet(int PoetID)
         gPoet.init(0, tr("All"), 0);
         return gPoet;
     }
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
 
         bool descriptionExists = false;
         if (q.exec("SELECT id, name, cat_id, description FROM poet WHERE id = " + QString::number(PoetID))) {
@@ -547,13 +547,13 @@ GanjoorPoet DatabaseBrowser::getPoet(int PoetID)
     return gPoet;
 }
 
-QString DatabaseBrowser::getPoetDescription(int PoetID)
+QString DatabaseBrowser::getPoetDescription(int PoetID, const QString &connectionID)
 {
     if (PoetID <= 0) {
         return "";
     }
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
         q.exec("SELECT description FROM poet WHERE id = " + QString::number(PoetID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -564,13 +564,13 @@ QString DatabaseBrowser::getPoetDescription(int PoetID)
     return "";
 }
 
-QString DatabaseBrowser::getPoemMediaSource(int PoemID)
+QString DatabaseBrowser::getPoemMediaSource(int PoemID, const QString &connectionID)
 {
     if (PoemID <= 0) {
         return "";
     }
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
         q.exec("SELECT mediasource FROM poem WHERE id = " + QString::number(PoemID));
         q.first();
         if (q.isValid() && q.isActive()) {
@@ -581,13 +581,13 @@ QString DatabaseBrowser::getPoemMediaSource(int PoemID)
     return "";
 }
 
-void DatabaseBrowser::setPoemMediaSource(int PoemID, const QString &fileName)
+void DatabaseBrowser::setPoemMediaSource(int PoemID, const QString &fileName, const QString &connectionID)
 {
     if (PoemID <= 0) {
         return;
     }
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
         QString strQuery = "";
         if (!database().record("poem").contains("mediasource")) {
             strQuery = QString("ALTER TABLE %1 ADD COLUMN %2 %3").arg("poem").arg("mediasource").arg("NVARCHAR(255)");
@@ -612,12 +612,12 @@ void DatabaseBrowser::setPoemMediaSource(int PoemID, const QString &fileName)
     return;
 }
 
-GanjoorPoet DatabaseBrowser::getPoet(QString PoetName)
+GanjoorPoet DatabaseBrowser::getPoet(QString PoetName, const QString &connectionID)
 {
     GanjoorPoet gPoet;
     gPoet.init();
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
 
         bool descriptionExists = false;
         if (q.exec("SELECT id, name, cat_id, description FROM poet WHERE name = \'" + PoetName + "\'")) {
@@ -643,21 +643,21 @@ GanjoorPoet DatabaseBrowser::getPoet(QString PoetName)
     return gPoet;
 }
 
-int DatabaseBrowser::getRandomPoemID(int* CatID)
+int DatabaseBrowser::getRandomPoemID(int* CatID, const QString &connectionID)
 {
-    if (isConnected()) {
-        QList<GanjoorCat*> subCats = getSubCategories(*CatID);
+    if (isConnected(connectionID)) {
+        QList<GanjoorCat*> subCats = getSubCategories(*CatID, connectionID);
         int randIndex = Tools::getRandomNumber(0, subCats.size());
         if (randIndex >= 0 && randIndex != subCats.size()) { // '==' is when we want to continue with current 'CatID'. notice maybe 'randIndex == subCats.size() == 0'.
             *CatID = subCats.at(randIndex)->_ID;
-            return getRandomPoemID(CatID);
+            return getRandomPoemID(CatID, connectionID);
         }
 
         QString strQuery = "SELECT MIN(id), MAX(id) FROM poem";
         if (*CatID != 0) {
             strQuery += " WHERE cat_id=" + QString::number(*CatID);
         }
-        QSqlQuery q(database());
+        QSqlQuery q(database(connectionID));
         q.exec(strQuery);
         if (q.next()) {
             QSqlRecord qrec = q.record();
@@ -665,9 +665,9 @@ int DatabaseBrowser::getRandomPoemID(int* CatID)
             int maxID = qrec.value(1).toInt();
 
             if (maxID <= 0 || minID < 0) {
-                QList<GanjoorCat*> subCats = getSubCategories(*CatID);
+                QList<GanjoorCat*> subCats = getSubCategories(*CatID, connectionID);
                 *CatID = subCats.at(Tools::getRandomNumber(0, subCats.size() - 1))->_ID;
-                return getRandomPoemID(CatID);
+                return getRandomPoemID(CatID, connectionID);
             }
             return Tools::getRandomNumber(minID, maxID);
         }
@@ -744,12 +744,12 @@ void DatabaseBrowser::removeDatabase(const QString &fileName, QThread* thread)
     }
 }
 
-QList<GanjoorPoet*> DatabaseBrowser::getConflictingPoets(const QString fileName)
+QList<GanjoorPoet*> DatabaseBrowser::getConflictingPoets(const QString fileName, const QString &toConnectionID)
 {
     QList<GanjoorPoet*> conflictList;
     if (isConnected()) {
         QList<GanjoorPoet*> dataBasePoets = getDataBasePoets(fileName);
-        QList<GanjoorPoet*> installedPoets = getPoets();
+        QList<GanjoorPoet*> installedPoets = getPoets(toConnectionID);
         foreach (GanjoorPoet* poet, installedPoets) {
             foreach (GanjoorPoet* dbPoet, dataBasePoets) {
                 if (dbPoet->_ID == poet->_ID) {
@@ -763,31 +763,31 @@ QList<GanjoorPoet*> DatabaseBrowser::getConflictingPoets(const QString fileName)
     return conflictList;
 }
 
-void DatabaseBrowser::removePoetFromDataBase(int PoetID)
+void DatabaseBrowser::removePoetFromDataBase(int PoetID, const QString &connectionID)
 {
-    if (isConnected()) {
+    if (isConnected(connectionID)) {
         QString strQuery;
-        QSqlQuery q(database());
+        QSqlQuery q(database(connectionID));
 
-        removeCatFromDataBase(getCategory(getPoet(PoetID)._CatID));
+        removeCatFromDataBase(getCategory(getPoet(PoetID, connectionID)._CatID, connectionID), connectionID);
 
         strQuery = "DELETE FROM poet WHERE id=" + QString::number(PoetID);
         q.exec(strQuery);
     }
 }
 
-void DatabaseBrowser::removeCatFromDataBase(const GanjoorCat &gCat)
+void DatabaseBrowser::removeCatFromDataBase(const GanjoorCat &gCat, const QString &connectionID)
 {
     if (gCat.isNull()) {
         return;
     }
-    QList<GanjoorCat*> subCats = getSubCategories(gCat._ID);
+    QList<GanjoorCat*> subCats = getSubCategories(gCat._ID, connectionID);
     foreach (GanjoorCat* cat, subCats) {
-        removeCatFromDataBase(*cat);
+        removeCatFromDataBase(*cat, connectionID);
     }
-    if (isConnected()) {
+    if (isConnected(connectionID)) {
         QString strQuery;
-        QSqlQuery q(database());
+        QSqlQuery q(database(connectionID));
         strQuery = "DELETE FROM verse WHERE poem_id IN (SELECT id FROM poem WHERE cat_id=" + QString::number(gCat._ID) + ")";
         q.exec(strQuery);
         strQuery = "DELETE FROM poem WHERE cat_id=" + QString::number(gCat._ID);
@@ -817,13 +817,13 @@ QString DatabaseBrowser::defaultConnectionId()
     return getIdForDataBase(id, QThread::currentThread());
 }
 
-int DatabaseBrowser::getNewPoetID()
+int DatabaseBrowser::getNewPoetID(const QString &connectionID)
 {
     int newPoetID = -1;
 
-    if (isConnected()) {
+    if (isConnected(connectionID)) {
         QString strQuery = "SELECT MAX(id) FROM poet";
-        QSqlQuery q(database());
+        QSqlQuery q(database(connectionID));
         q.exec(strQuery);
 
         if (q.first()) {
@@ -841,13 +841,13 @@ int DatabaseBrowser::getNewPoetID()
 
     return newPoetID;
 }
-int DatabaseBrowser::getNewPoemID()
+int DatabaseBrowser::getNewPoemID(const QString &connectionID)
 {
     int newPoemID = -1;
 
-    if (isConnected()) {
+    if (isConnected(connectionID)) {
         QString strQuery = "SELECT MAX(id) FROM poem";
-        QSqlQuery q(database());
+        QSqlQuery q(database(connectionID));
         q.exec(strQuery);
 
         if (q.first()) {
@@ -866,13 +866,13 @@ int DatabaseBrowser::getNewPoemID()
     return newPoemID;
 }
 
-int DatabaseBrowser::getNewCatID()
+int DatabaseBrowser::getNewCatID(const QString &connectionID)
 {
     int newCatID = -1;
 
-    if (isConnected()) {
+    if (isConnected(connectionID)) {
         QString strQuery = "SELECT MAX(id) FROM cat";
-        QSqlQuery q(database());
+        QSqlQuery q(database(connectionID));
         q.exec(strQuery);
 
         if (q.first()) {
@@ -891,13 +891,13 @@ int DatabaseBrowser::getNewCatID()
     return newCatID;
 }
 
-bool DatabaseBrowser::importDataBase(const QString fileName)
+bool DatabaseBrowser::importDataBase(const QString &fromFileName, const QString &toConnectionID)
 {
-    if (!QFile::exists(fileName)) {
+    if (!QFile::exists(fromFileName)) {
         return false;
     }
 
-    QString connectionID = getIdForDataBase(fileName);
+    QString connectionID = getIdForDataBase(fromFileName);
 
     if (!database(connectionID).open() || !isValid(connectionID)) {
         QSqlDatabase::removeDatabase(connectionID);
@@ -921,19 +921,19 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
                 continue;
             }
 
-            GanjoorPoet poet = getPoet(newPoet->_Name);
+            GanjoorPoet poet = getPoet(newPoet->_Name, toConnectionID);
             if (!poet.isNull()) { //conflict on Names
                 if (poet._ID == newPoet->_ID) {
                     insertNewPoet = false;
                     mapPoets.insert(newPoet->_ID, newPoet->_ID);
-                    GanjoorCat poetCat = getCategory(newPoet->_CatID);
+                    GanjoorCat poetCat = getCategory(newPoet->_CatID, toConnectionID);
                     if (!poetCat.isNull()) {
                         if (poetCat._PoetID == newPoet->_ID) {
                             mapCats.insert(newPoet->_CatID, newPoet->_CatID);
                         }
                         else {
-                            int aRealyNewCatID = getNewCatID();
-                            mapCats.insert(newPoet->_CatID, getNewCatID());
+                            int aRealyNewCatID = getNewCatID(toConnectionID);
+                            mapCats.insert(newPoet->_CatID, getNewCatID(toConnectionID));
                             newPoet->_CatID = aRealyNewCatID;
                         }
                     }
@@ -945,18 +945,18 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
                 }
             }
             else {
-                if (!getPoet(newPoet->_ID).isNull()) { //conflict on IDs
-                    int aRealyNewPoetID = getNewPoetID();
+                if (!getPoet(newPoet->_ID, toConnectionID).isNull()) { //conflict on IDs
+                    int aRealyNewPoetID = getNewPoetID(toConnectionID);
                     mapPoets.insert(newPoet->_ID, aRealyNewPoetID);
                     newPoet->_ID = aRealyNewPoetID;
 
-                    int aRealyNewCatID = getNewCatID();
+                    int aRealyNewCatID = getNewCatID(toConnectionID);
                     mapCats.insert(newPoet->_CatID, aRealyNewCatID);
                     newPoet->_CatID = aRealyNewCatID;
                 }
                 else { //no conflict, insertNew
                     mapPoets.insert(newPoet->_ID, newPoet->_ID);
-                    GanjoorCat newPoetCat = getCategory(newPoet->_CatID);
+                    GanjoorCat newPoetCat = getCategory(newPoet->_CatID, toConnectionID);
                     if (newPoetCat.isNull()) {
                         mapCats.insert(newPoet->_CatID, newPoet->_CatID);
                     }
@@ -968,9 +968,9 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
                 }
             }
 
-            if (insertNewPoet && isConnected()) {
+            if (insertNewPoet && isConnected(toConnectionID)) {
                 strQuery = QString("INSERT INTO poet (id, name, cat_id, description) VALUES (%1, \"%2\", %3, \"%4\");").arg(newPoet->_ID).arg(newPoet->_Name).arg(newPoet->_CatID).arg(newPoet->_Description);
-                QSqlQuery q(database());
+                QSqlQuery q(database(toConnectionID));
                 q.exec(strQuery);
             }
         }
@@ -990,7 +990,7 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
             newCat->_ParentID = mapCats.value(newCat->_ParentID, newCat->_ParentID);
 
             bool insertNewCategory = true;
-            GanjoorCat gCat = getCategory(newCat->_ID);
+            GanjoorCat gCat = getCategory(newCat->_ID, toConnectionID);
             if (!gCat.isNull()) {
                 if (gCat._PoetID == newCat->_PoetID) {
                     insertNewCategory = false;
@@ -1011,9 +1011,9 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
                 }
             }
 
-            if (insertNewCategory && isConnected()) {
+            if (insertNewCategory && isConnected(toConnectionID)) {
                 strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id, url) VALUES (%1, %2, \"%3\", %4, \"%5\");").arg(newCat->_ID).arg(newCat->_PoetID).arg(newCat->_Text).arg(newCat->_ParentID).arg(newCat->_Url);
-                QSqlQuery q(database());
+                QSqlQuery q(database(toConnectionID));
                 q.exec(strQuery);
             }
 
@@ -1046,15 +1046,15 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
 
         foreach (GanjoorPoem* newPoem, poemList) {
             int tmp = newPoem->_ID;
-            if (!getPoem(newPoem->_ID).isNull()) {
+            if (!getPoem(newPoem->_ID, toConnectionID).isNull()) {
                 newPoem->_ID = getNewPoemID();
             }
             newPoem->_CatID = mapCats.value(newPoem->_CatID, newPoem->_CatID);
             dicPoemID.insert(tmp, newPoem->_ID);
 
-            if (isConnected()) {
+            if (isConnected(toConnectionID)) {
                 strQuery = QString("INSERT INTO poem (id, cat_id, title, url) VALUES (%1, %2, \"%3\", \"%4\");").arg(newPoem->_ID).arg(newPoem->_CatID).arg(newPoem->_Title).arg(newPoem->_Url);
-                QSqlQuery q(database());
+                QSqlQuery q(database(toConnectionID));
                 q.exec(strQuery);
             }
         }
@@ -1069,9 +1069,9 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
             verseList.append(gVerse);
         }
 
-        if (isConnected()) {
+        if (isConnected(toConnectionID)) {
             strQuery = "INSERT INTO verse (poem_id, vorder, position, text) VALUES (:poem_id,:vorder,:position,:text)";
-            QSqlQuery q(database());
+            QSqlQuery q(database(toConnectionID));
             q.prepare(strQuery);
 
             foreach (GanjoorVerse* newVerse, verseList) {
@@ -1087,13 +1087,13 @@ bool DatabaseBrowser::importDataBase(const QString fileName)
 
     QSqlDatabase::removeDatabase(connectionID);
 
-    emit databaseUpdated();
+    emit databaseUpdated(toConnectionID);
 
     return true;
 }
 
 bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID, const QStringList &phraseList, const QStringList &excludedList,
-        bool* Canceled, bool slowSearch)
+        bool* Canceled, bool slowSearch, const QString &connectionID)
 {
     if (phraseList.isEmpty()) {
         return false;
@@ -1165,12 +1165,14 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID,
     }
 
     if (taskTitle.isEmpty()) {
-        taskTitle = getPoet(PoetID)._Name;
+        taskTitle = getPoet(PoetID, connectionID)._Name;
     }
 
     taskTitle.prepend(tr("Search in: "));
 
     QVariantHash arguments;
+    // TODO: Add local database support to parallel search
+    VAR_ADD(arguments, connectionID);
     VAR_ADD(arguments, strQuery);
     VAR_ADD(arguments, PoetID);
     VAR_ADD(arguments, phraseList);
@@ -1386,12 +1388,12 @@ bool DatabaseBrowser::isRhyme(const QList<GanjoorVerse*> &verses, const QString 
     return false;
 }
 
-QVariantList DatabaseBrowser::importGanjoorBookmarks()
+QVariantList DatabaseBrowser::importGanjoorBookmarks(QString connectionID)
 {
     QVariantList lst;
-    if (isConnected()) {
+    if (isConnected(connectionID)) {
         QString selectQuery = QString("SELECT poem_id, verse_id FROM fav");
-        QSqlQuery q(database());
+        QSqlQuery q(database(connectionID));
         q.exec(selectQuery);
         QSqlRecord qrec;
         while (q.next()) {
@@ -1399,11 +1401,11 @@ QVariantList DatabaseBrowser::importGanjoorBookmarks()
             int poemID = qrec.value(0).toInt();
             int verseID = qrec.value(1).toInt();
             QString comment = QObject::tr("From Desktop Ganjoor");
-            GanjoorPoem poem = getPoem(poemID);
+            GanjoorPoem poem = getPoem(poemID, connectionID);
             if (verseID == -1) {
                 verseID = 1;
             }
-            QString verseText = getBeyt(poemID, verseID, "[newline]").simplified();
+            QString verseText = getBeyt(poemID, verseID, "[newline]", connectionID).simplified();
             verseText.replace("[newline]", "\n");
             verseText.prepend(poem._Title + "\n");
             QStringList data;
@@ -1414,11 +1416,11 @@ QVariantList DatabaseBrowser::importGanjoorBookmarks()
     return lst;
 }
 
-QString DatabaseBrowser::getBeyt(int poemID, int firstMesraID, const QString &separator)
+QString DatabaseBrowser::getBeyt(int poemID, int firstMesraID, const QString &separator, QString connectionID)
 {
     QStringList mesras;
-    if (isConnected()) {
-        QSqlQuery q(database());
+    if (isConnected(connectionID)) {
+        QSqlQuery q(database(connectionID));
         QString selectQuery = QString("SELECT vorder, position, text FROM verse WHERE poem_id = %1 and vorder >= %2 ORDER BY vorder LIMIT 2").arg(poemID).arg(firstMesraID);
         q.exec(selectQuery);
         QSqlRecord qrec;
@@ -1483,164 +1485,164 @@ bool DatabaseBrowser::poetHasSubCats(int poetID, const QString &connectionID)
     return false;
 }
 
-SearchResults DatabaseBrowser::startSearch(const QString &strQuery, const QSqlDatabase &db,
-        int PoetID, const QStringList &phraseList,
-        const QStringList &excludedList, const QStringList &excludeWhenCleaning,
-        bool* Canceled, bool slowSearch)
-{
-    SearchResults searchResults;
+//SearchResults DatabaseBrowser::startSearch(const QString &strQuery, const QSqlDatabase &db,
+//        int PoetID, const QStringList &phraseList,
+//        const QStringList &excludedList, const QStringList &excludeWhenCleaning,
+//        bool* Canceled, bool slowSearch)
+//{
+//    SearchResults searchResults;
 
-    if (!isConnected()) {
-        return searchResults;
-    }
+//    if (!isConnected()) {
+//        return searchResults;
+//    }
 
-    int andedPhraseCount = phraseList.size();
-    int excludedCount = excludedList.size();
-    int numOfFounded = 0;
+//    int andedPhraseCount = phraseList.size();
+//    int excludedCount = excludedList.size();
+//    int numOfFounded = 0;
 
-    QSqlQuery q(db);
-#ifdef SAAGHAR_DEBUG
-    int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
-#endif
-    q.exec(strQuery);
-#ifdef SAAGHAR_DEBUG
-    int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
-    int miliSec = end - start;
-    qDebug() << "duration=" << miliSec;
-#endif
-    int numOfNearResult = 0, nextStep = 0, stepLenght = 300;
-    if (slowSearch) {
-        stepLenght = 30;
-    }
+//    QSqlQuery q(db);
+//#ifdef SAAGHAR_DEBUG
+//    int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+//#endif
+//    q.exec(strQuery);
+//#ifdef SAAGHAR_DEBUG
+//    int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+//    int miliSec = end - start;
+//    qDebug() << "duration=" << miliSec;
+//#endif
+//    int numOfNearResult = 0, nextStep = 0, stepLenght = 300;
+//    if (slowSearch) {
+//        stepLenght = 30;
+//    }
 
-    int lastPoemID = -1;
-    QList<GanjoorVerse*> verses;
+//    int lastPoemID = -1;
+//    QList<GanjoorVerse*> verses;
 
-    while (q.next()) {
-        ++numOfNearResult;
-        if (numOfNearResult > nextStep) {
-            nextStep += stepLenght; //500
-            emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
-            QApplication::processEvents(QEventLoop::AllEvents);
-        }
+//    while (q.next()) {
+//        ++numOfNearResult;
+//        if (numOfNearResult > nextStep) {
+//            nextStep += stepLenght; //500
+//            emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
+//            QApplication::processEvents(QEventLoop::AllEvents);
+//        }
 
-        QSqlRecord qrec = q.record();
-        int poemID = qrec.value(0).toInt();
-//          if (idList.contains(poemID))
-//              continue;//we need just first result
+//        QSqlRecord qrec = q.record();
+//        int poemID = qrec.value(0).toInt();
+////          if (idList.contains(poemID))
+////              continue;//we need just first result
 
-        QString verseText = qrec.value(1).toString();
-        // assume title's order is zero!
-        int verseOrder = (PoetID == -1000 ? 0 : qrec.value(2).toInt());
+//        QString verseText = qrec.value(1).toString();
+//        // assume title's order is zero!
+//        int verseOrder = (PoetID == -1000 ? 0 : qrec.value(2).toInt());
 
-        QString foundedVerse = Tools::cleanStringFast(verseText, excludeWhenCleaning);
-        // for whole word option when word is in the start or end of verse
-        foundedVerse = " " + foundedVerse + " ";
+//        QString foundedVerse = Tools::cleanStringFast(verseText, excludeWhenCleaning);
+//        // for whole word option when word is in the start or end of verse
+//        foundedVerse = " " + foundedVerse + " ";
 
-        //excluded list
-        bool excludeCurrentVerse = false;
-        for (int t = 0; t < excludedCount; ++t) {
-            if (foundedVerse.contains(excludedList.at(t))) {
-                excludeCurrentVerse = true;
-                break;
-            }
-        }
+//        //excluded list
+//        bool excludeCurrentVerse = false;
+//        for (int t = 0; t < excludedCount; ++t) {
+//            if (foundedVerse.contains(excludedList.at(t))) {
+//                excludeCurrentVerse = true;
+//                break;
+//            }
+//        }
 
-        if (!excludeCurrentVerse) {
-            for (int t = 0; t < andedPhraseCount; ++t) {
-                QString tphrase = phraseList.at(t);
-                if (tphrase.contains("==")) {
-                    tphrase.remove("==");
-                    if (lastPoemID != poemID/* && findRhyme*/) {
-                        lastPoemID = poemID;
-                        int versesSize = verses.size();
-                        for (int j = 0; j < versesSize; ++j) {
-                            delete verses[j];
-                            verses[j] = 0;
-                        }
-                        verses = getVerses(poemID);
-                    }
-                    excludeCurrentVerse = !isRadif(verses, tphrase, verseOrder);
-                    break;
-                }
-                if (tphrase.contains("=")) {
-                    tphrase.remove("=");
-                    if (lastPoemID != poemID/* && findRhyme*/) {
-                        lastPoemID = poemID;
-                        int versesSize = verses.size();
-                        for (int j = 0; j < versesSize; ++j) {
-                            delete verses[j];
-                            verses[j] = 0;
-                        }
-                        verses = getVerses(poemID);
-                    }
-                    excludeCurrentVerse = !isRhyme(verses, tphrase, verseOrder);
-                    break;
-                }
-                if (!tphrase.contains("%")) {
-                    //QChar(71,6): Simple He
-                    //QChar(204,6): Persian Ye
-                    QString YeAsKasre = QString(QChar(71, 6)) + " ";
-                    if (tphrase.contains(YeAsKasre)) {
-                        tphrase.replace(YeAsKasre, QString(QChar(71, 6)) + "\\s*" + QString(QChar(204, 6)) +
-                                        "{0,2}\\s+");
+//        if (!excludeCurrentVerse) {
+//            for (int t = 0; t < andedPhraseCount; ++t) {
+//                QString tphrase = phraseList.at(t);
+//                if (tphrase.contains("==")) {
+//                    tphrase.remove("==");
+//                    if (lastPoemID != poemID/* && findRhyme*/) {
+//                        lastPoemID = poemID;
+//                        int versesSize = verses.size();
+//                        for (int j = 0; j < versesSize; ++j) {
+//                            delete verses[j];
+//                            verses[j] = 0;
+//                        }
+//                        verses = getVerses(poemID);
+//                    }
+//                    excludeCurrentVerse = !isRadif(verses, tphrase, verseOrder);
+//                    break;
+//                }
+//                if (tphrase.contains("=")) {
+//                    tphrase.remove("=");
+//                    if (lastPoemID != poemID/* && findRhyme*/) {
+//                        lastPoemID = poemID;
+//                        int versesSize = verses.size();
+//                        for (int j = 0; j < versesSize; ++j) {
+//                            delete verses[j];
+//                            verses[j] = 0;
+//                        }
+//                        verses = getVerses(poemID);
+//                    }
+//                    excludeCurrentVerse = !isRhyme(verses, tphrase, verseOrder);
+//                    break;
+//                }
+//                if (!tphrase.contains("%")) {
+//                    //QChar(71,6): Simple He
+//                    //QChar(204,6): Persian Ye
+//                    QString YeAsKasre = QString(QChar(71, 6)) + " ";
+//                    if (tphrase.contains(YeAsKasre)) {
+//                        tphrase.replace(YeAsKasre, QString(QChar(71, 6)) + "\\s*" + QString(QChar(204, 6)) +
+//                                        "{0,2}\\s+");
 
-                        QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
+//                        QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
 
-                        if (!anySearch.exactMatch(foundedVerse)) {
-                            excludeCurrentVerse = true;
-                            break;
-                        }
-                    }
-                    else {
-                        if (!foundedVerse.contains(tphrase))
-                            //the verse doesn't contain an ANDed phrase
-                            //maybe for ++ and +++ this should be removed
-                        {
-                            excludeCurrentVerse = true;
-                            break;
-                        }
-                    }
-                }
-                else {
-                    tphrase = tphrase.replace("%%", ".*");
-                    tphrase = tphrase.replace("%", "\\S*");
-                    QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
-                    if (!anySearch.exactMatch(foundedVerse)) {
-                        excludeCurrentVerse = true;
-                        break;
-                    }
-                }
-            }
-        }
+//                        if (!anySearch.exactMatch(foundedVerse)) {
+//                            excludeCurrentVerse = true;
+//                            break;
+//                        }
+//                    }
+//                    else {
+//                        if (!foundedVerse.contains(tphrase))
+//                            //the verse doesn't contain an ANDed phrase
+//                            //maybe for ++ and +++ this should be removed
+//                        {
+//                            excludeCurrentVerse = true;
+//                            break;
+//                        }
+//                    }
+//                }
+//                else {
+//                    tphrase = tphrase.replace("%%", ".*");
+//                    tphrase = tphrase.replace("%", "\\S*");
+//                    QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
+//                    if (!anySearch.exactMatch(foundedVerse)) {
+//                        excludeCurrentVerse = true;
+//                        break;
+//                    }
+//                }
+//            }
+//        }
 
-        if (Canceled && *Canceled) {
-            break;
-        }
+//        if (Canceled && *Canceled) {
+//            break;
+//        }
 
-        if (excludeCurrentVerse) {
-#ifdef Q_OS_X11
-            QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
-#endif
-            continue;
-        }
+//        if (excludeCurrentVerse) {
+//#ifdef Q_OS_X11
+//            QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
+//#endif
+//            continue;
+//        }
 
-        ++numOfFounded;
-        GanjoorPoem gPoem = getPoem(poemID);
-        searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + getPoetForCat(gPoem._CatID)._Name);
-#ifdef Q_OS_X11
-        QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
-#endif
+//        ++numOfFounded;
+//        GanjoorPoem gPoem = getPoem(poemID);
+//        searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + getPoetForCat(gPoem._CatID)._Name);
+//#ifdef Q_OS_X11
+//        QApplication::processEvents(QEventLoop::WaitForMoreEvents , 3);//max wait 3 miliseconds
+//#endif
 
-    }
+//    }
 
-    //for the last result
-    emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
+//    //for the last result
+//    emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
 
-    qDeleteAll(verses);
+//    qDeleteAll(verses);
 
-    return searchResults;
-}
+//    return searchResults;
+//}
 
 void DatabaseBrowser::addDataSets()
 {
@@ -1697,10 +1699,15 @@ QSqlDatabase DatabaseBrowser::databaseForThread(QThread* thread, const QString &
     return database(id);
 }
 
-int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
+int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath, const QString &connectionID)
 {
     int newPoetID = -1;
     int newCatID = -1;
+
+
+    if (!isConnected(connectionID)) {
+        return newCatID;
+    }
 
     for (int i = 0; i < catPath.size(); ++i) {
         GanjoorCat &cat = catPath[i];
@@ -1708,10 +1715,10 @@ int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
             if (i == 0) {
                 // new poet
                 if (newPoetID == -1) {
-                    newPoetID = getNewPoetID();
+                    newPoetID = getNewPoetID(connectionID);
                 }
                 if (newCatID == -1) {
-                    newCatID = getNewCatID();
+                    newCatID = getNewCatID(connectionID);
                 }
                 cat._ID = newCatID;
                 cat._ParentID = 0;
@@ -1722,7 +1729,7 @@ int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
 
                 QString strQuery = QString("INSERT INTO poet (id, name, cat_id) VALUES (%1, \"%2\", %3);")
                                    .arg(cat._PoetID).arg(cat._Text).arg(cat._ID);
-                QSqlQuery q(database());
+                QSqlQuery q(database(connectionID));
                 q.exec(strQuery);
 
                 strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id, url) VALUES (%1, %2, \"%3\", %4, \"%5\");")
@@ -1732,7 +1739,7 @@ int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
             }
             else {
                 if (newCatID == -1) {
-                    newCatID = getNewCatID();
+                    newCatID = getNewCatID(connectionID);
                 }
                 cat._ID = newCatID;
                 cat._ParentID = catPath.at(i - 1)._ID;
@@ -1742,7 +1749,7 @@ int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath)
 
                 QString strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id) VALUES (%1, %2, \"%3\", %4);")
                                    .arg(cat._ID).arg(cat._PoetID).arg(cat._Text).arg(cat._ParentID);
-                QSqlQuery q(database());
+                QSqlQuery q(database(connectionID));
                 q.exec(strQuery);
             }
         }
@@ -1764,9 +1771,9 @@ static void debugCatPath(const QList<GanjoorCat> &catPath, const QString &extra)
     qDebug() << extra << "@@@@@@@@ END @@@@@@@@@@\n";
 }
 
-void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<GanjoorCat> &catPath, bool storeAsGDB)
+void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<GanjoorCat> &catPath, bool storeAsGDB, const QString &toConnectionID)
 {
-    if (!isConnected() || catPath.isEmpty() || importData.isNull()) {
+    if (!isConnected(toConnectionID) || catPath.isEmpty() || importData.isNull()) {
         return;
     }
 
@@ -1774,7 +1781,7 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
         //
     }
 
-    QSqlDatabase dataBaseObject = database();
+    QSqlDatabase dataBaseObject = database(toConnectionID);
     bool inTransaction = dataBaseObject.transaction();
 
     QList<GanjoorCat> initCatPath = catPath;
@@ -1791,13 +1798,13 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
 //        void clear() { poems.clear(); verses.clear(); }
 //    };
     QString strQuery;
-    QSqlQuery qp(database());
+    QSqlQuery qp(database(toConnectionID));
 
-    QSqlQuery qv(database());
+    QSqlQuery qv(database(toConnectionID));
     QString verseQuery = "INSERT INTO verse (poem_id, vorder, position, text) VALUES (:poem_id,:vorder,:position,:text)";
     qv.prepare(verseQuery);
 
-    int newPoemId = getNewPoemID();
+    int newPoemId = getNewPoemID(toConnectionID);
     GanjoorCat topLevelCat = initCatPath.last();
     QHash<int, int> createdCatsIdMap;
     int catId;
@@ -1819,7 +1826,7 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
                     int parentId = cat._ParentID == -1 ? topLevelCat._ID : createdCatsIdMap.value(cat._ParentID);
 
                     if (newCatID == -1) {
-                        newCatID = getNewCatID();
+                        newCatID = getNewCatID(toConnectionID);
                     }
 
                     createdCatsIdMap.insert(cat._ID, newCatID);
@@ -1827,7 +1834,7 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
 
                     strQuery = QString("INSERT INTO cat (id, poet_id, text, parent_id) VALUES (%1, %2, \"%3\", %4);")
                                .arg(newCatID).arg(topLevelCat._PoetID).arg(cat._Text).arg(parentId);
-                    QSqlQuery q(database());
+                    QSqlQuery q(database(toConnectionID));
                     q.exec(strQuery);
 
                     ++newCatID;
@@ -1857,7 +1864,7 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
     }
 
     if (!inTransaction || dataBaseObject.commit()) {
-        emit databaseUpdated();
+        emit databaseUpdated(toConnectionID);
     }
     else {
         dataBaseObject.rollback();
