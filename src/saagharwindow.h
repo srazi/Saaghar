@@ -218,6 +218,8 @@ private slots:
 
 protected:
 //      void resizeEvent( QResizeEvent * event );
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dropEvent(QDropEvent* event);
     void closeEvent(QCloseEvent* event);
 #if QT_VERSION >= 0x050000
     void paintEvent(QPaintEvent* event);

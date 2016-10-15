@@ -205,6 +205,7 @@ void SaagharWidget::processClickedItem(QString type, int id, bool noError, bool 
 
 void SaagharWidget::navigateToPage(QString type, int id, bool noError)
 {
+    qDebug() << __FUNCTION__ << type << id;
     if (type == "PoemID" || type == "CatID") {
         clearSaagharWidget();
     }

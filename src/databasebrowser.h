@@ -57,6 +57,8 @@ public:
     static DatabaseBrowser* instance();
     ~DatabaseBrowser();
 
+    static QString getIdForDataBase(const QString &fileName, QThread* thread = 0);
+    static void removeDatabase(const QString &fileName, QThread* thread = 0);
     static QSqlDatabase database(const QString &connectionID = defaultConnectionId(), bool open = true);
 
     static QString defaultConnectionId();
@@ -138,8 +140,6 @@ private:
     // return the first id for creating new category
     int createCatPathOnNeed(QList<GanjoorCat> &catPath, const QString &connectionID = defaultConnectionId());
     void removeCatFromDataBase(const GanjoorCat &gCat, const QString &connectionID = defaultConnectionId());
-    static QString getIdForDataBase(const QString &fileName, QThread* thread = 0);
-    static void removeDatabase(const QString &fileName, QThread* thread = 0);
 
     static bool comparePoetsByName(GanjoorPoet* poet1, GanjoorPoet* poet2);
     static bool compareCategoriesByName(GanjoorCat* cat1, GanjoorCat* cat2);

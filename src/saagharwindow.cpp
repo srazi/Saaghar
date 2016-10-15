@@ -283,6 +283,8 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     connect(sApp->databaseBrowser(), SIGNAL(databaseUpdated(QString)), this, SLOT(onDatabaseUpdate(QString)));
 
+    setAcceptDrops(true);
+
     showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), -1);
 
 
@@ -2030,6 +2032,48 @@ void SaagharWindow::onDatabaseUpdate(const QString &connectionID)
     selectSearchRange->clear();
     multiSelectInsertItems(selectSearchRange);
     setHomeAsDirty();
+}
+#include <QMimeData>
+void SaagharWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+    const QMimeData* mime = event->mimeData();
+
+    if (mime->hasUrls()) {
+        foreach (const QUrl &url, mime->urls()) {
+            const QString path = url.toLocalFile();
+            const QString suffix = QFileInfo(path).suffix().toLower();
+            if (suffix == "gdb" || suffix == "s3db" || suffix == "sdb") {
+                event->acceptProposedAction();
+                return;
+            }
+        }
+    }
+
+    QMainWindow::dragEnterEvent(event);
+}
+
+void SaagharWindow::dropEvent(QDropEvent* event)
+{
+    const QMimeData* mime = event->mimeData();
+
+    if (!mime->hasUrls()) {
+        QMainWindow::dropEvent(event);
+        return;
+    }
+
+    foreach (const QUrl &url, mime->urls()) {
+        const QString path = url.toLocalFile();
+        const QString suffix = QFileInfo(path).suffix().toLower();
+        if (suffix == "gdb" || suffix == "s3db" || suffix == "sdb") {
+            QString connectionID = sApp->databaseBrowser()->getIdForDataBase(path);
+            if (!sApp->databaseBrowser()->isConnected(connectionID)) {
+                sApp->databaseBrowser()->removeDatabase(path);
+            }
+            else {
+                insertNewTab(SaagharViewerTab, QString(), -1, "CatID", true, true, connectionID);
+            }
+        }
+    }
 }
 
 QAction* SaagharWindow::actionInstance(const QString &actionObjectName, QString iconPath, QString displayName)
