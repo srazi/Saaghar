@@ -946,7 +946,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         // Updating table on changing of selection
         connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
         if (id != -1) {
-            saagharWidget->processClickedItem(type, id, noError, pushToStack);
+            saagharWidget->processClickedItem(type, id, noError, pushToStack, tabConnectionID);
         }
         tabGridLayout->addWidget(tabTableWidget, 0, 0, 1, 1);
         mainTabWidget->setUpdatesEnabled(false);
@@ -991,9 +991,9 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
     return tabContent;
 }
 
-void SaagharWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack)
+void SaagharWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack, const QString &connectionID)
 {
-    insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, type, noError, pushToStack);
+    insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, type, noError, pushToStack, connectionID);
     showStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(Tools::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":") + 1), "", 0, 6, false, Qt::ElideRight)));
 }
 
@@ -1008,6 +1008,10 @@ void SaagharWindow::updateCaption()
     mainTabWidget->setTabText(mainTabWidget->currentIndex(), newTabCaption);
     mainTabWidget->setTabToolTip(mainTabWidget->currentIndex(), "<p>" + sw->currentCaption + "</p>");
     setWindowTitle(QString(QChar(0x202B)) + tr("Saaghar: ") + sw->currentCaption + QString(QChar(0x202C)));
+
+    if (saagharWidget && saagharWidget->isLocalDataset()) {
+        mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), style()->standardIcon(QStyle::SP_DriveNetIcon));
+    }
 }
 
 void SaagharWindow::tableSelectChanged()
@@ -1415,21 +1419,27 @@ void SaagharWindow::actFullScreenClicked(bool checked)
     setUpdatesEnabled(true);
 }
 
-void SaagharWindow::openRandomPoem(int parentID, bool newPage)
+void SaagharWindow::openRandomPoem(int parentID, bool newPage, const QString &connectionID)
 {
+    QString theConnectionID = connectionID;
+    if (theConnectionID.isEmpty()) {
+        theConnectionID = DatabaseBrowser::defaultConnectionId();
+    }
+
     int actionData = parentID;
 
-    int PoemID = sApp->databaseBrowser()->getRandomPoemID(&actionData);
-    GanjoorPoem poem = sApp->databaseBrowser()->getPoem(PoemID);
+    int PoemID = sApp->databaseBrowser()->getRandomPoemID(&actionData, theConnectionID);
+    GanjoorPoem poem = sApp->databaseBrowser()->getPoem(PoemID, theConnectionID);
     if (!poem.isNull() && poem._CatID == actionData)
         if (newPage || !saagharWidget) {
-            newTabForItem(poem._ID, "PoemID", true);
+            newTabForItem(poem._ID, "PoemID", true, true, theConnectionID);
         }
         else {
-            saagharWidget->processClickedItem("PoemID", poem._ID, true);
+            saagharWidget->processClickedItem("PoemID", poem._ID, true, true, theConnectionID);
         }
     else {
-        openRandomPoem(parentID, newPage);    //not any random id exists, so repeat until finding a valid id
+        //not any random id exists, so repeat until finding a valid id
+        openRandomPoem(parentID, newPage, theConnectionID);
     }
 }
 
@@ -2673,6 +2683,7 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
         return;
     }
 
+    const QString connectionID = senderTable->property("CONNECTION_ID_PROPERTY").toString();
     //search data
     QStringList searchDataList = item->data(ITEM_SEARCH_DATA).toStringList();
     QString searchPhraseData;
@@ -2697,7 +2708,7 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
     //right click event
     if (pressedMouseButton == Qt::RightButton) {
         skipContextMenu = true;
-        newTabForItem(idData, itemData.at(0), noError);
+        newTabForItem(idData, itemData.at(0), noError, true, connectionID);
 
         saagharWidget->scrollToFirstItemContains(searchVerseData, false);
         SaagharItemDelegate* searchDelegate = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchPhraseData);
@@ -2720,10 +2731,10 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
             saagharWidget->pageMetaInfo.id != idData ||
             saagharWidget->pageMetaInfo.type != pageType) {
         if (!saagharWidget) {
-            insertNewTab(SaagharWindow::SaagharViewerTab, QString(), idData, itemData.at(0), noError);
+            insertNewTab(SaagharWindow::SaagharViewerTab, QString(), idData, itemData.at(0), noError, true, connectionID);
         }
         else {
-            saagharWidget->processClickedItem(itemData.at(0), idData, noError);
+            saagharWidget->processClickedItem(itemData.at(0), idData, noError, true, connectionID);
         }
     }
 
@@ -2747,14 +2758,14 @@ void SaagharWindow::highlightTextOnPoem(int poemId, int vorder)
     emit highlightedTextChanged(highlightedText);
 }
 
-void SaagharWindow::openPath(const QString &path)
+void SaagharWindow::openPath(const QString &path, const QString &connectionID)
 {
     QString SEPARATOR = QLatin1String("/");
     bool ok;
     QModelIndex ind = sApp->outlineModel()->index(path.split(SEPARATOR, QString::SkipEmptyParts), &ok);
 
     if (ok) {
-        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage);
+        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage, false, connectionID);
     }
 }
 
@@ -3132,12 +3143,14 @@ void SaagharWindow::namedActionTriggered(bool checked)
     }
     else if (actionName == "actionRandom") {
         int id = 0;
+        QString connectionID;
         const QStringList selectRandomRange = VAR("SaagharWindow/SelectedRandomRange").toStringList();
 
         if (selectRandomRange.contains("CURRENT_TAB_SUBSECTIONS")) {
             if (saagharWidget) {
+                connectionID = saagharWidget->connectionID();
                 if (saagharWidget->currentPoem != 0) {
-                    id = sApp->databaseBrowser()->getPoem(saagharWidget->currentPoem)._CatID;
+                    id = sApp->databaseBrowser()->getPoem(saagharWidget->currentPoem, connectionID)._CatID;
                 }
                 else {
                     id = saagharWidget->currentCat;
@@ -3160,7 +3173,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
             }
         }
 
-        openRandomPoem(id, VARB("SaagharWindow/RandomOpenNewTab"));
+        openRandomPoem(id, VARB("SaagharWindow/RandomOpenNewTab"), connectionID);
     }
     else if (actionName == "Registeration") {
 #if 0
@@ -3236,15 +3249,16 @@ void SaagharWindow::actionClosedTabsClicked()
     if (!action) {
         return;
     }
-    //QString tabType = action->data().toString();
-    QString type = action->data().toStringList().at(0);
-    int id = action->data().toStringList().at(1).toInt();
+
+    QStringList identifier = action->data().toStringList();
+    QString type = identifier.at(0);
+    int id = identifier.at(1).toInt();
 
     if ((type != "PoemID" && type != "CatID") || id < 0) {
-        newTabForItem(id, type, false);
+        newTabForItem(id, type, false, true, identifier.at(2));
     }
     else {
-        newTabForItem(id, type, true);
+        newTabForItem(id, type, true, true, identifier.at(2));
     }
 
     menuClosedTabs->removeAction(action);
@@ -3543,7 +3557,7 @@ void SaagharWindow::createCustomContextMenu(const QPoint &pos)
         insertNewTab();
     }
     else if (text == tr("Duplicate Tab")) {
-        newTabForItem(saagharWidget->pageMetaInfo.id, saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage ? "PoemID" : "CatID", true);
+        newTabForItem(saagharWidget->pageMetaInfo.id, saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage ? "PoemID" : "CatID", true, true, saagharWidget->connectionID());
     }
     else if (text == tr("Refresh")) {
         saagharWidget->refresh();
@@ -3559,17 +3573,17 @@ void SaagharWindow::onCurrentLocationChanged(const QStringList &locationList)
     m_breadCrumbBar->blockSignals(false);
 }
 
-void SaagharWindow::openParentPage(int parentID, bool newPage)
+void SaagharWindow::openParentPage(int parentID, bool newPage, const QString &connectionID)
 {
-    openPage(parentID, SaagharWidget::CategoryViewerPage, newPage);
+    openPage(parentID, SaagharWidget::CategoryViewerPage, newPage, connectionID);
 }
 
-void SaagharWindow::openChildPage(int childID, bool newPage)
+void SaagharWindow::openChildPage(int childID, bool newPage, const QString &connectionID)
 {
-    openPage(childID, SaagharWidget::PoemViewerPage, newPage);
+    openPage(childID, SaagharWidget::PoemViewerPage, newPage, connectionID);
 }
 
-void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
+void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage, const QString &connectionID)
 {
     if (!newPage) {
         for (int j = 0; j < mainTabWidget->count(); ++j) {
@@ -3585,10 +3599,10 @@ void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
 
     QString typeSTR = (type == SaagharWidget::CategoryViewerPage ? "CatID" : "PoemID");
     if (!saagharWidget || newPage) {
-        insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, typeSTR);
+        insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, typeSTR, true, true, connectionID);
     }
     else {
-        saagharWidget->processClickedItem(typeSTR, id, true);
+        saagharWidget->processClickedItem(typeSTR, id, true, true, connectionID);
     }
 }
 

@@ -183,12 +183,24 @@ void SaagharWidget::loadSettings()
     applyDefaultSectionsHeight();
 }
 
-void SaagharWidget::processClickedItem(QString type, int id, bool noError, bool pushToStack)
+void SaagharWidget::processClickedItem(QString type, int id, bool noError, bool pushToStack, const QString &connectionID)
 {
     if (!noError) {
         type = "CatID";
         id = 0;
     }
+
+    if (!connectionID.isEmpty() && m_connectionID != connectionID) {
+        undoStack->clear();
+        m_connectionID = connectionID;
+    }
+    else if (connectionID.isEmpty() && isLocalDataset()) {
+        undoStack->clear();
+        m_connectionID = DatabaseBrowser::defaultConnectionId();
+    }
+
+    tableViewWidget->setProperty("CONNECTION_ID_PROPERTY", m_connectionID);
+
     if ((type == identifier().at(0)) && (id == identifier().at(1).toInt())) {
         navigateToPage(type, id, true);    //refresh and don't push to stack
     }
@@ -205,7 +217,6 @@ void SaagharWidget::processClickedItem(QString type, int id, bool noError, bool 
 
 void SaagharWidget::navigateToPage(QString type, int id, bool noError)
 {
-    qDebug() << __FUNCTION__ << type << id;
     if (type == "PoemID" || type == "CatID") {
         clearSaagharWidget();
     }
@@ -308,6 +319,16 @@ QString SaagharWidget::highlightCell(int vorder)
     return text;
 }
 
+bool SaagharWidget::isLocalDataset() const
+{
+    return m_connectionID != DatabaseBrowser::defaultConnectionId();
+}
+
+QString SaagharWidget::connectionID() const
+{
+    return m_connectionID.isEmpty() ? DatabaseBrowser::defaultConnectionId() : m_connectionID;
+}
+
 void SaagharWidget::parentCatClicked()
 {
     parentCatButton = qobject_cast<QPushButton*>(sender());
@@ -324,12 +345,12 @@ void SaagharWidget::parentCatClicked()
     if (OK && sApp->databaseBrowser()) {
         noError = true;
     }
-    processClickedItem("CatID", idData, noError);
+    processClickedItem("CatID", idData, noError, true, m_connectionID);
 }
 
 void SaagharWidget::showHome()
 {
-    processClickedItem("CatID", 0, true);
+    processClickedItem("CatID", 0, true, true, m_connectionID);
 }
 
 bool SaagharWidget::nextPoem()
@@ -337,7 +358,7 @@ bool SaagharWidget::nextPoem()
     if (sApp->databaseBrowser()->isConnected(m_connectionID)) {
         GanjoorPoem poem = sApp->databaseBrowser()->getNextPoem(currentPoem, currentCat, m_connectionID);
         if (!poem.isNull()) {
-            processClickedItem("PoemID", poem._ID, true);
+            processClickedItem("PoemID", poem._ID, true, true, m_connectionID);
             return true;
         }
     }
@@ -349,7 +370,7 @@ bool SaagharWidget::previousPoem()
     if (sApp->databaseBrowser()->isConnected(m_connectionID)) {
         GanjoorPoem poem = sApp->databaseBrowser()->getPreviousPoem(currentPoem, currentCat, m_connectionID);
         if (!poem.isNull()) {
-            processClickedItem("PoemID", poem._ID, true);
+            processClickedItem("PoemID", poem._ID, true, true, m_connectionID);
             return true;
         }
     }
@@ -1696,16 +1717,18 @@ QStringList SaagharWidget::identifier()
         tabViewType << "CatID" << QString::number(currentCat);
     }
 
+    tabViewType << connectionID();
+
     return tabViewType;
 }
 
 void SaagharWidget::refresh()
 {
     if (currentPoem > 0) {
-        processClickedItem("PoemID", currentPoem, true);
+        processClickedItem("PoemID", currentPoem, true, true, m_connectionID);
     }
     else {
-        processClickedItem("CatID", currentCat, true);
+        processClickedItem("CatID", currentCat, true, true, m_connectionID);
     }
 }
 

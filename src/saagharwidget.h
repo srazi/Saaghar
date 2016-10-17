@@ -88,13 +88,16 @@ public:
     QString currentPageGanjoorUrl();
     void loadSettings();
     void showParentCategory(GanjoorCat category);
-    void processClickedItem(QString type, int id, bool error, bool pushToStack = true);
+    void processClickedItem(QString type, int id, bool error, bool pushToStack = true, const QString &connectionID = QString());
     void navigateToPage(QString type, int id, bool error);
 
     int currentVerticalPosition();
     void setVerticalPosition(int vPosition);
 
     QString highlightCell(int vorder);
+
+    bool isLocalDataset() const;
+    QString connectionID() const;
 
     int minMesraWidth;
 

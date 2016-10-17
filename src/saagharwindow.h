@@ -150,10 +150,10 @@ public slots:
     void highlightTextOnPoem(int poemId, int vorder);
 
 private slots:
-    void openPath(const QString &path);
-    void openParentPage(int parentID, bool newPage = false);
-    void openChildPage(int childID, bool newPage = false);
-    void openPage(int id, SaagharWidget::PageType type, bool newPage = false);
+    void openPath(const QString &path, const QString &connectionID = QString());
+    void openParentPage(int parentID, bool newPage = false, const QString &connectionID = QString());
+    void openChildPage(int childID, bool newPage = false, const QString &connectionID = QString());
+    void openPage(int id, SaagharWidget::PageType type, bool newPage = false, const QString &connectionID = QString());
     void createCustomContextMenu(const QPoint &pos);
     void onCurrentLocationChanged(const QStringList &locationList);
 
@@ -184,7 +184,7 @@ private slots:
     void actionExportAsPDFClicked();
     void actionExportClicked();
     void actionPrintClicked();
-    void openRandomPoem(int parentID, bool newPage = false);
+    void openRandomPoem(int parentID, bool newPage = false, const QString &connectionID = QString());
     void aboutSaaghar();
     void tableSelectChanged();
     void tableItemPress(QTableWidgetItem* item);
@@ -197,7 +197,7 @@ private slots:
     void tabCloser(int tabIndex);
     void showSettingsDialog();
     void applySettings();
-    void newTabForItem(int id, const QString &type = "CatID", bool noError = true, bool pushToStack = true);
+    void newTabForItem(int id, const QString &type = "CatID", bool noError = true, bool pushToStack = true, const QString &connectionID = QString());
     void updateCaption();
     void searchStart();
     //Navigation
