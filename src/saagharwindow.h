@@ -100,6 +100,8 @@ private:
     QIrBreadCrumbBar* m_breadCrumbBar;
     SaagharWidget* getSaagharWidget(int tabIndex);
     Qt::MouseButtons pressedMouseButton;
+
+    // empty connectionID means DatabaseBrowser::defaultConnectionId()
     QWidget* insertNewTab(TabType tabType = SaagharWindow::SaagharViewerTab, const QString &title = QString(),
                           int id = -1, const QString &type = "CatID", bool noError = true,
                           bool pushToStack = true, const QString &connectionID = QString());
@@ -150,9 +152,9 @@ public slots:
     void highlightTextOnPoem(int poemId, int vorder);
 
 private slots:
-    void openPath(const QString &path, const QString &connectionID = QString());
-    void openParentPage(int parentID, bool newPage = false, const QString &connectionID = QString());
-    void openChildPage(int childID, bool newPage = false, const QString &connectionID = QString());
+    void openPath(const QString &path);
+    void openParentPage(int parentID, bool newPage = false);
+    void openChildPage(int childID, bool newPage = false);
     void openPage(int id, SaagharWidget::PageType type, bool newPage = false, const QString &connectionID = QString());
     void createCustomContextMenu(const QPoint &pos);
     void onCurrentLocationChanged(const QStringList &locationList);
@@ -184,6 +186,7 @@ private slots:
     void actionExportAsPDFClicked();
     void actionExportClicked();
     void actionPrintClicked();
+    // empty connectionID means DatabaseBrowser::defaultConnectionId()
     void openRandomPoem(int parentID, bool newPage = false, const QString &connectionID = QString());
     void aboutSaaghar();
     void tableSelectChanged();

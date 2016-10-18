@@ -447,7 +447,7 @@ GanjoorPoem DatabaseBrowser::getNextPoem(int PoemID, int CatID, const QString &c
         q.first();
         if (q.isValid() && q.isActive()) {
             QSqlRecord qrec = q.record();
-            gPoem = getPoem((qrec.value(0)).toInt());
+            gPoem = getPoem(qrec.value(0).toInt(), connectionID);
             return gPoem;
         }
     }
@@ -469,7 +469,7 @@ GanjoorPoem DatabaseBrowser::getPreviousPoem(int PoemID, int CatID, const QStrin
         q.first();
         if (q.isValid() && q.isActive()) {
             QSqlRecord qrec = q.record();
-            gPoem = getPoem((qrec.value(0)).toInt());
+            gPoem = getPoem(qrec.value(0).toInt(), connectionID);
             return gPoem;
         }
     }
@@ -506,7 +506,7 @@ GanjoorPoet DatabaseBrowser::getPoetForCat(int CatID, const QString &connectionI
         q.first();
         if (q.isValid() && q.isActive()) {
             QSqlRecord qrec = q.record();
-            return getPoet((qrec.value(0)).toInt());
+            return getPoet(qrec.value(0).toInt(), connectionID);
         }
     }
     return gPoet;

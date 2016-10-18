@@ -88,6 +88,8 @@ public:
     QString currentPageGanjoorUrl();
     void loadSettings();
     void showParentCategory(GanjoorCat category);
+
+    // empty connectionID means the current m_connectionID
     void processClickedItem(QString type, int id, bool error, bool pushToStack = true, const QString &connectionID = QString());
     void navigateToPage(QString type, int id, bool error);
 

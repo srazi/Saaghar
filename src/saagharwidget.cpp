@@ -192,11 +192,9 @@ void SaagharWidget::processClickedItem(QString type, int id, bool noError, bool 
 
     if (!connectionID.isEmpty() && m_connectionID != connectionID) {
         undoStack->clear();
+        // don't push this changes to stack
+        pushToStack = false;
         m_connectionID = connectionID;
-    }
-    else if (connectionID.isEmpty() && isLocalDataset()) {
-        undoStack->clear();
-        m_connectionID = DatabaseBrowser::defaultConnectionId();
     }
 
     tableViewWidget->setProperty("CONNECTION_ID_PROPERTY", m_connectionID);
@@ -594,6 +592,8 @@ void SaagharWidget::showCategory(GanjoorCat category)
     tableViewWidget->setLayoutDirection(Qt::RightToLeft);
 
     int startRow = 0;
+    tableViewWidget->setIconSize(QSize(82, 100));
+
     if (currentCat == 0) {
         tableViewWidget->setIconSize(QSize(82, 100));
         bool customHome = true;
@@ -1139,7 +1139,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                     }
                 }
                 numItem->setFlags(numItemFlags);
-                if (SaagharWidget::bookmarks) {
+                if (SaagharWidget::bookmarks && !isLocalDataset()) {
                     QPixmap star(ICON_PATH + "/bookmark-on.png");
                     QPixmap starOff(ICON_PATH + "/bookmark-off.png");
                     star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
@@ -1169,7 +1169,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
             if (!numItem) {
                 numItem = new QTableWidgetItem("");
                 numItem->setFlags(numItemFlags);
-                if (SaagharWidget::bookmarks && verses.at(i)->_Position == Paragraph) {
+                if (SaagharWidget::bookmarks && verses.at(i)->_Position == Paragraph && !isLocalDataset()) {
                     QPixmap star(ICON_PATH + "/bookmark-on.png");
                     QPixmap starOff(ICON_PATH + "/bookmark-off.png");
                     star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);

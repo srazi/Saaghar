@@ -574,7 +574,7 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         if (saagharWidget->isDirty()) {
             saagharWidget->refresh();
         }
-        saagharWidget->showParentCategory(sApp->databaseBrowser()->getCategory(saagharWidget->currentCat));//just update parentCatsToolbar
+        saagharWidget->showParentCategory(sApp->databaseBrowser()->getCategory(saagharWidget->currentCat, saagharWidget->connectionID()));//just update parentCatsToolbar
         saagharWidget->resizeTable(saagharWidget->tableViewWidget);
 
         connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(QString)), saagharWidget, SLOT(scrollToFirstItemContains(QString)));
@@ -634,9 +634,8 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         undoGroup->setActiveStack(saagharWidget->undoStack);
         updateCaption();
         updateTabsSubMenus();
-
-        actionInstance("actionPreviousPoem")->setEnabled(!sApp->databaseBrowser()->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
-        actionInstance("actionNextPoem")->setEnabled(!sApp->databaseBrowser()->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
+        actionInstance("actionPreviousPoem")->setEnabled(!sApp->databaseBrowser()->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat, saagharWidget->connectionID()).isNull());
+        actionInstance("actionNextPoem")->setEnabled(!sApp->databaseBrowser()->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat, saagharWidget->connectionID()).isNull());
 
         loadAudioForCurrentTab(old_saagharWidget);
 
@@ -940,8 +939,8 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         //\Enable/Disable navigation actions
         connect(saagharWidget, SIGNAL(navPreviousActionState(bool)),    actionInstance("actionPreviousPoem"), SLOT(setEnabled(bool)));
         connect(saagharWidget, SIGNAL(navNextActionState(bool)),    actionInstance("actionNextPoem"), SLOT(setEnabled(bool)));
-        actionInstance("actionPreviousPoem")->setEnabled(!sApp->databaseBrowser()->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
-        actionInstance("actionNextPoem")->setEnabled(!sApp->databaseBrowser()->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
+        actionInstance("actionPreviousPoem")->setEnabled(!sApp->databaseBrowser()->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat, saagharWidget->connectionID()).isNull());
+        actionInstance("actionNextPoem")->setEnabled(!sApp->databaseBrowser()->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat, saagharWidget->connectionID()).isNull());
 
         // Updating table on changing of selection
         connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
@@ -1009,8 +1008,13 @@ void SaagharWindow::updateCaption()
     mainTabWidget->setTabToolTip(mainTabWidget->currentIndex(), "<p>" + sw->currentCaption + "</p>");
     setWindowTitle(QString(QChar(0x202B)) + tr("Saaghar: ") + sw->currentCaption + QString(QChar(0x202C)));
 
-    if (saagharWidget && saagharWidget->isLocalDataset()) {
-        mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), style()->standardIcon(QStyle::SP_DriveNetIcon));
+    if (saagharWidget) {
+        if (saagharWidget->isLocalDataset()) {
+            mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), style()->standardIcon(QStyle::SP_DriveHDIcon));
+        }
+        else {
+            mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), QIcon());
+        }
     }
 }
 
@@ -2409,7 +2413,7 @@ void SaagharWindow::saveSettings()
     QStringList openedTabs;
     for (int i = 0; i < mainTabWidget->count(); ++i) {
         SaagharWidget* tmp = getSaagharWidget(i);
-        if (tmp) {
+        if (tmp && !tmp->isLocalDataset()) {
             QString tabViewType;
             if (tmp->currentPoem > 0) {
                 tabViewType = "PoemID=" + QString::number(tmp->currentPoem);
@@ -2683,7 +2687,10 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
         return;
     }
 
-    const QString connectionID = senderTable->property("CONNECTION_ID_PROPERTY").toString();
+    QString connectionID = senderTable->property("CONNECTION_ID_PROPERTY").toString();
+    if (connectionID.isEmpty()) {
+        connectionID = DatabaseBrowser::defaultConnectionId();
+    }
     //search data
     QStringList searchDataList = item->data(ITEM_SEARCH_DATA).toStringList();
     QString searchPhraseData;
@@ -2758,14 +2765,14 @@ void SaagharWindow::highlightTextOnPoem(int poemId, int vorder)
     emit highlightedTextChanged(highlightedText);
 }
 
-void SaagharWindow::openPath(const QString &path, const QString &connectionID)
+void SaagharWindow::openPath(const QString &path)
 {
     QString SEPARATOR = QLatin1String("/");
     bool ok;
     QModelIndex ind = sApp->outlineModel()->index(path.split(SEPARATOR, QString::SkipEmptyParts), &ok);
 
     if (ok) {
-        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage, false, connectionID);
+        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage, false);
     }
 }
 
@@ -3143,7 +3150,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
     }
     else if (actionName == "actionRandom") {
         int id = 0;
-        QString connectionID;
+        QString connectionID = DatabaseBrowser::defaultConnectionId();
         const QStringList selectRandomRange = VAR("SaagharWindow/SelectedRandomRange").toStringList();
 
         if (selectRandomRange.contains("CURRENT_TAB_SUBSECTIONS")) {
@@ -3573,14 +3580,14 @@ void SaagharWindow::onCurrentLocationChanged(const QStringList &locationList)
     m_breadCrumbBar->blockSignals(false);
 }
 
-void SaagharWindow::openParentPage(int parentID, bool newPage, const QString &connectionID)
+void SaagharWindow::openParentPage(int parentID, bool newPage)
 {
-    openPage(parentID, SaagharWidget::CategoryViewerPage, newPage, connectionID);
+    openPage(parentID, SaagharWidget::CategoryViewerPage, newPage, DatabaseBrowser::defaultConnectionId());
 }
 
-void SaagharWindow::openChildPage(int childID, bool newPage, const QString &connectionID)
+void SaagharWindow::openChildPage(int childID, bool newPage)
 {
-    openPage(childID, SaagharWidget::PoemViewerPage, newPage, connectionID);
+    openPage(childID, SaagharWidget::PoemViewerPage, newPage, DatabaseBrowser::defaultConnectionId());
 }
 
 void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage, const QString &connectionID)
