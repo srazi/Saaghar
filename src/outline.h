@@ -59,6 +59,7 @@ public:
     void refreshTree();
     void setTreeFont(const QFont &font);
     void setTreeColor(const QColor &color);
+    void setConnectionID(const QString &connectionID);
 
 private slots:
     bool filterItems(const QString &str = QString(), const QModelIndex &parent = QModelIndex());
@@ -71,6 +72,8 @@ private slots:
 private:
     QTreeView* m_outlineView;
     Qt::MouseButtons pressedMouseButton;
+
+    QString m_connectionID;
 
 signals:
     void openParentRequested(int);

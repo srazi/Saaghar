@@ -574,6 +574,9 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         if (saagharWidget->isDirty()) {
             saagharWidget->refresh();
         }
+        // TODO: outline navigation doesn't support connectionID
+//        outlineTree->setConnectionID(saagharWidget->connectionID());
+//        outlineTree->refreshTree();
         saagharWidget->showParentCategory(sApp->databaseBrowser()->getCategory(saagharWidget->currentCat, saagharWidget->connectionID()));//just update parentCatsToolbar
         saagharWidget->resizeTable(saagharWidget->tableViewWidget);
 
