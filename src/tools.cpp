@@ -429,11 +429,13 @@ int Tools::getRandomNumber(int minBound, int maxBound)
 
 int Tools::prefaceIDFromVersion(const QString &version)
 {
+    const int lastPrefaceID = 1000007;
+
     if (version == QLatin1String("3.0.0")) {
         return 1000007;
     }
 
-    return -1;
+    return lastPrefaceID;
 }
 
 void Tools::setSplashScreen(QObject* splash)

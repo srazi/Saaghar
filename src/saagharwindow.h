@@ -159,7 +159,7 @@ private slots:
     void openPath(const QString &path);
     void openParentPage(int parentID, bool newPage = false);
     void openChildPage(int childID, bool newPage = false);
-    void openPage(int id, SaagharWidget::PageType type, bool newPage = false, const QString &connectionID = QString());
+    void openPage(int id, SaagharWidget::PageType type, bool newPage = false, const QString &connectionID = QString(), bool firstSearchOpenedTabs = true);
     void createCustomContextMenu(const QPoint &pos);
     void onCurrentLocationChanged(const QStringList &locationList, const QString &connectionID = QString());
 

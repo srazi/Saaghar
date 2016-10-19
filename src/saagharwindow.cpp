@@ -2395,7 +2395,7 @@ void SaagharWindow::showPreface(int prefaceID)
 
     const QString prefaceConnectionID = DatabaseBrowser::getIdForDataBase(preface.canonicalFilePath());
 
-    openPage(prefaceID, SaagharWidget::PoemViewerPage, false, prefaceConnectionID);
+    openPage(prefaceID, SaagharWidget::PoemViewerPage, true, prefaceConnectionID, true);
 
     if (VARI("General/LastShownPrefaceID") < prefaceID) {
         VAR_DECL("General/LastShownPrefaceID", prefaceID);
@@ -2804,7 +2804,7 @@ void SaagharWindow::openPath(const QString &path)
     QModelIndex ind = sApp->outlineModel(m_breadCrumbSaagharModel->connectionID())->index(path.split(SEPARATOR, QString::SkipEmptyParts), &ok);
 
     if (ok) {
-        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage, false, m_breadCrumbSaagharModel->connectionID());
+        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage, false, m_breadCrumbSaagharModel->connectionID(), false);
     }
 }
 
@@ -3626,9 +3626,9 @@ void SaagharWindow::openChildPage(int childID, bool newPage)
     openPage(childID, SaagharWidget::PoemViewerPage, newPage, DatabaseBrowser::defaultConnectionId());
 }
 
-void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage, const QString &connectionID)
+void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage, const QString &connectionID, bool firstSearchOpenedTabs)
 {
-    if (!newPage) {
+    if (firstSearchOpenedTabs) {
         for (int j = 0; j < mainTabWidget->count(); ++j) {
             SaagharWidget* tmp = getSaagharWidget(j);
 
