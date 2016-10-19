@@ -57,6 +57,7 @@ public:
     static DatabaseBrowser* instance();
     ~DatabaseBrowser();
 
+    static QString databaseFileFromID(const QString &connectionID);
     static QString getIdForDataBase(const QString &fileName, QThread* thread = 0);
     static void removeDatabase(const QString &fileName, QThread* thread = 0);
     static QSqlDatabase database(const QString &connectionID = defaultConnectionId(), bool open = true);

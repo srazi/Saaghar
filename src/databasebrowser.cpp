@@ -188,6 +188,11 @@ DatabaseBrowser::~DatabaseBrowser()
 {
 }
 
+QString DatabaseBrowser::databaseFileFromID(const QString &connectionID)
+{
+    return connectionID.left(connectionID.lastIndexOf(QLatin1String("/thread:")));
+}
+
 DatabaseBrowser* DatabaseBrowser::instance()
 {
     if (!s_instance) {
@@ -812,9 +817,7 @@ QString DatabaseBrowser::defaultConnectionId()
         }
     }
 
-    const QString &id = s_defaultConnectionId.left(s_defaultConnectionId.lastIndexOf(QLatin1String("/thread:")));
-
-    return getIdForDataBase(id, QThread::currentThread());
+    return getIdForDataBase(databaseFileFromID(s_defaultConnectionId), QThread::currentThread());
 }
 
 int DatabaseBrowser::getNewPoetID(const QString &connectionID)
@@ -1693,10 +1696,7 @@ bool DatabaseBrowser::createEmptyDataBase(const QString &connectionID)
 
 QSqlDatabase DatabaseBrowser::databaseForThread(QThread* thread, const QString &baseConnectionID)
 {
-    QString id = baseConnectionID.left(baseConnectionID.lastIndexOf(QLatin1String("/thread:")));
-    id = getIdForDataBase(id, thread);
-
-    return database(id);
+    return database(getIdForDataBase(databaseFileFromID(baseConnectionID), thread));
 }
 
 int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath, const QString &connectionID)

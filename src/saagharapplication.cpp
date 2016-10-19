@@ -80,7 +80,6 @@ SaagharApplication::SaagharApplication(int &argc, char** argv)
       m_tasksThreadPool(0),
       m_databaseBrowser(0),
       m_settingsManager(0),
-      m_outlineModel(0),
       m_tasksThreads(NORMAL_TASKS_THREADS),
       m_displayFullNotification(true),
       m_notificationPosition(ProgressManager::DesktopBottomRight),
@@ -168,13 +167,21 @@ SettingsManager* SaagharApplication::settingsManager()
     return m_settingsManager;
 }
 
-OutlineModel* SaagharApplication::outlineModel()
+OutlineModel* SaagharApplication::outlineModel(const QString &connectionID)
 {
-    if (!m_outlineModel) {
-        m_outlineModel = OutlineModel::instance();
+    // Maybe filename instead connectionID
+    QString theConnectionID = connectionID;
+    if (theConnectionID.isEmpty()) {
+        theConnectionID = DatabaseBrowser::defaultConnectionId();
     }
 
-    return m_outlineModel;
+    OutlineModel* model = m_outlineModels.value(theConnectionID, 0);
+    if (!model) {
+        model = new OutlineModel(theConnectionID, sApp);
+        m_outlineModels.insert(theConnectionID, model);
+    }
+
+    return model;
 }
 
 void SaagharApplication::setPriority(QThread* thread)
