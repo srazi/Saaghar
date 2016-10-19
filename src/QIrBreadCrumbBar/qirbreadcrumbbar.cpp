@@ -786,7 +786,7 @@ void QIrBreadCrumbBarUi::init()
     QIR_W(QIrBreadCrumbBar);
 
     comboBox = new QIrBreadCrumbComboBox(w);
-    w->setModel(new BreadCrumbSaagharModel);
+    w->setModel(new QIrDefaultBreadCrumbModel);
     w->setLocation(QString());
     comboBox->showBreadCrumbs(false);
     w->setSizePolicy(comboBox->sizePolicy());

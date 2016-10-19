@@ -272,6 +272,28 @@ protected:
     void init();
 };
 
+class QIRONSHARED_EXPORT QIrDefaultBreadCrumbModel : public QIrAbstractBreadCrumbModel
+{
+public:
+    QIrDefaultBreadCrumbModel() {}
+    virtual ~QIrDefaultBreadCrumbModel() {}
+
+    virtual QString defaultPath() const { return QString(); }
+    virtual QString cleanPath(const QString &) const { return QString(); }
+
+    virtual bool isValid(const QString &path) const { return false; }
+    virtual QIrBreadCrumbModelNodeList splitPath(const QString &path) const { return QIrBreadCrumbModelNodeList(); }
+
+    virtual QIcon icon(const QIrBreadCrumbModelNode &) const { return QIcon(); }
+    virtual QString label(const QIrBreadCrumbModelNode &) const { return QString(); }
+
+    virtual QMimeData* mimeData(const QIrBreadCrumbModelNode &) const { return 0; }
+
+    virtual QMenu* buildMenu(const QIrBreadCrumbModelNode &) { return 0; }
+
+    virtual bool supportsMenuNavigation() const { return false; }
+};
+
 QIR_END_NAMESPACE
 
 #endif // QIRBREADCRUMBBAR_UI_H
