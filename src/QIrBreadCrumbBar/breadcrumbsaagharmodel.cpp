@@ -74,7 +74,15 @@ QString BreadCrumbSaagharModel::cleanPath(const QString &path) const
 
 bool BreadCrumbSaagharModel::isValid(const QString &path) const
 {
-    return sApp->outlineModel()->isPathValid(pathSections(cleanPath(path)));;
+    bool valid = sApp->outlineModel(m_connectionID)->isPathValid(pathSections(cleanPath(path)));
+    if (!valid && m_connectionID != DatabaseBrowser::defaultConnectionId()) {
+        valid = sApp->outlineModel()->isPathValid(pathSections(cleanPath(path)));
+        if (valid) {
+            setConnectionID(DatabaseBrowser::defaultConnectionId());
+        }
+    }
+
+    return valid;
 }
 
 QIrBreadCrumbModelNodeList BreadCrumbSaagharModel::splitPath(const QString &path) const
