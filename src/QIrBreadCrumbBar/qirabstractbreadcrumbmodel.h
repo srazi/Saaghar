@@ -116,12 +116,13 @@ public:
     virtual bool supportsMenuNavigation() const = 0;
 
 protected:
-    void setItemModel(QAbstractItemModel*);
+    void setItemModel(QAbstractItemModel*) const;
 
 private:
-    QAbstractItemModel* m_model;
+    mutable QAbstractItemModel* m_model;
     Filters m_filter;
 };
+
 Q_DECLARE_OPERATORS_FOR_FLAGS(QIrAbstractBreadCrumbModel::Filters)
 
 QIR_END_NAMESPACE

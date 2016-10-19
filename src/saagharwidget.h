@@ -190,6 +190,6 @@ signals:
     void navPreviousActionState(bool);
     void loadingStatusText(const QString &, int num = 0);
     void createContextMenuRequested(const QPoint &);
-    void currentLocationChanged(const QStringList &);
+    void currentLocationChanged(const QStringList &, const QString &);
 };
 #endif // SAAGHARWIDGET_H

@@ -899,7 +899,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
     currentCat = !category.isNull() ? category._ID : 0;
     currentParentID = !category.isNull() ? category._ParentID : 0;
 
-    emit currentLocationChanged(currentLocationList);
+    emit currentLocationChanged(currentLocationList, m_connectionID);
 }
 #include<QTime>
 void SaagharWidget::showPoem(GanjoorPoem poem)

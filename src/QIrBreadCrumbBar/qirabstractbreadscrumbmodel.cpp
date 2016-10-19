@@ -76,7 +76,7 @@ void QIrAbstractBreadCrumbModel::setFilter(Filters filter)
 {
     m_filter = filter == 0 ? Containers : filter;
 }
-void QIrAbstractBreadCrumbModel::setItemModel(QAbstractItemModel* model)
+void QIrAbstractBreadCrumbModel::setItemModel(QAbstractItemModel* model) const
 {
     if (!model || m_model == model) {
         return;

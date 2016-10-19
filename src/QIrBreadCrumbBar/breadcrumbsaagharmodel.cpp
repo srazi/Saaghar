@@ -35,9 +35,23 @@ QIR_BEGIN_NAMESPACE
 
 const static QString SEPARATOR = QLatin1String("/");
 
-BreadCrumbSaagharModel::BreadCrumbSaagharModel()
+BreadCrumbSaagharModel::BreadCrumbSaagharModel(const QString &connectionID)
+    : m_connectionID(connectionID)
 {
-    setItemModel(sApp->outlineModel());
+    setItemModel(sApp->outlineModel(m_connectionID));
+}
+
+QString BreadCrumbSaagharModel::connectionID() const
+{
+    return m_connectionID;
+}
+
+void BreadCrumbSaagharModel::setConnectionID(const QString &connectionID) const
+{
+    if (!connectionID.isEmpty() && connectionID != m_connectionID) {
+        m_connectionID = connectionID;
+        setItemModel(sApp->outlineModel(m_connectionID));
+    }
 }
 
 QString BreadCrumbSaagharModel::defaultPath() const
@@ -126,11 +140,11 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
     const QStringList sections = pathSections(node.path());
 
     if (node.type() != QIrBreadCrumbModelNode::Global) {
-        QModelIndex parent = sApp->outlineModel()->index(sections);
-        int count = sApp->outlineModel()->rowCount(parent);
+        QModelIndex parent = sApp->outlineModel(m_connectionID)->index(sections);
+        int count = sApp->outlineModel(m_connectionID)->rowCount(parent);
 
         for (int i = 0; i < count; ++i) {
-            index = sApp->outlineModel()->index(i, 0, parent);
+            index = sApp->outlineModel(m_connectionID)->index(i, 0, parent);
             if (index.isValid()) {
                 const QString title = index.data().toString();
                 const QString childPath = cleanedPath + SEPARATOR + title;
@@ -198,8 +212,8 @@ QIrBreadCrumbModelNode::Type BreadCrumbSaagharModel::pathNodeType(const QStringL
     }
     else {
         bool ok;
-        const QModelIndex ind = sApp->outlineModel()->index(sections, &ok);
-        if (ok && sApp->outlineModel()->rowCount(ind) > 0) {
+        const QModelIndex ind = sApp->outlineModel(m_connectionID)->index(sections, &ok);
+        if (ok && sApp->outlineModel(m_connectionID)->rowCount(ind) > 0) {
             return QIrBreadCrumbModelNode::Container;
         }
         else {

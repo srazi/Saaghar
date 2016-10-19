@@ -176,7 +176,8 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     // create Bread Crumb ToolBar
     m_breadCrumbBar = new QIrBreadCrumbBar(this);
     m_breadCrumbBar->setSubStyle(new QIrStyledBreadCrumbBarStyle);
-    m_breadCrumbBar->setModel(new BreadCrumbSaagharModel);
+    m_breadCrumbSaagharModel = new BreadCrumbSaagharModel(DatabaseBrowser::defaultConnectionId());
+    m_breadCrumbBar->setModel(m_breadCrumbSaagharModel);
     m_breadCrumbBar->setMinimumWidth(300);
     m_breadCrumbBar->setSizePolicy(QSizePolicy::Expanding, m_breadCrumbBar->sizePolicy().verticalPolicy());
     connect(m_breadCrumbBar, SIGNAL(locationChanged(QString)), this, SLOT(openPath(QString)));
@@ -927,7 +928,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         connect(saagharWidget, SIGNAL(loadingStatusText(QString,int)), this, SLOT(showStatusText(QString,int)));
 
         connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateCaption()));
-        connect(saagharWidget, SIGNAL(currentLocationChanged(QStringList)), this, SLOT(onCurrentLocationChanged(QStringList)));
+        connect(saagharWidget, SIGNAL(currentLocationChanged(QStringList,QString)), this, SLOT(onCurrentLocationChanged(QStringList,QString)));
         //temp
         connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateTabsSubMenus()));
 
@@ -2772,10 +2773,10 @@ void SaagharWindow::openPath(const QString &path)
 {
     QString SEPARATOR = QLatin1String("/");
     bool ok;
-    QModelIndex ind = sApp->outlineModel()->index(path.split(SEPARATOR, QString::SkipEmptyParts), &ok);
+    QModelIndex ind = sApp->outlineModel(m_breadCrumbSaagharModel->connectionID())->index(path.split(SEPARATOR, QString::SkipEmptyParts), &ok);
 
     if (ok) {
-        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage, false);
+        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage, false, m_breadCrumbSaagharModel->connectionID());
     }
 }
 
@@ -3574,11 +3575,12 @@ void SaagharWindow::createCustomContextMenu(const QPoint &pos)
     }
 }
 
-void SaagharWindow::onCurrentLocationChanged(const QStringList &locationList)
+void SaagharWindow::onCurrentLocationChanged(const QStringList &locationList, const QString &connectionID)
 {
     const QString SEPARATOR = QLatin1String("/");
 
     m_breadCrumbBar->blockSignals(true);
+    m_breadCrumbSaagharModel->setConnectionID(connectionID);
     m_breadCrumbBar->setLocation(locationList.join(SEPARATOR));
     m_breadCrumbBar->blockSignals(false);
 }

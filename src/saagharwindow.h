@@ -37,6 +37,7 @@ class OutlineTree;
 class Settings;
 class TabWidget;
 class QIrBreadCrumbBar;
+class BreadCrumbSaagharModel;
 class AudioRepoDownloader;
 
 namespace Ui
@@ -98,6 +99,7 @@ private:
     QToolBar* parentCatsToolBar;
     QToolBar* m_breadCrumbToolBar;
     QIrBreadCrumbBar* m_breadCrumbBar;
+    BreadCrumbSaagharModel* m_breadCrumbSaagharModel;
     SaagharWidget* getSaagharWidget(int tabIndex);
     Qt::MouseButtons pressedMouseButton;
 
@@ -157,7 +159,7 @@ private slots:
     void openChildPage(int childID, bool newPage = false);
     void openPage(int id, SaagharWidget::PageType type, bool newPage = false, const QString &connectionID = QString());
     void createCustomContextMenu(const QPoint &pos);
-    void onCurrentLocationChanged(const QStringList &locationList);
+    void onCurrentLocationChanged(const QStringList &locationList, const QString &connectionID = QString());
 
 #ifdef MEDIA_PLAYER
     void mediaInfoChanged(const QString &fileName, const QString &title = "", int id = -1);
