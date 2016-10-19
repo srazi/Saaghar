@@ -312,6 +312,7 @@ void SaagharApplication::setupInitialValues()
     VAR_INIT("General/DisplaySplashScreen", true);
     VAR_INIT("General/UILanguage", LS("fa"));
     VAR_INIT("General/AutoCheckUpdates", true);
+    VAR_INIT("General/LastShownPrefaceID", 0);
 
     VAR_INIT("DatabaseBrowser/RepositoriesList", QVariant());
     VAR_INIT("DatabaseBrowser/KeepDownloadedFile", false);

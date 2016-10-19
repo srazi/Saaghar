@@ -292,6 +292,10 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     if (VARB("General/AutoCheckUpdates") && !fresh) {
         QTimer::singleShot(10000, this, SLOT(checkForUpdates()));
     }
+
+    if (VARI("General/LastShownPrefaceID") < Tools::prefaceIDFromVersion(SAAGHAR_VERSION)) {
+        showPreface(Tools::prefaceIDFromVersion(SAAGHAR_VERSION));
+    }
 }
 
 SaagharWindow::~SaagharWindow()
@@ -1758,6 +1762,8 @@ void SaagharWindow::setupUi()
     actionInstance("Registeration", ICON_PATH + "/registeration.png", QObject::tr("&Registeration..."));
 #endif
 
+    actionInstance("actionPreface", ICON_PATH + "/show-preface.png", tr("&Show Preface..."));
+
     //Inserting main menu items
     ui->menuBar->addMenu(menuFile);
     ui->menuBar->addMenu(menuNavigation);
@@ -1880,6 +1886,7 @@ void SaagharWindow::setupUi()
     menuTools->addAction(actionInstance("actionSettings"));
 
     menuHelp->addAction(actionInstance("actionHelpContents"));
+    menuHelp->addAction(actionInstance("actionPreface"));
     menuHelp->addSeparator();
     menuHelp->addAction(actionInstance("actionCheckUpdates"));
 #if 0
@@ -1955,6 +1962,8 @@ QMenu* SaagharWindow::cornerMenu()
 #if 0
         m_cornerMenu->addAction(actionInstance("Registeration"));
 #endif
+
+        m_cornerMenu->addAction(actionInstance("actionPreface"));
         m_cornerMenu->addAction(actionInstance("actionAboutSaaghar"));
         m_cornerMenu->addSeparator();
         m_cornerMenu->addAction(actionInstance("actionExit"));
@@ -2372,6 +2381,25 @@ void SaagharWindow::loadTabWidgetSettings()
 
     outlineTree->setTreeFont(VAR("SaagharWidget/Fonts/OutLine").value<QFont>());
     outlineTree->setTreeColor(VAR("SaagharWidget/Colors/OutLine").value<QColor>());
+}
+
+void SaagharWindow::showPreface(int prefaceID)
+{
+
+    QFileInfo preface(sApp->defaultPath(SaagharApplication::ResourcesDir) + QLatin1String("/saaghar_preface.gdb"));
+
+    if (!preface.exists()) {
+        QMessageBox::warning(this, tr("Error"), tr("File not found!"));
+        return;
+    }
+
+    const QString prefaceConnectionID = DatabaseBrowser::getIdForDataBase(preface.canonicalFilePath());
+
+    openPage(prefaceID, SaagharWidget::PoemViewerPage, false, prefaceConnectionID);
+
+    if (VARI("General/LastShownPrefaceID") < prefaceID) {
+        VAR_DECL("General/LastShownPrefaceID", prefaceID);
+    }
 }
 
 void SaagharWindow::saveSettings()
@@ -3227,6 +3255,9 @@ void SaagharWindow::namedActionTriggered(bool checked)
         else {
             m_bookmarkManagerDock->hide();
         }
+    }
+    else if (actionName == "actionPreface") {
+        showPreface(Tools::prefaceIDFromVersion(SAAGHAR_VERSION));
     }
 
     connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));

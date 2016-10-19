@@ -427,6 +427,15 @@ int Tools::getRandomNumber(int minBound, int maxBound)
     return (int)(rand * (maxBound - minBound + 1) + minBound);
 }
 
+int Tools::prefaceIDFromVersion(const QString &version)
+{
+    if (version == QLatin1String("3.0.0")) {
+        return 1000007;
+    }
+
+    return -1;
+}
+
 void Tools::setSplashScreen(QObject* splash)
 {
     s_splashScreen = splash;

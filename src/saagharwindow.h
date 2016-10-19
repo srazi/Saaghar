@@ -95,6 +95,8 @@ private:
     TabWidget* mainTabWidget;
     void loadTabWidgetSettings();
 
+    void showPreface(int prefaceID);
+
     bool processTextChanged;
     QToolBar* parentCatsToolBar;
     QToolBar* m_breadCrumbToolBar;

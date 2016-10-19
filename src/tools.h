@@ -43,6 +43,8 @@ public:
     static QString snippedText(const QString &text, const QString &str, int from = 0, int maxNumOfWords = 10, bool elided = true, Qt::TextElideMode elideMode = Qt::ElideRight);
     static int getRandomNumber(int minBound, int maxBound);
 
+    static int prefaceIDFromVersion(const QString &version);
+
     static const QStringList someSymbols;
     static const QStringList Ve_Variant;
     static const QStringList Ye_Variant;
