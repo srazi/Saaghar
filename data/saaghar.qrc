@@ -10,6 +10,8 @@
         <file>iconsets/default/root-node.png</file>
         <file>iconsets/default/container-node.png</file>
         <file>iconsets/default/leaf-node.png</file>
+        <file>iconsets/default/download-audio-repositories.png</file>
+        <file>iconsets/default/download-sets-repositories.png</file>
         <file>iconsets/default/add-tab.png</file>
         <file>iconsets/default/arrow-down.png</file>
         <file>iconsets/default/album.png</file>
