@@ -19,4 +19,3 @@ SOURCES += \
     $$PWD/qirbreadcrumbbarstyle.cpp \
     $$PWD/breadcrumbsaagharmodel.cpp
 
-RESOURCES += $$PWD/QIrBreadCrumbBar.qrc

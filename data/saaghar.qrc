@@ -7,6 +7,9 @@
         <file>images/transp.png</file>
         <file>images/semi-white.png</file>
         <file>images/saaghar-about.png</file>
+        <file>iconsets/default/root-node.png</file>
+        <file>iconsets/default/container-node.png</file>
+        <file>iconsets/default/leaf-node.png</file>
         <file>iconsets/default/add-tab.png</file>
         <file>iconsets/default/arrow-down.png</file>
         <file>iconsets/default/album.png</file>
