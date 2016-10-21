@@ -23,6 +23,7 @@
 #define TOOLS_H
 
 #define splashScreen(T) (static_cast<T*>(Tools::s_splashScreen))
+#define ICON_FILE(X) Tools::iconFileByKey(X)
 
 // x is variant-hash
 #define VAR_ADD(x, y) x.insert(#y, QVariant::fromValue(y))
@@ -44,6 +45,8 @@ public:
     static int getRandomNumber(int minBound, int maxBound);
 
     static int prefaceIDFromVersion(const QString &version);
+
+    static QString iconFileByKey(const QString &key, bool fallback = true);
 
     static const QStringList someSymbols;
     static const QStringList Ve_Variant;

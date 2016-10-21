@@ -197,13 +197,13 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     setupUi();
 
     //setup corner widget
-    mainTabWidget->getTabBar()->addTabButton()->setIcon(QIcon(ICON_PATH + "/add-tab.png"));
+    mainTabWidget->getTabBar()->addTabButton()->setIcon(QIcon(ICON_FILE("add-tab")));
     connect(mainTabWidget->getTabBar()->addTabButton(), SIGNAL(clicked()), this, SLOT(actionNewTabClicked()));
 
     MacToolButton* cornerMenuButton = new MacToolButton(mainTabWidget);
     cornerMenuButton->setStyleSheet("QToolButton::menu-indicator{image: none;}");
     cornerMenuButton->setAutoRaise(true);
-    cornerMenuButton->setIcon(QIcon(ICON_PATH + "/arrow-down.png"));
+    cornerMenuButton->setIcon(QIcon(ICON_FILE("arrow-down")));
     cornerMenuButton->setFixedWidth(cornerMenuButton->iconSize().width());
     cornerMenuButton->setMenu(cornerMenu());
 
@@ -273,12 +273,12 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     if (windowState() & Qt::WindowFullScreen) {
         actionInstance("actionFullScreen")->setChecked(true);
         actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
-        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_PATH + "/no-fullscreen.png"));
+        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_FILE("no-fullscreen")));
     }
     else {
         actionInstance("actionFullScreen")->setChecked(false);
         actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
-        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_PATH + "/fullscreen.png"));
+        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_FILE("fullscreen")));
         //apply transparent effect just in windowed mode!
         QtWin::easyBlurUnBlur(this, VARB("SaagharWindow/UseTransparecy"));
     }
@@ -418,8 +418,7 @@ void SaagharWindow::searchStart()
             //searchResultContents->setLayoutDirection(Qt::RightToLeft);
 
             phrase = Tools::cleanString(phrase);
-            SearchResultWidget* searchResultWidget = new SearchResultWidget(this, ICON_PATH, searchResultContents,
-                    phrase, poetName);
+            SearchResultWidget* searchResultWidget = new SearchResultWidget(this, searchResultContents, phrase, poetName);
 
             ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget);
             connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
@@ -1417,7 +1416,7 @@ void SaagharWindow::actFullScreenClicked(bool checked)
     if (checked) {
         setWindowState(windowState() | Qt::WindowFullScreen);
         actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
-        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_PATH + "/no-fullscreen.png"));
+        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_FILE("no-fullscreen")));
 
         //disable transparent effect in fullscreen mode!
         QtWin::easyBlurUnBlur(this, false);
@@ -1425,7 +1424,7 @@ void SaagharWindow::actFullScreenClicked(bool checked)
     else {
         setWindowState(windowState() & ~Qt::WindowFullScreen);
         actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
-        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_PATH + "/fullscreen.png"));
+        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_FILE("fullscreen")));
 
         QtWin::easyBlurUnBlur(this, VARB("SaagharWindow/UseTransparecy"));
     }
@@ -1506,11 +1505,11 @@ void SaagharWindow::setupUi()
     if (SaagharWidget::musicPlayer) {
         allActionMap.insert("albumDockAction", SaagharWidget::musicPlayer->albumManagerDock()->toggleViewAction());
         actionInstance("albumDockAction")->setObjectName(QString::fromUtf8("albumDockAction"));
-        actionInstance("albumDockAction")->setIcon(QIcon(ICON_PATH + "/album.png"));
+        actionInstance("albumDockAction")->setIcon(QIcon(ICON_FILE("album")));
 
         allActionMap.insert("toggleMusicPlayer", SaagharWidget::musicPlayer->toggleViewAction());
         actionInstance("toggleMusicPlayer")->setObjectName(QString::fromUtf8("ToggleMusicPlayerAction"));
-        actionInstance("toggleMusicPlayer")->setIcon(QIcon(ICON_PATH + "/music-player.png"));
+        actionInstance("toggleMusicPlayer")->setIcon(QIcon(ICON_FILE("music-player")));
 
         connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(QString,QString,int,bool)), this, SLOT(mediaInfoChanged(QString,QString,int)));
         connect(SaagharWidget::musicPlayer, SIGNAL(requestPageContainedMedia(int,bool)), this, SLOT(openChildPage(int,bool)));
@@ -1579,75 +1578,75 @@ void SaagharWindow::setupUi()
     setupBookmarkManagerUi();
 
     //Initialize Actions
-    actionInstance("actionHome", ICON_PATH + "/home.png", tr("&Home"));
+    actionInstance("actionHome", ICON_FILE("home"), tr("&Home"));
 
     if (ui->mainToolBar->layoutDirection() == Qt::LeftToRight) {
-        actionInstance("actionPreviousPoem", ICON_PATH + "/previous.png", tr("&Previous"))->setShortcuts(QKeySequence::Back);
-        actionInstance("actionNextPoem", ICON_PATH + "/next.png", tr("&Next"))->setShortcuts(QKeySequence::Forward);
+        actionInstance("actionPreviousPoem", ICON_FILE("previous"), tr("&Previous"))->setShortcuts(QKeySequence::Back);
+        actionInstance("actionNextPoem", ICON_FILE("next"), tr("&Next"))->setShortcuts(QKeySequence::Forward);
     }
     else {
-        actionInstance("actionPreviousPoem", ICON_PATH + "/next.png", tr("&Previous"))->setShortcuts(QKeySequence::Forward);
-        actionInstance("actionNextPoem", ICON_PATH + "/previous.png", tr("&Next"))->setShortcuts(QKeySequence::Back);
+        actionInstance("actionPreviousPoem", ICON_FILE("next"), tr("&Previous"))->setShortcuts(QKeySequence::Forward);
+        actionInstance("actionNextPoem", ICON_FILE("previous"), tr("&Next"))->setShortcuts(QKeySequence::Back);
     }
 
-    actionInstance("actionCopy", ICON_PATH + "/copy.png", tr("&Copy"))->setShortcuts(QKeySequence::Copy);
+    actionInstance("actionCopy", ICON_FILE("copy"), tr("&Copy"))->setShortcuts(QKeySequence::Copy);
 
-    actionInstance("searchToolbarAction", ICON_PATH + "/search.png", tr("&Find"))->setShortcuts(QKeySequence::Find);
+    actionInstance("searchToolbarAction", ICON_FILE("search"), tr("&Find"))->setShortcuts(QKeySequence::Find);
 
-    actionInstance("actionSettings", ICON_PATH + "/settings.png", tr("S&ettings"))->setMenuRole(QAction::PreferencesRole); //needed for Mac OS X
+    actionInstance("actionSettings", ICON_FILE("settings"), tr("S&ettings"))->setMenuRole(QAction::PreferencesRole); //needed for Mac OS X
 
-    actionInstance("actionViewInGanjoorSite", ICON_PATH + "/browse_net.png", tr("View in \"&ganjoor.net\""));
+    actionInstance("actionViewInGanjoorSite", ICON_FILE("browse_net"), tr("View in \"&ganjoor.net\""));
 
-    actionInstance("actionExit", ICON_PATH + "/exit.png", tr("E&xit"))->setMenuRole(QAction::QuitRole); //needed for Mac OS X
+    actionInstance("actionExit", ICON_FILE("exit"), tr("E&xit"))->setMenuRole(QAction::QuitRole); //needed for Mac OS X
     actionInstance("actionExit")->setShortcut(Qt::CTRL | Qt::Key_Q);
 
-    actionInstance("actionNewTab", ICON_PATH + "/new_tab.png", tr("New &Tab"))->setShortcuts(QKeySequence::AddTab);
+    actionInstance("actionNewTab", ICON_FILE("new_tab"), tr("New &Tab"))->setShortcuts(QKeySequence::AddTab);
 
-    actionInstance("actionNewWindow", ICON_PATH + "/new_window.png", tr("&New Window"))->setShortcuts(QKeySequence::New);
+    actionInstance("actionNewWindow", ICON_FILE("new_window"), tr("&New Window"))->setShortcuts(QKeySequence::New);
 
     actionInstance("actionAboutSaaghar", ":/resources/images/saaghar.png", tr("&About"))->setMenuRole(QAction::AboutRole); //needed for Mac OS X
 
-    actionInstance("actionAboutQt", ICON_PATH + "/qt-logo.png", tr("About &Qt"))->setMenuRole(QAction::AboutQtRole); //needed for Mac OS X
+    actionInstance("actionAboutQt", ICON_FILE("qt-logo"), tr("About &Qt"))->setMenuRole(QAction::AboutQtRole); //needed for Mac OS X
 
-    actionInstance("actionFaal", ICON_PATH + "/faal.png", tr("&Faal"))->setData("-1");
+    actionInstance("actionFaal", ICON_FILE("faal"), tr("&Faal"))->setData("-1");
 
-    actionInstance("actionPrint", ICON_PATH + "/print.png", tr("&Print..."))->setShortcuts(QKeySequence::Print);
+    actionInstance("actionPrint", ICON_FILE("print"), tr("&Print..."))->setShortcuts(QKeySequence::Print);
 
-    actionInstance("actionPrintPreview", ICON_PATH + "/print-preview.png", tr("Print Pre&view..."));
+    actionInstance("actionPrintPreview", ICON_FILE("print-preview"), tr("Print Pre&view..."));
 
     if (ImporterManager::instance()->importerIsAvailable()) {
-        actionInstance("actionImport", ICON_PATH + "/import.png", tr("&Import..."));
+        actionInstance("actionImport", ICON_FILE("import"), tr("&Import..."));
     }
 
-    actionInstance("actionExport", ICON_PATH + "/export.png", tr("&Export As..."))->setShortcuts(QKeySequence::SaveAs);
+    actionInstance("actionExport", ICON_FILE("export"), tr("&Export As..."))->setShortcuts(QKeySequence::SaveAs);
 
-    actionInstance("actionExportAsPDF", ICON_PATH + "/export-pdf.png", tr("Exp&ort As PDF..."));
+    actionInstance("actionExportAsPDF", ICON_FILE("export-pdf"), tr("Exp&ort As PDF..."));
 
-    actionInstance("actionHelpContents", ICON_PATH + "/help-contents.png", tr("&Help Contents..."))->setShortcuts(QKeySequence::HelpContents);
+    actionInstance("actionHelpContents", ICON_FILE("help-contents"), tr("&Help Contents..."))->setShortcuts(QKeySequence::HelpContents);
 
-    actionInstance("actionCloseTab", ICON_PATH + "/close-tab.png", tr("&Close Tab"))->setShortcuts(QKeySequence::Close);
+    actionInstance("actionCloseTab", ICON_FILE("close-tab"), tr("&Close Tab"))->setShortcuts(QKeySequence::Close);
 
-    actionInstance("actionRandom", ICON_PATH + "/random.png", tr("&Random"))->setShortcut(Qt::CTRL | Qt::Key_R);
+    actionInstance("actionRandom", ICON_FILE("random"), tr("&Random"))->setShortcut(Qt::CTRL | Qt::Key_R);
     actionInstance("actionRandom")->setData("1");
 
-    actionInstance("actionImportNewSet", ICON_PATH + "/import-to-database.png", tr("Insert New &Set..."));
+    actionInstance("actionImportNewSet", ICON_FILE("import-to-database"), tr("Insert New &Set..."));
 
-    actionInstance("actionRemovePoet", ICON_PATH + "/remove-poet.png", tr("&Remove Poet..."));
+    actionInstance("actionRemovePoet", ICON_FILE("remove-poet"), tr("&Remove Poet..."));
 
-    actionInstance("actionFullScreen", ICON_PATH + "/fullscreen.png", tr("&Full Screen"))->setCheckable(true);
+    actionInstance("actionFullScreen", ICON_FILE("fullscreen"), tr("&Full Screen"))->setCheckable(true);
 #ifndef Q_OS_MAC
     actionInstance("actionFullScreen")->setShortcut(Qt::Key_F11);
 #else
     actionInstance("actionFullScreen")->setShortcut(Qt::CTRL + Qt::Key_F11);
 #endif
 
-    actionInstance("actionCheckUpdates", ICON_PATH + "/check-updates.png", tr("Check for &Updates"));
+    actionInstance("actionCheckUpdates", ICON_FILE("check-updates"), tr("Check for &Updates"));
 
     //The following actions are processed in 'namedActionTriggered()' slot
-    actionInstance("SaagharWindow/ShowPhotoAtHome", ICON_PATH + "/show-photo-home.png", tr("&Show Photo at Home"))->setCheckable(true);
+    actionInstance("SaagharWindow/ShowPhotoAtHome", ICON_FILE("show-photo-home"), tr("&Show Photo at Home"))->setCheckable(true);
     actionInstance("SaagharWindow/ShowPhotoAtHome")->setChecked(VARB("SaagharWindow/ShowPhotoAtHome"));
 
-    actionInstance("SaagharWindow/LockToolBars", ICON_PATH + "/lock-toolbars.png", tr("&Lock ToolBars"))->setCheckable(true);
+    actionInstance("SaagharWindow/LockToolBars", ICON_FILE("lock-toolbars"), tr("&Lock ToolBars"))->setCheckable(true);
     actionInstance("SaagharWindow/LockToolBars")->setChecked(VARB("SaagharWindow/LockToolBars"));
     ui->mainToolBar->setMovable(!VARB("SaagharWindow/LockToolBars"));
     if (ui->menuToolBar) {
@@ -1661,7 +1660,7 @@ void SaagharWindow::setupUi()
     SaagharWidget::musicPlayer->setMovable(!VARB("SaagharWindow/LockToolBars"));
 #endif
 
-    actionInstance("Ganjoor Verification", ICON_PATH + "/ocr-verification.png", tr("&OCR Verification"));
+    actionInstance("Ganjoor Verification", ICON_FILE("ocr-verification"), tr("&OCR Verification"));
 
     //undo/redo actions
     globalRedoAction = undoGroup->createRedoAction(this, tr("&Redo"));
@@ -1669,12 +1668,12 @@ void SaagharWindow::setupUi()
     globalUndoAction = undoGroup->createUndoAction(this, tr("&Undo"));
     globalUndoAction->setObjectName("globalUndoAction");
     if (ui->mainToolBar->layoutDirection() == Qt::LeftToRight) {
-        globalRedoAction->setIcon(QIcon(ICON_PATH + "/redo.png"));
-        globalUndoAction->setIcon(QIcon(ICON_PATH + "/undo.png"));
+        globalRedoAction->setIcon(QIcon(ICON_FILE("redo")));
+        globalUndoAction->setIcon(QIcon(ICON_FILE("undo")));
     }
     else {
-        globalRedoAction->setIcon(QIcon(ICON_PATH + "/undo.png"));
-        globalUndoAction->setIcon(QIcon(ICON_PATH + "/redo.png"));
+        globalRedoAction->setIcon(QIcon(ICON_FILE("undo")));
+        globalUndoAction->setIcon(QIcon(ICON_FILE("redo")));
     }
 
     globalRedoAction->setShortcuts(QKeySequence::Redo);
@@ -1691,19 +1690,19 @@ void SaagharWindow::setupUi()
     QMenu* poemViewStylesMenu = new QMenu(tr("Poem View Styles"));
     QActionGroup* poemViewStylesGroup = new QActionGroup(this);
 
-    poemViewStylesMenu->addAction(actionInstance("TwoHemistichPoemViewStyle", ICON_PATH + "/two-hemistich-line.png", QObject::tr("&Two Hemistich Line")));
+    poemViewStylesMenu->addAction(actionInstance("TwoHemistichPoemViewStyle", ICON_FILE("two-hemistich-line"), QObject::tr("&Two Hemistich Line")));
     actionInstance("TwoHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
     actionInstance("TwoHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
     actionInstance("TwoHemistichPoemViewStyle")->setCheckable(true);
     actionInstance("TwoHemistichPoemViewStyle")->setData(SaagharWidget::TwoHemistichLine);
 
-    poemViewStylesMenu->addAction(actionInstance("OneHemistichPoemViewStyle", ICON_PATH + "/one-hemistich-line.png", QObject::tr("&One Hemistich Line")));
+    poemViewStylesMenu->addAction(actionInstance("OneHemistichPoemViewStyle", ICON_FILE("one-hemistich-line"), QObject::tr("&One Hemistich Line")));
     actionInstance("OneHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
     actionInstance("OneHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
     actionInstance("OneHemistichPoemViewStyle")->setCheckable(true);
     actionInstance("OneHemistichPoemViewStyle")->setData(SaagharWidget::OneHemistichLine);
 
-    poemViewStylesMenu->addAction(actionInstance("SteppedHemistichPoemViewStyle", ICON_PATH + "/stepped-hemistich-line.png", QObject::tr("&Stepped Hemistich Line")));
+    poemViewStylesMenu->addAction(actionInstance("SteppedHemistichPoemViewStyle", ICON_FILE("stepped-hemistich-line"), QObject::tr("&Stepped Hemistich Line")));
     actionInstance("SteppedHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
     actionInstance("SteppedHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
     actionInstance("SteppedHemistichPoemViewStyle")->setCheckable(true);
@@ -1717,7 +1716,7 @@ void SaagharWindow::setupUi()
                                  "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
     addDockWidget(Qt::RightDockWidgetArea, m_outlineDock);
     allActionMap.insert("outlineDockAction", m_outlineDock->toggleViewAction());
-    actionInstance("outlineDockAction")->setIcon(QIcon(ICON_PATH + "/outline.png"));
+    actionInstance("outlineDockAction")->setIcon(QIcon(ICON_FILE("outline")));
     actionInstance("outlineDockAction")->setObjectName(QString::fromUtf8("outlineDockAction"));
 
     switch (SaagharWidget::CurrentViewStyle) {
@@ -1735,16 +1734,16 @@ void SaagharWindow::setupUi()
         break;
     }
 
-    actionInstance("DownloadRepositories", ICON_PATH + "/download-sets-repositories.png", QObject::tr("&Dataset Repositories..."));
+    actionInstance("DownloadRepositories", ICON_FILE("download-sets-repositories"), QObject::tr("&Dataset Repositories..."));
 #ifdef MEDIA_PLAYER
-    actionInstance("DownloadAudioRepositories", ICON_PATH + "/download-audio-repositories.png", QObject::tr("&Audio Repositories..."));
+    actionInstance("DownloadAudioRepositories", ICON_FILE("download-audio-repositories"), QObject::tr("&Audio Repositories..."));
 #endif
 
 #if 0
-    actionInstance("Registeration", ICON_PATH + "/registeration.png", QObject::tr("&Registeration..."));
+    actionInstance("Registeration", Tools::iconByKey("registeration"), QObject::tr("&Registeration..."));
 #endif
 
-    actionInstance("actionPreface", ICON_PATH + "/show-preface.png", tr("&Show Preface..."));
+    actionInstance("actionPreface", ICON_FILE("show-preface"), tr("&Show Preface..."));
 
     //Inserting main menu items
     ui->menuBar->addMenu(menuFile);
@@ -2017,7 +2016,7 @@ void SaagharWindow::showSearchTips()
                  .arg(tr("Spring")).arg(tr("Flower")).arg(tr(" ALIGN=CENTER")).arg(tr(" ALIGN=Left"))
                  .arg(tr("<TABLE DIR=LTR FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0><TBODY>")).arg(tr("Rain")).arg(tr("Sunny"))
                  .arg(tr("<TD  ALIGN=Left>:</TD>"));
-    QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(ICON_PATH + "/search.png").scaledToHeight(64, Qt::SmoothTransformation));
+    QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(ICON_FILE("search")).scaledToHeight(64, Qt::SmoothTransformation));
     searchTipsDialog.exec();
 }
 
@@ -2182,16 +2181,16 @@ void SaagharWindow::showSettingsDialog()
     int langIndex = m_settingsDialog->ui->uiLanguageComboBox->findText(VARS("General/UILanguage"), Qt::MatchExactly);
     m_settingsDialog->ui->uiLanguageComboBox->setCurrentIndex(langIndex);
 
-    m_settingsDialog->ui->pushButtonActionBottom->setIcon(QIcon(ICON_PATH + "/down.png"));
-    m_settingsDialog->ui->pushButtonActionTop->setIcon(QIcon(ICON_PATH + "/up.png"));
+    m_settingsDialog->ui->pushButtonActionBottom->setIcon(QIcon(ICON_FILE("down")));
+    m_settingsDialog->ui->pushButtonActionTop->setIcon(QIcon(ICON_FILE("up")));
 
     if (QApplication::layoutDirection() == Qt::RightToLeft) {
-        m_settingsDialog->ui->pushButtonActionAdd->setIcon(QIcon(ICON_PATH + "/left.png"));
-        m_settingsDialog->ui->pushButtonActionRemove->setIcon(QIcon(ICON_PATH + "/right.png"));
+        m_settingsDialog->ui->pushButtonActionAdd->setIcon(QIcon(ICON_FILE("left")));
+        m_settingsDialog->ui->pushButtonActionRemove->setIcon(QIcon(ICON_FILE("right")));
     }
     else {
-        m_settingsDialog->ui->pushButtonActionAdd->setIcon(QIcon(ICON_PATH + "/right.png"));
-        m_settingsDialog->ui->pushButtonActionRemove->setIcon(QIcon(ICON_PATH + "/left.png"));
+        m_settingsDialog->ui->pushButtonActionAdd->setIcon(QIcon(ICON_FILE("right")));
+        m_settingsDialog->ui->pushButtonActionRemove->setIcon(QIcon(ICON_FILE("left")));
     }
 
     m_settingsDialog->ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
@@ -2634,11 +2633,11 @@ void SaagharWindow::tableItemMouseOver(QTableWidgetItem* item)
                 int pos = senderTable->verticalScrollBar()->value();
                 senderTable->setCurrentItem(item);
                 senderTable->verticalScrollBar()->setValue(pos);
-                QImage image(ICON_PATH + "/select-mask.png");
+                QImage image(ICON_FILE("select-mask"));
                 item->setBackground(QBrush(image.scaledToHeight(senderTable->rowHeight(item->row()))));
             }
             else {
-                QImage image(ICON_PATH + "/select-mask.png");
+                QImage image(ICON_FILE("select-mask"));
                 item->setBackground(QBrush(image.scaledToHeight(senderTable->rowHeight(item->row()))));
             }
         }
@@ -2663,7 +2662,7 @@ void SaagharWindow::tableCurrentItemChanged(QTableWidgetItem* current, QTableWid
         previous->setBackground(QBrush(QImage()));
     }
     if (current) { //maybe create a bug! check older codes!!
-        QImage image(ICON_PATH + "/select-mask.png");
+        QImage image(ICON_FILE("select-mask"));
         current->setBackground(QBrush(image));
         //TODO: pageup and page down miss one row!! Qt-4.7.3
         if (saagharWidget && (saagharWidget->currentPoem > 0 || saagharWidget->currentCat > 0)) { //everywhere but home
@@ -2993,11 +2992,11 @@ bool SaagharWindow::eventFilter(QObject* receiver, QEvent* event)
 void SaagharWindow::setupSearchToolBarUi()
 {
     //initialize Search ToolBar
-    QString clearIconPath = ICON_PATH + "/clear-left.png";
+    QString clearIconPath = ICON_FILE("clear-left");
     if (layoutDirection() == Qt::RightToLeft) {
-        clearIconPath = ICON_PATH + "/clear-right.png";
+        clearIconPath = ICON_FILE("clear-right");
     }
-    SaagharWidget::lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, ICON_PATH + "/search-options.png", ICON_PATH + "/cancel.png");
+    SaagharWidget::lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, ICON_FILE("search-options"), ICON_FILE("cancel"));
     SaagharWidget::lineEditSearchText->setObjectName(QString::fromUtf8("lineEditSearchText"));
     SaagharWidget::lineEditSearchText->setMaximumSize(QSize(170, 16777215));
     SaagharWidget::lineEditSearchText->setLayoutDirection(Qt::RightToLeft);
@@ -3255,7 +3254,7 @@ void SaagharWindow::updateTabsSubMenus()
         tabAction = new QAction(mainTabWidget->tabText(i), menuOpenedTabs);
 
         if (i == mainTabWidget->currentIndex()) {
-            tabAction->setIcon(QIcon(ICON_PATH + "/right.png"));
+            tabAction->setIcon(QIcon(ICON_FILE("right")));
         }
         QObject* obj = mainTabWidget->widget(i);
         QVariant data = QVariant::fromValue(obj);
@@ -3341,15 +3340,15 @@ void SaagharWindow::setupBookmarkManagerUi()
 
     connect(SaagharWidget::bookmarks, SIGNAL(showBookmarkedItem(QString,QString,QString,bool,bool)), this, SLOT(ensureVisibleBookmarkedItem(QString,QString,QString,bool,bool)));
 
-    QString clearIconPath = ICON_PATH + "/clear-left.png";
+    QString clearIconPath = ICON_FILE("clear-left");
     if (layoutDirection() == Qt::RightToLeft) {
-        clearIconPath = ICON_PATH + "/clear-right.png";
+        clearIconPath = ICON_FILE("clear-right");
     }
 
     QLabel* bookmarkFilterLabel = new QLabel(m_bookmarkManagerDock);
     bookmarkFilterLabel->setObjectName(QString::fromUtf8("bookmarkFilterLabel"));
     bookmarkFilterLabel->setText(tr("Filter:"));
-    QSearchLineEdit* bookmarkFilter = new QSearchLineEdit(m_bookmarkManagerDock, clearIconPath, ICON_PATH + "/filter.png");
+    QSearchLineEdit* bookmarkFilter = new QSearchLineEdit(m_bookmarkManagerDock, clearIconPath, ICON_FILE("filter"));
     bookmarkFilter->setObjectName("bookmarkFilter");
 #if QT_VERSION >= 0x040700
     bookmarkFilter->setPlaceholderText(tr("Filter"));
@@ -3362,7 +3361,7 @@ void SaagharWindow::setupBookmarkManagerUi()
     unBookmarkButton->setObjectName("unBookmarkButton");
     unBookmarkButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
 
-    unBookmarkButton->setIcon(QIcon(ICON_PATH + "/un-bookmark.png"));
+    unBookmarkButton->setIcon(QIcon(ICON_FILE("un-bookmark")));
     connect(unBookmarkButton, SIGNAL(clicked()), SaagharWidget::bookmarks, SLOT(unBookmarkItem()));
 
     QSpacerItem* filterHorizSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -3400,7 +3399,7 @@ void SaagharWindow::setupBookmarkManagerUi()
         m_bookmarkManagerDock->setWidget(bookmarkContainer /*SaagharWidget::bookmarks*/);
         addDockWidget(Qt::RightDockWidgetArea, m_bookmarkManagerDock);
 
-        m_bookmarkManagerDock->toggleViewAction()->setIcon(QIcon(ICON_PATH + "/bookmark-folder.png"));
+        m_bookmarkManagerDock->toggleViewAction()->setIcon(QIcon(ICON_FILE("bookmark-folder")));
         m_bookmarkManagerDock->toggleViewAction()->setObjectName(QString::fromUtf8("copyOfBookmarkManagerDockAction"));
         connect(m_bookmarkManagerDock->toggleViewAction(), SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
 
@@ -3409,7 +3408,7 @@ void SaagharWindow::setupBookmarkManagerUi()
         actionInstance("bookmarkManagerDockAction")->setText(m_bookmarkManagerDock->toggleViewAction()->text());
         actionInstance("bookmarkManagerDockAction")->setCheckable(true);
         actionInstance("bookmarkManagerDockAction")->setChecked(m_bookmarkManagerDock->toggleViewAction()->isChecked());
-        actionInstance("bookmarkManagerDockAction")->setIcon(QIcon(ICON_PATH + "/bookmark-folder.png"));
+        actionInstance("bookmarkManagerDockAction")->setIcon(QIcon(ICON_FILE("bookmark-folder")));
         actionInstance("bookmarkManagerDockAction")->setObjectName(QString::fromUtf8("bookmarkManagerDockAction"));
         connect(m_bookmarkManagerDock, SIGNAL(visibilityChanged(bool)), actionInstance("bookmarkManagerDockAction"), SLOT(setChecked(bool)));
 
@@ -3417,7 +3416,7 @@ void SaagharWindow::setupBookmarkManagerUi()
         menuBookmarks->setObjectName(QString::fromUtf8("menuBookmarks"));
         menuBookmarks->addAction(m_bookmarkManagerDock->toggleViewAction());
         menuBookmarks->addSeparator();
-        menuBookmarks->addAction(actionInstance("ImportGanjoorBookmarks", ICON_PATH + "/bookmarks-import.png", tr("&Import Ganjoor's Bookmarks")));
+        menuBookmarks->addAction(actionInstance("ImportGanjoorBookmarks", ICON_FILE("bookmarks-import"), tr("&Import Ganjoor's Bookmarks")));
     }
     else {
         //bookmark not loaded!
@@ -3467,8 +3466,8 @@ void SaagharWindow::ensureVisibleBookmarkedItem(const QString &type, const QStri
                         if (item) {
                             QTableWidgetItem* numItem = tmp->tableViewWidget->item(item->row(), 0);
                             if (SaagharWidget::bookmarks && numItem) {
-                                QPixmap star(ICON_PATH + "/bookmark-on.png");
-                                QPixmap starOff(ICON_PATH + "/bookmark-off.png");
+                                QPixmap star(ICON_FILE("bookmark-on"));
+                                QPixmap starOff(ICON_FILE("bookmark-off"));
                                 star = star.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row()) - 1, 22), Qt::SmoothTransformation);
                                 starOff = starOff.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row()) - 1, 22), Qt::SmoothTransformation);
                                 QIcon bookmarkIcon;

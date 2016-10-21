@@ -41,7 +41,7 @@ bool SearchResultWidget::skipVowelLetters = false;
 
 int SearchResultWidget::s_searchWidgetCount = 0;
 
-SearchResultWidget::SearchResultWidget(QMainWindow* qmw, const QString &iconThemePath, QWidget* parent, const QString &searchPhrase, const QString &poetName)
+SearchResultWidget::SearchResultWidget(QMainWindow* qmw, QWidget* parent, const QString &searchPhrase, const QString &poetName)
     : QWidget(parent)
     , searchResultContents(parent)
     , actSearchNextPage(0)
@@ -50,7 +50,7 @@ SearchResultWidget::SearchResultWidget(QMainWindow* qmw, const QString &iconThem
     , m_sectionName(poetName)
     , searchResultWidget(0)
 {
-    setupUi(qmw, iconThemePath);
+    setupUi(qmw);
 
     QString dockTitle = m_sectionName + ":" + m_phrase;
     dockTitle.replace("==", tr("Radifs that contain: "));
@@ -95,7 +95,7 @@ int SearchResultWidget::currentSearchWidgetCount()
     return s_searchWidgetCount;
 }
 
-void SearchResultWidget::setupUi(QMainWindow* qmw, const QString &iconThemePath)
+void SearchResultWidget::setupUi(QMainWindow* qmw)
 {
     searchResultWidget = new QDockWidget(qmw);
     searchResultWidget->setObjectName(QString::fromUtf8("searchResultWidget_new"));//object name for created instance, it renames to 'searchResultWidget_old'
@@ -127,11 +127,11 @@ void SearchResultWidget::setupUi(QMainWindow* qmw, const QString &iconThemePath)
     filterLabel->setText(tr("Filter:"));
     filterHorizontalLayout->addWidget(filterLabel, 0, Qt::AlignRight | Qt::AlignCenter);
 
-    QString clearIconPath = iconThemePath + "/clear-left.png";
+    QString clearIconPath = ICON_FILE("clear-left");
     if (searchResultContents->layoutDirection() == Qt::RightToLeft) {
-        clearIconPath = iconThemePath + "/clear-right.png";
+        clearIconPath = ICON_FILE("clear-right");
     }
-    filterLineEdit = new QSearchLineEdit(searchResultContents, clearIconPath, iconThemePath + "/filter.png");
+    filterLineEdit = new QSearchLineEdit(searchResultContents, clearIconPath, ICON_FILE("filter"));
     filterLineEdit->setObjectName(QString::fromUtf8("filterLineEdit"));
 #if QT_VERSION >= 0x040700
     filterLineEdit->setPlaceholderText(tr("Filter"));
@@ -198,12 +198,12 @@ void SearchResultWidget::setupUi(QMainWindow* qmw, const QString &iconThemePath)
     searchPreviousPage->setDefaultAction(actSearchPreviousPage);
 
     if (qmw->layoutDirection() == Qt::LeftToRight) {
-        actSearchPreviousPage->setIcon(QIcon(iconThemePath + "/previous.png"));
-        actSearchNextPage->setIcon(QIcon(iconThemePath + "/next.png"));
+        actSearchPreviousPage->setIcon(QIcon(ICON_FILE("previous")));
+        actSearchNextPage->setIcon(QIcon(ICON_FILE("next")));
     }
     else {
-        actSearchPreviousPage->setIcon(QIcon(iconThemePath + "/next.png"));
-        actSearchNextPage->setIcon(QIcon(iconThemePath + "/previous.png"));
+        actSearchPreviousPage->setIcon(QIcon(ICON_FILE("next")));
+        actSearchNextPage->setIcon(QIcon(ICON_FILE("previous")));
     }
 
     connect(searchPreviousPage, SIGNAL(triggered(QAction*)), this, SLOT(searchPageNavigationClicked(QAction*)));

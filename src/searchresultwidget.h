@@ -39,7 +39,7 @@ class SearchResultWidget : public QWidget
     Q_OBJECT
 
 public:
-    SearchResultWidget(QMainWindow* qmw, const QString &iconThemePath, QWidget* parent = 0, const QString &searchPhrase = "", const QString &poetName = "");
+    SearchResultWidget(QMainWindow* qmw, QWidget* parent = 0, const QString &searchPhrase = QString(), const QString &poetName = QString());
     ~SearchResultWidget();
 
     void setResultList(const QMap<int, QString> &map);
@@ -55,7 +55,7 @@ public:
 private:
     QDockWidget* searchResultWidget;
     QWidget* searchResultContents;
-    void setupUi(QMainWindow* qmw, const QString &iconThemePath);
+    void setupUi(QMainWindow* qmw);
     void showSearchResult(int start);
     QString m_phrase;
 

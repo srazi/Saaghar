@@ -24,7 +24,7 @@
 #include "databasebrowser.h"
 #include "outlinemodel.h"
 #include "saagharwidget.h"
-#include "settings.h"
+#include "tools.h"
 
 #include <QAction>
 #include <QMenu>
@@ -233,9 +233,9 @@ QIrBreadCrumbModelNode::Type BreadCrumbSaagharModel::pathNodeType(const QStringL
 
 QIcon BreadCrumbSaagharModel::icon(const QIrBreadCrumbModelNode::Type &type) const
 {
-    const static QIcon rootIcon(ICON_PATH + "/root-node.png");
-    const static QIcon containerIcon(ICON_PATH + "/container-node.png");
-    const static QIcon leafIcon(ICON_PATH + "/leaf-node.png");
+    const static QIcon rootIcon(ICON_FILE("root-node"));
+    const static QIcon containerIcon(ICON_FILE("container-node"));
+    const static QIcon leafIcon(ICON_FILE("leaf-node"));
 
     switch (type) {
     case QIrBreadCrumbModelNode::Root:

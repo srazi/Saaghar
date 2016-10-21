@@ -21,6 +21,7 @@
 
 #include "tools.h"
 #include "searchresultwidget.h"
+#include "settings.h"
 
 #include <QFileInfo>
 
@@ -436,6 +437,17 @@ int Tools::prefaceIDFromVersion(const QString &version)
     }
 
     return lastPrefaceID;
+}
+
+QString Tools::iconFileByKey(const QString &key, bool fallback)
+{
+    QString iconFileName = QString("%1/%2.png").arg(Settings::currentIconThemePath()).arg(key);
+
+    if (fallback && !QFile::exists(iconFileName)) {
+        iconFileName = QString("%1/%2.png").arg(QLatin1String(":/resources/iconsets/default")).arg(key);
+    }
+
+    return iconFileName;
 }
 
 void Tools::setSplashScreen(QObject* splash)

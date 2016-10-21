@@ -462,7 +462,7 @@ bool SaagharWidget::initializeCustomizedHome()
             //poets.at(poetIndex)->_ID
             QString poetPhotoFileName = poetsImagesDir + "/" + QString::number(poets.at(poetIndex)->_ID) + ".png";;
             if (!QFile::exists(poetPhotoFileName)) {
-                poetPhotoFileName = ICON_PATH + "/no-photo.png";
+                poetPhotoFileName = ICON_FILE("no-photo");
             }
             if (VARB("SaagharWindow/ShowPhotoAtHome")) {
                 catItem->setIcon(QIcon(poetPhotoFileName));
@@ -622,7 +622,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
             catItem->setData(Qt::UserRole, "CatID=" + QString::number(category._ID));
             QString poetPhotoFileName = poetsImagesDir + "/" + QString::number(gPoet._ID) + ".png";;
             if (!QFile::exists(poetPhotoFileName)) {
-                poetPhotoFileName = ICON_PATH + "/no-photo.png";
+                poetPhotoFileName = ICON_FILE("no-photo");
             }
             catItem->setIcon(QIcon(poetPhotoFileName));
             QTextEdit* descContainer = createItemForLongText(0, 0, itemText, SaagharWidget::lineEditSearchText->text());
@@ -720,7 +720,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
             GanjoorPoet gPoet = sApp->databaseBrowser()->getPoetForCat(subcats.at(i)->_ID, m_connectionID);
             QString poetPhotoFileName = poetsImagesDir + "/" + QString::number(gPoet._ID) + ".png";
             if (!QFile::exists(poetPhotoFileName)) {
-                poetPhotoFileName = ICON_PATH + "/no-photo.png";
+                poetPhotoFileName = ICON_FILE("no-photo");
             }
             if (VARB("SaagharWindow/ShowPhotoAtHome")) {
                 catItem->setIcon(QIcon(poetPhotoFileName));
@@ -1140,8 +1140,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 }
                 numItem->setFlags(numItemFlags);
                 if (SaagharWidget::bookmarks && !isLocalDataset()) {
-                    QPixmap star(ICON_PATH + "/bookmark-on.png");
-                    QPixmap starOff(ICON_PATH + "/bookmark-off.png");
+                    QPixmap star(ICON_FILE("bookmark-on"));
+                    QPixmap starOff(ICON_FILE("bookmark-off"));
                     star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
                     starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
                     QIcon bookmarkIcon;
@@ -1170,8 +1170,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 numItem = new QTableWidgetItem("");
                 numItem->setFlags(numItemFlags);
                 if (SaagharWidget::bookmarks && verses.at(i)->_Position == Paragraph && !isLocalDataset()) {
-                    QPixmap star(ICON_PATH + "/bookmark-on.png");
-                    QPixmap starOff(ICON_PATH + "/bookmark-off.png");
+                    QPixmap star(ICON_FILE("bookmark-on"));
+                    QPixmap starOff(ICON_FILE("bookmark-off"));
                     star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
                     starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
                     QIcon bookmarkIcon;
@@ -1615,8 +1615,8 @@ void SaagharWidget::clickedOnItem(int row, int column)
                 return;
             }
 
-            QPixmap star(ICON_PATH + "/bookmark-on.png");
-            QPixmap starOff(ICON_PATH + "/bookmark-off.png");
+            QPixmap star(ICON_FILE("bookmark-on"));
+            QPixmap starOff(ICON_FILE("bookmark-off"));
             star = star.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
             starOff = starOff.scaledToHeight(qMin(tableViewWidget->rowHeight(row) - 1, 22), Qt::SmoothTransformation);
             QIcon bookmarkIcon;
