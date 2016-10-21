@@ -278,7 +278,52 @@ QList<GanjoorPoet*> DatabaseBrowser::getPoets(const QString &connectionID, bool 
 
 bool DatabaseBrowser::comparePoetsByName(GanjoorPoet* poet1, GanjoorPoet* poet2)
 {
-    return (QString::localeAwareCompare(poet1->_Name, poet2->_Name) < 0);
+    static bool isEnglish = VARS("General/UILanguage") == LS("en");
+
+    if (isEnglish) {
+        return (QString::localeAwareCompare(poet1->_Name, poet2->_Name) < 0);
+    }
+    else {
+        const bool poet1IsRtl = poet1->_Name.isRightToLeft();
+        const bool poet2IsRtl = poet2->_Name.isRightToLeft();
+
+        if ((poet1IsRtl && poet2IsRtl) || (!poet1IsRtl && !poet2IsRtl)) {
+            return (QString::localeAwareCompare(poet1->_Name, poet2->_Name) < 0);
+        }
+        else {
+            if (poet1IsRtl && !poet2IsRtl) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+}
+
+bool DatabaseBrowser::compareCategoriesByName(GanjoorCat* cat1, GanjoorCat* cat2)
+{
+    static bool isEnglish = VARS("General/UILanguage") == LS("en");
+
+    if (isEnglish) {
+        return (QString::localeAwareCompare(cat1->_Text, cat2->_Text) < 0);
+    }
+    else {
+        const bool cat1IsRtl = cat1->_Text.isRightToLeft();
+        const bool cat2IsRtl = cat2->_Text.isRightToLeft();
+
+        if ((cat1IsRtl && cat2IsRtl) || (!cat1IsRtl && !cat2IsRtl)) {
+            return (QString::localeAwareCompare(cat1->_Text, cat2->_Text) < 0);
+        }
+        else {
+            if (cat1IsRtl && !cat2IsRtl) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
 }
 
 GanjoorCat DatabaseBrowser::getCategory(int CatID, const QString &connectionID)
@@ -301,11 +346,6 @@ GanjoorCat DatabaseBrowser::getCategory(int CatID, const QString &connectionID)
         }
     }
     return gCat;
-}
-
-bool DatabaseBrowser::compareCategoriesByName(GanjoorCat* cat1, GanjoorCat* cat2)
-{
-    return (QString::localeAwareCompare(cat1->_Text, cat2->_Text) < 0);
 }
 
 void DatabaseBrowser::removeThreadsConnections(QObject* obj)
