@@ -38,6 +38,7 @@
 #include "outlinemodel.h"
 #include "importer/importermanager.h"
 #include "importer/importer_interface.h"
+#include "aboutdialog.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -1457,26 +1458,7 @@ void SaagharWindow::openRandomPoem(int parentID, bool newPage, const QString &co
 
 void SaagharWindow::aboutSaaghar()
 {
-    QMessageBox about(this);
-
-    QtWin::easyBlurUnBlur(&about, VARB("SaagharWindow/UseTransparecy"));
-
-    QPixmap pixmap(":/resources/images/saaghar.png");
-    about.setIconPixmap(pixmap);
-    about.setWindowTitle(tr("About Saaghar"));
-    about.setTextFormat(Qt::RichText);
-    about.setText(tr("<br />%1 is a persian poem viewer software, it uses \"ganjoor.net\" database, and some of its initial codes are ported to C++ and Qt from \"desktop ganjoor\" that is a C# .NET application written by %2.<br /><br />Logo Designer: %3<br /><br />Author: %4,<br /><br />Home Page (English): %5<br />Home Page (Persian): %6<br />Mailing List: %7<br />Saaghar in FaceBook: %8<br /><br />Version: %9 - (git-rev: %10)<br />Build Time: %11")
-                  .arg("<a href=\"http://saaghar.pozh.org\">" + tr("Saaghar") + "</a>")
-                  .arg("<a href=\"http://www.gozir.com/\">" + tr("Hamid Reza Mohammadi") + "</a>")
-                  .arg("<a href=\"http://www.phototak.com/\">" + tr("S. Nasser Alavizadeh") + "</a>")
-                  .arg("<a href=\"http://pozh.org/\">" + tr("S. Razi Alavizadeh") + "</a>")
-                  .arg("<a href=\"http://en.saaghar.pozh.org\">http://en.saaghar.pozh.org</a>")
-                  .arg("<a href=\"http://saaghar.pozh.org\">http://saaghar.pozh.org</a>")
-                  .arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>")
-                  .arg("<a href=\"http://www.facebook.com/saaghar.p\">http://www.facebook.com/saaghar.p</a>")
-                  .arg(SAAGHAR_VERSION).arg(GIT_REVISION).arg(BUILD_TIME));
-    about.setStandardButtons(QMessageBox::Ok);
-    about.setEscapeButton(QMessageBox::Ok);
+    AboutDialog about(this);
 
     about.exec();
 }

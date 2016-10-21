@@ -33,7 +33,8 @@ HEADERS += \
     $$PWD/importer/importer_interface.h \
     $$PWD/importer/txtimporter.h \
     $$PWD/importer/importeroptionsdialog.h \
-    $$PWD/importer/selectcreatedialog.h
+    $$PWD/importer/selectcreatedialog.h \
+    $$PWD/aboutdialog.h
 
 FORMS += \
     $$PWD/saagharwindow.ui \
@@ -43,7 +44,8 @@ FORMS += \
     $$PWD/searchoptionsdialog.ui \
     $$PWD/selectionmanager.ui \
     $$PWD/importer/importeroptionsdialog.ui \
-    $$PWD/importer/selectcreatedialog.ui
+    $$PWD/importer/selectcreatedialog.ui \
+    $$PWD/aboutdialog.ui
 
 SOURCES += \
     $$PWD/main.cpp \
@@ -72,7 +74,8 @@ SOURCES += \
     $$PWD/importer/importermanager.cpp \
     $$PWD/importer/txtimporter.cpp \
     $$PWD/importer/importeroptionsdialog.cpp \
-    $$PWD/importer/selectcreatedialog.cpp
+    $$PWD/importer/selectcreatedialog.cpp \
+    $$PWD/aboutdialog.cpp
 
 include(pQjWidgets/pqjwidgets.pri)
 include(downloader/downloader.pri)
