@@ -102,6 +102,7 @@ public:
     QString connectionID() const;
 
     int minMesraWidth;
+    bool m_hasPoem;
 
     //STATIC Variables
     static QString poetsImagesDir;

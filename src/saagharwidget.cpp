@@ -86,6 +86,7 @@ SaagharWidget::SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidge
     , currentCat(0)
     , m_vPosition(-1)
     , m_connectionID(connectionID)
+    , m_hasPoem(true)
 {
     pageMetaInfo.id = 0;
     pageMetaInfo.type = SaagharWidget::CategoryViewerPage;
@@ -135,7 +136,7 @@ void SaagharWidget::applyDefaultSectionsHeight()
     }
     else {
         height = qMax(SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/PoemText"))), -1, -1), bookmarkIconHeight * 5 / 4);
-        if (SaagharWidget::showBeytNumbers) {
+        if (SaagharWidget::showBeytNumbers && m_hasPoem) {
             height = qMax(height, SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))), -1, -1));
         }
     }
@@ -1016,10 +1017,14 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
         bookmarkedVerses = SaagharWidget::bookmarks->bookmarkList("Verses");
     }
 
+    m_hasPoem = false;
     int betterRightToLeft = 0, betterLeftToRight = 0;
     //very Big For loop
     for (int i = 0; i < numberOfVerses; i++) {
         QString currentVerseText = verses.at(i)->_Text;
+
+        m_hasPoem = verses.at(i)->_Position != Paragraph;
+
         if (verses.at(i)->_Position != Single && verses.at(i)->_Position != Paragraph) {
             currentVerseText = currentVerseText.simplified();
         }
@@ -1124,7 +1129,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 //QString verseData = QString::number(verses.at(i)->_PoemID)+"."+QString::number(verses.at(i)->_Order)+"."+QString::number((int)verses.at(i)->_Position);
                 QTableWidgetItem* numItem = new QTableWidgetItem("");
 
-                if (showBeytNumbers) {
+                if (SaagharWidget::showBeytNumbers && m_hasPoem) {
                     int itemNumber = isBand ? BandNum : BeytNum;
                     QString localizedNumber = SaagharWidget::persianIranLocal.toString(itemNumber);
                     numItem->setText(localizedNumber);
@@ -1339,7 +1344,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
             break;
         case 4:
             if (CurrentViewStyle == SteppedHemistichLine /*|| CurrentViewStyle==MesraPerLineGroupedBeyt*/) {
-                table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
+                table->setColumnWidth(0, (SaagharWidget::showBeytNumbers && m_hasPoem) ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
                 baseWidthSize = baseWidthSize - table->columnWidth(0);
                 table->setColumnWidth(2, qMax(qMin((7 * minMesraWidth) / 4, (7 * baseWidthSize) / 8), minMesraWidth)); // cells contain mesras
                 test = qMax(0, baseWidthSize - (table->columnWidth(2)));
@@ -1347,7 +1352,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                 table->setColumnWidth(3, test / 2); //left margin
             }
             else if (CurrentViewStyle == OneHemistichLine) {
-                table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
+                table->setColumnWidth(0, (SaagharWidget::showBeytNumbers && m_hasPoem) ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
                 baseWidthSize = baseWidthSize - table->columnWidth(0);
                 table->setColumnWidth(2, qMax(0, minMesraWidth));  // cells contain mesras
                 test = qMax(0, baseWidthSize - (table->columnWidth(2)));
@@ -1355,7 +1360,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                 table->setColumnWidth(3, test / 2); //left margin
             }
             else {
-                table->setColumnWidth(0, SaagharWidget::showBeytNumbers ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
+                table->setColumnWidth(0, (SaagharWidget::showBeytNumbers && m_hasPoem) ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
                 int tw = baseWidthSize - (table->columnWidth(0) + poemFontMetrics.height() * 2/*table->columnWidth(2)*/);
                 table->setColumnWidth(1, qMax(minMesraWidth, tw / 2/* -table->columnWidth(0) */)); //mesra width
                 table->setColumnWidth(3, qMax(minMesraWidth, tw / 2)); //mesra width
@@ -1423,7 +1428,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                 }
                 else {
                     int height = qMax(SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/PoemText"))), it.value(), totalWidth), iconWidth * 5 / 4);
-                    if (SaagharWidget::showBeytNumbers) {
+                    if ((SaagharWidget::showBeytNumbers && m_hasPoem)) {
                         height = qMax(height, SaagharWidget::computeRowHeight(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))), -1, -1));
                     }
                     table->setRowHeight(it.key(), height);
