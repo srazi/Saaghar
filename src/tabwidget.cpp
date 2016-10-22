@@ -27,6 +27,7 @@ TabWidget::TabWidget(QWidget* parent)
     , m_tabBar(new TabBar(this))
 {
     setTabBar(m_tabBar);
+    setElideMode(Qt::ElideMiddle);
 }
 
 TabBar* TabWidget::getTabBar()
@@ -89,8 +90,8 @@ QSize TabBar::tabSizeHint(int index) const
         }
     }
 
-    if (index == tabCount - 1) {
-        if (tabCount * boundedWidthForTab > availableWidth) {
+    if (index == currentIndex()) {
+        if ((tabCount * minWidth + activeTabWidthBiggerThanOther) > availableWidth) {
             m_addTabButton->hide();
         }
         else {
