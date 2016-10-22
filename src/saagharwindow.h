@@ -95,7 +95,7 @@ private:
     TabWidget* mainTabWidget;
     void loadTabWidgetSettings();
 
-    void showPreface(int prefaceID);
+    void showPreface(int prefaceID, bool silent = true);
 
     bool processTextChanged;
     QToolBar* parentCatsToolBar;

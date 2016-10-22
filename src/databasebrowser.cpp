@@ -120,7 +120,8 @@ DatabaseBrowser::DatabaseBrowser(const QString &sqliteDbCompletePath)
                     pathOfDatabase = dir;
                 }
                 else {
-                    exit(1);
+                    QMessageBox::information(0, tr("Exit"), tr("Saaghar could not find database file and will be closed."));
+                    exit(0);
                 }
             }
             else if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->createDataBaseFromLocal
@@ -131,8 +132,12 @@ DatabaseBrowser::DatabaseBrowser(const QString &sqliteDbCompletePath)
                 getDir.setFileMode(QFileDialog::Directory);
                 getDir.setOptions(QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks /*| QFileDialog::DontUseNativeDialog*/);
                 getDir.setAcceptMode(QFileDialog::AcceptOpen);
-                QtWin::easyBlurUnBlur(&getDir, VARB("SaagharWindow/UseTransparecy"));
-                getDir.exec();
+
+                if (getDir.exec() != QFileDialog::Accepted) {
+                    QMessageBox::information(0, tr("Exit"), tr("Saaghar could not find database file and will be closed."));
+                    exit(0);
+                }
+
                 QString dir = "";
                 if (!getDir.selectedFiles().isEmpty()) {
                     dir = getDir.selectedFiles().at(0);

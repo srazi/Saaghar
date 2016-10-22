@@ -2364,13 +2364,15 @@ void SaagharWindow::loadTabWidgetSettings()
     outlineTree->setTreeColor(VAR("SaagharWidget/Colors/OutLine").value<QColor>());
 }
 
-void SaagharWindow::showPreface(int prefaceID)
+void SaagharWindow::showPreface(int prefaceID, bool silent)
 {
 
     QFileInfo preface(sApp->defaultPath(SaagharApplication::ResourcesDir) + QLatin1String("/saaghar_preface.gdb"));
 
-    if (!preface.exists()) {
-        QMessageBox::warning(this, tr("Error"), tr("File not found!"));
+    if (preface.canonicalFilePath().isEmpty() || !preface.exists()) {
+        if (!silent) {
+            QMessageBox::warning(this, tr("Error"), tr("File not found!"));
+        }
         return;
     }
 

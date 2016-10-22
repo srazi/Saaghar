@@ -264,7 +264,8 @@ void SaagharApplication::setupPaths()
 
 void SaagharApplication::setupDatabasePaths()
 {
-    QStringList settingsDatabaseDirs = VARS("DatabaseBrowser/DataBasePath").split(QLatin1String(";"), QString::SkipEmptyParts);
+    const QStringList dirs = VARS("DatabaseBrowser/DataBasePath").split(QLatin1String(";"), QString::SkipEmptyParts);
+    QStringList settingsDatabaseDirs = dirs;
 
     //searching database-path for database-file
     //following lines are for support old default data-base pathes.
@@ -283,7 +284,19 @@ void SaagharApplication::setupDatabasePaths()
         }
     }
 
-    m_paths.insert(DatabaseDirs, settingsDatabaseDirs.join(QLatin1String(";")));
+    if (!m_paths.value(DatabaseFile).isEmpty()) {
+        m_paths.insert(DatabaseDirs, settingsDatabaseDirs.join(QLatin1String(";")));
+    }
+    else {
+        if (dirs.isEmpty() || dirs.at(0).isEmpty()) {
+            m_paths.insert(DatabaseDirs, defaultPath(ResourcesDir));
+        }
+        else {
+            m_paths.insert(DatabaseDirs, dirs.at(0));
+        }
+
+        m_paths.insert(DatabaseFile, m_paths.value(DatabaseDirs) + "/" + DATABASE_FILE_NAME);
+    }
 
     // Set database browser default path
     DatabaseBrowser::setDefaultDatabasename(m_paths.value(DatabaseFile));
