@@ -1737,6 +1737,7 @@ QTextEdit* SaagharWidget::createItemForLongText(int row, int column, const QStri
     if (!tableViewWidget) {
         return 0;
     }
+    const QString paragraphStart = QLatin1String("    ");
     QTextEdit* para = new QTextEdit(tableViewWidget);
     para->setStyleSheet(QString("QTextEdit{background: transparent; border: none; selection-color: %1; selection-background-color: %2;}").arg(tableViewWidget->palette().color(QPalette::HighlightedText).name()).arg(tableViewWidget->palette().color(QPalette::Highlight).name()));
     //para->setAlignment(Qt::AlignJustify);
@@ -1753,7 +1754,7 @@ QTextEdit* SaagharWidget::createItemForLongText(int row, int column, const QStri
     para->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     para->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     para->setTextInteractionFlags(Qt::TextBrowserInteraction/*Qt::NoTextInteraction*/);
-    para->setText(text);
+    para->setText(paragraphStart + text);
     para->setLayoutDirection(text.isRightToLeft() ? Qt::RightToLeft : Qt::LeftToRight);
     QTextCursor tc = para->textCursor();
     tc.select(QTextCursor::Document);
