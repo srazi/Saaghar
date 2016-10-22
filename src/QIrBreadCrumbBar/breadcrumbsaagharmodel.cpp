@@ -156,8 +156,12 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
             index = sApp->outlineModel(m_connectionID)->index(i, 0, parent);
             if (index.isValid()) {
                 const QString title = index.data().toString();
+                const static QChar LRE(0x202a);
+                const static QChar RLE(0x202b);
+                const QChar embeddingChar = title.isRightToLeft() ? RLE : LRE;
+
                 const QString childPath = cleanedPath + SEPARATOR + title;
-                QAction* act = new QAction(icon(pathNodeType(QStringList() << sections << title)), title, menu);
+                QAction* act = new QAction(icon(pathNodeType(QStringList() << sections << title)), (embeddingChar + title), menu);
                 act->setData(childPath);
                 menu->addAction(act);
             }
@@ -169,7 +173,11 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
         for (int i = count - 1; i >= 0; --i) {
             const QString path = cleanPath(QStringList(sections.mid(0, i + 1)).join(SEPARATOR));
             const QString title = sections.at(i);
-            QAction* act = new QAction(icon(i == 0 ? QIrBreadCrumbModelNode::Root : QIrBreadCrumbModelNode::Container), title, menu);
+            const static QChar LRE(0x202a);
+            const static QChar RLE(0x202b);
+            const QChar embeddingChar = title.isRightToLeft() ? RLE : LRE;
+
+            QAction* act = new QAction(icon(i == 0 ? QIrBreadCrumbModelNode::Root : QIrBreadCrumbModelNode::Container), (embeddingChar + title), menu);
             act->setData(path);
             menu->addAction(act);
         }
@@ -188,7 +196,11 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
                                   ? sections.at(0)
                                   : sections.first() + QLatin1String(": ") + sections.last();
 
-            QAction* act = new QAction(icon(pathNodeType(sections)), title, menu);
+            const static QChar LRE(0x202a);
+            const static QChar RLE(0x202b);
+            const QChar embeddingChar = title.isRightToLeft() ? RLE : LRE;
+
+            QAction* act = new QAction(icon(pathNodeType(sections)), (embeddingChar + title), menu);
             act->setData(path);
             menu->addAction(act);
         }

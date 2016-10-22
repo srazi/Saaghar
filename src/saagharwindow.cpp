@@ -73,7 +73,7 @@
 
 
 #include "qirbreadcrumbbar.h"
-#include "qirbreadcrumbbarstyle.h"
+#include "breadcrumbbarsaagharstyle.h"
 #include "breadcrumbsaagharmodel.h"
 
 #ifdef MEDIA_PLAYER
@@ -176,7 +176,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     // create Bread Crumb ToolBar
     m_breadCrumbBar = new QIrBreadCrumbBar(this);
-    m_breadCrumbBar->setSubStyle(new QIrStyledBreadCrumbBarStyle);
+    m_breadCrumbBar->setSubStyle(new BreadCrumbBarSaagharStyle);
     m_breadCrumbSaagharModel = new BreadCrumbSaagharModel(DatabaseBrowser::defaultConnectionId());
     m_breadCrumbBar->setModel(m_breadCrumbSaagharModel);
     m_breadCrumbBar->setMinimumWidth(300);
