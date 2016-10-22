@@ -58,15 +58,22 @@ QSize TabBar::tabSizeHint(int index) const
 
     const int maxWidth = 250;
     const int minWidth = 100;
-    const int minHeight = 27;
 
     TabBar* tabBar = const_cast<TabBar*>(this);
 
-    QSize size = QTabBar::tabSizeHint(index);
+    static int height = -1;
+
+    if (height = -1) {
+        height = QTabBar::tabSizeHint(index).height();
 #ifndef Q_OS_MAC
-    size.setHeight(qMax(size.height(), minHeight));
+        height = qMax(height, 33);
 #endif
-    int availableWidth = width() - (m_addTabButton->isVisible() ? m_addTabButton->width() : 0);
+    }
+
+    int thisTabWidth = minWidth;
+
+    int activeTabWidthBiggerThanOther = 75;
+    int availableWidth = width() - (m_addTabButton->isVisible() ? m_addTabButton->width() : 0) - activeTabWidthBiggerThanOther;
     int tabCount = count();
     int boundedWidthForTab = maxWidth;
     int activeTabWidth = boundedWidthForTab;
@@ -74,11 +81,11 @@ QSize TabBar::tabSizeHint(int index) const
     if (tabCount > 0) {
         boundedWidthForTab = qBound(minWidth, availableWidth / tabCount, maxWidth);
         if (index == currentIndex()) {
-            activeTabWidth = qBound(boundedWidthForTab, availableWidth - (tabCount - 1) * boundedWidthForTab, maxWidth);
-            size.setWidth(activeTabWidth);
+            activeTabWidth = activeTabWidthBiggerThanOther + qBound(boundedWidthForTab, availableWidth - (tabCount - 1) * boundedWidthForTab, maxWidth);
+            thisTabWidth = activeTabWidth;
         }
         else {
-            size.setWidth(boundedWidthForTab);
+            thisTabWidth = boundedWidthForTab;
         }
     }
 
@@ -97,7 +104,7 @@ QSize TabBar::tabSizeHint(int index) const
             m_addTabButton->show();
         }
     }
-    return size;
+    return QSize(thisTabWidth, height);
 }
 
 void TabBar::moveAddTabButton(int posX)
