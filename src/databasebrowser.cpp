@@ -1209,7 +1209,7 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID,
         strQuery = QString("SELECT id, title FROM poem WHERE title LIKE \'%" + searchQueryPhrase + "%\' ORDER BY id");
     }
     else {
-        strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM (verse INNER JOIN poem ON verse.poem_id=poem.id) INNER JOIN cat ON cat.id =cat_id WHERE verse.text LIKE \'%" + searchQueryPhrase + "%\' AND poet_id=" + QString::number(PoetID) + " ORDER BY poem_id");
+        strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM verse WHERE verse.text LIKE \'%%1%\' AND verse.poem_id IN (SELECT poem.id FROM poem WHERE poem.cat_id IN (SELECT cat.id FROM cat WHERE poet_id=%2) ORDER BY poem.id)").arg(searchQueryPhrase).arg(QString::number(PoetID));
     }
 
     if (taskTitle.isEmpty()) {
