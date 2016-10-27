@@ -39,6 +39,7 @@ class TabWidget;
 class QIrBreadCrumbBar;
 class BreadCrumbSaagharModel;
 class AudioRepoDownloader;
+class SearchOptionsDialog;
 
 namespace Ui
 {
@@ -132,7 +133,6 @@ private:
     QAction* labelMaxResultSeparator;
     //QAction *labelMaxResultAction;
     QAction* spinBoxMaxSearchResultAction;
-    QMenu* searchOptionMenu;
     QString mainToolBarSizeAction;
     QString mainToolBarStyleAction;
     //bool dataFromIdentifier(const QString &identifier, QString *type = 0, int *id = 0);
@@ -150,6 +150,7 @@ private:
     AudioRepoDownloader* m_audioRepoDownloader;
 #endif
     bool m_updateTaskScheduled;
+    SearchOptionsDialog* m_searchOptions;
 
 public slots:
     void updateTabsSubMenus();
@@ -217,7 +218,6 @@ private slots:
 
     //search options
     void showSearchOptionsDialog();
-    void showSearchOptionMenu();
     void showSearchTips();
     void showStatusText(const QString &message, int newLevelsCount = 0);
 

@@ -88,6 +88,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     , m_cornerMenu(0)
     , m_settingsDialog(0)
     , m_updateTaskScheduled(false)
+    , m_searchOptions(0)
 {
     setObjectName("SaagharMainWindow");
     setWindowIcon(QIcon(":/resources/images/saaghar.png"));
@@ -1992,14 +1993,6 @@ void SaagharWindow::loadAudioForCurrentTab(SaagharWidget* old_saagharWidget)
 #endif // MEDIA_PLAYER
 }
 
-void SaagharWindow::showSearchOptionMenu()
-{
-    if (!searchOptionMenu || !SaagharWidget::lineEditSearchText || !SaagharWidget::lineEditSearchText->optionsButton()) {
-        return;
-    }
-    searchOptionMenu->exec(SaagharWidget::lineEditSearchText->optionsButton()->mapToGlobal(QPoint(0, SaagharWidget::lineEditSearchText->optionsButton()->height()))/*QCursor::pos()*/);
-}
-
 void SaagharWindow::showSearchTips()
 {
     QString searchTips;
@@ -2802,9 +2795,12 @@ void SaagharWindow::openPath(const QString &path)
 
 void SaagharWindow::showSearchOptionsDialog()
 {
-    SearchOptionsDialog searchDialog(this);
-    connect(&searchDialog, SIGNAL(resultsRefreshRequired()), this, SIGNAL(maxItemPerPageChanged()));
-    searchDialog.exec();
+    if (!m_searchOptions) {
+        m_searchOptions = new SearchOptionsDialog(this);
+        connect(m_searchOptions, SIGNAL(resultsRefreshRequired()), this, SIGNAL(maxItemPerPageChanged()));
+    }
+
+    m_searchOptions->show();
 }
 
 void SaagharWindow::toolBarContextMenu(const QPoint &/*pos*/)
@@ -3050,19 +3046,7 @@ void SaagharWindow::setupSearchToolBarUi()
     searchToolBarContent->setFocusProxy(SaagharWidget::lineEditSearchText);
     ui->searchToolBar->addWidget(searchToolBarContent);
 
-    searchOptionMenu = new QMenu(ui->searchToolBar);
-
-    actionInstance("searchOptions", "", tr("Search &Options..."));
-    connect(actionInstance("searchOptions"), SIGNAL(triggered()), this, SLOT(showSearchOptionsDialog()));
-
-    actionInstance("actionSearchTips", "", tr("&Search Tips..."));
-    connect(actionInstance("actionSearchTips"), SIGNAL(triggered()), this, SLOT(showSearchTips()));
-
-    searchOptionMenu->addAction(actionInstance("searchOptions"));
-    searchOptionMenu->addAction(actionInstance("separator"));
-    searchOptionMenu->addAction(actionInstance("actionSearchTips"));
-
-    connect(SaagharWidget::lineEditSearchText->optionsButton(), SIGNAL(clicked()), this, SLOT(showSearchOptionMenu()));
+    connect(SaagharWidget::lineEditSearchText->optionsButton(), SIGNAL(clicked()), this, SLOT(showSearchOptionsDialog()));
 }
 
 void SaagharWindow::namedActionTriggered(bool checked)
