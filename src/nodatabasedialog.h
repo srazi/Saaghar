@@ -50,6 +50,11 @@ private:
 private slots:
     void adjustSizeSlot();
     void buttonCheckStateToggled();
+
+protected:
+#if QT_VERSION >= 0x050000
+    void paintEvent(QPaintEvent* event);
+#endif
 };
 
 #endif // NODATABASEDIALOG_H

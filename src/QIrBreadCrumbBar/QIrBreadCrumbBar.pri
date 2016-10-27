@@ -9,7 +9,8 @@ HEADERS += \
     $$PWD/qirabstractbreadcrumbmodel.h \
     $$PWD/qirbreadcrumbbar.h \
     $$PWD/qirbreadcrumbbarstyle.h \
-    $$PWD/breadcrumbsaagharmodel.h
+    $$PWD/breadcrumbsaagharmodel.h \
+    $$PWD/breadcrumbbarsaagharstyle.h
 
 
 SOURCES += \
@@ -17,6 +18,6 @@ SOURCES += \
     $$PWD/qirabstractbreadscrumbmodel.cpp \
     $$PWD/qirbreadcrumbbar.cpp \
     $$PWD/qirbreadcrumbbarstyle.cpp \
-    $$PWD/breadcrumbsaagharmodel.cpp
+    $$PWD/breadcrumbsaagharmodel.cpp \
+    $$PWD/breadcrumbbarsaagharstyle.cpp
 
-RESOURCES += $$PWD/QIrBreadCrumbBar.qrc

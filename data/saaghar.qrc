@@ -5,6 +5,13 @@
         <file>images/saaghar-splash-mask.png</file>
         <file>images/saaghar.png</file>
         <file>images/transp.png</file>
+        <file>images/semi-white.png</file>
+        <file>images/saaghar-about.png</file>
+        <file>iconsets/default/root-node.png</file>
+        <file>iconsets/default/container-node.png</file>
+        <file>iconsets/default/leaf-node.png</file>
+        <file>iconsets/default/download-audio-repositories.png</file>
+        <file>iconsets/default/download-sets-repositories.png</file>
         <file>iconsets/default/add-tab.png</file>
         <file>iconsets/default/arrow-down.png</file>
         <file>iconsets/default/album.png</file>
@@ -33,7 +40,7 @@
         <file>iconsets/default/home.png</file>
         <file>iconsets/default/import-to-database.png</file>
         <file>iconsets/default/left.png</file>
-		<file>iconsets/default/music-player.png</file>
+        <file>iconsets/default/music-player.png</file>
         <file>iconsets/default/new_tab.png</file>
         <file>iconsets/default/new_window.png</file>
         <file>iconsets/default/next.png</file>

@@ -32,7 +32,10 @@ QIR_BEGIN_NAMESPACE
 class QIRONSHARED_EXPORT BreadCrumbSaagharModel : public QIrAbstractBreadCrumbModel
 {
 public:
-    BreadCrumbSaagharModel();
+    BreadCrumbSaagharModel(const QString &connectionID);
+
+    QString connectionID() const;
+    void setConnectionID(const QString &connectionID) const;
 
     QString defaultPath() const;
     QString cleanPath(const QString &path) const;
@@ -53,6 +56,8 @@ private:
     QStringList pathSections(const QString &path) const;
     QIrBreadCrumbModelNode::Type pathNodeType(const QStringList &sections) const;
     QIcon icon(const QIrBreadCrumbModelNode::Type &) const;
+
+    mutable QString m_connectionID;
 };
 
 QIR_END_NAMESPACE

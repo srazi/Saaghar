@@ -41,14 +41,16 @@ struct OutlineNode {
 
 namespace
 {
-static OutlineNode RootNode;
+static QHash<QString, OutlineNode*> RootNodes;
 }
 
-OutlineModel* OutlineModel::s_instance = 0;
-
-OutlineModel::OutlineModel(QObject* parent)
+OutlineModel::OutlineModel(const QString &connectionID, QObject* parent)
     : QAbstractItemModel(parent)
+    , m_connectionID(connectionID)
 {
+    if (!RootNodes.contains(m_connectionID)) {
+        RootNodes.insert(m_connectionID, new OutlineNode);
+    }
 }
 
 OutlineNode* OutlineModel::node(const QModelIndex &index) const
@@ -58,7 +60,7 @@ OutlineNode* OutlineModel::node(const QModelIndex &index) const
         p = static_cast<OutlineNode*>(index.internalPointer());
     }
     else {
-        p = &RootNode;
+        p = RootNodes.value(m_connectionID);
     }
 
     Q_ASSERT(p != 0);
@@ -107,7 +109,7 @@ QVector<OutlineNode*> OutlineModel::children(OutlineNode* parent, bool useCache)
 
     int parentId = (!parent->cat || parent->cat->_ID == -1) ? 0 : parent->cat->_ID;
 
-    QList<GanjoorCat*> cats = sApp->databaseBrowser()->getSubCategories(parentId);
+    QList<GanjoorCat*> cats = sApp->databaseBrowser()->getSubCategories(parentId, m_connectionID);
 
     QVector<OutlineNode*> nodeList;
     nodeList.reserve(cats.size());
@@ -161,18 +163,9 @@ QModelIndex OutlineModel::find(int id, const QModelIndex &parent) const
     return QModelIndex();
 }
 
-OutlineModel* OutlineModel::instance()
-{
-    if (!s_instance) {
-        s_instance = new OutlineModel(sApp);
-    }
-
-    return s_instance;
-}
-
 OutlineModel::~OutlineModel()
 {
-    s_instance = 0;
+    delete RootNodes.take(m_connectionID);
 }
 
 QModelIndex OutlineModel::index(int row, int column, const QModelIndex &parent) const
@@ -189,13 +182,13 @@ QModelIndex OutlineModel::parent(const QModelIndex &child) const
     OutlineNode* n = node(child);
     OutlineNode* par = (n ? n->parent : 0);
 
-    if (par == 0 || par == &RootNode) {
+    if (par == 0 || par == RootNodes.value(m_connectionID)) {
         return QModelIndex();
     }
 
     const QVector<OutlineNode*> grandParentChildren = par->parent
             ? children(par->parent, true)
-            : children(&RootNode, true);
+            : children(RootNodes.value(m_connectionID), true);
 
     Q_ASSERT(grandParentChildren.count() > 0);
 
@@ -213,7 +206,7 @@ int OutlineModel::rowCount(const QModelIndex &parent) const
     }
 
     if (!parent.isValid()) {
-        return children(&RootNode, true).size();
+        return children(RootNodes.value(m_connectionID), true).size();
     }
 
     if (parent.model() != this) {
@@ -266,7 +259,7 @@ void OutlineModel::clear()
 {
     beginResetModel();
 
-    clear(&RootNode);
+    clear(RootNodes.value(m_connectionID));
 
     endResetModel();
 }

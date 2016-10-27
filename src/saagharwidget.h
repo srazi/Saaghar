@@ -51,7 +51,7 @@ class SaagharWidget : public QWidget
     Q_OBJECT
 
 public:
-    SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidget* tableWidget);
+    SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidget* tableWidget, const QString &connectionID);
     ~SaagharWidget();
 
 #ifdef MEDIA_PLAYER
@@ -88,7 +88,9 @@ public:
     QString currentPageGanjoorUrl();
     void loadSettings();
     void showParentCategory(GanjoorCat category);
-    void processClickedItem(QString type, int id, bool error, bool pushToStack = true);
+
+    // empty connectionID means the current m_connectionID
+    void processClickedItem(QString type, int id, bool error, bool pushToStack = true, const QString &connectionID = QString());
     void navigateToPage(QString type, int id, bool error);
 
     int currentVerticalPosition();
@@ -96,7 +98,11 @@ public:
 
     QString highlightCell(int vorder);
 
+    bool isLocalDataset() const;
+    QString connectionID() const;
+
     int minMesraWidth;
+    bool m_hasPoem;
 
     //STATIC Variables
     static QString poetsImagesDir;
@@ -162,6 +168,8 @@ private:
     bool dirty;
     int m_vPosition;
 
+    QString m_connectionID;
+
 private slots:
     void createCustomContextMenu(const QPoint &pos);
     void parentCatClicked();
@@ -183,6 +191,6 @@ signals:
     void navPreviousActionState(bool);
     void loadingStatusText(const QString &, int num = 0);
     void createContextMenuRequested(const QPoint &);
-    void currentLocationChanged(const QStringList &);
+    void currentLocationChanged(const QStringList &, const QString &);
 };
 #endif // SAAGHARWIDGET_H

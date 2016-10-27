@@ -26,7 +26,6 @@
 #define Q_OS_X11
 #endif
 
-#define ICON_PATH Settings::currentIconThemePath()
 #include "ui_settings.h"
 
 #include <QMultiSelectWidget>

@@ -21,6 +21,7 @@
 
 #include "tools.h"
 #include "searchresultwidget.h"
+#include "settings.h"
 
 #include <QFileInfo>
 
@@ -425,6 +426,28 @@ int Tools::getRandomNumber(int minBound, int maxBound)
 
     float rand = *((float*)(&ret));
     return (int)(rand * (maxBound - minBound + 1) + minBound);
+}
+
+int Tools::prefaceIDFromVersion(const QString &version)
+{
+    const int lastPrefaceID = 1000007;
+
+    if (version == QLatin1String("3.0.0")) {
+        return 1000007;
+    }
+
+    return lastPrefaceID;
+}
+
+QString Tools::iconFileByKey(const QString &key, bool fallback)
+{
+    QString iconFileName = QString("%1/%2.png").arg(Settings::currentIconThemePath()).arg(key);
+
+    if (fallback && !QFile::exists(iconFileName)) {
+        iconFileName = QString("%1/%2.png").arg(QLatin1String(":/resources/iconsets/default")).arg(key);
+    }
+
+    return iconFileName;
 }
 
 void Tools::setSplashScreen(QObject* splash)

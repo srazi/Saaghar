@@ -116,7 +116,7 @@ void OutlineTree::refreshTree()
 {
     sApp->outlineModel()->clear();
 
-    m_outlineView->setModel(sApp->outlineModel());
+    m_outlineView->setModel(sApp->outlineModel(m_connectionID));
 }
 
 bool OutlineTree::filterItems(const QString &str, const QModelIndex &parent)
@@ -264,5 +264,13 @@ void OutlineTree::setTreeColor(const QColor &color)
         QPalette p(m_outlineView->palette());
         p.setColor(QPalette::Text, color);
         m_outlineView->setPalette(p);
+    }
+}
+
+void OutlineTree::setConnectionID(const QString &connectionID)
+{
+    if (!connectionID.isEmpty() && connectionID != m_connectionID) {
+        m_connectionID = connectionID;
+        m_outlineView->setModel(sApp->outlineModel(m_connectionID));
     }
 }

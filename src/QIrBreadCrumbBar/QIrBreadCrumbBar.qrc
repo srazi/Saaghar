@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/saagharmodel">
-        <file>images/leaf-node.png</file>
-        <file>images/root-node.png</file>
-        <file>images/container-node.png</file>
-    </qresource>
-</RCC>

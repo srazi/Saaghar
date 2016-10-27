@@ -37,6 +37,7 @@ class OutlineTree;
 class Settings;
 class TabWidget;
 class QIrBreadCrumbBar;
+class BreadCrumbSaagharModel;
 class AudioRepoDownloader;
 
 namespace Ui
@@ -94,15 +95,20 @@ private:
     TabWidget* mainTabWidget;
     void loadTabWidgetSettings();
 
+    void showPreface(int prefaceID, bool silent = true);
+
     bool processTextChanged;
     QToolBar* parentCatsToolBar;
     QToolBar* m_breadCrumbToolBar;
     QIrBreadCrumbBar* m_breadCrumbBar;
+    BreadCrumbSaagharModel* m_breadCrumbSaagharModel;
     SaagharWidget* getSaagharWidget(int tabIndex);
     Qt::MouseButtons pressedMouseButton;
+
+    // empty connectionID means DatabaseBrowser::defaultConnectionId()
     QWidget* insertNewTab(TabType tabType = SaagharWindow::SaagharViewerTab, const QString &title = QString(),
                           int id = -1, const QString &type = "CatID", bool noError = true,
-                          bool pushToStack = true);
+                          bool pushToStack = true, const QString &connectionID = QString());
     Ui::SaagharWindow* ui;
     void createConnections();
     void setupUi();
@@ -153,9 +159,9 @@ private slots:
     void openPath(const QString &path);
     void openParentPage(int parentID, bool newPage = false);
     void openChildPage(int childID, bool newPage = false);
-    void openPage(int id, SaagharWidget::PageType type, bool newPage = false);
+    void openPage(int id, SaagharWidget::PageType type, bool newPage = false, const QString &connectionID = QString(), bool firstSearchOpenedTabs = true);
     void createCustomContextMenu(const QPoint &pos);
-    void onCurrentLocationChanged(const QStringList &locationList);
+    void onCurrentLocationChanged(const QStringList &locationList, const QString &connectionID = QString());
 
 #ifdef MEDIA_PLAYER
     void mediaInfoChanged(const QString &fileName, const QString &title = "", int id = -1);
@@ -184,7 +190,8 @@ private slots:
     void actionExportAsPDFClicked();
     void actionExportClicked();
     void actionPrintClicked();
-    void openRandomPoem(int parentID, bool newPage = false);
+    // empty connectionID means DatabaseBrowser::defaultConnectionId()
+    void openRandomPoem(int parentID, bool newPage = false, const QString &connectionID = QString());
     void aboutSaaghar();
     void tableSelectChanged();
     void tableItemPress(QTableWidgetItem* item);
@@ -197,7 +204,7 @@ private slots:
     void tabCloser(int tabIndex);
     void showSettingsDialog();
     void applySettings();
-    void newTabForItem(int id, const QString &type = "CatID", bool noError = true, bool pushToStack = true);
+    void newTabForItem(int id, const QString &type = "CatID", bool noError = true, bool pushToStack = true, const QString &connectionID = QString());
     void updateCaption();
     void searchStart();
     //Navigation
@@ -214,10 +221,12 @@ private slots:
     void showSearchTips();
     void showStatusText(const QString &message, int newLevelsCount = 0);
 
-    void onDatabaseUpdate();
+    void onDatabaseUpdate(const QString &connectionID);
 
 protected:
 //      void resizeEvent( QResizeEvent * event );
+    void dragEnterEvent(QDragEnterEvent* event);
+    void dropEvent(QDropEvent* event);
     void closeEvent(QCloseEvent* event);
 #if QT_VERSION >= 0x050000
     void paintEvent(QPaintEvent* event);

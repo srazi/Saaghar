@@ -83,7 +83,8 @@ ConcurrentTask::ConcurrentTask(QObject* parent)
       m_cancel(false),
       m_progressObject(0),
       m_displayFullNotification(sApp->displayFullNotification() && sApp->notificationPosition() != ProgressManager::Disabled),
-      m_futureProgress(0)
+      m_futureProgress(0),
+      m_isQueued(false)
 {
     // deleted by parent/child system of Qt
     setAutoDelete(false);
@@ -94,7 +95,7 @@ ConcurrentTask::~ConcurrentTask()
 {
 }
 
-void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
+void ConcurrentTask::start(const QString &type, const QVariantHash &argumants, bool queued)
 {
     if (type != "SEARCH" && type != "UPDATE") {
         return;
@@ -106,13 +107,14 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
 
     m_type = type;
     m_options = argumants;
+    m_isQueued = queued;
 
-    const bool shouldPrependTask = type == "UPDATE" && VAR_GET(m_options, checkByUser).toBool();
+    m_shouldPrependTask = type == "UPDATE" && VAR_GET(m_options, checkByUser).toBool();
 
     if (sApp->notificationPosition() != ProgressManager::Disabled) {
         m_progressObject = new QFutureInterface<void>;
 
-        ProgressManager::ProgressFlags progressFlags = shouldPrependTask
+        ProgressManager::ProgressFlags progressFlags = m_shouldPrependTask
                 ? (ProgressManager::ShowInApplicationIcon | ProgressManager::PrependInsteadAppend)
                 : ProgressManager::ShowInApplicationIcon;
 
@@ -126,7 +128,9 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants)
 
     ConcurrentTaskManager::instance()->addConcurrentTask(this);
 
-    sApp->tasksThreadPool()->start(this, (shouldPrependTask ? 1 : 0));
+    if (!m_isQueued) {
+        sApp->tasksThreadPool()->start(this, (m_shouldPrependTask ? 1 : 0));
+    }
 }
 
 #ifdef SAAGHAR_DEBUG
@@ -147,9 +151,7 @@ void ConcurrentTask::directStart(const QString &type, const QVariantHash &arguma
 
 void ConcurrentTask::run()
 {
-#ifdef SAAGHAR_DEBUG
-    qint64 start = QDateTime::currentMSecsSinceEpoch();
-#endif
+    const qint64 start = QDateTime::currentMSecsSinceEpoch();
 
     QThread::Priority prio = QThread::currentThread()->priority();
     prio = prio == QThread::InheritPriority ? QThread::NormalPriority : prio;
@@ -176,20 +178,40 @@ void ConcurrentTask::run()
 
     QThread::currentThread()->setPriority(prio);
 
+    const int duration = QDateTime::currentMSecsSinceEpoch() - start;
 #ifdef SAAGHAR_DEBUG
-    qint64 end = QDateTime::currentMSecsSinceEpoch();
-    qDebug() << __LINE__ << __FUNCTION__ << (end - start);
+    qDebug() << __LINE__ << __FUNCTION__ << duration;
 #endif
 
     emit concurrentResultReady(m_type, result);
 
-    ::msleep(20);
+
+    if (duration < 20) {
+        ::msleep(20 - duration);
+    }
+    else if (duration < 50) {
+        ::msleep(20);
+    }
+    else if (duration < 100) {
+        ::msleep(10);
+    }
+}
+
+void ConcurrentTask::startQueued()
+{
+    if (m_isQueued) {
+        m_isQueued = false;
+        sApp->tasksThreadPool()->start(this, (m_shouldPrependTask ? 1 : 0));
+        sApp->processEvents();
+    }
 }
 
 QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 {
     TASK_CANCELED;
 
+    const QString &theConnectionID = VAR_GET(options, connectionID).toString();
+    const QString &connectionID = sApp->databaseBrowser()->getIdForDataBase(sApp->databaseBrowser()->databaseFileFromID(theConnectionID), QThread::currentThread());
     const QString &strQuery = VAR_GET(options, strQuery).toString();
     int PoetID = VAR_GET(options, PoetID).toInt();
     const QStringList &phraseList = VAR_GET(options, phraseList).toStringList();
@@ -198,7 +220,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
     SearchResults searchResults;
 
-    QSqlDatabase threadDatabase = sApp->databaseBrowser()->databaseForThread(QThread::currentThread());
+    QSqlDatabase threadDatabase = sApp->databaseBrowser()->database(connectionID);
     if (!threadDatabase.isOpen()) {
         qDebug() << QString("ConcurrentTask::startSearch: A database for thread %1 could not be opened!").arg(QString::number((quintptr)QThread::currentThread()));
         return QVariant();
@@ -278,7 +300,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
                         TASK_CANCELED;
 
-                        verses = sApp->databaseBrowser()->getVerses(poemID);
+                        verses = sApp->databaseBrowser()->getVerses(poemID, connectionID);
                     }
 
                     TASK_CANCELED;
@@ -298,7 +320,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
                         TASK_CANCELED;
 
-                        verses = sApp->databaseBrowser()->getVerses(poemID);
+                        verses = sApp->databaseBrowser()->getVerses(poemID, connectionID);
                     }
 
                     TASK_CANCELED;
@@ -356,8 +378,10 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
             emit searchStatusChanged(DatabaseBrowser::tr("Search Result(s): %1").arg(numOfFounded));
         }
 
-        GanjoorPoem gPoem = sApp->databaseBrowser()->getPoem(poemID);
-        searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + sApp->databaseBrowser()->getPoetForCat(gPoem._CatID)._Name);
+        GanjoorPoem gPoem = sApp->databaseBrowser()->getPoem(poemID, connectionID);
+
+        // TODO: Add connectionID to item
+        searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + sApp->databaseBrowser()->getPoetForCat(gPoem._CatID, connectionID)._Name);
     }
 
     //for the last result
@@ -449,6 +473,15 @@ ConcurrentTaskManager* ConcurrentTaskManager::instance()
 
 ConcurrentTaskManager::~ConcurrentTaskManager()
 {
+}
+
+void ConcurrentTaskManager::startQueuedTasks()
+{
+    foreach (const TaskPointer &wp, m_tasks) {
+        if (wp && wp.data()) {
+            wp.data()->startQueued();
+        }
+    }
 }
 
 void ConcurrentTaskManager::addConcurrentTask(ConcurrentTask* task)

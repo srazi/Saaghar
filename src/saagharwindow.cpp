@@ -38,6 +38,7 @@
 #include "outlinemodel.h"
 #include "importer/importermanager.h"
 #include "importer/importer_interface.h"
+#include "aboutdialog.h"
 
 #include <QTextBrowserDialog>
 #include <QSearchLineEdit>
@@ -72,7 +73,7 @@
 
 
 #include "qirbreadcrumbbar.h"
-#include "qirbreadcrumbbarstyle.h"
+#include "breadcrumbbarsaagharstyle.h"
 #include "breadcrumbsaagharmodel.h"
 
 #ifdef MEDIA_PLAYER
@@ -175,8 +176,9 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     // create Bread Crumb ToolBar
     m_breadCrumbBar = new QIrBreadCrumbBar(this);
-    m_breadCrumbBar->setSubStyle(new QIrStyledBreadCrumbBarStyle);
-    m_breadCrumbBar->setModel(new BreadCrumbSaagharModel);
+    m_breadCrumbBar->setSubStyle(new BreadCrumbBarSaagharStyle);
+    m_breadCrumbSaagharModel = new BreadCrumbSaagharModel(DatabaseBrowser::defaultConnectionId());
+    m_breadCrumbBar->setModel(m_breadCrumbSaagharModel);
     m_breadCrumbBar->setMinimumWidth(300);
     m_breadCrumbBar->setSizePolicy(QSizePolicy::Expanding, m_breadCrumbBar->sizePolicy().verticalPolicy());
     connect(m_breadCrumbBar, SIGNAL(locationChanged(QString)), this, SLOT(openPath(QString)));
@@ -195,13 +197,13 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     setupUi();
 
     //setup corner widget
-    mainTabWidget->getTabBar()->addTabButton()->setIcon(QIcon(ICON_PATH + "/add-tab.png"));
+    mainTabWidget->getTabBar()->addTabButton()->setIcon(QIcon(ICON_FILE("add-tab")));
     connect(mainTabWidget->getTabBar()->addTabButton(), SIGNAL(clicked()), this, SLOT(actionNewTabClicked()));
 
     MacToolButton* cornerMenuButton = new MacToolButton(mainTabWidget);
     cornerMenuButton->setStyleSheet("QToolButton::menu-indicator{image: none;}");
     cornerMenuButton->setAutoRaise(true);
-    cornerMenuButton->setIcon(QIcon(ICON_PATH + "/arrow-down.png"));
+    cornerMenuButton->setIcon(QIcon(ICON_FILE("arrow-down")));
     cornerMenuButton->setFixedWidth(cornerMenuButton->iconSize().width());
     cornerMenuButton->setMenu(cornerMenu());
 
@@ -271,23 +273,29 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     if (windowState() & Qt::WindowFullScreen) {
         actionInstance("actionFullScreen")->setChecked(true);
         actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
-        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_PATH + "/no-fullscreen.png"));
+        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_FILE("no-fullscreen")));
     }
     else {
         actionInstance("actionFullScreen")->setChecked(false);
         actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
-        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_PATH + "/fullscreen.png"));
+        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_FILE("fullscreen")));
         //apply transparent effect just in windowed mode!
         QtWin::easyBlurUnBlur(this, VARB("SaagharWindow/UseTransparecy"));
     }
 
-    connect(sApp->databaseBrowser(), SIGNAL(databaseUpdated()), this, SLOT(onDatabaseUpdate()));
+    connect(sApp->databaseBrowser(), SIGNAL(databaseUpdated(QString)), this, SLOT(onDatabaseUpdate(QString)));
+
+    setAcceptDrops(true);
 
     showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), -1);
 
 
     if (VARB("General/AutoCheckUpdates") && !fresh) {
         QTimer::singleShot(10000, this, SLOT(checkForUpdates()));
+    }
+
+    if (VARI("General/LastShownPrefaceID") < Tools::prefaceIDFromVersion(SAAGHAR_VERSION)) {
+        showPreface(Tools::prefaceIDFromVersion(SAAGHAR_VERSION));
     }
 }
 
@@ -410,8 +418,7 @@ void SaagharWindow::searchStart()
             //searchResultContents->setLayoutDirection(Qt::RightToLeft);
 
             phrase = Tools::cleanString(phrase);
-            SearchResultWidget* searchResultWidget = new SearchResultWidget(this, ICON_PATH, searchResultContents,
-                    phrase, poetName);
+            SearchResultWidget* searchResultWidget = new SearchResultWidget(this, searchResultContents, phrase, poetName);
 
             ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget);
             connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
@@ -429,7 +436,7 @@ void SaagharWindow::searchStart()
             SaagharWidget::lineEditSearchText->searchStart(&searchCanceled);
 
             SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(poetName));
-            QApplication::processEvents();
+
 
             bool success = false;
 
@@ -455,9 +462,9 @@ void SaagharWindow::searchStart()
                 }
             }
 
-            if (i == selectList.size() - 1) {
-                SaagharWidget::lineEditSearchText->searchStop();
-            }
+//            if (i == selectList.size() - 1) {
+//                SaagharWidget::lineEditSearchText->searchStop();
+//            }
 
             // searchResultWidget->setResultList(finalResult);
             if (!success) {
@@ -489,6 +496,15 @@ void SaagharWindow::searchStart()
             break;    //search is canceled
         }
     }
+
+    QApplication::processEvents();
+
+    if (!searchCanceled) {
+        ConcurrentTaskManager::instance()->startQueuedTasks();
+    }
+
+    SaagharWidget::lineEditSearchText->searchStop();
+
 }
 
 void SaagharWindow::multiSelectObjectInitialize(QMultiSelectWidget* multiSelectWidget, const QStringList &selectedData, int insertIndex)
@@ -572,7 +588,10 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         if (saagharWidget->isDirty()) {
             saagharWidget->refresh();
         }
-        saagharWidget->showParentCategory(sApp->databaseBrowser()->getCategory(saagharWidget->currentCat));//just update parentCatsToolbar
+        // TODO: outline navigation doesn't support connectionID
+//        outlineTree->setConnectionID(saagharWidget->connectionID());
+//        outlineTree->refreshTree();
+        saagharWidget->showParentCategory(sApp->databaseBrowser()->getCategory(saagharWidget->currentCat, saagharWidget->connectionID()));//just update parentCatsToolbar
         saagharWidget->resizeTable(saagharWidget->tableViewWidget);
 
         connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(QString)), saagharWidget, SLOT(scrollToFirstItemContains(QString)));
@@ -632,9 +651,8 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         undoGroup->setActiveStack(saagharWidget->undoStack);
         updateCaption();
         updateTabsSubMenus();
-
-        actionInstance("actionPreviousPoem")->setEnabled(!sApp->databaseBrowser()->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
-        actionInstance("actionNextPoem")->setEnabled(!sApp->databaseBrowser()->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
+        actionInstance("actionPreviousPoem")->setEnabled(!sApp->databaseBrowser()->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat, saagharWidget->connectionID()).isNull());
+        actionInstance("actionNextPoem")->setEnabled(!sApp->databaseBrowser()->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat, saagharWidget->connectionID()).isNull());
 
         loadAudioForCurrentTab(old_saagharWidget);
 
@@ -873,8 +891,13 @@ void SaagharWindow::tabCloser(int tabIndex)
 
 QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int id,
                                      const QString &type, bool noError,
-                                     bool pushToStack)
+                                     bool pushToStack, const QString &connectionID)
 {
+    QString tabConnectionID = connectionID;
+    if (tabConnectionID.isEmpty()) {
+        tabConnectionID = sApp->databaseBrowser()->defaultConnectionId();
+    }
+
     QWidget* tabContent = new QWidget();
 
     if (tabType == SaagharWindow::SaagharViewerTab) {
@@ -910,7 +933,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         tabTableWidget->setItemDelegate(searchDelegate);
         connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(QString)), searchDelegate, SLOT(keywordChanged(QString)));
 
-        saagharWidget = new SaagharWidget(tabContent, parentCatsToolBar, tabTableWidget);
+        saagharWidget = new SaagharWidget(tabContent, parentCatsToolBar, tabTableWidget, tabConnectionID);
         saagharWidget->setObjectName(QString::fromUtf8("saagharWidget"));
 
         undoGroup->addStack(saagharWidget->undoStack);
@@ -918,7 +941,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         connect(saagharWidget, SIGNAL(loadingStatusText(QString,int)), this, SLOT(showStatusText(QString,int)));
 
         connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateCaption()));
-        connect(saagharWidget, SIGNAL(currentLocationChanged(QStringList)), this, SLOT(onCurrentLocationChanged(QStringList)));
+        connect(saagharWidget, SIGNAL(currentLocationChanged(QStringList,QString)), this, SLOT(onCurrentLocationChanged(QStringList,QString)));
         //temp
         connect(saagharWidget, SIGNAL(captionChanged()), this, SLOT(updateTabsSubMenus()));
 
@@ -933,13 +956,13 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         //\Enable/Disable navigation actions
         connect(saagharWidget, SIGNAL(navPreviousActionState(bool)),    actionInstance("actionPreviousPoem"), SLOT(setEnabled(bool)));
         connect(saagharWidget, SIGNAL(navNextActionState(bool)),    actionInstance("actionNextPoem"), SLOT(setEnabled(bool)));
-        actionInstance("actionPreviousPoem")->setEnabled(!sApp->databaseBrowser()->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
-        actionInstance("actionNextPoem")->setEnabled(!sApp->databaseBrowser()->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat).isNull());
+        actionInstance("actionPreviousPoem")->setEnabled(!sApp->databaseBrowser()->getPreviousPoem(saagharWidget->currentPoem, saagharWidget->currentCat, saagharWidget->connectionID()).isNull());
+        actionInstance("actionNextPoem")->setEnabled(!sApp->databaseBrowser()->getNextPoem(saagharWidget->currentPoem, saagharWidget->currentCat, saagharWidget->connectionID()).isNull());
 
         // Updating table on changing of selection
         connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
         if (id != -1) {
-            saagharWidget->processClickedItem(type, id, noError, pushToStack);
+            saagharWidget->processClickedItem(type, id, noError, pushToStack, tabConnectionID);
         }
         tabGridLayout->addWidget(tabTableWidget, 0, 0, 1, 1);
         mainTabWidget->setUpdatesEnabled(false);
@@ -984,9 +1007,9 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
     return tabContent;
 }
 
-void SaagharWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack)
+void SaagharWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack, const QString &connectionID)
 {
-    insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, type, noError, pushToStack);
+    insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, type, noError, pushToStack, connectionID);
     showStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(Tools::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":") + 1), "", 0, 6, false, Qt::ElideRight)));
 }
 
@@ -997,10 +1020,19 @@ void SaagharWindow::updateCaption()
     }
     SaagharWidget* sw = getSaagharWidget(mainTabWidget->currentIndex());
 
-    QString newTabCaption = Tools::snippedText(sw->currentCaption, "", 0, 6, true, Qt::ElideRight) + QString(QChar(0x200F));
-    mainTabWidget->setTabText(mainTabWidget->currentIndex(), newTabCaption);
+    // QString newTabCaption = Tools::snippedText(sw->currentCaption, "", 0, 6, true, Qt::ElideRight) + QString(QChar(0x200F));
+    mainTabWidget->setTabText(mainTabWidget->currentIndex(), sw->currentCaption);
     mainTabWidget->setTabToolTip(mainTabWidget->currentIndex(), "<p>" + sw->currentCaption + "</p>");
     setWindowTitle(QString(QChar(0x202B)) + tr("Saaghar: ") + sw->currentCaption + QString(QChar(0x202C)));
+
+    if (saagharWidget) {
+        if (saagharWidget->isLocalDataset()) {
+            mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), style()->standardIcon(QStyle::SP_DriveHDIcon));
+        }
+        else {
+            mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), QIcon());
+        }
+    }
 }
 
 void SaagharWindow::tableSelectChanged()
@@ -1393,7 +1425,7 @@ void SaagharWindow::actFullScreenClicked(bool checked)
     if (checked) {
         setWindowState(windowState() | Qt::WindowFullScreen);
         actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
-        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_PATH + "/no-fullscreen.png"));
+        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_FILE("no-fullscreen")));
 
         //disable transparent effect in fullscreen mode!
         QtWin::easyBlurUnBlur(this, false);
@@ -1401,53 +1433,40 @@ void SaagharWindow::actFullScreenClicked(bool checked)
     else {
         setWindowState(windowState() & ~Qt::WindowFullScreen);
         actionInstance("actionFullScreen")->setText(tr("&Full Screen"));
-        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_PATH + "/fullscreen.png"));
+        actionInstance("actionFullScreen")->setIcon(QIcon(ICON_FILE("fullscreen")));
 
         QtWin::easyBlurUnBlur(this, VARB("SaagharWindow/UseTransparecy"));
     }
     setUpdatesEnabled(true);
 }
 
-void SaagharWindow::openRandomPoem(int parentID, bool newPage)
+void SaagharWindow::openRandomPoem(int parentID, bool newPage, const QString &connectionID)
 {
+    QString theConnectionID = connectionID;
+    if (theConnectionID.isEmpty()) {
+        theConnectionID = DatabaseBrowser::defaultConnectionId();
+    }
+
     int actionData = parentID;
 
-    int PoemID = sApp->databaseBrowser()->getRandomPoemID(&actionData);
-    GanjoorPoem poem = sApp->databaseBrowser()->getPoem(PoemID);
+    int PoemID = sApp->databaseBrowser()->getRandomPoemID(&actionData, theConnectionID);
+    GanjoorPoem poem = sApp->databaseBrowser()->getPoem(PoemID, theConnectionID);
     if (!poem.isNull() && poem._CatID == actionData)
         if (newPage || !saagharWidget) {
-            newTabForItem(poem._ID, "PoemID", true);
+            newTabForItem(poem._ID, "PoemID", true, true, theConnectionID);
         }
         else {
-            saagharWidget->processClickedItem("PoemID", poem._ID, true);
+            saagharWidget->processClickedItem("PoemID", poem._ID, true, true, theConnectionID);
         }
     else {
-        openRandomPoem(parentID, newPage);    //not any random id exists, so repeat until finding a valid id
+        //not any random id exists, so repeat until finding a valid id
+        openRandomPoem(parentID, newPage, theConnectionID);
     }
 }
 
 void SaagharWindow::aboutSaaghar()
 {
-    QMessageBox about(this);
-
-    QtWin::easyBlurUnBlur(&about, VARB("SaagharWindow/UseTransparecy"));
-
-    QPixmap pixmap(":/resources/images/saaghar.png");
-    about.setIconPixmap(pixmap);
-    about.setWindowTitle(tr("About Saaghar"));
-    about.setTextFormat(Qt::RichText);
-    about.setText(tr("<br />%1 is a persian poem viewer software, it uses \"ganjoor.net\" database, and some of its initial codes are ported to C++ and Qt from \"desktop ganjoor\" that is a C# .NET application written by %2.<br /><br />Logo Designer: %3<br /><br />Author: %4,<br /><br />Home Page (English): %5<br />Home Page (Persian): %6<br />Mailing List: %7<br />Saaghar in FaceBook: %8<br /><br />Version: %9 - (git-rev: %10)<br />Build Time: %11")
-                  .arg("<a href=\"http://saaghar.pozh.org\">" + tr("Saaghar") + "</a>")
-                  .arg("<a href=\"http://www.gozir.com/\">" + tr("Hamid Reza Mohammadi") + "</a>")
-                  .arg("<a href=\"http://www.phototak.com/\">" + tr("S. Nasser Alavizadeh") + "</a>")
-                  .arg("<a href=\"http://pozh.org/\">" + tr("S. Razi Alavizadeh") + "</a>")
-                  .arg("<a href=\"http://en.saaghar.pozh.org\">http://en.saaghar.pozh.org</a>")
-                  .arg("<a href=\"http://saaghar.pozh.org\">http://saaghar.pozh.org</a>")
-                  .arg("<a href=\"http://groups.google.com/group/saaghar/\">http://groups.google.com/group/saaghar</a>")
-                  .arg("<a href=\"http://www.facebook.com/saaghar.p\">http://www.facebook.com/saaghar.p</a>")
-                  .arg(SAAGHAR_VERSION).arg(GIT_REVISION).arg(BUILD_TIME));
-    about.setStandardButtons(QMessageBox::Ok);
-    about.setEscapeButton(QMessageBox::Ok);
+    AboutDialog about(this);
 
     about.exec();
 }
@@ -1495,11 +1514,11 @@ void SaagharWindow::setupUi()
     if (SaagharWidget::musicPlayer) {
         allActionMap.insert("albumDockAction", SaagharWidget::musicPlayer->albumManagerDock()->toggleViewAction());
         actionInstance("albumDockAction")->setObjectName(QString::fromUtf8("albumDockAction"));
-        actionInstance("albumDockAction")->setIcon(QIcon(ICON_PATH + "/album.png"));
+        actionInstance("albumDockAction")->setIcon(QIcon(ICON_FILE("album")));
 
         allActionMap.insert("toggleMusicPlayer", SaagharWidget::musicPlayer->toggleViewAction());
         actionInstance("toggleMusicPlayer")->setObjectName(QString::fromUtf8("ToggleMusicPlayerAction"));
-        actionInstance("toggleMusicPlayer")->setIcon(QIcon(ICON_PATH + "/music-player.png"));
+        actionInstance("toggleMusicPlayer")->setIcon(QIcon(ICON_FILE("music-player")));
 
         connect(SaagharWidget::musicPlayer, SIGNAL(mediaChanged(QString,QString,int,bool)), this, SLOT(mediaInfoChanged(QString,QString,int)));
         connect(SaagharWidget::musicPlayer, SIGNAL(requestPageContainedMedia(int,bool)), this, SLOT(openChildPage(int,bool)));
@@ -1568,75 +1587,75 @@ void SaagharWindow::setupUi()
     setupBookmarkManagerUi();
 
     //Initialize Actions
-    actionInstance("actionHome", ICON_PATH + "/home.png", tr("&Home"));
+    actionInstance("actionHome", ICON_FILE("home"), tr("&Home"));
 
     if (ui->mainToolBar->layoutDirection() == Qt::LeftToRight) {
-        actionInstance("actionPreviousPoem", ICON_PATH + "/previous.png", tr("&Previous"))->setShortcuts(QKeySequence::Back);
-        actionInstance("actionNextPoem", ICON_PATH + "/next.png", tr("&Next"))->setShortcuts(QKeySequence::Forward);
+        actionInstance("actionPreviousPoem", ICON_FILE("previous"), tr("&Previous"))->setShortcuts(QKeySequence::Back);
+        actionInstance("actionNextPoem", ICON_FILE("next"), tr("&Next"))->setShortcuts(QKeySequence::Forward);
     }
     else {
-        actionInstance("actionPreviousPoem", ICON_PATH + "/next.png", tr("&Previous"))->setShortcuts(QKeySequence::Forward);
-        actionInstance("actionNextPoem", ICON_PATH + "/previous.png", tr("&Next"))->setShortcuts(QKeySequence::Back);
+        actionInstance("actionPreviousPoem", ICON_FILE("next"), tr("&Previous"))->setShortcuts(QKeySequence::Forward);
+        actionInstance("actionNextPoem", ICON_FILE("previous"), tr("&Next"))->setShortcuts(QKeySequence::Back);
     }
 
-    actionInstance("actionCopy", ICON_PATH + "/copy.png", tr("&Copy"))->setShortcuts(QKeySequence::Copy);
+    actionInstance("actionCopy", ICON_FILE("copy"), tr("&Copy"))->setShortcuts(QKeySequence::Copy);
 
-    actionInstance("searchToolbarAction", ICON_PATH + "/search.png", tr("&Find"))->setShortcuts(QKeySequence::Find);
+    actionInstance("searchToolbarAction", ICON_FILE("search"), tr("&Find"))->setShortcuts(QKeySequence::Find);
 
-    actionInstance("actionSettings", ICON_PATH + "/settings.png", tr("S&ettings"))->setMenuRole(QAction::PreferencesRole); //needed for Mac OS X
+    actionInstance("actionSettings", ICON_FILE("settings"), tr("S&ettings"))->setMenuRole(QAction::PreferencesRole); //needed for Mac OS X
 
-    actionInstance("actionViewInGanjoorSite", ICON_PATH + "/browse_net.png", tr("View in \"&ganjoor.net\""));
+    actionInstance("actionViewInGanjoorSite", ICON_FILE("browse_net"), tr("View in \"&ganjoor.net\""));
 
-    actionInstance("actionExit", ICON_PATH + "/exit.png", tr("E&xit"))->setMenuRole(QAction::QuitRole); //needed for Mac OS X
+    actionInstance("actionExit", ICON_FILE("exit"), tr("E&xit"))->setMenuRole(QAction::QuitRole); //needed for Mac OS X
     actionInstance("actionExit")->setShortcut(Qt::CTRL | Qt::Key_Q);
 
-    actionInstance("actionNewTab", ICON_PATH + "/new_tab.png", tr("New &Tab"))->setShortcuts(QKeySequence::AddTab);
+    actionInstance("actionNewTab", ICON_FILE("new_tab"), tr("New &Tab"))->setShortcuts(QKeySequence::AddTab);
 
-    actionInstance("actionNewWindow", ICON_PATH + "/new_window.png", tr("&New Window"))->setShortcuts(QKeySequence::New);
+    actionInstance("actionNewWindow", ICON_FILE("new_window"), tr("&New Window"))->setShortcuts(QKeySequence::New);
 
     actionInstance("actionAboutSaaghar", ":/resources/images/saaghar.png", tr("&About"))->setMenuRole(QAction::AboutRole); //needed for Mac OS X
 
-    actionInstance("actionAboutQt", ICON_PATH + "/qt-logo.png", tr("About &Qt"))->setMenuRole(QAction::AboutQtRole); //needed for Mac OS X
+    actionInstance("actionAboutQt", ICON_FILE("qt-logo"), tr("About &Qt"))->setMenuRole(QAction::AboutQtRole); //needed for Mac OS X
 
-    actionInstance("actionFaal", ICON_PATH + "/faal.png", tr("&Faal"))->setData("-1");
+    actionInstance("actionFaal", ICON_FILE("faal"), tr("&Faal"))->setData("-1");
 
-    actionInstance("actionPrint", ICON_PATH + "/print.png", tr("&Print..."))->setShortcuts(QKeySequence::Print);
+    actionInstance("actionPrint", ICON_FILE("print"), tr("&Print..."))->setShortcuts(QKeySequence::Print);
 
-    actionInstance("actionPrintPreview", ICON_PATH + "/print-preview.png", tr("Print Pre&view..."));
+    actionInstance("actionPrintPreview", ICON_FILE("print-preview"), tr("Print Pre&view..."));
 
     if (ImporterManager::instance()->importerIsAvailable()) {
-        actionInstance("actionImport", ICON_PATH + "/import.png", tr("&Import..."));
+        actionInstance("actionImport", ICON_FILE("import"), tr("&Import..."));
     }
 
-    actionInstance("actionExport", ICON_PATH + "/export.png", tr("&Export As..."))->setShortcuts(QKeySequence::SaveAs);
+    actionInstance("actionExport", ICON_FILE("export"), tr("&Export As..."))->setShortcuts(QKeySequence::SaveAs);
 
-    actionInstance("actionExportAsPDF", ICON_PATH + "/export-pdf.png", tr("Exp&ort As PDF..."));
+    actionInstance("actionExportAsPDF", ICON_FILE("export-pdf"), tr("Exp&ort As PDF..."));
 
-    actionInstance("actionHelpContents", ICON_PATH + "/help-contents.png", tr("&Help Contents..."))->setShortcuts(QKeySequence::HelpContents);
+    actionInstance("actionHelpContents", ICON_FILE("help-contents"), tr("&Help Contents..."))->setShortcuts(QKeySequence::HelpContents);
 
-    actionInstance("actionCloseTab", ICON_PATH + "/close-tab.png", tr("&Close Tab"))->setShortcuts(QKeySequence::Close);
+    actionInstance("actionCloseTab", ICON_FILE("close-tab"), tr("&Close Tab"))->setShortcuts(QKeySequence::Close);
 
-    actionInstance("actionRandom", ICON_PATH + "/random.png", tr("&Random"))->setShortcut(Qt::CTRL | Qt::Key_R);
+    actionInstance("actionRandom", ICON_FILE("random"), tr("&Random"))->setShortcut(Qt::CTRL | Qt::Key_R);
     actionInstance("actionRandom")->setData("1");
 
-    actionInstance("actionImportNewSet", ICON_PATH + "/import-to-database.png", tr("Insert New &Set..."));
+    actionInstance("actionImportNewSet", ICON_FILE("import-to-database"), tr("Insert New &Set..."));
 
-    actionInstance("actionRemovePoet", ICON_PATH + "/remove-poet.png", tr("&Remove Poet..."));
+    actionInstance("actionRemovePoet", ICON_FILE("remove-poet"), tr("&Remove Poet..."));
 
-    actionInstance("actionFullScreen", ICON_PATH + "/fullscreen.png", tr("&Full Screen"))->setCheckable(true);
+    actionInstance("actionFullScreen", ICON_FILE("fullscreen"), tr("&Full Screen"))->setCheckable(true);
 #ifndef Q_OS_MAC
     actionInstance("actionFullScreen")->setShortcut(Qt::Key_F11);
 #else
     actionInstance("actionFullScreen")->setShortcut(Qt::CTRL + Qt::Key_F11);
 #endif
 
-    actionInstance("actionCheckUpdates", ICON_PATH + "/check-updates.png", tr("Check for &Updates"));
+    actionInstance("actionCheckUpdates", ICON_FILE("check-updates"), tr("Check for &Updates"));
 
     //The following actions are processed in 'namedActionTriggered()' slot
-    actionInstance("SaagharWindow/ShowPhotoAtHome", ICON_PATH + "/show-photo-home.png", tr("&Show Photo at Home"))->setCheckable(true);
+    actionInstance("SaagharWindow/ShowPhotoAtHome", ICON_FILE("show-photo-home"), tr("&Show Photo at Home"))->setCheckable(true);
     actionInstance("SaagharWindow/ShowPhotoAtHome")->setChecked(VARB("SaagharWindow/ShowPhotoAtHome"));
 
-    actionInstance("SaagharWindow/LockToolBars", ICON_PATH + "/lock-toolbars.png", tr("&Lock ToolBars"))->setCheckable(true);
+    actionInstance("SaagharWindow/LockToolBars", ICON_FILE("lock-toolbars"), tr("&Lock ToolBars"))->setCheckable(true);
     actionInstance("SaagharWindow/LockToolBars")->setChecked(VARB("SaagharWindow/LockToolBars"));
     ui->mainToolBar->setMovable(!VARB("SaagharWindow/LockToolBars"));
     if (ui->menuToolBar) {
@@ -1650,7 +1669,7 @@ void SaagharWindow::setupUi()
     SaagharWidget::musicPlayer->setMovable(!VARB("SaagharWindow/LockToolBars"));
 #endif
 
-    actionInstance("Ganjoor Verification", ICON_PATH + "/ocr-verification.png", tr("&OCR Verification"));
+    actionInstance("Ganjoor Verification", ICON_FILE("ocr-verification"), tr("&OCR Verification"));
 
     //undo/redo actions
     globalRedoAction = undoGroup->createRedoAction(this, tr("&Redo"));
@@ -1658,12 +1677,12 @@ void SaagharWindow::setupUi()
     globalUndoAction = undoGroup->createUndoAction(this, tr("&Undo"));
     globalUndoAction->setObjectName("globalUndoAction");
     if (ui->mainToolBar->layoutDirection() == Qt::LeftToRight) {
-        globalRedoAction->setIcon(QIcon(ICON_PATH + "/redo.png"));
-        globalUndoAction->setIcon(QIcon(ICON_PATH + "/undo.png"));
+        globalRedoAction->setIcon(QIcon(ICON_FILE("redo")));
+        globalUndoAction->setIcon(QIcon(ICON_FILE("undo")));
     }
     else {
-        globalRedoAction->setIcon(QIcon(ICON_PATH + "/undo.png"));
-        globalUndoAction->setIcon(QIcon(ICON_PATH + "/redo.png"));
+        globalRedoAction->setIcon(QIcon(ICON_FILE("undo")));
+        globalUndoAction->setIcon(QIcon(ICON_FILE("redo")));
     }
 
     globalRedoAction->setShortcuts(QKeySequence::Redo);
@@ -1680,19 +1699,19 @@ void SaagharWindow::setupUi()
     QMenu* poemViewStylesMenu = new QMenu(tr("Poem View Styles"));
     QActionGroup* poemViewStylesGroup = new QActionGroup(this);
 
-    poemViewStylesMenu->addAction(actionInstance("TwoHemistichPoemViewStyle", ICON_PATH + "/two-hemistich-line.png", QObject::tr("&Two Hemistich Line")));
+    poemViewStylesMenu->addAction(actionInstance("TwoHemistichPoemViewStyle", ICON_FILE("two-hemistich-line"), QObject::tr("&Two Hemistich Line")));
     actionInstance("TwoHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
     actionInstance("TwoHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
     actionInstance("TwoHemistichPoemViewStyle")->setCheckable(true);
     actionInstance("TwoHemistichPoemViewStyle")->setData(SaagharWidget::TwoHemistichLine);
 
-    poemViewStylesMenu->addAction(actionInstance("OneHemistichPoemViewStyle", ICON_PATH + "/one-hemistich-line.png", QObject::tr("&One Hemistich Line")));
+    poemViewStylesMenu->addAction(actionInstance("OneHemistichPoemViewStyle", ICON_FILE("one-hemistich-line"), QObject::tr("&One Hemistich Line")));
     actionInstance("OneHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
     actionInstance("OneHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
     actionInstance("OneHemistichPoemViewStyle")->setCheckable(true);
     actionInstance("OneHemistichPoemViewStyle")->setData(SaagharWidget::OneHemistichLine);
 
-    poemViewStylesMenu->addAction(actionInstance("SteppedHemistichPoemViewStyle", ICON_PATH + "/stepped-hemistich-line.png", QObject::tr("&Stepped Hemistich Line")));
+    poemViewStylesMenu->addAction(actionInstance("SteppedHemistichPoemViewStyle", ICON_FILE("stepped-hemistich-line"), QObject::tr("&Stepped Hemistich Line")));
     actionInstance("SteppedHemistichPoemViewStyle")->setParent(poemViewStylesMenu);
     actionInstance("SteppedHemistichPoemViewStyle")->setActionGroup(poemViewStylesGroup);
     actionInstance("SteppedHemistichPoemViewStyle")->setCheckable(true);
@@ -1706,7 +1725,7 @@ void SaagharWindow::setupUi()
                                  "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
     addDockWidget(Qt::RightDockWidgetArea, m_outlineDock);
     allActionMap.insert("outlineDockAction", m_outlineDock->toggleViewAction());
-    actionInstance("outlineDockAction")->setIcon(QIcon(ICON_PATH + "/outline.png"));
+    actionInstance("outlineDockAction")->setIcon(QIcon(ICON_FILE("outline")));
     actionInstance("outlineDockAction")->setObjectName(QString::fromUtf8("outlineDockAction"));
 
     switch (SaagharWidget::CurrentViewStyle) {
@@ -1724,14 +1743,16 @@ void SaagharWindow::setupUi()
         break;
     }
 
-    actionInstance("DownloadRepositories", ICON_PATH + "/download-sets-repositories.png", QObject::tr("&Dataset Repositories..."));
+    actionInstance("DownloadRepositories", ICON_FILE("download-sets-repositories"), QObject::tr("&Dataset Repositories..."));
 #ifdef MEDIA_PLAYER
-    actionInstance("DownloadAudioRepositories", ICON_PATH + "/download-audio-repositories.png", QObject::tr("&Audio Repositories..."));
+    actionInstance("DownloadAudioRepositories", ICON_FILE("download-audio-repositories"), QObject::tr("&Audio Repositories..."));
 #endif
 
 #if 0
-    actionInstance("Registeration", ICON_PATH + "/registeration.png", QObject::tr("&Registeration..."));
+    actionInstance("Registeration", Tools::iconByKey("registeration"), QObject::tr("&Registeration..."));
 #endif
+
+    actionInstance("actionPreface", ICON_FILE("show-preface"), tr("&Show Preface..."));
 
     //Inserting main menu items
     ui->menuBar->addMenu(menuFile);
@@ -1855,6 +1876,7 @@ void SaagharWindow::setupUi()
     menuTools->addAction(actionInstance("actionSettings"));
 
     menuHelp->addAction(actionInstance("actionHelpContents"));
+    menuHelp->addAction(actionInstance("actionPreface"));
     menuHelp->addSeparator();
     menuHelp->addAction(actionInstance("actionCheckUpdates"));
 #if 0
@@ -1930,6 +1952,8 @@ QMenu* SaagharWindow::cornerMenu()
 #if 0
         m_cornerMenu->addAction(actionInstance("Registeration"));
 #endif
+
+        m_cornerMenu->addAction(actionInstance("actionPreface"));
         m_cornerMenu->addAction(actionInstance("actionAboutSaaghar"));
         m_cornerMenu->addSeparator();
         m_cornerMenu->addAction(actionInstance("actionExit"));
@@ -2001,7 +2025,7 @@ void SaagharWindow::showSearchTips()
                  .arg(tr("Spring")).arg(tr("Flower")).arg(tr(" ALIGN=CENTER")).arg(tr(" ALIGN=Left"))
                  .arg(tr("<TABLE DIR=LTR FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0><TBODY>")).arg(tr("Rain")).arg(tr("Sunny"))
                  .arg(tr("<TD  ALIGN=Left>:</TD>"));
-    QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(ICON_PATH + "/search.png").scaledToHeight(64, Qt::SmoothTransformation));
+    QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(ICON_FILE("search")).scaledToHeight(64, Qt::SmoothTransformation));
     searchTipsDialog.exec();
 }
 
@@ -2015,12 +2039,58 @@ void SaagharWindow::showStatusText(const QString &message, int newLevelsCount)
     splashScreen(QExtendedSplashScreen)->showMessage(message);
 }
 
-void SaagharWindow::onDatabaseUpdate()
+void SaagharWindow::onDatabaseUpdate(const QString &connectionID)
 {
+    if (connectionID != DatabaseBrowser::defaultConnectionId()) {
+        return;
+    }
+
     outlineTree->refreshTree();
     selectSearchRange->clear();
     multiSelectInsertItems(selectSearchRange);
     setHomeAsDirty();
+}
+#include <QMimeData>
+void SaagharWindow::dragEnterEvent(QDragEnterEvent* event)
+{
+    const QMimeData* mime = event->mimeData();
+
+    if (mime->hasUrls()) {
+        foreach (const QUrl &url, mime->urls()) {
+            const QString path = url.toLocalFile();
+            const QString suffix = QFileInfo(path).suffix().toLower();
+            if (suffix == "gdb" || suffix == "s3db" || suffix == "sdb") {
+                event->acceptProposedAction();
+                return;
+            }
+        }
+    }
+
+    QMainWindow::dragEnterEvent(event);
+}
+
+void SaagharWindow::dropEvent(QDropEvent* event)
+{
+    const QMimeData* mime = event->mimeData();
+
+    if (!mime->hasUrls()) {
+        QMainWindow::dropEvent(event);
+        return;
+    }
+
+    foreach (const QUrl &url, mime->urls()) {
+        const QString path = url.toLocalFile();
+        const QString suffix = QFileInfo(path).suffix().toLower();
+        if (suffix == "gdb" || suffix == "s3db" || suffix == "sdb") {
+            QString connectionID = sApp->databaseBrowser()->getIdForDataBase(path);
+            if (!sApp->databaseBrowser()->isConnected(connectionID)) {
+                sApp->databaseBrowser()->removeDatabase(path);
+            }
+            else {
+                insertNewTab(SaagharViewerTab, QString(), -1, "CatID", true, true, connectionID);
+            }
+        }
+    }
 }
 
 QAction* SaagharWindow::actionInstance(const QString &actionObjectName, QString iconPath, QString displayName)
@@ -2120,16 +2190,16 @@ void SaagharWindow::showSettingsDialog()
     int langIndex = m_settingsDialog->ui->uiLanguageComboBox->findText(VARS("General/UILanguage"), Qt::MatchExactly);
     m_settingsDialog->ui->uiLanguageComboBox->setCurrentIndex(langIndex);
 
-    m_settingsDialog->ui->pushButtonActionBottom->setIcon(QIcon(ICON_PATH + "/down.png"));
-    m_settingsDialog->ui->pushButtonActionTop->setIcon(QIcon(ICON_PATH + "/up.png"));
+    m_settingsDialog->ui->pushButtonActionBottom->setIcon(QIcon(ICON_FILE("down")));
+    m_settingsDialog->ui->pushButtonActionTop->setIcon(QIcon(ICON_FILE("up")));
 
     if (QApplication::layoutDirection() == Qt::RightToLeft) {
-        m_settingsDialog->ui->pushButtonActionAdd->setIcon(QIcon(ICON_PATH + "/left.png"));
-        m_settingsDialog->ui->pushButtonActionRemove->setIcon(QIcon(ICON_PATH + "/right.png"));
+        m_settingsDialog->ui->pushButtonActionAdd->setIcon(QIcon(ICON_FILE("left")));
+        m_settingsDialog->ui->pushButtonActionRemove->setIcon(QIcon(ICON_FILE("right")));
     }
     else {
-        m_settingsDialog->ui->pushButtonActionAdd->setIcon(QIcon(ICON_PATH + "/right.png"));
-        m_settingsDialog->ui->pushButtonActionRemove->setIcon(QIcon(ICON_PATH + "/left.png"));
+        m_settingsDialog->ui->pushButtonActionAdd->setIcon(QIcon(ICON_FILE("right")));
+        m_settingsDialog->ui->pushButtonActionRemove->setIcon(QIcon(ICON_FILE("left")));
     }
 
     m_settingsDialog->ui->spinBoxPoetsPerGroup->setValue(SaagharWidget::maxPoetsPerGroup);
@@ -2303,6 +2373,27 @@ void SaagharWindow::loadTabWidgetSettings()
     outlineTree->setTreeColor(VAR("SaagharWidget/Colors/OutLine").value<QColor>());
 }
 
+void SaagharWindow::showPreface(int prefaceID, bool silent)
+{
+
+    QFileInfo preface(sApp->defaultPath(SaagharApplication::ResourcesDir) + QLatin1String("/saaghar_preface.gdb"));
+
+    if (preface.canonicalFilePath().isEmpty() || !preface.exists()) {
+        if (!silent) {
+            QMessageBox::warning(this, tr("Error"), tr("File not found!"));
+        }
+        return;
+    }
+
+    const QString prefaceConnectionID = DatabaseBrowser::getIdForDataBase(preface.canonicalFilePath());
+
+    openPage(prefaceID, SaagharWidget::PoemViewerPage, true, prefaceConnectionID, true);
+
+    if (VARI("General/LastShownPrefaceID") < prefaceID) {
+        VAR_DECL("General/LastShownPrefaceID", prefaceID);
+    }
+}
+
 void SaagharWindow::saveSettings()
 {
     if (SaagharWidget::bookmarks) {
@@ -2346,7 +2437,7 @@ void SaagharWindow::saveSettings()
     QStringList openedTabs;
     for (int i = 0; i < mainTabWidget->count(); ++i) {
         SaagharWidget* tmp = getSaagharWidget(i);
-        if (tmp) {
+        if (tmp && !tmp->isLocalDataset()) {
             QString tabViewType;
             if (tmp->currentPoem > 0) {
                 tabViewType = "PoemID=" + QString::number(tmp->currentPoem);
@@ -2553,11 +2644,11 @@ void SaagharWindow::tableItemMouseOver(QTableWidgetItem* item)
                 int pos = senderTable->verticalScrollBar()->value();
                 senderTable->setCurrentItem(item);
                 senderTable->verticalScrollBar()->setValue(pos);
-                QImage image(ICON_PATH + "/select-mask.png");
+                QImage image(ICON_FILE("select-mask"));
                 item->setBackground(QBrush(image.scaledToHeight(senderTable->rowHeight(item->row()))));
             }
             else {
-                QImage image(ICON_PATH + "/select-mask.png");
+                QImage image(ICON_FILE("select-mask"));
                 item->setBackground(QBrush(image.scaledToHeight(senderTable->rowHeight(item->row()))));
             }
         }
@@ -2582,7 +2673,7 @@ void SaagharWindow::tableCurrentItemChanged(QTableWidgetItem* current, QTableWid
         previous->setBackground(QBrush(QImage()));
     }
     if (current) { //maybe create a bug! check older codes!!
-        QImage image(ICON_PATH + "/select-mask.png");
+        QImage image(ICON_FILE("select-mask"));
         current->setBackground(QBrush(image));
         //TODO: pageup and page down miss one row!! Qt-4.7.3
         if (saagharWidget && (saagharWidget->currentPoem > 0 || saagharWidget->currentCat > 0)) { //everywhere but home
@@ -2620,6 +2711,10 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
         return;
     }
 
+    QString connectionID = senderTable->property("CONNECTION_ID_PROPERTY").toString();
+    if (connectionID.isEmpty()) {
+        connectionID = DatabaseBrowser::defaultConnectionId();
+    }
     //search data
     QStringList searchDataList = item->data(ITEM_SEARCH_DATA).toStringList();
     QString searchPhraseData;
@@ -2644,7 +2739,7 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
     //right click event
     if (pressedMouseButton == Qt::RightButton) {
         skipContextMenu = true;
-        newTabForItem(idData, itemData.at(0), noError);
+        newTabForItem(idData, itemData.at(0), noError, true, connectionID);
 
         saagharWidget->scrollToFirstItemContains(searchVerseData, false);
         SaagharItemDelegate* searchDelegate = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), searchPhraseData);
@@ -2667,10 +2762,10 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
             saagharWidget->pageMetaInfo.id != idData ||
             saagharWidget->pageMetaInfo.type != pageType) {
         if (!saagharWidget) {
-            insertNewTab(SaagharWindow::SaagharViewerTab, QString(), idData, itemData.at(0), noError);
+            insertNewTab(SaagharWindow::SaagharViewerTab, QString(), idData, itemData.at(0), noError, true, connectionID);
         }
         else {
-            saagharWidget->processClickedItem(itemData.at(0), idData, noError);
+            saagharWidget->processClickedItem(itemData.at(0), idData, noError, true, connectionID);
         }
     }
 
@@ -2698,10 +2793,10 @@ void SaagharWindow::openPath(const QString &path)
 {
     QString SEPARATOR = QLatin1String("/");
     bool ok;
-    QModelIndex ind = sApp->outlineModel()->index(path.split(SEPARATOR, QString::SkipEmptyParts), &ok);
+    QModelIndex ind = sApp->outlineModel(m_breadCrumbSaagharModel->connectionID())->index(path.split(SEPARATOR, QString::SkipEmptyParts), &ok);
 
     if (ok) {
-        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage);
+        openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage, false, m_breadCrumbSaagharModel->connectionID(), false);
     }
 }
 
@@ -2908,11 +3003,11 @@ bool SaagharWindow::eventFilter(QObject* receiver, QEvent* event)
 void SaagharWindow::setupSearchToolBarUi()
 {
     //initialize Search ToolBar
-    QString clearIconPath = ICON_PATH + "/clear-left.png";
+    QString clearIconPath = ICON_FILE("clear-left");
     if (layoutDirection() == Qt::RightToLeft) {
-        clearIconPath = ICON_PATH + "/clear-right.png";
+        clearIconPath = ICON_FILE("clear-right");
     }
-    SaagharWidget::lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, ICON_PATH + "/search-options.png", ICON_PATH + "/cancel.png");
+    SaagharWidget::lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, ICON_FILE("search-options"), ICON_FILE("cancel"));
     SaagharWidget::lineEditSearchText->setObjectName(QString::fromUtf8("lineEditSearchText"));
     SaagharWidget::lineEditSearchText->setMaximumSize(QSize(170, 16777215));
     SaagharWidget::lineEditSearchText->setLayoutDirection(Qt::RightToLeft);
@@ -3079,12 +3174,14 @@ void SaagharWindow::namedActionTriggered(bool checked)
     }
     else if (actionName == "actionRandom") {
         int id = 0;
+        QString connectionID = DatabaseBrowser::defaultConnectionId();
         const QStringList selectRandomRange = VAR("SaagharWindow/SelectedRandomRange").toStringList();
 
         if (selectRandomRange.contains("CURRENT_TAB_SUBSECTIONS")) {
             if (saagharWidget) {
+                connectionID = saagharWidget->connectionID();
                 if (saagharWidget->currentPoem != 0) {
-                    id = sApp->databaseBrowser()->getPoem(saagharWidget->currentPoem)._CatID;
+                    id = sApp->databaseBrowser()->getPoem(saagharWidget->currentPoem, connectionID)._CatID;
                 }
                 else {
                     id = saagharWidget->currentCat;
@@ -3107,7 +3204,7 @@ void SaagharWindow::namedActionTriggered(bool checked)
             }
         }
 
-        openRandomPoem(id, VARB("SaagharWindow/RandomOpenNewTab"));
+        openRandomPoem(id, VARB("SaagharWindow/RandomOpenNewTab"), connectionID);
     }
     else if (actionName == "Registeration") {
 #if 0
@@ -3151,6 +3248,9 @@ void SaagharWindow::namedActionTriggered(bool checked)
             m_bookmarkManagerDock->hide();
         }
     }
+    else if (actionName == "actionPreface") {
+        showPreface(Tools::prefaceIDFromVersion(SAAGHAR_VERSION));
+    }
 
     connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
 }
@@ -3165,7 +3265,7 @@ void SaagharWindow::updateTabsSubMenus()
         tabAction = new QAction(mainTabWidget->tabText(i), menuOpenedTabs);
 
         if (i == mainTabWidget->currentIndex()) {
-            tabAction->setIcon(QIcon(ICON_PATH + "/right.png"));
+            tabAction->setIcon(QIcon(ICON_FILE("right")));
         }
         QObject* obj = mainTabWidget->widget(i);
         QVariant data = QVariant::fromValue(obj);
@@ -3183,15 +3283,16 @@ void SaagharWindow::actionClosedTabsClicked()
     if (!action) {
         return;
     }
-    //QString tabType = action->data().toString();
-    QString type = action->data().toStringList().at(0);
-    int id = action->data().toStringList().at(1).toInt();
+
+    QStringList identifier = action->data().toStringList();
+    QString type = identifier.at(0);
+    int id = identifier.at(1).toInt();
 
     if ((type != "PoemID" && type != "CatID") || id < 0) {
-        newTabForItem(id, type, false);
+        newTabForItem(id, type, false, true, identifier.at(2));
     }
     else {
-        newTabForItem(id, type, true);
+        newTabForItem(id, type, true, true, identifier.at(2));
     }
 
     menuClosedTabs->removeAction(action);
@@ -3250,15 +3351,15 @@ void SaagharWindow::setupBookmarkManagerUi()
 
     connect(SaagharWidget::bookmarks, SIGNAL(showBookmarkedItem(QString,QString,QString,bool,bool)), this, SLOT(ensureVisibleBookmarkedItem(QString,QString,QString,bool,bool)));
 
-    QString clearIconPath = ICON_PATH + "/clear-left.png";
+    QString clearIconPath = ICON_FILE("clear-left");
     if (layoutDirection() == Qt::RightToLeft) {
-        clearIconPath = ICON_PATH + "/clear-right.png";
+        clearIconPath = ICON_FILE("clear-right");
     }
 
     QLabel* bookmarkFilterLabel = new QLabel(m_bookmarkManagerDock);
     bookmarkFilterLabel->setObjectName(QString::fromUtf8("bookmarkFilterLabel"));
     bookmarkFilterLabel->setText(tr("Filter:"));
-    QSearchLineEdit* bookmarkFilter = new QSearchLineEdit(m_bookmarkManagerDock, clearIconPath, ICON_PATH + "/filter.png");
+    QSearchLineEdit* bookmarkFilter = new QSearchLineEdit(m_bookmarkManagerDock, clearIconPath, ICON_FILE("filter"));
     bookmarkFilter->setObjectName("bookmarkFilter");
 #if QT_VERSION >= 0x040700
     bookmarkFilter->setPlaceholderText(tr("Filter"));
@@ -3271,7 +3372,7 @@ void SaagharWindow::setupBookmarkManagerUi()
     unBookmarkButton->setObjectName("unBookmarkButton");
     unBookmarkButton->setStyleSheet("QToolButton { border: none; padding: 0px; }");
 
-    unBookmarkButton->setIcon(QIcon(ICON_PATH + "/un-bookmark.png"));
+    unBookmarkButton->setIcon(QIcon(ICON_FILE("un-bookmark")));
     connect(unBookmarkButton, SIGNAL(clicked()), SaagharWidget::bookmarks, SLOT(unBookmarkItem()));
 
     QSpacerItem* filterHorizSpacer = new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -3309,7 +3410,7 @@ void SaagharWindow::setupBookmarkManagerUi()
         m_bookmarkManagerDock->setWidget(bookmarkContainer /*SaagharWidget::bookmarks*/);
         addDockWidget(Qt::RightDockWidgetArea, m_bookmarkManagerDock);
 
-        m_bookmarkManagerDock->toggleViewAction()->setIcon(QIcon(ICON_PATH + "/bookmark-folder.png"));
+        m_bookmarkManagerDock->toggleViewAction()->setIcon(QIcon(ICON_FILE("bookmark-folder")));
         m_bookmarkManagerDock->toggleViewAction()->setObjectName(QString::fromUtf8("copyOfBookmarkManagerDockAction"));
         connect(m_bookmarkManagerDock->toggleViewAction(), SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
 
@@ -3318,7 +3419,7 @@ void SaagharWindow::setupBookmarkManagerUi()
         actionInstance("bookmarkManagerDockAction")->setText(m_bookmarkManagerDock->toggleViewAction()->text());
         actionInstance("bookmarkManagerDockAction")->setCheckable(true);
         actionInstance("bookmarkManagerDockAction")->setChecked(m_bookmarkManagerDock->toggleViewAction()->isChecked());
-        actionInstance("bookmarkManagerDockAction")->setIcon(QIcon(ICON_PATH + "/bookmark-folder.png"));
+        actionInstance("bookmarkManagerDockAction")->setIcon(QIcon(ICON_FILE("bookmark-folder")));
         actionInstance("bookmarkManagerDockAction")->setObjectName(QString::fromUtf8("bookmarkManagerDockAction"));
         connect(m_bookmarkManagerDock, SIGNAL(visibilityChanged(bool)), actionInstance("bookmarkManagerDockAction"), SLOT(setChecked(bool)));
 
@@ -3326,7 +3427,7 @@ void SaagharWindow::setupBookmarkManagerUi()
         menuBookmarks->setObjectName(QString::fromUtf8("menuBookmarks"));
         menuBookmarks->addAction(m_bookmarkManagerDock->toggleViewAction());
         menuBookmarks->addSeparator();
-        menuBookmarks->addAction(actionInstance("ImportGanjoorBookmarks", ICON_PATH + "/bookmarks-import.png", tr("&Import Ganjoor's Bookmarks")));
+        menuBookmarks->addAction(actionInstance("ImportGanjoorBookmarks", ICON_FILE("bookmarks-import"), tr("&Import Ganjoor's Bookmarks")));
     }
     else {
         //bookmark not loaded!
@@ -3376,8 +3477,8 @@ void SaagharWindow::ensureVisibleBookmarkedItem(const QString &type, const QStri
                         if (item) {
                             QTableWidgetItem* numItem = tmp->tableViewWidget->item(item->row(), 0);
                             if (SaagharWidget::bookmarks && numItem) {
-                                QPixmap star(ICON_PATH + "/bookmark-on.png");
-                                QPixmap starOff(ICON_PATH + "/bookmark-off.png");
+                                QPixmap star(ICON_FILE("bookmark-on"));
+                                QPixmap starOff(ICON_FILE("bookmark-off"));
                                 star = star.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row()) - 1, 22), Qt::SmoothTransformation);
                                 starOff = starOff.scaledToHeight(qMin(tmp->tableViewWidget->rowHeight(item->row()) - 1, 22), Qt::SmoothTransformation);
                                 QIcon bookmarkIcon;
@@ -3490,35 +3591,36 @@ void SaagharWindow::createCustomContextMenu(const QPoint &pos)
         insertNewTab();
     }
     else if (text == tr("Duplicate Tab")) {
-        newTabForItem(saagharWidget->pageMetaInfo.id, saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage ? "PoemID" : "CatID", true);
+        newTabForItem(saagharWidget->pageMetaInfo.id, saagharWidget->pageMetaInfo.type == SaagharWidget::PoemViewerPage ? "PoemID" : "CatID", true, true, saagharWidget->connectionID());
     }
     else if (text == tr("Refresh")) {
         saagharWidget->refresh();
     }
 }
 
-void SaagharWindow::onCurrentLocationChanged(const QStringList &locationList)
+void SaagharWindow::onCurrentLocationChanged(const QStringList &locationList, const QString &connectionID)
 {
     const QString SEPARATOR = QLatin1String("/");
 
     m_breadCrumbBar->blockSignals(true);
+    m_breadCrumbSaagharModel->setConnectionID(connectionID);
     m_breadCrumbBar->setLocation(locationList.join(SEPARATOR));
     m_breadCrumbBar->blockSignals(false);
 }
 
 void SaagharWindow::openParentPage(int parentID, bool newPage)
 {
-    openPage(parentID, SaagharWidget::CategoryViewerPage, newPage);
+    openPage(parentID, SaagharWidget::CategoryViewerPage, newPage, DatabaseBrowser::defaultConnectionId());
 }
 
 void SaagharWindow::openChildPage(int childID, bool newPage)
 {
-    openPage(childID, SaagharWidget::PoemViewerPage, newPage);
+    openPage(childID, SaagharWidget::PoemViewerPage, newPage, DatabaseBrowser::defaultConnectionId());
 }
 
-void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
+void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage, const QString &connectionID, bool firstSearchOpenedTabs)
 {
-    if (!newPage) {
+    if (firstSearchOpenedTabs) {
         for (int j = 0; j < mainTabWidget->count(); ++j) {
             SaagharWidget* tmp = getSaagharWidget(j);
 
@@ -3532,10 +3634,10 @@ void SaagharWindow::openPage(int id, SaagharWidget::PageType type, bool newPage)
 
     QString typeSTR = (type == SaagharWidget::CategoryViewerPage ? "CatID" : "PoemID");
     if (!saagharWidget || newPage) {
-        insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, typeSTR);
+        insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, typeSTR, true, true, connectionID);
     }
     else {
-        saagharWidget->processClickedItem(typeSTR, id, true);
+        saagharWidget->processClickedItem(typeSTR, id, true, true, connectionID);
     }
 }
 

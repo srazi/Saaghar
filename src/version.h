@@ -45,7 +45,7 @@ const QString SAAGHAR_VERSION = QString("%1.%2.%3").arg(MAJOR_VERSION).arg(MINOR
 #define VER_COMPANYNAME_STR         "Pozh"
 #define VER_FILEDESCRIPTION_STR     "Saaghar, a Persian Poetry Software"
 #define VER_INTERNALNAME_STR        "Saaghar"
-#define VER_LEGALCOPYRIGHT_STR      "Copyright © 2010-2014, S. Razi Alavizadeh"
+#define VER_LEGALCOPYRIGHT_STR      "Copyright © 2010-2016, S. Razi Alavizadeh"
 #define VER_LEGALTRADEMARKS1_STR    "This program is licensed under GPL v.3"
 #define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
 #define VER_ORIGINALFILENAME_STR    "Saaghar.exe"

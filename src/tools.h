@@ -23,6 +23,7 @@
 #define TOOLS_H
 
 #define splashScreen(T) (static_cast<T*>(Tools::s_splashScreen))
+#define ICON_FILE(X) Tools::iconFileByKey(X)
 
 // x is variant-hash
 #define VAR_ADD(x, y) x.insert(#y, QVariant::fromValue(y))
@@ -42,6 +43,10 @@ public:
     static QString justifiedText(const QString &text, const QFontMetrics &fontmetric, int width);
     static QString snippedText(const QString &text, const QString &str, int from = 0, int maxNumOfWords = 10, bool elided = true, Qt::TextElideMode elideMode = Qt::ElideRight);
     static int getRandomNumber(int minBound, int maxBound);
+
+    static int prefaceIDFromVersion(const QString &version);
+
+    static QString iconFileByKey(const QString &key, bool fallback = true);
 
     static const QStringList someSymbols;
     static const QStringList Ve_Variant;

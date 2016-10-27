@@ -31,7 +31,7 @@
 #include <QPushButton>
 
 #include "unzip.h"
-#include "settings.h"
+#include "tools.h"
 #include "downloader.h"
 #include "databaseupdater.h"
 #include "databasebrowser.h"
@@ -62,7 +62,7 @@ DataBaseUpdater::DataBaseUpdater(QWidget* parent, Qt::WindowFlags f)
     downloadStarted = downloadAboutToStart = false;
 
     ui->setupUi(this);
-    ui->refreshPushButton->setIcon(QIcon(ICON_PATH + "/refresh.png"));
+    ui->refreshPushButton->setIcon(QIcon(ICON_FILE("refresh")));
     downloaderObject = new Downloader(this, ui->downloadProgressBar, ui->labelDownloadStatus);
     setupUi();
 
@@ -696,6 +696,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
     }
 
     QApplication::restoreOverrideCursor();
+    QApplication::processEvents();
 }
 
 void DataBaseUpdater::resizeColumnsToContents()

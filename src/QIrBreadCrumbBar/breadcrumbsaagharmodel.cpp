@@ -24,6 +24,7 @@
 #include "databasebrowser.h"
 #include "outlinemodel.h"
 #include "saagharwidget.h"
+#include "tools.h"
 
 #include <QAction>
 #include <QMenu>
@@ -35,9 +36,23 @@ QIR_BEGIN_NAMESPACE
 
 const static QString SEPARATOR = QLatin1String("/");
 
-BreadCrumbSaagharModel::BreadCrumbSaagharModel()
+BreadCrumbSaagharModel::BreadCrumbSaagharModel(const QString &connectionID)
+    : m_connectionID(connectionID)
 {
-    setItemModel(sApp->outlineModel());
+    setItemModel(sApp->outlineModel(m_connectionID));
+}
+
+QString BreadCrumbSaagharModel::connectionID() const
+{
+    return m_connectionID;
+}
+
+void BreadCrumbSaagharModel::setConnectionID(const QString &connectionID) const
+{
+    if (!connectionID.isEmpty() && connectionID != m_connectionID) {
+        m_connectionID = connectionID;
+        setItemModel(sApp->outlineModel(m_connectionID));
+    }
 }
 
 QString BreadCrumbSaagharModel::defaultPath() const
@@ -60,7 +75,15 @@ QString BreadCrumbSaagharModel::cleanPath(const QString &path) const
 
 bool BreadCrumbSaagharModel::isValid(const QString &path) const
 {
-    return sApp->outlineModel()->isPathValid(pathSections(cleanPath(path)));;
+    bool valid = sApp->outlineModel(m_connectionID)->isPathValid(pathSections(cleanPath(path)));
+    if (!valid && m_connectionID != DatabaseBrowser::defaultConnectionId()) {
+        valid = sApp->outlineModel()->isPathValid(pathSections(cleanPath(path)));
+        if (valid) {
+            setConnectionID(DatabaseBrowser::defaultConnectionId());
+        }
+    }
+
+    return valid;
 }
 
 QIrBreadCrumbModelNodeList BreadCrumbSaagharModel::splitPath(const QString &path) const
@@ -126,15 +149,19 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
     const QStringList sections = pathSections(node.path());
 
     if (node.type() != QIrBreadCrumbModelNode::Global) {
-        QModelIndex parent = sApp->outlineModel()->index(sections);
-        int count = sApp->outlineModel()->rowCount(parent);
+        QModelIndex parent = sApp->outlineModel(m_connectionID)->index(sections);
+        int count = sApp->outlineModel(m_connectionID)->rowCount(parent);
 
         for (int i = 0; i < count; ++i) {
-            index = sApp->outlineModel()->index(i, 0, parent);
+            index = sApp->outlineModel(m_connectionID)->index(i, 0, parent);
             if (index.isValid()) {
                 const QString title = index.data().toString();
+                const static QChar LRE(0x202a);
+                const static QChar RLE(0x202b);
+                const QChar embeddingChar = title.isRightToLeft() ? RLE : LRE;
+
                 const QString childPath = cleanedPath + SEPARATOR + title;
-                QAction* act = new QAction(icon(pathNodeType(QStringList() << sections << title)), title, menu);
+                QAction* act = new QAction(icon(pathNodeType(QStringList() << sections << title)), (embeddingChar + title), menu);
                 act->setData(childPath);
                 menu->addAction(act);
             }
@@ -146,7 +173,11 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
         for (int i = count - 1; i >= 0; --i) {
             const QString path = cleanPath(QStringList(sections.mid(0, i + 1)).join(SEPARATOR));
             const QString title = sections.at(i);
-            QAction* act = new QAction(icon(i == 0 ? QIrBreadCrumbModelNode::Root : QIrBreadCrumbModelNode::Container), title, menu);
+            const static QChar LRE(0x202a);
+            const static QChar RLE(0x202b);
+            const QChar embeddingChar = title.isRightToLeft() ? RLE : LRE;
+
+            QAction* act = new QAction(icon(i == 0 ? QIrBreadCrumbModelNode::Root : QIrBreadCrumbModelNode::Container), (embeddingChar + title), menu);
             act->setData(path);
             menu->addAction(act);
         }
@@ -165,7 +196,11 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
                                   ? sections.at(0)
                                   : sections.first() + QLatin1String(": ") + sections.last();
 
-            QAction* act = new QAction(icon(pathNodeType(sections)), title, menu);
+            const static QChar LRE(0x202a);
+            const static QChar RLE(0x202b);
+            const QChar embeddingChar = title.isRightToLeft() ? RLE : LRE;
+
+            QAction* act = new QAction(icon(pathNodeType(sections)), (embeddingChar + title), menu);
             act->setData(path);
             menu->addAction(act);
         }
@@ -198,8 +233,8 @@ QIrBreadCrumbModelNode::Type BreadCrumbSaagharModel::pathNodeType(const QStringL
     }
     else {
         bool ok;
-        const QModelIndex ind = sApp->outlineModel()->index(sections, &ok);
-        if (ok && sApp->outlineModel()->rowCount(ind) > 0) {
+        const QModelIndex ind = sApp->outlineModel(m_connectionID)->index(sections, &ok);
+        if (ok && sApp->outlineModel(m_connectionID)->rowCount(ind) > 0) {
             return QIrBreadCrumbModelNode::Container;
         }
         else {
@@ -210,9 +245,9 @@ QIrBreadCrumbModelNode::Type BreadCrumbSaagharModel::pathNodeType(const QStringL
 
 QIcon BreadCrumbSaagharModel::icon(const QIrBreadCrumbModelNode::Type &type) const
 {
-    const static QIcon rootIcon(":/saagharmodel/images/root-node.png");
-    const static QIcon containerIcon(":/saagharmodel/images/container-node.png");
-    const static QIcon leafIcon(":/saagharmodel/images/leaf-node.png");
+    const static QIcon rootIcon(ICON_FILE("root-node"));
+    const static QIcon containerIcon(ICON_FILE("container-node"));
+    const static QIcon leafIcon(ICON_FILE("leaf-node"));
 
     switch (type) {
     case QIrBreadCrumbModelNode::Root:

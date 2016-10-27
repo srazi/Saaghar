@@ -68,7 +68,9 @@ public:
     QThreadPool* tasksThreadPool();
     DatabaseBrowser* databaseBrowser();
     SettingsManager* settingsManager();
-    OutlineModel* outlineModel();
+
+    // empty means DatabaseBrowser::defaultConnectionId()
+    OutlineModel* outlineModel(const QString &connectionID = QString());
 
     int tasksThreads() { return m_tasksThreads; }
     void setPriority(QThread* thread);
@@ -108,7 +110,7 @@ private:
     QThreadPool* m_tasksThreadPool;
     DatabaseBrowser* m_databaseBrowser;
     SettingsManager* m_settingsManager;
-    OutlineModel* m_outlineModel;
+    QHash<QString, OutlineModel*> m_outlineModels;
 
     int m_tasksThreads;
     bool m_displayFullNotification;

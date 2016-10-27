@@ -43,13 +43,15 @@ public:
     explicit ConcurrentTask(QObject* parent = 0);
     ~ConcurrentTask();
 
-    void start(const QString &type, const QVariantHash &argumants = QVariantHash());
+    void start(const QString &type, const QVariantHash &argumants = QVariantHash(), bool queued = false);
 
 #ifdef SAAGHAR_DEBUG
     void directStart(const QString &type, const QVariantHash &argumants = QVariantHash());
 #endif
 
     void run();
+
+    void startQueued();
 
 public slots:
     void setCanceled();
@@ -69,6 +71,9 @@ private:
     QFutureInterface<void>* m_progressObject;
     FutureProgress* m_futureProgress;
 
+    bool m_isQueued;
+    bool m_shouldPrependTask;
+
 signals:
     void concurrentResultReady(const QString &type, const QVariant &results);
     void searchStatusChanged(const QString &);
@@ -83,6 +88,7 @@ public:
     static ConcurrentTaskManager* instance();
     ~ConcurrentTaskManager();
 
+    void startQueuedTasks();
     void addConcurrentTask(ConcurrentTask* task);
 
     bool isAllTaskCanceled();

@@ -33,7 +33,7 @@
 
 #include "audiorepodownloader.h"
 #include "unzip.h"
-#include "settings.h"
+#include "tools.h"
 #include "downloader.h"
 #include "databasebrowser.h"
 #include "saagharwidget.h"
@@ -62,7 +62,7 @@ AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
 
     ui->setupUi(this);
     ui->poetGroupRadioButton->setChecked(true);
-    ui->refreshPushButton->setIcon(QIcon(ICON_PATH + "/refresh.png"));
+    ui->refreshPushButton->setIcon(QIcon(ICON_FILE("refresh")));
     ui->comboBoxRepoList->hide();
     ui->groupBoxKeepDownload->hide();
 

@@ -57,8 +57,12 @@ public:
     static DatabaseBrowser* instance();
     ~DatabaseBrowser();
 
+    static QString databaseFileFromID(const QString &connectionID);
+    static QString getIdForDataBase(const QString &fileName, QThread* thread = 0);
+    static void removeDatabase(const QString &fileName, QThread* thread = 0);
     static QSqlDatabase database(const QString &connectionID = defaultConnectionId(), bool open = true);
 
+    static QString defaultConnectionId();
     static QString defaultDatabasename();
     static void setDefaultDatabasename(const QString &databaseName);
 
@@ -68,32 +72,32 @@ public:
     bool isRhyme(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder = -1);
     bool isRadif(const QList<GanjoorVerse*> &verses, const QString &phrase, int verseOrder = -1);
 
-    QVariantList importGanjoorBookmarks();
-    QString getBeyt(int poemID, int firstMesraID,  const QString &separator = "       "/*7 spaces*/);
+    QVariantList importGanjoorBookmarks(QString connectionID = defaultConnectionId());
+    QString getBeyt(int poemID, int firstMesraID,  const QString &separator = "       "/*7 spaces*/, QString connectionID = defaultConnectionId());
 
     QList<GanjoorPoet*> getDataBasePoets(const QString fileName);
-    QList<GanjoorPoet*> getConflictingPoets(const QString fileName);
+    QList<GanjoorPoet*> getConflictingPoets(const QString fileName, const QString &toConnectionID = defaultConnectionId());
     QList<GanjoorPoet*> getPoets(const QString &connectionID = defaultConnectionId(), bool sort = true);
-    QList<GanjoorCat*> getSubCategories(int CatID);
-    QList<GanjoorCat> getParentCategories(GanjoorCat Cat);
-    QList<GanjoorPoem*> getPoems(int CatID);
-    QList<GanjoorVerse*> getVerses(int PoemID);
-    QList<GanjoorVerse*> getVerses(int PoemID, int Count);
+    QList<GanjoorCat*> getSubCategories(int CatID, const QString &connectionID = defaultConnectionId());
+    QList<GanjoorCat> getParentCategories(GanjoorCat Cat, const QString &connectionID = defaultConnectionId());
+    QList<GanjoorPoem*> getPoems(int CatID, const QString &connectionID = defaultConnectionId());
+    QList<GanjoorVerse*> getVerses(int PoemID, const QString &connectionID = defaultConnectionId());
+    QList<GanjoorVerse*> getVerses(int PoemID, int Count, const QString &connectionID = defaultConnectionId());
 
-    QString getFirstMesra(int PoemID);//just first Mesra
-    GanjoorCat getCategory(int CatID);
-    GanjoorPoem getPoem(int PoemID);
-    GanjoorPoem getNextPoem(int PoemID, int CatID);
-    GanjoorPoem getNextPoem(GanjoorPoem poem);
-    GanjoorPoem getPreviousPoem(int PoemID, int CatID);
-    GanjoorPoem getPreviousPoem(GanjoorPoem poem);
-    GanjoorPoet getPoetForPoem(int poemID);
-    GanjoorPoet getPoetForCat(int CatID);
-    GanjoorPoet getPoet(int PoetID);
-    GanjoorPoet getPoet(QString PoetName);
-    QString getPoetDescription(int PoetID);
-    QString getPoemMediaSource(int PoemID);
-    void setPoemMediaSource(int PoemID, const QString &fileName);
+    QString getFirstMesra(int PoemID, const QString &connectionID = defaultConnectionId());//just first Mesra
+    GanjoorCat getCategory(int CatID, const QString &connectionID = defaultConnectionId());
+    GanjoorPoem getPoem(int PoemID, const QString &connectionID = defaultConnectionId());
+    GanjoorPoem getNextPoem(int PoemID, int CatID, const QString &connectionID = defaultConnectionId());
+    GanjoorPoem getNextPoem(GanjoorPoem poem, const QString &connectionID = defaultConnectionId());
+    GanjoorPoem getPreviousPoem(int PoemID, int CatID, const QString &connectionID = defaultConnectionId());
+    GanjoorPoem getPreviousPoem(GanjoorPoem poem, const QString &connectionID = defaultConnectionId());
+    GanjoorPoet getPoetForPoem(int poemID, const QString &connectionID = defaultConnectionId());
+    GanjoorPoet getPoetForCat(int CatID, const QString &connectionID = defaultConnectionId());
+    GanjoorPoet getPoet(int PoetID, const QString &connectionID = defaultConnectionId());
+    GanjoorPoet getPoet(QString PoetName, const QString &connectionID = defaultConnectionId());
+    QString getPoetDescription(int PoetID, const QString &connectionID = defaultConnectionId());
+    QString getPoemMediaSource(int PoemID, const QString &connectionID = defaultConnectionId());
+    void setPoemMediaSource(int PoemID, const QString &fileName, const QString &connectionID = defaultConnectionId());
     //Search
     //QList<int> getPoemIDsContainingPhrase(QString phrase, int PageStart, int Count, int PoetID);
     //QString getFirstVerseContainingPhrase(int PoemID, QString phrase);
@@ -101,17 +105,17 @@ public:
     //QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
     //QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
     //another new approch
-    bool getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID, const QStringList &phraseList, const QStringList &excludedList = QStringList(), bool* canceled = 0, bool slowSearch = false);
+    bool getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID, const QStringList &phraseList, const QStringList &excludedList = QStringList(), bool* canceled = 0, bool slowSearch = false, const QString &connectionID = defaultConnectionId());
 
     //Faal
-    int getRandomPoemID(int* CatID);
-    void removePoetFromDataBase(int PoetID);
-    bool importDataBase(const QString filename);
+    int getRandomPoemID(int* CatID, const QString &connectionID = defaultConnectionId());
+    void removePoetFromDataBase(int PoetID, const QString &connectionID = defaultConnectionId());
+    bool importDataBase(const QString &fromFileName, const QString &toConnectionID = defaultConnectionId());
     // Returns database connection for thread, creates new connection if not exists
     QSqlDatabase databaseForThread(QThread* thread, const QString &baseConnectionID = defaultConnectionId());
 
 
-    void storeAsDataset(const CatContents &importData, const QList<GanjoorCat> &catPath, bool storeAsGDB = false);
+    void storeAsDataset(const CatContents &importData, const QList<GanjoorCat> &catPath, bool storeAsGDB = false, const QString &toConnectionID = defaultConnectionId());
 
     //STATIC Variables
     static DataBaseUpdater* dbUpdater;
@@ -126,20 +130,17 @@ private:
     bool createEmptyDataBase(const QString &connectionID = defaultConnectionId());
     bool poetHasSubCats(int poetID, const QString &connectionID = defaultConnectionId());
 
-    SearchResults startSearch(const QString &strQuery, const QSqlDatabase &db, int PoetID, const QStringList &phraseList,
-                              const QStringList &excludedList = QStringList(), const QStringList &excludeWhenCleaning = QStringList(),
-                              bool* Canceled = 0, bool slowSearch = false);
+//    SearchResults startSearch(const QString &strQuery, const QSqlDatabase &db, int PoetID, const QStringList &phraseList,
+//                              const QStringList &excludedList = QStringList(), const QStringList &excludeWhenCleaning = QStringList(),
+//                              bool* Canceled = 0, bool slowSearch = false);
 
     int cachedMaxCatID, cachedMaxPoemID;
-    int getNewPoemID();
-    int getNewPoetID();
-    int getNewCatID();
+    int getNewPoemID(const QString &connectionID = defaultConnectionId());
+    int getNewPoetID(const QString &connectionID = defaultConnectionId());
+    int getNewCatID(const QString &connectionID = defaultConnectionId());
     // return the first id for creating new category
-    int createCatPathOnNeed(QList<GanjoorCat> &catPath);
-    void removeCatFromDataBase(const GanjoorCat &gCat);
-    static QString defaultConnectionId();
-    static QString getIdForDataBase(const QString &fileName, QThread* thread = 0);
-    static void removeDatabase(const QString &fileName, QThread* thread = 0);
+    int createCatPathOnNeed(QList<GanjoorCat> &catPath, const QString &connectionID = defaultConnectionId());
+    void removeCatFromDataBase(const GanjoorCat &gCat, const QString &connectionID = defaultConnectionId());
 
     static bool comparePoetsByName(GanjoorPoet* poet1, GanjoorPoet* poet2);
     static bool compareCategoriesByName(GanjoorCat* cat1, GanjoorCat* cat2);
@@ -159,7 +160,7 @@ private slots:
 signals:
     void searchStatusChanged(const QString &);
     void concurrentResultReady(const QString &type, const QVariant &results);
-    void databaseUpdated();
+    void databaseUpdated(const QString &connectionID);
 
 #ifdef EMBEDDED_SQLITE
 private:

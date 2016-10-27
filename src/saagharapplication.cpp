@@ -80,7 +80,6 @@ SaagharApplication::SaagharApplication(int &argc, char** argv)
       m_tasksThreadPool(0),
       m_databaseBrowser(0),
       m_settingsManager(0),
-      m_outlineModel(0),
       m_tasksThreads(NORMAL_TASKS_THREADS),
       m_displayFullNotification(true),
       m_notificationPosition(ProgressManager::DesktopBottomRight),
@@ -168,13 +167,21 @@ SettingsManager* SaagharApplication::settingsManager()
     return m_settingsManager;
 }
 
-OutlineModel* SaagharApplication::outlineModel()
+OutlineModel* SaagharApplication::outlineModel(const QString &connectionID)
 {
-    if (!m_outlineModel) {
-        m_outlineModel = OutlineModel::instance();
+    // Maybe filename instead connectionID
+    QString theConnectionID = connectionID;
+    if (theConnectionID.isEmpty()) {
+        theConnectionID = DatabaseBrowser::defaultConnectionId();
     }
 
-    return m_outlineModel;
+    OutlineModel* model = m_outlineModels.value(theConnectionID, 0);
+    if (!model) {
+        model = new OutlineModel(theConnectionID, sApp);
+        m_outlineModels.insert(theConnectionID, model);
+    }
+
+    return model;
 }
 
 void SaagharApplication::setPriority(QThread* thread)
@@ -257,7 +264,8 @@ void SaagharApplication::setupPaths()
 
 void SaagharApplication::setupDatabasePaths()
 {
-    QStringList settingsDatabaseDirs = VARS("DatabaseBrowser/DataBasePath").split(QLatin1String(";"), QString::SkipEmptyParts);
+    const QStringList dirs = VARS("DatabaseBrowser/DataBasePath").split(QLatin1String(";"), QString::SkipEmptyParts);
+    QStringList settingsDatabaseDirs = dirs;
 
     //searching database-path for database-file
     //following lines are for support old default data-base pathes.
@@ -276,7 +284,19 @@ void SaagharApplication::setupDatabasePaths()
         }
     }
 
-    m_paths.insert(DatabaseDirs, settingsDatabaseDirs.join(QLatin1String(";")));
+    if (!m_paths.value(DatabaseFile).isEmpty()) {
+        m_paths.insert(DatabaseDirs, settingsDatabaseDirs.join(QLatin1String(";")));
+    }
+    else {
+        if (dirs.isEmpty() || dirs.at(0).isEmpty()) {
+            m_paths.insert(DatabaseDirs, defaultPath(ResourcesDir));
+        }
+        else {
+            m_paths.insert(DatabaseDirs, dirs.at(0));
+        }
+
+        m_paths.insert(DatabaseFile, m_paths.value(DatabaseDirs) + "/" + DATABASE_FILE_NAME);
+    }
 
     // Set database browser default path
     DatabaseBrowser::setDefaultDatabasename(m_paths.value(DatabaseFile));
@@ -305,6 +325,7 @@ void SaagharApplication::setupInitialValues()
     VAR_INIT("General/DisplaySplashScreen", true);
     VAR_INIT("General/UILanguage", LS("fa"));
     VAR_INIT("General/AutoCheckUpdates", true);
+    VAR_INIT("General/LastShownPrefaceID", 0);
 
     VAR_INIT("DatabaseBrowser/RepositoriesList", QVariant());
     VAR_INIT("DatabaseBrowser/KeepDownloadedFile", false);

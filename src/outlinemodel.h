@@ -30,7 +30,7 @@ struct GanjoorCat;
 class OutlineModel : public QAbstractItemModel
 {
 public:
-    static OutlineModel* instance();
+    OutlineModel(const QString &connectionID, QObject* parent = 0);
     ~OutlineModel();
 
     enum DataRole {
@@ -58,10 +58,6 @@ public:
     QList<GanjoorCat> catPathFromIndex(const QModelIndex &index, bool reversed = false) const;
 
 private:
-    Q_DISABLE_COPY(OutlineModel)
-    OutlineModel(QObject* parent = 0);
-    static OutlineModel* s_instance;
-
     inline bool indexValid(const QModelIndex &index) const {
         return index.isValid() && (index.row() >= 0) && (index.column() >= 0) && (index.model() == this);
     }
@@ -73,6 +69,8 @@ private:
 
     QModelIndex find(const QString &key, const QModelIndex &parent) const;
     QModelIndex find(int id, const QModelIndex &parent) const;
+
+    QString m_connectionID;
 };
 
 #endif // OUTLINEMODEL_H

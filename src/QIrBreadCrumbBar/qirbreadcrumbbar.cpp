@@ -526,9 +526,9 @@ QIrBreadCrumbIconWidget::QIrBreadCrumbIconWidget(QIrBreadCrumbComboBox* comboBox
     QAction* action;
 
     setContextMenuPolicy(Qt::ActionsContextMenu);
-    addAction(action = new QAction("Copy Address", this));
+    addAction(action = new QAction(tr("Copy Address"), this));
     connect(action, SIGNAL(triggered()), this, SLOT(slotCopyAddress()));
-    addAction(action = new QAction("Edit Address", this));
+    addAction(action = new QAction(tr("Edit Address"), this));
     connect(action, SIGNAL(triggered()), this, SLOT(slotEditAddress()));
 }
 void QIrBreadCrumbIconWidget::paintEvent(QPaintEvent*)
@@ -786,7 +786,7 @@ void QIrBreadCrumbBarUi::init()
     QIR_W(QIrBreadCrumbBar);
 
     comboBox = new QIrBreadCrumbComboBox(w);
-    w->setModel(new BreadCrumbSaagharModel);
+    w->setModel(new QIrDefaultBreadCrumbModel);
     w->setLocation(QString());
     comboBox->showBreadCrumbs(false);
     w->setSizePolicy(comboBox->sizePolicy());
