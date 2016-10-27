@@ -436,7 +436,13 @@ void SaagharWindow::searchStart()
             SaagharWidget::lineEditSearchText->searchStart(&searchCanceled);
 
             SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(poetName));
-            QApplication::processEvents();
+
+            static int stepToProcessEvent = 0;
+            ++stepToProcessEvent;
+            if (stepToProcessEvent > 20) {
+                stepToProcessEvent = 0;
+                QApplication::processEvents();
+            }
 
             bool success = false;
 

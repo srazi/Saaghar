@@ -1704,7 +1704,6 @@ void DatabaseBrowser::addDataSets()
         if (!fileList.isEmpty()) {
             foreach (const QString &file, fileList) {
                 DatabaseBrowser::dbUpdater->installItemToDB(file);
-                QApplication::processEvents();
             }
         }
     }

@@ -696,6 +696,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
     }
 
     QApplication::restoreOverrideCursor();
+    QApplication::processEvents();
 }
 
 void DataBaseUpdater::resizeColumnsToContents()

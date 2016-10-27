@@ -190,7 +190,8 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 {
     TASK_CANCELED;
 
-    const QString &connectionID = VAR_GET(options, connectionID).toString();
+    const QString &theConnectionID = VAR_GET(options, connectionID).toString();
+    const QString &connectionID = sApp->databaseBrowser()->getIdForDataBase(sApp->databaseBrowser()->databaseFileFromID(theConnectionID), QThread::currentThread());
     const QString &strQuery = VAR_GET(options, strQuery).toString();
     int PoetID = VAR_GET(options, PoetID).toInt();
     const QStringList &phraseList = VAR_GET(options, phraseList).toStringList();
@@ -199,7 +200,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
 
     SearchResults searchResults;
 
-    QSqlDatabase threadDatabase = sApp->databaseBrowser()->databaseForThread(QThread::currentThread(), connectionID);
+    QSqlDatabase threadDatabase = sApp->databaseBrowser()->database(connectionID);
     if (!threadDatabase.isOpen()) {
         qDebug() << QString("ConcurrentTask::startSearch: A database for thread %1 could not be opened!").arg(QString::number((quintptr)QThread::currentThread()));
         return QVariant();
