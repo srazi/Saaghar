@@ -437,12 +437,6 @@ void SaagharWindow::searchStart()
 
             SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(poetName));
 
-            static int stepToProcessEvent = 0;
-            ++stepToProcessEvent;
-            if (stepToProcessEvent > 20) {
-                stepToProcessEvent = 0;
-                QApplication::processEvents();
-            }
 
             bool success = false;
 
@@ -468,9 +462,9 @@ void SaagharWindow::searchStart()
                 }
             }
 
-            if (i == selectList.size() - 1) {
-                SaagharWidget::lineEditSearchText->searchStop();
-            }
+//            if (i == selectList.size() - 1) {
+//                SaagharWidget::lineEditSearchText->searchStop();
+//            }
 
             // searchResultWidget->setResultList(finalResult);
             if (!success) {
@@ -502,6 +496,15 @@ void SaagharWindow::searchStart()
             break;    //search is canceled
         }
     }
+
+    QApplication::processEvents();
+
+    if (!searchCanceled) {
+        ConcurrentTaskManager::instance()->startQueuedTasks();
+    }
+
+    SaagharWidget::lineEditSearchText->searchStop();
+
 }
 
 void SaagharWindow::multiSelectObjectInitialize(QMultiSelectWidget* multiSelectWidget, const QStringList &selectedData, int insertIndex)

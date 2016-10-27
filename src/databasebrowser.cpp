@@ -1230,7 +1230,7 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID,
     VAR_ADD(arguments, slowSearch);
     VAR_ADD(arguments, taskTitle);
 
-    searchTask->start("SEARCH", arguments);
+    searchTask->start("SEARCH", arguments, true);
 
     return true;
 }
