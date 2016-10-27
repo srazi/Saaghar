@@ -29,7 +29,8 @@
 
 SelectionManager::SelectionManager(QWidget* parent) :
     QWidget(parent),
-    ui(new Ui::SelectionManager)
+    ui(new Ui::SelectionManager),
+    m_parentsSelectChildren(false)
 {
     ui->setupUi(this);
 
@@ -60,7 +61,7 @@ SelectionManager::SelectionManager(QWidget* parent) :
             this, SLOT(onPreviewIndexDoubleClicked(QModelIndex)));
 
     connect(ui->buttonBox, SIGNAL(rejected()), this, SLOT(close()));
-    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(ui->buttonBox, SIGNAL(accepted()), this, SLOT(acceptAndClose()));
 }
 
 SelectionManager::~SelectionManager()
@@ -71,6 +72,11 @@ SelectionManager::~SelectionManager()
 QStringList SelectionManager::selectionPaths() const
 {
     return m_selectionProxyModel->paths();
+}
+
+QStringList SelectionManager::selectedCategoriesIDs() const
+{
+    return m_selectionProxyModel->selectedCategoriesIDs();
 }
 
 void SelectionManager::setSelection(const QStringList &paths)
@@ -98,7 +104,15 @@ void SelectionManager::setSettingsPath(const QString &settingsPath)
 
     m_settingsPath = settingsPath;
 
-    setSelection(VAR(m_settingsPath).toStringList());
+    setSelection(VAR(m_settingsPath.toLatin1().constData()).toStringList());
+}
+
+void SelectionManager::parentsSelectChildren(bool yes)
+{
+    if (m_parentsSelectChildren != yes) {
+        m_parentsSelectChildren = yes;
+        m_selectionProxyModel->parentsSelectChildren(yes);
+    }
 }
 
 void SelectionManager::onPreviewIndexDoubleClicked(const QModelIndex &index)
@@ -110,18 +124,30 @@ void SelectionManager::onPreviewIndexDoubleClicked(const QModelIndex &index)
 void SelectionManager::accept()
 {
     if (!m_settingsPath.isEmpty()) {
-        VAR_DECL(m_settingsPath, selectionPaths());
+        VAR_DECL(m_settingsPath.toLatin1().constData(), selectionPaths());
+        VAR_DECL(QString("%1/CategoriesIDs").arg(m_settingsPath).toLatin1().constData(), selectedCategoriesIDs());
     }
 
     emit accepted();
+}
+
+void SelectionManager::acceptAndClose()
+{
+    accept();
     close();
+}
+
+void SelectionManager::clearSelection()
+{
+    ui->selectionView->selectionModel()->clearSelection();
 }
 
 
 SelectionProxyModel::SelectionProxyModel(QItemSelectionModel* selectionModel, QObject* parent)
     : QSortFilterProxyModel(parent),
       m_selectionModel(selectionModel),
-      m_filterIndices()
+      m_filterIndices(),
+      m_parentsSelectChildren(false)
 {
     connect(m_selectionModel, SIGNAL(selectionChanged(QItemSelection,QItemSelection)),
             this, SLOT(onSelectionChanged()));
@@ -130,6 +156,18 @@ SelectionProxyModel::SelectionProxyModel(QItemSelectionModel* selectionModel, QO
 QStringList SelectionProxyModel::paths() const
 {
     return m_paths;
+}
+
+QStringList SelectionProxyModel::selectedCategoriesIDs() const
+{
+    return m_selectedCategoriesIDs;
+}
+
+void SelectionProxyModel::parentsSelectChildren(bool yes)
+{
+    m_parentsSelectChildren = yes;
+
+    onSelectionChanged();
 }
 
 bool SelectionProxyModel::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const
@@ -164,19 +202,64 @@ void SelectionProxyModel::onSelectionChanged()
     emit filterInvalidated();
 }
 
+static void addAllChildren(QStringList &categoriesIDs, const QAbstractItemModel* model, const QModelIndex &index)
+{
+    if (!index.isValid()) {
+        return;
+    }
+
+    for (int j = 0; j < model->rowCount(index); ++j) {
+        const QModelIndex child = model->index(j, 0, index);
+        if (child.isValid()) {
+            categoriesIDs << QString::number(child.data(OutlineModel::IDRole).toInt());
+            addAllChildren(categoriesIDs, model, child);
+        }
+    }
+}
+
 void SelectionProxyModel::computeFilterIndices()
 {
     static const QString SEPARATOR = QLatin1String("/");
     m_paths.clear();
+    m_selectedCategoriesIDs.clear();
     m_filterIndices = m_selectedIndices;
 
+    if (m_parentsSelectChildren) {
+        for (int i = 0; i < m_selectedIndices.size(); ++i) {
+            QModelIndex index = m_selectedIndices.at(i);
+            QModelIndex parent = index.parent();
+            while (parent.isValid()) {
+                if (m_selectedIndices.contains(parent)) {
+                    m_filterIndices.removeAll(index);
+                    break;
+                }
+
+                parent = parent.parent();
+            }
+        }
+
+        m_selectedIndices = m_filterIndices;
+    }
+
     QStringList path;
+    QStringList categoriesIDs;
+    const QAbstractItemModel* model = m_selectionModel->model();
 
     for (int i = 0; i < m_selectedIndices.size(); ++i) {
         path.clear();
+        categoriesIDs.clear();
+
         QModelIndex index = m_selectedIndices.at(i);
+        if (!index.isValid()) {
+            continue;
+        }
 
         path.prepend(index.data(OutlineModel::TitleRole).toString());
+        categoriesIDs << QString::number(index.data(OutlineModel::IDRole).toInt());
+
+        if (m_parentsSelectChildren && model) {
+            addAllChildren(categoriesIDs, model, index);
+        }
 
         while (index.isValid()) {
             index = index.parent();
@@ -188,9 +271,11 @@ void SelectionProxyModel::computeFilterIndices()
         }
 
         m_paths << path.join(SEPARATOR);
+        m_selectedCategoriesIDs << categoriesIDs.join(QLatin1String(","));
     }
 
     m_paths.removeDuplicates();
+    m_selectedCategoriesIDs.removeDuplicates();
 }
 
 bool SelectionProxyModel::selectionContains(const QModelIndex &index)

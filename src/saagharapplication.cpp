@@ -411,12 +411,19 @@ void SaagharApplication::setupInitialValues()
     VAR_INIT("SaagharWindow/RandomOpenNewTab", false);
     VAR_INIT("SaagharWindow/SelectedRandomRange", QVariant());
     VAR_INIT("SaagharWindow/QuickAccessBookmarks", QVariant());
+    VAR_INIT("SaagharWindow/QuickAccessBookmarks/CategoriesIDs", QVariant());
 
     VAR_INIT("Search/SkipVowelLetters", false);
     VAR_INIT("Search/SkipVowelSigns", false);
     VAR_INIT("Search/NonPagedResults", false);
     VAR_INIT("Search/SelectedRange", (QStringList() << LS("0") << LS("ALL_TITLES")));
     VAR_INIT("Search/MaxResultsPerPage", 100);
+    VAR_INIT("Search/Range/All", true);
+    VAR_INIT("Search/Range/Custom", false);
+    VAR_INIT("Search/Range/OpenedTabs", false);
+    VAR_INIT("Search/Range/Title", true);
+    VAR_INIT("Search/Range/CustomSelection", QVariant());
+    VAR_INIT("Search/Range/CustomSelection/CategoriesIDs", QVariant());
 
     VAR_INIT("TaskManager/UseAdvancedSettings", false);
     VAR_INIT("TaskManager/Mode", "NORMAL");
