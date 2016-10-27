@@ -80,7 +80,7 @@ private:
     SelectionProxyModel* m_selectionProxyModel;
 };
 
-class SelectionManager : public QDialog
+class SelectionManager : public QWidget
 {
     Q_OBJECT
 
@@ -91,12 +91,21 @@ public:
     QStringList selectionPaths() const;
     void setSelection(const QStringList &paths);
 
+    void setButtonBoxHidden(bool hide);
+    void setSettingsPath(const QString &settingsPath);
+
 private slots:
     void onPreviewIndexDoubleClicked(const QModelIndex &index);
+    void accept();
 
 private:
     Ui::SelectionManager* ui;
     SelectionProxyModel* m_selectionProxyModel;
+
+    QString m_settingsPath;
+
+signals:
+    void accepted();
 };
 
 #endif // SELECTIONMANAGER_H

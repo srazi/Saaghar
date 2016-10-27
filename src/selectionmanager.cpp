@@ -23,11 +23,12 @@
 #include "ui_selectionmanager.h"
 #include "saagharapplication.h"
 #include "outlinemodel.h"
+#include "settingsmanager.h"
 
 #include <QItemSelectionModel>
 
 SelectionManager::SelectionManager(QWidget* parent) :
-    QDialog(parent),
+    QWidget(parent),
     ui(new Ui::SelectionManager)
 {
     ui->setupUi(this);
@@ -86,10 +87,34 @@ void SelectionManager::setSelection(const QStringList &paths)
     }
 }
 
+void SelectionManager::setButtonBoxHidden(bool hide)
+{
+    ui->buttonBox->setHidden(hide);
+}
+
+void SelectionManager::setSettingsPath(const QString &settingsPath)
+{
+    Q_ASSERT(m_settingsPath.isEmpty());
+
+    m_settingsPath = settingsPath;
+
+    setSelection(VAR(m_settingsPath).toStringList());
+}
+
 void SelectionManager::onPreviewIndexDoubleClicked(const QModelIndex &index)
 {
     ui->selectionView->scrollTo(m_selectionProxyModel->mapToSource(index));
     setFocus();
+}
+
+void SelectionManager::accept()
+{
+    if (!m_settingsPath.isEmpty()) {
+        VAR_DECL(m_settingsPath, selectionPaths());
+    }
+
+    emit accepted();
+    close();
 }
 
 

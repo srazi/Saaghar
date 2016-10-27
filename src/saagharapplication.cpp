@@ -575,13 +575,9 @@ void SaagharApplication::customizeQuickAccessBookmarks()
     }
 
     SelectionManager* selectionManager = new SelectionManager(0);
-    selectionManager->setSelection(VAR("SaagharWindow/QuickAccessBookmarks").toStringList());
-
-    if (selectionManager->exec() == QDialog::Accepted) {
-        VAR_DECL("SaagharWindow/QuickAccessBookmarks", selectionManager->selectionPaths());
-    }
-
-    selectionManager->deleteLater();
+    selectionManager->setSettingsPath(LS("SaagharWindow/QuickAccessBookmarks"));
+    selectionManager->setAttribute(Qt::WA_DeleteOnClose);
+    selectionManager->show();
 }
 
 void SaagharApplication::init()
