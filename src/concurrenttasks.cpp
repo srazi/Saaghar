@@ -213,7 +213,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
     const QString &theConnectionID = VAR_GET(options, connectionID).toString();
     const QString &connectionID = sApp->databaseBrowser()->getIdForDataBase(sApp->databaseBrowser()->databaseFileFromID(theConnectionID), QThread::currentThread());
     const QString &strQuery = VAR_GET(options, strQuery).toString();
-    int PoetID = VAR_GET(options, PoetID).toInt();
+    const QString &currentSelectionPath = VAR_GET(options, currentSelectionPath).toString();
     const QStringList &phraseList = VAR_GET(options, phraseList).toStringList();
     const QStringList &excludedList = VAR_GET(options, excludedList).toStringList();
     const QStringList &excludeWhenCleaning = VAR_GET(options, excludeWhenCleaning).toStringList();
@@ -269,7 +269,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
         QString verseText = qrec.value(1).toString();
 
         // assume title's order is zero!
-        int verseOrder = (PoetID == -1000 ? 0 : qrec.value(2).toInt());
+        int verseOrder = (currentSelectionPath == "ALL_TITLES" ? 0 : qrec.value(2).toInt());
 
         QString foundVerse = Tools::cleanStringFast(verseText, excludeWhenCleaning);
 

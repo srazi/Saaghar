@@ -1140,7 +1140,7 @@ bool DatabaseBrowser::importDataBase(const QString &fromFileName, const QString 
     return true;
 }
 
-bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID, const QStringList &phraseList, const QStringList &excludedList,
+bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, const QString &currentSelectionPath, const QString &currentSelectionPathTitle, const QStringList &phraseList, const QStringList &excludedList,
         bool* Canceled, bool slowSearch, const QString &connectionID)
 {
     if (phraseList.isEmpty()) {
@@ -1198,31 +1198,25 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID,
 
     searchQueryPhrase = anyWordedList.join("%");
 
-    QString taskTitle;
+    QString taskTitle = currentSelectionPathTitle;
 
-    if (PoetID == 0) {
-        taskTitle = tr("All");
+    if (currentSelectionPath == "ALL") {
         strQuery = QString("SELECT poem_id, text, vorder FROM verse WHERE text LIKE \'%" + searchQueryPhrase + "%\' ORDER BY poem_id");
     }
-    else if (PoetID == -1000) { //reserved for titles!!!
-        taskTitle = tr("Titles");
+    else if (currentSelectionPath == "ALL_TITLES") {
         strQuery = QString("SELECT id, title FROM poem WHERE title LIKE \'%" + searchQueryPhrase + "%\' ORDER BY id");
     }
     else {
-        strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM verse WHERE verse.text LIKE \'%%1%\' AND verse.poem_id IN (SELECT poem.id FROM poem WHERE poem.cat_id IN (SELECT cat.id FROM cat WHERE poet_id=%2) ORDER BY poem.id)").arg(searchQueryPhrase).arg(QString::number(PoetID));
+        strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM verse WHERE verse.text LIKE \'%%1%\' AND verse.poem_id IN (SELECT poem.id FROM poem WHERE poem.cat_id IN (%2) ORDER BY poem.id)").arg(searchQueryPhrase).arg(currentSelectionPath);
     }
 
-    if (taskTitle.isEmpty()) {
-        taskTitle = getPoet(PoetID, connectionID)._Name;
-    }
-
-    taskTitle.prepend(tr("Search in: "));
+    taskTitle.prepend(tr("Search: "));
 
     QVariantHash arguments;
     // TODO: Add local database support to parallel search
     VAR_ADD(arguments, connectionID);
     VAR_ADD(arguments, strQuery);
-    VAR_ADD(arguments, PoetID);
+    VAR_ADD(arguments, currentSelectionPath);
     VAR_ADD(arguments, phraseList);
     VAR_ADD(arguments, excludedList);
     VAR_ADD(arguments, excludeWhenCleaning);

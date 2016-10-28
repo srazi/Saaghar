@@ -52,7 +52,7 @@ SearchResultWidget::SearchResultWidget(QMainWindow* qmw, QWidget* parent, const 
 {
     setupUi(qmw);
 
-    QString dockTitle = m_sectionName + ":" + m_phrase;
+    QString dockTitle = m_phrase + ": " + m_sectionName;
     dockTitle.replace("==", tr("Radifs that contain: "));
     dockTitle.replace("=", tr("Rhymed by: "));
     searchResultWidget->setWindowTitle(dockTitle);

@@ -222,6 +222,7 @@ private slots:
     void showStatusText(const QString &message, int newLevelsCount = 0);
 
     void onDatabaseUpdate(const QString &connectionID);
+    void updateSearchOptionButtonToolTip();
 
 protected:
 //      void resizeEvent( QResizeEvent * event );

@@ -50,13 +50,12 @@ void SearchOptionsDialog::accept()
     bool refreshRequired = ui->maxResultSpinBox->value() != SearchResultWidget::maxItemPerPage ||
                            nonPaged != SearchResultWidget::nonPagedSearch;
 
-
     VAR_DECL("Search/Range/All", ui->allRadioButton->isChecked());
     VAR_DECL("Search/Range/Custom", ui->customRangeRadioButton->isChecked());
     VAR_DECL("Search/Range/OpenedTabs", ui->openedTabsRadioButton->isChecked());
     VAR_DECL("Search/Range/Title", ui->titleRangeCheckBox->isChecked());
 
-    const QStringList selectedCategories = ui->selectionManager->selectedCategoriesIDs();
+    // save selectionManager current selections
     ui->selectionManager->accept();
 
     SearchResultWidget::maxItemPerPage = ui->maxResultSpinBox->value();
@@ -68,3 +67,19 @@ void SearchOptionsDialog::accept()
     }
     QDialog::accept();
 }
+
+#if QT_VERSION >= 0x050000
+#include <QPainter>
+#include <QPaintEvent>
+#include "qtwin.h"
+void SearchOptionsDialog::paintEvent(QPaintEvent* event)
+{
+    if (VARB("SaagharWindow/UseTransparecy") && QtWin::isCompositionEnabled()) {
+        QPainter p(this);
+        p.setCompositionMode(QPainter::CompositionMode_Clear);
+        p.fillRect(event->rect(), QColor(0, 0, 0, 0));
+    }
+
+    QDialog::paintEvent(event);
+}
+#endif

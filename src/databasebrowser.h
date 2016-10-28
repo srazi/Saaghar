@@ -105,7 +105,7 @@ public:
     //QList<int> getPoemIDsContainingPhrase_NewMethod(const QString &phrase, int PoetID, bool skipNonAlphabet);
     //QStringList getVerseListContainingPhrase(int PoemID, const QString &phrase);
     //another new approch
-    bool getPoemIDsByPhrase(ConcurrentTask* searchTask, int PoetID, const QStringList &phraseList, const QStringList &excludedList = QStringList(), bool* canceled = 0, bool slowSearch = false, const QString &connectionID = defaultConnectionId());
+    bool getPoemIDsByPhrase(ConcurrentTask* searchTask, const QString &currentSelectionPath, const QString &currentSelectionPathTitle, const QStringList &phraseList, const QStringList &excludedList = QStringList(), bool* canceled = 0, bool slowSearch = false, const QString &connectionID = defaultConnectionId());
 
     //Faal
     int getRandomPoemID(int* CatID, const QString &connectionID = defaultConnectionId());
