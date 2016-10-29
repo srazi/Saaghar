@@ -30,10 +30,7 @@
 #include <QNetworkReply>
 #include <QThread>
 #include <QThreadPool>
-
-#ifdef SAAGHAR_DEBUG
 #include <QDateTime>
-#endif
 
 #define TASK_CANCELED if (isCanceled()) return QVariant();
 
