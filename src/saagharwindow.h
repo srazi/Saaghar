@@ -73,8 +73,8 @@ private:
     OutlineTree* outlineTree;
     bool skipContextMenu;
     void setupBookmarkManagerUi();
-    QBoxLayout* searchToolBarBoxLayout;
-    bool skipSearchToolBarResize;
+
+//    bool skipSearchToolBarResize;
     void setupSearchToolBarUi();
     bool eventFilter(QObject* receiver, QEvent* event);
     void toolBarViewActions(QToolBar* toolBar, QMenu* menu, bool subMenu);
@@ -113,8 +113,8 @@ private:
     Ui::SaagharWindow* ui;
     void createConnections();
     void setupUi();
-    QMultiSelectWidget* selectSearchRange;
-    QComboBox* comboBoxSearchRegion;
+//    QMultiSelectWidget* selectSearchRange;
+//    QComboBox* comboBoxSearchRegion;
     QSpinBox* spinBoxMaxSearchResult;
     QPushButton* pushButtonSearch;
     QMenu* menuNavigation;

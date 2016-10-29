@@ -248,13 +248,13 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     connect(ui->mainToolBar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(toolBarContextMenu(QPoint)));
     //connect(ui->searchToolBar, SIGNAL(orientationChanged(Qt::Orientation)), this, SLOT(searchToolBarView()));
-    ui->searchToolBar->installEventFilter(this);
+    //ui->searchToolBar->installEventFilter(this);
 
     createConnections();
     previousTabIndex = mainTabWidget->currentIndex();
     currentTabChanged(mainTabWidget->currentIndex());
 
-    multiSelectInsertItems(selectSearchRange);
+//    multiSelectInsertItems(selectSearchRange);
 
     //seeding random function
     uint numOfSecs = QDateTime::currentDateTime().toTime_t();
@@ -357,14 +357,9 @@ void SaagharWindow::searchStart()
     if (VARB("Search/Range/OpenedTabs")) {
         for (int j = 0; j < mainTabWidget->count(); ++j) {
             SaagharWidget* tmp = getSaagharWidget(j);
-            //QAbstractItemDelegate *tmpDelegate = tmp->tableViewWidget->itemDelegate();
-
-            //delete tmpDelegate;
-            //tmpDelegate = 0;
             if (tmp) {
                 tmp->scrollToFirstItemContains(phrase);
             }
-            //tmp->tableViewWidget->setItemDelegate(new SaagharItemDelegate(tmp->tableViewWidget, saagharWidget->tableViewWidget->style(), SaagharWidget::lineEditSearchText->text()));
         }
 
         return;
@@ -380,8 +375,6 @@ void SaagharWindow::searchStart()
                 break;
             }
 
-            //phrase = Tools::cleanString(SaagharWidget::lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
-            //int poetID = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt();
             SearchPatternManager::instance()->setInputPhrase(phrase);
             SearchPatternManager::instance()->init();
             QVector<QStringList> phraseVectorList = SearchPatternManager::instance()->outputPhrases();
@@ -406,17 +399,7 @@ void SaagharWindow::searchStart()
             connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
             connect(searchTask, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));
 
-            /////////////////////////////////////
-//          QProgressDialog searchProgress(tr("Searching Data Base..."),  tr("Cancel"), 0, 0, this);
-//          connect( &searchProgress, SIGNAL(canceled()), &searchProgress, SLOT(hide()) );
-//          searchProgress.setWindowModality(Qt::WindowModal);
-//          searchProgress.setFixedSize(searchProgress.size());
-//          searchProgress.setMinimumDuration(0);
-//          //searchProgress.setValue(0);
-//          //searchProgress.show();
-
             SaagharWidget::lineEditSearchText->searchStart(&searchCanceled);
-
             SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(currentSelectionPathTitle));
 
 
@@ -448,12 +431,11 @@ void SaagharWindow::searchStart()
 //                SaagharWidget::lineEditSearchText->searchStop();
 //            }
 
-            // searchResultWidget->setResultList(finalResult);
             if (!success) {
                 if (i == selectList.size() - 1) {
                     SaagharWidget::lineEditSearchText->notFound();
-                    connect(selectSearchRange, SIGNAL(itemCheckStateChanged(QListWidgetItem*)), SaagharWidget::lineEditSearchText, SLOT(resetNotFound()));
-                    SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(selectSearchRange->getSelectedStringList().join("-")));
+//                    connect(selectSearchRange, SIGNAL(itemCheckStateChanged(QListWidgetItem*)), SaagharWidget::lineEditSearchText, SLOT(resetNotFound()));
+//                    SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(selectSearchRange->getSelectedStringList().join("-")));
                 }
                 delete searchResultWidget;
                 searchResultWidget = 0;
@@ -547,8 +529,8 @@ void SaagharWindow::actionRemovePoet()
             sApp->databaseBrowser()->removePoetFromDataBase(poetID);
             outlineTree->refreshTree();
 
-            selectSearchRange->clear();
-            multiSelectInsertItems(selectSearchRange);
+//            selectSearchRange->clear();
+//            multiSelectInsertItems(selectSearchRange);
 
             setHomeAsDirty();
             QApplication::restoreOverrideCursor();
@@ -1508,8 +1490,8 @@ void SaagharWindow::setupUi()
     }
 #endif
 
-    skipSearchToolBarResize = false;
-    comboBoxSearchRegion = 0;
+//    skipSearchToolBarResize = false;
+//    comboBoxSearchRegion = 0;
     setupSearchToolBarUi();
     ui->searchToolBar->hide();
 
@@ -2019,8 +2001,8 @@ void SaagharWindow::onDatabaseUpdate(const QString &connectionID)
     }
 
     outlineTree->refreshTree();
-    selectSearchRange->clear();
-    multiSelectInsertItems(selectSearchRange);
+//    selectSearchRange->clear();
+//    multiSelectInsertItems(selectSearchRange);
     setHomeAsDirty();
 }
 
@@ -2458,15 +2440,14 @@ void SaagharWindow::saveSettings()
     VAR_DECL("Search/SkipVowelSigns", SearchResultWidget::skipVowelSigns);
     VAR_DECL("Search/SkipVowelLetters", SearchResultWidget::skipVowelLetters);
 
-    QList<QListWidgetItem*> selectedItems = selectSearchRange->getSelectedItemList();
+//    QList<QListWidgetItem*> selectedItems = selectSearchRange->getSelectedItemList();
 
-    QStringList selectedSearchRange;
-    foreach (QListWidgetItem* item, selectedItems) {
-        selectedSearchRange << item->data(Qt::UserRole).toString();
-    }
+//    QStringList selectedSearchRange;
+//    foreach (QListWidgetItem* item, selectedItems) {
+//        selectedSearchRange << item->data(Qt::UserRole).toString();
+//    }
 
-    VAR_DECL("Search/SelectedRange", selectedSearchRange);
-    VAR_DECL("SaagharWindow/RandomOpenNewTab", selectedSearchRange);
+//    VAR_DECL("Search/SelectedRange", selectedSearchRange);
 
     VAR_DECL("DatabaseBrowser/RepositoriesList", DataBaseUpdater::repositories());
     VAR_DECL("DatabaseBrowser/KeepDownloadedFile", QVariant(DataBaseUpdater::keepDownloadedFiles));
@@ -2974,32 +2955,34 @@ bool SaagharWindow::eventFilter(QObject* receiver, QEvent* event)
         }
     }
     break;
-    case QEvent::Move : {
-        QMoveEvent* resEvent = static_cast<QMoveEvent*>(event);
-        if (resEvent && receiver == ui->searchToolBar) {
-            if (searchToolBarBoxLayout->direction() != QBoxLayout::LeftToRight && ui->searchToolBar->isFloating()) {
-                searchToolBarBoxLayout->setDirection(QBoxLayout::LeftToRight);
-                searchToolBarBoxLayout->setSpacing(4);
-                searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
-                ui->searchToolBar->adjustSize();
-            }
-            int height = comboBoxSearchRegion->height() + SaagharWidget::lineEditSearchText->height() + 1 + 1 + 2; //margins and spacing
-            if (ui->searchToolBar->size().height() >= height && !ui->searchToolBar->isFloating()) {
-                searchToolBarBoxLayout->setDirection(QBoxLayout::TopToBottom);
-                searchToolBarBoxLayout->setSpacing(2);
-                searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
-            }
-//              else
-//              {
-//                  searchToolBarBoxLayout->setDirection(QBoxLayout::RightToLeft);
-//              }
-        }
-    }
+// code works great for having a dynamic layout
+// commented due to new search range selection UI
+//    case QEvent::Move : {
+//        QMoveEvent* resEvent = static_cast<QMoveEvent*>(event);
+//        if (resEvent && receiver == ui->searchToolBar) {
+//            if (searchToolBarBoxLayout->direction() != QBoxLayout::LeftToRight && ui->searchToolBar->isFloating()) {
+//                searchToolBarBoxLayout->setDirection(QBoxLayout::LeftToRight);
+//                searchToolBarBoxLayout->setSpacing(4);
+//                searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
+//                ui->searchToolBar->adjustSize();
+//            }
+//            int height = comboBoxSearchRegion->height() + SaagharWidget::lineEditSearchText->height() + 1 + 1 + 2; //margins and spacing
+//            if (ui->searchToolBar->size().height() >= height && !ui->searchToolBar->isFloating()) {
+//                searchToolBarBoxLayout->setDirection(QBoxLayout::TopToBottom);
+//                searchToolBarBoxLayout->setSpacing(2);
+//                searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
+//            }
+// //              else
+// //              {
+// //                  searchToolBarBoxLayout->setDirection(QBoxLayout::RightToLeft);
+// //              }
+//        }
+//    }
     break;
     default:
         break;
     }
-    skipSearchToolBarResize = false;
+//    skipSearchToolBarResize = false;
     return false;
 }
 
@@ -3012,32 +2995,32 @@ void SaagharWindow::setupSearchToolBarUi()
     }
     SaagharWidget::lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, ICON_FILE("search-options"), ICON_FILE("cancel"));
     SaagharWidget::lineEditSearchText->setObjectName(QString::fromUtf8("lineEditSearchText"));
-    SaagharWidget::lineEditSearchText->setMaximumSize(QSize(170, 16777215));
+    //SaagharWidget::lineEditSearchText->setMaximumSize(QSize(170, 16777215));
     SaagharWidget::lineEditSearchText->setLayoutDirection(Qt::RightToLeft);
 
-    selectSearchRange = new QMultiSelectWidget(ui->searchToolBar);
-    comboBoxSearchRegion = selectSearchRange->getComboWidgetInstance();
-    comboBoxSearchRegion->setObjectName(QString::fromUtf8("comboBoxSearchRegion"));
-    comboBoxSearchRegion->setLayoutDirection(Qt::RightToLeft);
-    comboBoxSearchRegion->setMaximumSize(QSize(170, 16777215));
-    comboBoxSearchRegion->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
-    comboBoxSearchRegion->setEditable(true);
+//    selectSearchRange = new QMultiSelectWidget(ui->searchToolBar);
+//    comboBoxSearchRegion = selectSearchRange->getComboWidgetInstance();
+//    comboBoxSearchRegion->setObjectName(QString::fromUtf8("comboBoxSearchRegion"));
+//    comboBoxSearchRegion->setLayoutDirection(Qt::RightToLeft);
+//    comboBoxSearchRegion->setMaximumSize(QSize(170, 16777215));
+//    comboBoxSearchRegion->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
+//    comboBoxSearchRegion->setEditable(true);
 #if QT_VERSION >= 0x040700
     SaagharWidget::lineEditSearchText->setPlaceholderText(tr("Enter Search Phrase"));
-    comboBoxSearchRegion->lineEdit()->setPlaceholderText(tr("Select Search Scope..."));
+//    comboBoxSearchRegion->lineEdit()->setPlaceholderText(tr("Select Search Scope..."));
 #else
     SaagharWidget::lineEditSearchText->setToolTip(tr("Enter Search Phrase"));
-    comboBoxSearchRegion->lineEdit()->setToolTip(tr("Select Search Scope..."));
+//    comboBoxSearchRegion->lineEdit()->setToolTip(tr("Select Search Scope..."));
 #endif
 
     //create layout and add widgets to it!
-    searchToolBarBoxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+    QBoxLayout* searchToolBarBoxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
 
     searchToolBarBoxLayout->setSpacing(4);
     searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
 
     searchToolBarBoxLayout->addWidget(SaagharWidget::lineEditSearchText);
-    searchToolBarBoxLayout->addWidget(comboBoxSearchRegion);
+//    searchToolBarBoxLayout->addWidget(comboBoxSearchRegion);
     QSpacerItem* horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
     searchToolBarBoxLayout->addItem(horizontalSpacer);
 
