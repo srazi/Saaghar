@@ -1132,7 +1132,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 if (SaagharWidget::showBeytNumbers && m_hasPoem) {
                     int itemNumber = isBand ? BandNum : BeytNum;
                     QString localizedNumber = SaagharWidget::persianIranLocal.toString(itemNumber);
-                    numItem->setText(localizedNumber);
+                    numItem->setText(currentVerseText.isRightToLeft() ? localizedNumber : QString::number(itemNumber));
                     numItem->setFont(resolvedFont(LS("SaagharWidget/Fonts/Numbers")));
                     numItem->setForeground(resolvedColor(LS("SaagharWidget/Colors/Numbers")));
                     if (isBand) {
