@@ -988,13 +988,11 @@ void SaagharWindow::updateCaption()
     mainTabWidget->setTabToolTip(mainTabWidget->currentIndex(), "<p>" + sw->currentCaption + "</p>");
     setWindowTitle(QString(QChar(0x202B)) + tr("Saaghar: ") + sw->currentCaption + QString(QChar(0x202C)));
 
-    if (saagharWidget) {
-        if (saagharWidget->isLocalDataset()) {
-            mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), style()->standardIcon(QStyle::SP_DriveHDIcon));
-        }
-        else {
-            mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), QIcon());
-        }
+    if (sw->isLocalDataset()) {
+        mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), style()->standardIcon(QStyle::SP_DriveHDIcon));
+    }
+    else {
+        mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), QIcon());
     }
 }
 
