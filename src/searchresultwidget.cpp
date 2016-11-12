@@ -329,7 +329,7 @@ void SearchResultWidget::showSearchResult(int start)
     searchTable->setColumnWidth(0, searchTable->fontMetrics().boundingRect(QString::number((end + 1) * 100)).width());
     int maxPoemWidth = 0, maxVerseWidth = 0;
 
-    QList<int> tmpList = resultList.keys();
+    //QList<int> tmpList = resultList.keys();
     ////count = tmpList.size();
     //int progressBarIndex = 50;
     //const int step = count/20;
@@ -346,6 +346,7 @@ void SearchResultWidget::showSearchResult(int start)
 
     //for (int i = start; i < end+1; ++i)
     while (it != endIt) {
+        const int currentRow = i - start;
         /*if (i>progressBarIndex)
         {
             progress.setValue(i);
@@ -358,7 +359,7 @@ void SearchResultWidget::showSearchResult(int start)
         }*/
 
         if (count > 300) {
-            progress.setValue(i - start);
+            progress.setValue(currentRow);
         }
 
         if (progress.wasCanceled()) {
@@ -379,7 +380,7 @@ void SearchResultWidget::showSearchResult(int start)
         QTableWidgetItem* numItem = new QTableWidgetItem(localizedNumber);
         numItem->setFlags(Qt::NoItemFlags /*Qt::ItemIsEnabled*/);
 
-        searchTable->setItem(i - start, 0, numItem);
+        searchTable->setItem(currentRow, 0, numItem);
 
         QString firstVerse = "", poemTiltle = "", poetName = "";
         //QStringList verseData = resultList.value(poemId, "").split("|", QString::SkipEmptyParts);
@@ -448,8 +449,8 @@ void SearchResultWidget::showSearchResult(int start)
             }
         }
         //insert items to table
-        searchTable->setItem(i - start, 1, poemItem);
-        searchTable->setItem(i - start, 2, verseItem);
+        searchTable->setItem(currentRow, 1, poemItem);
+        searchTable->setItem(currentRow, 2, verseItem);
 
         tmpWidth = searchTable->fontMetrics().boundingRect(snippedFirstVerse).width();
         if (tmpWidth > maxVerseWidth) {
@@ -570,6 +571,14 @@ void SearchResultWidget::onConcurrentResultReady(const QString &type, const QVar
 
 
     SearchResults searchResults = results.value<SearchResults>();
+
+    if (!copyResultList.isEmpty()) {
+        QMap<int, QString>::const_iterator it = copyResultList.constBegin();
+        while (it != copyResultList.constEnd()) {
+            searchResults.insertMulti(it.key(), it.value());
+            ++it;
+        }
+    }
 
     setResultList(searchResults);
 }

@@ -395,10 +395,6 @@ void SaagharWindow::searchStart()
             phrase = Tools::cleanString(phrase);
             SearchResultWidget* searchResultWidget = new SearchResultWidget(this, searchResultContents, phrase, currentSelectionPathTitle);
 
-            ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget);
-            connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
-            connect(searchTask, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));
-
             SaagharWidget::lineEditSearchText->searchStart(&searchCanceled);
             SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(currentSelectionPathTitle));
 
@@ -406,6 +402,10 @@ void SaagharWindow::searchStart()
             bool success = false;
 
             for (int j = 0; j < vectorSize; ++j) {
+                ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget);
+                connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
+                connect(searchTask, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));
+
                 QStringList phrases = phraseVectorList.at(j);
                 QStringList excluded = excludedVectorList.at(j);
 #ifdef SAAGHAR_DEBUG
