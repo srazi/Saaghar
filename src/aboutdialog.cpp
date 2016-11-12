@@ -98,7 +98,14 @@ AboutDialog::AboutDialog(QWidget* parent)
     QString speceialThanks;
     speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://www.phototak.com/\">" + tr("Nasser Alavizadeh") + "</a> " + tr("(Logo Idea/Design)"));
     speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://www.gozir.com/\">" + tr("Hamid Reza Mohammadi") + "</a> " + tr("(Ganjoor Founder)"));
-    speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://\">" + tr("Siyvash Kiani") + "</a> " + tr("(Expert Assistance in Literature)"));
+
+    speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://hedayatvk.blogspot.com/\">" + tr("Hedayat Vatankhah") + "</a> " + tr("(Fedora/MeeGo Package)"));
+    speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://fzero.rubi.gd/\">" + tr("Forud A") + "</a> " + tr("(Arch Package)"));
+    speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" >" + tr("Javad Kouhi") + "</a> " + tr("(BSD Port)"));
+    speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://www.novid.ir/\">" + tr("Novid") + "</a> " + tr("(Ubuntu Package)"));
+    speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"https://wiki.ubuntu.ir/danialbehzadi\">" + tr("Danial Behzadi") + "</a> " + tr("(Ubuntu Package)"));
+
+    speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" >" + tr("Siyvash Kiani") + "</a> " + tr("(Expert Assistance in Literature)"));
     speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://homayounshajarian.blogfa.com/\">" + tr("Sahand Soltandoost") + "</a> " + tr("(Light-Gray Iconset)"));
     speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://www.useiconic.com/open/\">" + tr("Open Iconic Project") + "</a> " + tr("(Iconic-Cyan Iconset, <i>modified version</i>)"));
     speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"https://www.qt.io/ide/\">" + tr("Qt Creator Team") + "</a> " + tr("(Code of Tasks Notification)"));
