@@ -387,6 +387,7 @@ void SaagharWindow::searchStart()
                 currentSelectionPathTitle.remove(0, 1);
             }
 
+            // FIXME: We have a leak about creating/deleting search result widget
             QWidget* searchResultContents = new QWidget(this);
             searchResultContents->setObjectName(QString::fromUtf8("searchResultContents"));
             searchResultContents->setAttribute(Qt::WA_DeleteOnClose, true);

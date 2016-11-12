@@ -33,6 +33,7 @@
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QApplication>
+#include <QMenu>
 
 int SearchResultWidget::maxItemPerPage = 100;
 bool SearchResultWidget::nonPagedSearch = false;
@@ -49,8 +50,9 @@ SearchResultWidget::SearchResultWidget(QMainWindow* qmw, QWidget* parent, const 
     , m_phrase(searchPhrase)
     , m_sectionName(poetName)
     , searchResultWidget(0)
+    , m_mainWindow(qmw)
 {
-    setupUi(qmw);
+    setupUi(m_mainWindow);
 
     QString dockTitle = m_phrase + ": " + m_sectionName;
     dockTitle.replace("==", tr("Radifs that contain: "));
@@ -104,6 +106,7 @@ void SearchResultWidget::setupUi(QMainWindow* qmw)
     searchResultWidget->setAttribute(Qt::WA_DeleteOnClose, true);
     searchResultWidget->hide();
 
+    connect(searchResultWidget, SIGNAL(destroyed(QObject*)), this, SLOT(deleteLater()));
     connect(searchResultWidget, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), this, SLOT(onDockLocationChanged(Qt::DockWidgetArea)));
 
     QGridLayout* searchGridLayout = new QGridLayout(searchResultContents);
@@ -252,6 +255,9 @@ void SearchResultWidget::setupUi(QMainWindow* qmw)
 
 
     searchResultWidget->setObjectName("searchResultWidget_old");
+
+    searchResultContents->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(searchResultContents, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(createCustomContextMenu(QPoint)));
 }
 
 void SearchResultWidget::showSearchResult(int start)
@@ -603,6 +609,42 @@ void SearchResultWidget::onDockLocationChanged(Qt::DockWidgetArea area)
         searchResultWidget->setFeatures(searchResultWidget->features() & ~QDockWidget::DockWidgetVerticalTitleBar);
         searchResultWidget->setStyleSheet("QDockWidget::title { background: transparent; text-align: left; padding: 0 10 0 10;}"
                                           "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}");
+    }
+}
+
+void SearchResultWidget::createCustomContextMenu(const QPoint &pos)
+{
+    QMenu* contextMenu = new QMenu(this);
+    contextMenu->setAttribute(Qt::WA_DeleteOnClose);
+
+    QAction* sep = new QAction(searchResultWidget->windowTitle(), contextMenu);
+    contextMenu->addAction(sep);
+    contextMenu->addAction(tr("Close"));
+    contextMenu->addAction(tr("Close All"));
+
+    QAction* action = contextMenu->exec(QCursor::pos());
+    if (!action) {
+        return;
+    }
+
+    QString text = action->text();
+    text.remove("&");
+
+    if (text == tr("Close")) {
+        searchResultWidget->deleteLater();
+        deleteLater();
+    }
+    else if (text == tr("Close All")) {
+        QDockWidget* tmpDockWidget = 0;
+        QObjectList mainWindowChildren = m_mainWindow->children();
+        for (int i = 0; i < mainWindowChildren.size(); ++i) {
+            tmpDockWidget = qobject_cast<QDockWidget*>(mainWindowChildren.at(i));
+            if (tmpDockWidget) {
+                if (tmpDockWidget->objectName().startsWith("searchResultWidget")) {
+                    tmpDockWidget->close();
+                }
+            }
+        }
     }
 }
 

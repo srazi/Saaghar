@@ -71,6 +71,7 @@ private:
     QStringList viewedItems;
 
     Qt::DockWidgetArea m_dockWidgetArea;
+    QMainWindow* m_mainWindow;
 
     static int s_searchWidgetCount;
 
@@ -81,6 +82,7 @@ private slots:
     void filterResults(const QString &text);
     void onConcurrentResultReady(const QString &type, const QVariant &results);
     void onDockLocationChanged(Qt::DockWidgetArea area);
+    void createCustomContextMenu(const QPoint &pos);
 
 signals:
     void searchFiltered(const QString &);
