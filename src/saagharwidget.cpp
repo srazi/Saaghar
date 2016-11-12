@@ -265,7 +265,8 @@ int SaagharWidget::currentVerticalPosition()
 
 void SaagharWidget::setVerticalPosition(int vPosition)
 {
-    tableViewWidget->verticalScrollBar()->setValue(vPosition);
+    Tools::scrollTo(tableViewWidget->verticalScrollBar(), vPosition, 300);
+    //tableViewWidget->verticalScrollBar()->setValue(vPosition);
 //    if (row <= 0) {
 //        tableViewWidget->verticalScrollBar()->setValue(0);
 //    }
@@ -303,7 +304,7 @@ QString SaagharWidget::highlightCell(int vorder)
                 QStringList verseData = item->data(Qt::UserRole).toString().split("|", QString::SkipEmptyParts);
                 if (verseData.size() == 4 && verseData.at(0) == "VerseData=") {
                     if (verseData.at(2).toInt() == vorder) {
-                        tableViewWidget->scrollToItem(item, QAbstractItemView::PositionAtCenter);
+                        Tools::scrollToItem(tableViewWidget, item);
                         item->setTextColor(SaagharWidget::matchedTextColor);
                         text = item->text();
                     }
@@ -1529,8 +1530,9 @@ QTableWidgetItem* SaagharWidget::scrollToFirstItemContains(const QString &phrase
                     if (text.contains(keyword)) {
                         if (scroll) {
                             //TODO: there is a BUG! (search:دختر Sadi, حکایت 42 or 43!)
-                            tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
-                            tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
+                        //    tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
+                            //tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
+                            Tools::scrollToItem(tableViewWidget, tmp, 200);
                         }
                         //row = tableViewWidget->rowCount()+1;
                         //col = tableViewWidget->columnCount()+1;

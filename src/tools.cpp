@@ -23,6 +23,8 @@
 #include "searchresultwidget.h"
 #include "settings.h"
 
+#include <QPropertyAnimation>
+#include <QScrollBar>
 #include <QFileInfo>
 
 #ifdef Q_OS_WIN
@@ -453,4 +455,40 @@ QString Tools::iconFileByKey(const QString &key, bool fallback)
 void Tools::setSplashScreen(QObject* splash)
 {
     s_splashScreen = splash;
+}
+
+void Tools::scrollTo(QScrollBar* scrollBar, int value, int duration)
+{
+    QPropertyAnimation* animation = new QPropertyAnimation(scrollBar, "value");
+    animation->setDuration(duration);
+    animation->setEndValue(value);
+    animation->start(QAbstractAnimation::DeleteWhenStopped);
+}
+
+void Tools::scrollToItem(QTableWidget* table, const QTableWidgetItem* item, int duration)
+{
+    const QRect itemRect(table->visualItemRect(item));
+    const QRect tableRect(table->viewport()->rect());
+
+    if (itemRect.bottom() > tableRect.bottom() ||
+            itemRect.top() < 0) {
+        // item is NOT VISIBLE
+        int cellHeight = table->rowHeight(item->row());
+        int viewportHeight = table->viewport()->height();
+        int verticalPosition = table->verticalHeader()->sectionPosition(item->row());
+
+        // scroll to center
+        scrollTo(table->verticalScrollBar(), verticalPosition - ((viewportHeight - cellHeight) / 2), duration);
+    }
+
+    if (itemRect.left() < tableRect.left() ||
+            itemRect.right() > tableRect.right()) {
+        // item is NOT VISIBLE
+        int cellWidth = table->columnWidth(item->column());
+        int viewportWidth = table->viewport()->width();
+        int horizontalPosition = table->horizontalHeader()->sectionPosition(item->column());
+
+        // scroll to center
+        scrollTo(table->horizontalScrollBar(), horizontalPosition - ((viewportWidth - cellWidth) / 2), duration);
+    }
 }

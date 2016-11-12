@@ -32,6 +32,9 @@
 #include <QFontMetrics>
 #include <QStringList>
 
+class QTableWidget;
+class QTableWidgetItem;
+class QScrollBar;
 
 class Tools
 {
@@ -48,6 +51,11 @@ public:
 
     static QString iconFileByKey(const QString &key, bool fallback = true);
 
+    static void setSplashScreen(QObject* splash);
+    static void scrollTo(QScrollBar* scrollBar, int value, int duration = 125);
+    static void scrollToItem(QTableWidget* table, const QTableWidgetItem* item, int duration = 125);
+
+
     static const QStringList someSymbols;
     static const QStringList Ve_Variant;
     static const QStringList Ye_Variant;
@@ -55,7 +63,6 @@ public:
     static const QStringList He_Variant;
     static const QString &OTHER_GLYPHS;
 
-    static void setSplashScreen(QObject* splash);
     static QObject* s_splashScreen;
 
     static const QStringList No_KASHIDA_FONTS;
