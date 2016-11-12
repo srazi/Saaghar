@@ -180,8 +180,8 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     m_breadCrumbBar->setSubStyle(new BreadCrumbBarSaagharStyle);
     m_breadCrumbSaagharModel = new BreadCrumbSaagharModel(DatabaseBrowser::defaultConnectionId());
     m_breadCrumbBar->setModel(m_breadCrumbSaagharModel);
-    m_breadCrumbBar->setMinimumWidth(300);
-    m_breadCrumbBar->setSizePolicy(QSizePolicy::Expanding, m_breadCrumbBar->sizePolicy().verticalPolicy());
+    m_breadCrumbBar->setMinimumWidth(200);
+    m_breadCrumbBar->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     connect(m_breadCrumbBar, SIGNAL(locationChanged(QString)), this, SLOT(openPath(QString)));
 
     m_breadCrumbToolBar = new QToolBar(this);
@@ -2996,8 +2996,12 @@ void SaagharWindow::setupSearchToolBarUi()
     }
     SaagharWidget::lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, ICON_FILE("search-options"), ICON_FILE("cancel"));
     SaagharWidget::lineEditSearchText->setObjectName(QString::fromUtf8("lineEditSearchText"));
-    //SaagharWidget::lineEditSearchText->setMaximumSize(QSize(170, 16777215));
+    SaagharWidget::lineEditSearchText->setMinimumWidth(120);
+    SaagharWidget::lineEditSearchText->setMaximumWidth(500);
+    SaagharWidget::lineEditSearchText->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Preferred);
     SaagharWidget::lineEditSearchText->setLayoutDirection(Qt::RightToLeft);
+    // be similar to m_breadCrumbBar
+    SaagharWidget::lineEditSearchText->setContentsMargins(0, 2, 0, 2);
 
 //    selectSearchRange = new QMultiSelectWidget(ui->searchToolBar);
 //    comboBoxSearchRegion = selectSearchRange->getComboWidgetInstance();
@@ -3015,27 +3019,27 @@ void SaagharWindow::setupSearchToolBarUi()
 #endif
 
     //create layout and add widgets to it!
-    QBoxLayout* searchToolBarBoxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+//    QBoxLayout* searchToolBarBoxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
 
-    searchToolBarBoxLayout->setSpacing(4);
-    searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
+//    searchToolBarBoxLayout->setSpacing(4);
+//    searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
 
-    searchToolBarBoxLayout->addWidget(SaagharWidget::lineEditSearchText);
+//    searchToolBarBoxLayout->addWidget(SaagharWidget::lineEditSearchText);
 //    searchToolBarBoxLayout->addWidget(comboBoxSearchRegion);
-    QSpacerItem* horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
-    searchToolBarBoxLayout->addItem(horizontalSpacer);
+//    QSpacerItem* horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
+//    searchToolBarBoxLayout->addItem(horizontalSpacer);
 
-    QWidget* searchToolBarContent = new QWidget();
+//    QWidget* searchToolBarContent = new QWidget();
 
-    QHBoxLayout* horizontalStretch = new QHBoxLayout;
-    horizontalStretch->setSpacing(0);
-    horizontalStretch->setContentsMargins(0, 0, 0, 0);
-    horizontalStretch->addLayout(searchToolBarBoxLayout);
-    horizontalStretch->addStretch(10000);
-    searchToolBarContent->setLayout(horizontalStretch);
+//    QHBoxLayout* horizontalStretch = new QHBoxLayout;
+//    horizontalStretch->setSpacing(0);
+//    horizontalStretch->setContentsMargins(0, 0, 0, 0);
+//    horizontalStretch->addLayout(searchToolBarBoxLayout);
+//    horizontalStretch->addStretch(10000);
+//    searchToolBarContent->setLayout(horizontalStretch);
 
-    searchToolBarContent->setFocusProxy(SaagharWidget::lineEditSearchText);
-    ui->searchToolBar->addWidget(searchToolBarContent);
+    ui->searchToolBar->addWidget(SaagharWidget::lineEditSearchText);
+    ui->searchToolBar->setFocusProxy(SaagharWidget::lineEditSearchText);
 
     connect(SaagharWidget::lineEditSearchText->optionsButton(), SIGNAL(clicked()), this, SLOT(showSearchOptionsDialog()));
 }
