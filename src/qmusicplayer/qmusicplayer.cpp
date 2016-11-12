@@ -680,6 +680,11 @@ void QMusicPlayer::stopLyricSyncer(bool cancel)
     audio.open(QFile::ReadOnly);
     QString audioMD5SUM = QString::fromLatin1(QCryptographicHash::hash(audio.readAll(), QCryptographicHash::Md5).toHex());
     fileCheckSum.appendChild(m_domDocument.createTextNode(audioMD5SUM));
+
+    // element after Ganjoor Desktop 2.78
+    QDomNode oneSecondBugFix = m_domDocument.createElement("OneSecondBugFix");
+    oneSecondBugFix.appendChild(m_domDocument.createTextNode("1000"));
+
     QDomNode syncArray = m_domDocument.createElement("SyncArray");
 
     QList<int> vOrders = m_syncMap.values();
@@ -721,6 +726,7 @@ void QMusicPlayer::stopLyricSyncer(bool cancel)
     poemAudio.appendChild(description);
     poemAudio.appendChild(syncGuid);
     poemAudio.appendChild(fileCheckSum);
+    poemAudio.appendChild(oneSecondBugFix);
     poemAudio.appendChild(syncArray);
 
     root.appendChild(poemAudio);
