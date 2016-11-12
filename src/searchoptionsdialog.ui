@@ -92,7 +92,7 @@
         <item row="0" column="0">
          <widget class="QRadioButton" name="customRangeRadioButton">
           <property name="text">
-           <string>Custome range</string>
+           <string>Custome search range</string>
           </property>
          </widget>
         </item>
@@ -124,7 +124,7 @@
       <item row="3" column="0">
        <widget class="QCheckBox" name="titleRangeCheckBox">
         <property name="text">
-         <string>Titles: include search results within titles of poems.</string>
+         <string>Titles: search within titles</string>
         </property>
        </widget>
       </item>
