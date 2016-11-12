@@ -88,6 +88,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     , m_cornerMenu(0)
     , m_settingsDialog(0)
     , m_updateTaskScheduled(false)
+    , m_searchOptions(0)
 {
     setObjectName("SaagharMainWindow");
     setWindowIcon(QIcon(":/resources/images/saaghar.png"));
@@ -247,13 +248,13 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     connect(ui->mainToolBar, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(toolBarContextMenu(QPoint)));
     //connect(ui->searchToolBar, SIGNAL(orientationChanged(Qt::Orientation)), this, SLOT(searchToolBarView()));
-    ui->searchToolBar->installEventFilter(this);
+    //ui->searchToolBar->installEventFilter(this);
 
     createConnections();
     previousTabIndex = mainTabWidget->currentIndex();
     currentTabChanged(mainTabWidget->currentIndex());
 
-    multiSelectInsertItems(selectSearchRange);
+//    multiSelectInsertItems(selectSearchRange);
 
     //seeding random function
     uint numOfSecs = QDateTime::currentDateTime().toTime_t();
@@ -297,6 +298,8 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     if (VARI("General/LastShownPrefaceID") < Tools::prefaceIDFromVersion(SAAGHAR_VERSION)) {
         showPreface(Tools::prefaceIDFromVersion(SAAGHAR_VERSION));
     }
+
+    updateSearchOptionButtonToolTip();
 }
 
 SaagharWindow::~SaagharWindow()
@@ -327,9 +330,21 @@ void SaagharWindow::searchStart()
     phrase = SaagharWidget::lineEditSearchText->text();
     phrase.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
 
-    //QString currentItemData = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toString();
+    QStringList selectList;
+    QStringList selectListPathTitles;
+    if (VARB("Search/Range/Title")) {
+        selectList << "ALL_TITLES";
+        selectListPathTitles << tr("Titles");
+    }
 
-    QList<QListWidgetItem*> selectList = selectSearchRange->getSelectedItemList();
+    if (VARB("Search/Range/All")) {
+        selectList << "ALL";
+        selectListPathTitles << tr("All");
+    }
+    else if (VARB("Search/Range/Custom")) {
+        selectList << VAR(("Search/Range/CustomSelection/CategoriesIDs")).toStringList();
+        selectListPathTitles << VAR(("Search/Range/CustomSelection")).toStringList();
+    }
 
     bool searchCanceled = false;
     bool slowSearch = false;//more calls of 'processEvents'
@@ -339,77 +354,37 @@ void SaagharWindow::searchStart()
 
     ConcurrentTaskManager::instance()->switchToStartState();
 
-    for (int i = 0; i < selectList.size(); ++i) {
-        if (ConcurrentTaskManager::instance()->isAllTaskCanceled()) {
-            break;
-        }
-
-        QVariant currentItemData = selectList.at(i)->data(Qt::UserRole);
-        //QString currentItemStrData = currentItemData.toString();
-
-        if (currentItemData.toString() == "ALL_OPENED_TAB") {
-            for (int j = 0; j < mainTabWidget->count(); ++j) {
-                SaagharWidget* tmp = getSaagharWidget(j);
-                //QAbstractItemDelegate *tmpDelegate = tmp->tableViewWidget->itemDelegate();
-
-                //delete tmpDelegate;
-                //tmpDelegate = 0;
-                if (tmp) {
-                    tmp->scrollToFirstItemContains(phrase);
-                }
-                //tmp->tableViewWidget->setItemDelegate(new SaagharItemDelegate(tmp->tableViewWidget, saagharWidget->tableViewWidget->style(), SaagharWidget::lineEditSearchText->text()));
+    if (VARB("Search/Range/OpenedTabs")) {
+        for (int j = 0; j < mainTabWidget->count(); ++j) {
+            SaagharWidget* tmp = getSaagharWidget(j);
+            if (tmp) {
+                tmp->scrollToFirstItemContains(phrase);
             }
         }
-        //else if (currentItemData == "CURRENT_TAB")
-        //{
-        //  if (saagharWidget)
-        //  {
-        //      //connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(QString)), saagharWidget, SLOT(scrollToFirstItemContains(QString)) );
-        //      //QAbstractItemDelegate *currentDelegate = saagharWidget->tableViewWidget->itemDelegate();
-        //      saagharWidget->scrollToFirstItemContains(SaagharWidget::lineEditSearchText->text());
-        //      //SaagharItemDelegate *tmp = new SaagharItemDelegate(saagharWidget->tableViewWidget, saagharWidget->tableViewWidget->style(), SaagharWidget::lineEditSearchText->text());
-        //      //saagharWidget->tableViewWidget->setItemDelegate(tmp);
-        //      //connect(SaagharWidget::lineEditSearchText, SIGNAL(textChanged(QString)), tmp, SLOT(keywordChanged(QString)) );
-        //      //delete currentDelegate;
-        //      //currentDelegate = 0;
-        //  }
-        //}
-        else {
+
+        return;
+    }
+    else {
+        for (int i = 0; i < selectList.size(); ++i) {
+            if (ConcurrentTaskManager::instance()->isAllTaskCanceled()) {
+                break;
+            }
+
             if (SearchResultWidget::currentSearchWidgetCount() >= 200) {
                 QMessageBox::information(this, tr("Search"), tr("There are more than 200 opened search windows, please before start new searches, close some of them."));
                 break;
             }
 
-            //phrase = Tools::cleanString(SaagharWidget::lineEditSearchText->text(), SaagharWidget::newSearchSkipNonAlphabet);
-            //int poetID = comboBoxSearchRegion->itemData(comboBoxSearchRegion->currentIndex(), Qt::UserRole).toInt();
             SearchPatternManager::instance()->setInputPhrase(phrase);
             SearchPatternManager::instance()->init();
             QVector<QStringList> phraseVectorList = SearchPatternManager::instance()->outputPhrases();
             QVector<QStringList> excludedVectorList = SearchPatternManager::instance()->outputExcludedLlist();
             int vectorSize = phraseVectorList.size();
 
-            int poetID;
-            if (currentItemData.toString() == "ALL_TITLES") {
-                poetID = -1000;    //reserved for titles!!
-            }
-            else {
-                bool ok = false;
-                poetID = currentItemData.toInt(&ok);
-                if (!ok) {
-                    if (i == selectList.size() - 1) {
-                        SaagharWidget::lineEditSearchText->searchStop();
-                    }
-                    continue;//itemData is not int skip to next item
-                }
-            }
-
-            QString poetName = "";
-            if (poetID == 0) {
-                poetName = tr("All");
-            }
-            else {
-                //because of 'ok == true' we know this is  poet name
-                poetName = selectList.at(i)->text();
+            const QString currentSelectionPath = selectList.at(i);
+            QString currentSelectionPathTitle = selectListPathTitles.at(i);
+            if (currentSelectionPathTitle.startsWith(QLatin1String("/"))) {
+                currentSelectionPathTitle.remove(0, 1);
             }
 
             QWidget* searchResultContents = new QWidget(this);
@@ -418,36 +393,26 @@ void SaagharWindow::searchStart()
             //searchResultContents->setLayoutDirection(Qt::RightToLeft);
 
             phrase = Tools::cleanString(phrase);
-            SearchResultWidget* searchResultWidget = new SearchResultWidget(this, searchResultContents, phrase, poetName);
-
-            ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget);
-            connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
-            connect(searchTask, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));
-
-            /////////////////////////////////////
-//          QProgressDialog searchProgress(tr("Searching Data Base..."),  tr("Cancel"), 0, 0, this);
-//          connect( &searchProgress, SIGNAL(canceled()), &searchProgress, SLOT(hide()) );
-//          searchProgress.setWindowModality(Qt::WindowModal);
-//          searchProgress.setFixedSize(searchProgress.size());
-//          searchProgress.setMinimumDuration(0);
-//          //searchProgress.setValue(0);
-//          //searchProgress.show();
+            SearchResultWidget* searchResultWidget = new SearchResultWidget(this, searchResultContents, phrase, currentSelectionPathTitle);
 
             SaagharWidget::lineEditSearchText->searchStart(&searchCanceled);
-
-            SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(poetName));
+            SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(currentSelectionPathTitle));
 
 
             bool success = false;
 
             for (int j = 0; j < vectorSize; ++j) {
+                ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget);
+                connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
+                connect(searchTask, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));
+
                 QStringList phrases = phraseVectorList.at(j);
                 QStringList excluded = excludedVectorList.at(j);
 #ifdef SAAGHAR_DEBUG
                 int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
 #endif
 
-                success |= sApp->databaseBrowser()->getPoemIDsByPhrase(searchTask, poetID, phrases, excluded, &searchCanceled, slowSearch);
+                success |= sApp->databaseBrowser()->getPoemIDsByPhrase(searchTask, currentSelectionPath, currentSelectionPathTitle, phrases, excluded, &searchCanceled, slowSearch);
 
 #ifdef SAAGHAR_DEBUG
                 int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
@@ -466,12 +431,11 @@ void SaagharWindow::searchStart()
 //                SaagharWidget::lineEditSearchText->searchStop();
 //            }
 
-            // searchResultWidget->setResultList(finalResult);
             if (!success) {
                 if (i == selectList.size() - 1) {
                     SaagharWidget::lineEditSearchText->notFound();
-                    connect(selectSearchRange, SIGNAL(itemCheckStateChanged(QListWidgetItem*)), SaagharWidget::lineEditSearchText, SLOT(resetNotFound()));
-                    SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(selectSearchRange->getSelectedStringList().join("-")));
+//                    connect(selectSearchRange, SIGNAL(itemCheckStateChanged(QListWidgetItem*)), SaagharWidget::lineEditSearchText, SLOT(resetNotFound()));
+//                    SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(selectSearchRange->getSelectedStringList().join("-")));
                 }
                 delete searchResultWidget;
                 searchResultWidget = 0;
@@ -489,11 +453,11 @@ void SaagharWindow::searchStart()
             //create connections for mouse signals
             connect(searchResultWidget->searchTable, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(tableItemClick(QTableWidgetItem*)));
             connect(searchResultWidget->searchTable, SIGNAL(itemPressed(QTableWidgetItem*)), this, SLOT(tableItemPress(QTableWidgetItem*)));
-        }
 
-        //we should create conection first and then break!
-        if (searchCanceled) {
-            break;    //search is canceled
+            //we should create conection first and then break!
+            if (searchCanceled) {
+                break;    //search is canceled
+            }
         }
     }
 
@@ -504,7 +468,6 @@ void SaagharWindow::searchStart()
     }
 
     SaagharWidget::lineEditSearchText->searchStop();
-
 }
 
 void SaagharWindow::multiSelectObjectInitialize(QMultiSelectWidget* multiSelectWidget, const QStringList &selectedData, int insertIndex)
@@ -566,8 +529,8 @@ void SaagharWindow::actionRemovePoet()
             sApp->databaseBrowser()->removePoetFromDataBase(poetID);
             outlineTree->refreshTree();
 
-            selectSearchRange->clear();
-            multiSelectInsertItems(selectSearchRange);
+//            selectSearchRange->clear();
+//            multiSelectInsertItems(selectSearchRange);
 
             setHomeAsDirty();
             QApplication::restoreOverrideCursor();
@@ -1025,13 +988,11 @@ void SaagharWindow::updateCaption()
     mainTabWidget->setTabToolTip(mainTabWidget->currentIndex(), "<p>" + sw->currentCaption + "</p>");
     setWindowTitle(QString(QChar(0x202B)) + tr("Saaghar: ") + sw->currentCaption + QString(QChar(0x202C)));
 
-    if (saagharWidget) {
-        if (saagharWidget->isLocalDataset()) {
-            mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), style()->standardIcon(QStyle::SP_DriveHDIcon));
-        }
-        else {
-            mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), QIcon());
-        }
+    if (sw->isLocalDataset()) {
+        mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), style()->standardIcon(QStyle::SP_DriveHDIcon));
+    }
+    else {
+        mainTabWidget->setTabIcon(mainTabWidget->currentIndex(), QIcon());
     }
 }
 
@@ -1527,8 +1488,8 @@ void SaagharWindow::setupUi()
     }
 #endif
 
-    skipSearchToolBarResize = false;
-    comboBoxSearchRegion = 0;
+//    skipSearchToolBarResize = false;
+//    comboBoxSearchRegion = 0;
     setupSearchToolBarUi();
     ui->searchToolBar->hide();
 
@@ -1992,14 +1953,6 @@ void SaagharWindow::loadAudioForCurrentTab(SaagharWidget* old_saagharWidget)
 #endif // MEDIA_PLAYER
 }
 
-void SaagharWindow::showSearchOptionMenu()
-{
-    if (!searchOptionMenu || !SaagharWidget::lineEditSearchText || !SaagharWidget::lineEditSearchText->optionsButton()) {
-        return;
-    }
-    searchOptionMenu->exec(SaagharWidget::lineEditSearchText->optionsButton()->mapToGlobal(QPoint(0, SaagharWidget::lineEditSearchText->optionsButton()->height()))/*QCursor::pos()*/);
-}
-
 void SaagharWindow::showSearchTips()
 {
     QString searchTips;
@@ -2046,9 +1999,34 @@ void SaagharWindow::onDatabaseUpdate(const QString &connectionID)
     }
 
     outlineTree->refreshTree();
-    selectSearchRange->clear();
-    multiSelectInsertItems(selectSearchRange);
+//    selectSearchRange->clear();
+//    multiSelectInsertItems(selectSearchRange);
     setHomeAsDirty();
+}
+
+void SaagharWindow::updateSearchOptionButtonToolTip()
+{
+    QString tooltip;
+
+    if (VARB("Search/Range/Custom")) {
+        tooltip += QString("<b>%1</b>").arg(VAR("Search/Range/CustomSelection").toStringList().join("</b> &amp; <b>"));
+    }
+    else if (VARB("Search/Range/All")) {
+        tooltip += tr("<b>All</b>");
+    }
+    else if (VARB("Search/Range/OpenedTabs")) {
+        tooltip = tr("<b>All opened tabs (highlight)</b>");
+    }
+
+    if (VARB("Search/Range/Title") && !VARB("Search/Range/OpenedTabs")) {
+        if (!tooltip.isEmpty()) {
+            tooltip.prepend(" &amp; ");
+        }
+
+        tooltip.prepend(tr("<b>Titles</b>"));
+    }
+
+    SaagharWidget::lineEditSearchText->optionsButton()->setToolTip(tooltip);
 }
 #include <QMimeData>
 void SaagharWindow::dragEnterEvent(QDragEnterEvent* event)
@@ -2460,15 +2438,14 @@ void SaagharWindow::saveSettings()
     VAR_DECL("Search/SkipVowelSigns", SearchResultWidget::skipVowelSigns);
     VAR_DECL("Search/SkipVowelLetters", SearchResultWidget::skipVowelLetters);
 
-    QList<QListWidgetItem*> selectedItems = selectSearchRange->getSelectedItemList();
+//    QList<QListWidgetItem*> selectedItems = selectSearchRange->getSelectedItemList();
 
-    QStringList selectedSearchRange;
-    foreach (QListWidgetItem* item, selectedItems) {
-        selectedSearchRange << item->data(Qt::UserRole).toString();
-    }
+//    QStringList selectedSearchRange;
+//    foreach (QListWidgetItem* item, selectedItems) {
+//        selectedSearchRange << item->data(Qt::UserRole).toString();
+//    }
 
-    VAR_DECL("Search/SelectedRange", selectedSearchRange);
-    VAR_DECL("SaagharWindow/RandomOpenNewTab", selectedSearchRange);
+//    VAR_DECL("Search/SelectedRange", selectedSearchRange);
 
     VAR_DECL("DatabaseBrowser/RepositoriesList", DataBaseUpdater::repositories());
     VAR_DECL("DatabaseBrowser/KeepDownloadedFile", QVariant(DataBaseUpdater::keepDownloadedFiles));
@@ -2802,9 +2779,14 @@ void SaagharWindow::openPath(const QString &path)
 
 void SaagharWindow::showSearchOptionsDialog()
 {
-    SearchOptionsDialog searchDialog(this);
-    connect(&searchDialog, SIGNAL(resultsRefreshRequired()), this, SIGNAL(maxItemPerPageChanged()));
-    searchDialog.exec();
+    if (!m_searchOptions) {
+        m_searchOptions = new SearchOptionsDialog(this);
+        connect(m_searchOptions, SIGNAL(resultsRefreshRequired()), this, SIGNAL(maxItemPerPageChanged()));
+        connect(m_searchOptions, SIGNAL(accepted()), this, SLOT(updateSearchOptionButtonToolTip()));
+    }
+
+    QtWin::easyBlurUnBlur(m_searchOptions, VARB("SaagharWindow/UseTransparecy"));
+    m_searchOptions->show();
 }
 
 void SaagharWindow::toolBarContextMenu(const QPoint &/*pos*/)
@@ -2971,32 +2953,34 @@ bool SaagharWindow::eventFilter(QObject* receiver, QEvent* event)
         }
     }
     break;
-    case QEvent::Move : {
-        QMoveEvent* resEvent = static_cast<QMoveEvent*>(event);
-        if (resEvent && receiver == ui->searchToolBar) {
-            if (searchToolBarBoxLayout->direction() != QBoxLayout::LeftToRight && ui->searchToolBar->isFloating()) {
-                searchToolBarBoxLayout->setDirection(QBoxLayout::LeftToRight);
-                searchToolBarBoxLayout->setSpacing(4);
-                searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
-                ui->searchToolBar->adjustSize();
-            }
-            int height = comboBoxSearchRegion->height() + SaagharWidget::lineEditSearchText->height() + 1 + 1 + 2; //margins and spacing
-            if (ui->searchToolBar->size().height() >= height && !ui->searchToolBar->isFloating()) {
-                searchToolBarBoxLayout->setDirection(QBoxLayout::TopToBottom);
-                searchToolBarBoxLayout->setSpacing(2);
-                searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
-            }
-//              else
-//              {
-//                  searchToolBarBoxLayout->setDirection(QBoxLayout::RightToLeft);
-//              }
-        }
-    }
+// code works great for having a dynamic layout
+// commented due to new search range selection UI
+//    case QEvent::Move : {
+//        QMoveEvent* resEvent = static_cast<QMoveEvent*>(event);
+//        if (resEvent && receiver == ui->searchToolBar) {
+//            if (searchToolBarBoxLayout->direction() != QBoxLayout::LeftToRight && ui->searchToolBar->isFloating()) {
+//                searchToolBarBoxLayout->setDirection(QBoxLayout::LeftToRight);
+//                searchToolBarBoxLayout->setSpacing(4);
+//                searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
+//                ui->searchToolBar->adjustSize();
+//            }
+//            int height = comboBoxSearchRegion->height() + SaagharWidget::lineEditSearchText->height() + 1 + 1 + 2; //margins and spacing
+//            if (ui->searchToolBar->size().height() >= height && !ui->searchToolBar->isFloating()) {
+//                searchToolBarBoxLayout->setDirection(QBoxLayout::TopToBottom);
+//                searchToolBarBoxLayout->setSpacing(2);
+//                searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
+//            }
+// //              else
+// //              {
+// //                  searchToolBarBoxLayout->setDirection(QBoxLayout::RightToLeft);
+// //              }
+//        }
+//    }
     break;
     default:
         break;
     }
-    skipSearchToolBarResize = false;
+//    skipSearchToolBarResize = false;
     return false;
 }
 
@@ -3009,32 +2993,32 @@ void SaagharWindow::setupSearchToolBarUi()
     }
     SaagharWidget::lineEditSearchText = new QSearchLineEdit(ui->searchToolBar, clearIconPath, ICON_FILE("search-options"), ICON_FILE("cancel"));
     SaagharWidget::lineEditSearchText->setObjectName(QString::fromUtf8("lineEditSearchText"));
-    SaagharWidget::lineEditSearchText->setMaximumSize(QSize(170, 16777215));
+    //SaagharWidget::lineEditSearchText->setMaximumSize(QSize(170, 16777215));
     SaagharWidget::lineEditSearchText->setLayoutDirection(Qt::RightToLeft);
 
-    selectSearchRange = new QMultiSelectWidget(ui->searchToolBar);
-    comboBoxSearchRegion = selectSearchRange->getComboWidgetInstance();
-    comboBoxSearchRegion->setObjectName(QString::fromUtf8("comboBoxSearchRegion"));
-    comboBoxSearchRegion->setLayoutDirection(Qt::RightToLeft);
-    comboBoxSearchRegion->setMaximumSize(QSize(170, 16777215));
-    comboBoxSearchRegion->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
-    comboBoxSearchRegion->setEditable(true);
+//    selectSearchRange = new QMultiSelectWidget(ui->searchToolBar);
+//    comboBoxSearchRegion = selectSearchRange->getComboWidgetInstance();
+//    comboBoxSearchRegion->setObjectName(QString::fromUtf8("comboBoxSearchRegion"));
+//    comboBoxSearchRegion->setLayoutDirection(Qt::RightToLeft);
+//    comboBoxSearchRegion->setMaximumSize(QSize(170, 16777215));
+//    comboBoxSearchRegion->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
+//    comboBoxSearchRegion->setEditable(true);
 #if QT_VERSION >= 0x040700
     SaagharWidget::lineEditSearchText->setPlaceholderText(tr("Enter Search Phrase"));
-    comboBoxSearchRegion->lineEdit()->setPlaceholderText(tr("Select Search Scope..."));
+//    comboBoxSearchRegion->lineEdit()->setPlaceholderText(tr("Select Search Scope..."));
 #else
     SaagharWidget::lineEditSearchText->setToolTip(tr("Enter Search Phrase"));
-    comboBoxSearchRegion->lineEdit()->setToolTip(tr("Select Search Scope..."));
+//    comboBoxSearchRegion->lineEdit()->setToolTip(tr("Select Search Scope..."));
 #endif
 
     //create layout and add widgets to it!
-    searchToolBarBoxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
+    QBoxLayout* searchToolBarBoxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
 
     searchToolBarBoxLayout->setSpacing(4);
     searchToolBarBoxLayout->setContentsMargins(1, 1, 1, 1);
 
     searchToolBarBoxLayout->addWidget(SaagharWidget::lineEditSearchText);
-    searchToolBarBoxLayout->addWidget(comboBoxSearchRegion);
+//    searchToolBarBoxLayout->addWidget(comboBoxSearchRegion);
     QSpacerItem* horizontalSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Minimum);
     searchToolBarBoxLayout->addItem(horizontalSpacer);
 
@@ -3050,19 +3034,7 @@ void SaagharWindow::setupSearchToolBarUi()
     searchToolBarContent->setFocusProxy(SaagharWidget::lineEditSearchText);
     ui->searchToolBar->addWidget(searchToolBarContent);
 
-    searchOptionMenu = new QMenu(ui->searchToolBar);
-
-    actionInstance("searchOptions", "", tr("Search &Options..."));
-    connect(actionInstance("searchOptions"), SIGNAL(triggered()), this, SLOT(showSearchOptionsDialog()));
-
-    actionInstance("actionSearchTips", "", tr("&Search Tips..."));
-    connect(actionInstance("actionSearchTips"), SIGNAL(triggered()), this, SLOT(showSearchTips()));
-
-    searchOptionMenu->addAction(actionInstance("searchOptions"));
-    searchOptionMenu->addAction(actionInstance("separator"));
-    searchOptionMenu->addAction(actionInstance("actionSearchTips"));
-
-    connect(SaagharWidget::lineEditSearchText->optionsButton(), SIGNAL(clicked()), this, SLOT(showSearchOptionMenu()));
+    connect(SaagharWidget::lineEditSearchText->optionsButton(), SIGNAL(clicked()), this, SLOT(showSearchOptionsDialog()));
 }
 
 void SaagharWindow::namedActionTriggered(bool checked)

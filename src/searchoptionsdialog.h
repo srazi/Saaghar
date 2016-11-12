@@ -20,6 +20,11 @@ private:
     void accept();
     Ui::SearchOptionsDialog* ui;
 
+#if QT_VERSION >= 0x050000
+protected:
+    void paintEvent(QPaintEvent* event);
+#endif
+
 signals:
     void resultsRefreshRequired();
 };

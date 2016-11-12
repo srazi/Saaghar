@@ -43,6 +43,8 @@ public:
     SelectionProxyModel(QItemSelectionModel* selectionModel, QObject* parent = 0);
 
     QStringList paths() const;
+    QStringList selectedCategoriesIDs() const;
+    void parentsSelectChildren(bool yes);
 
 protected:
     bool filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const;
@@ -59,6 +61,8 @@ private:
     QModelIndexList m_filterIndices;
     QModelIndexList m_selectedIndices;
     QStringList m_paths;
+    QStringList m_selectedCategoriesIDs;
+    bool m_parentsSelectChildren;
 
     friend class SelectionPreviewDelegate;
 
@@ -80,7 +84,7 @@ private:
     SelectionProxyModel* m_selectionProxyModel;
 };
 
-class SelectionManager : public QDialog
+class SelectionManager : public QWidget
 {
     Q_OBJECT
 
@@ -89,7 +93,18 @@ public:
     ~SelectionManager();
 
     QStringList selectionPaths() const;
+    QStringList selectedCategoriesIDs() const;
+
     void setSelection(const QStringList &paths);
+
+    void setButtonBoxHidden(bool hide);
+    void setSettingsPath(const QString &settingsPath);
+    void parentsSelectChildren(bool yes);
+
+public slots:
+    void accept();
+    void acceptAndClose();
+    void clearSelection();
 
 private slots:
     void onPreviewIndexDoubleClicked(const QModelIndex &index);
@@ -97,6 +112,12 @@ private slots:
 private:
     Ui::SelectionManager* ui;
     SelectionProxyModel* m_selectionProxyModel;
+
+    QString m_settingsPath;
+    bool m_parentsSelectChildren;
+
+signals:
+    void accepted();
 };
 
 #endif // SELECTIONMANAGER_H

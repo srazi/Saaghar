@@ -1132,7 +1132,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 if (SaagharWidget::showBeytNumbers && m_hasPoem) {
                     int itemNumber = isBand ? BandNum : BeytNum;
                     QString localizedNumber = SaagharWidget::persianIranLocal.toString(itemNumber);
-                    numItem->setText(localizedNumber);
+                    numItem->setText(currentVerseText.isRightToLeft() ? localizedNumber : QString::number(itemNumber));
                     numItem->setFont(resolvedFont(LS("SaagharWidget/Fonts/Numbers")));
                     numItem->setForeground(resolvedColor(LS("SaagharWidget/Colors/Numbers")));
                     if (isBand) {
@@ -1238,6 +1238,12 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
             tableViewWidget->setRowCount(tableViewWidget->rowCount() - 1);
         }
     }
+
+    QTableWidgetItem* emptyLastRow = new QTableWidgetItem(QString());
+    emptyLastRow->setFlags(Qt::NoItemFlags);
+    tableViewWidget->insertRow(tableViewWidget->rowCount());
+    tableViewWidget->setItem(tableViewWidget->rowCount() - 1, 0, emptyLastRow);
+    tableViewWidget->setSpan(tableViewWidget->rowCount() - 1, 0, 1, tableViewWidget->columnCount());
 
     currentPoem = poem._ID;
 
@@ -1416,7 +1422,19 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                 QFontMetrics paragraphFontMetric(resolvedFont(LS("SaagharWidget/Fonts/ProseText")));
                 int height = SaagharWidget::computeRowHeight(paragraphFontMetric, i.value().first, totalWidth , (5 * paragraphFontMetric.height()) / 3);
                 height = height + i.value().second * paragraphFontMetric.height();
-                table->setRowHeight(i.key(), height);
+                QTextEdit* textEdit = qobject_cast<QTextEdit*>(table->cellWidget(i.key(), 1));
+                int margin = 0;
+                if (textEdit) {
+                    textEdit->document()->setTextWidth(totalWidth);
+                    margin += textEdit->style()->pixelMetric(QStyle::PM_LayoutTopMargin);
+                    margin += textEdit->style()->pixelMetric(QStyle::PM_LayoutBottomMargin);
+                    margin += 2 * textEdit->style()->pixelMetric(QStyle::PM_LayoutVerticalSpacing);
+                    margin += 2 * textEdit->document()->documentMargin();
+                    textEdit->viewport()->setFixedHeight(textEdit->document()->size().height() + 2 * margin);
+                    textEdit->setFixedHeight(textEdit->document()->size().height() + margin);
+                }
+
+                table->setRowHeight(i.key(), (textEdit ? (textEdit->document()->size().height() + 2 * margin) : height));
                 ++i;
             }
 
@@ -1436,7 +1454,13 @@ void SaagharWidget::resizeTable(QTableWidget* table)
 
                 ++it;
             }
+
+            // try to fix rare loop in resize event.
+            if (table->viewport()->height() <= (table->height() + 20)) {
+                table->setRowHeight(table->rowCount() - 1, table->rowHeight(table->rowCount() - 1) + 50);
+            }
         }
+
         //***************************//
         //End rowHeights computations//
         //***************************//

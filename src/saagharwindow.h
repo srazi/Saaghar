@@ -39,6 +39,7 @@ class TabWidget;
 class QIrBreadCrumbBar;
 class BreadCrumbSaagharModel;
 class AudioRepoDownloader;
+class SearchOptionsDialog;
 
 namespace Ui
 {
@@ -72,8 +73,8 @@ private:
     OutlineTree* outlineTree;
     bool skipContextMenu;
     void setupBookmarkManagerUi();
-    QBoxLayout* searchToolBarBoxLayout;
-    bool skipSearchToolBarResize;
+
+//    bool skipSearchToolBarResize;
     void setupSearchToolBarUi();
     bool eventFilter(QObject* receiver, QEvent* event);
     void toolBarViewActions(QToolBar* toolBar, QMenu* menu, bool subMenu);
@@ -112,8 +113,8 @@ private:
     Ui::SaagharWindow* ui;
     void createConnections();
     void setupUi();
-    QMultiSelectWidget* selectSearchRange;
-    QComboBox* comboBoxSearchRegion;
+//    QMultiSelectWidget* selectSearchRange;
+//    QComboBox* comboBoxSearchRegion;
     QSpinBox* spinBoxMaxSearchResult;
     QPushButton* pushButtonSearch;
     QMenu* menuNavigation;
@@ -132,7 +133,6 @@ private:
     QAction* labelMaxResultSeparator;
     //QAction *labelMaxResultAction;
     QAction* spinBoxMaxSearchResultAction;
-    QMenu* searchOptionMenu;
     QString mainToolBarSizeAction;
     QString mainToolBarStyleAction;
     //bool dataFromIdentifier(const QString &identifier, QString *type = 0, int *id = 0);
@@ -150,6 +150,7 @@ private:
     AudioRepoDownloader* m_audioRepoDownloader;
 #endif
     bool m_updateTaskScheduled;
+    SearchOptionsDialog* m_searchOptions;
 
 public slots:
     void updateTabsSubMenus();
@@ -217,11 +218,11 @@ private slots:
 
     //search options
     void showSearchOptionsDialog();
-    void showSearchOptionMenu();
     void showSearchTips();
     void showStatusText(const QString &message, int newLevelsCount = 0);
 
     void onDatabaseUpdate(const QString &connectionID);
+    void updateSearchOptionButtonToolTip();
 
 protected:
 //      void resizeEvent( QResizeEvent * event );

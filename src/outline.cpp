@@ -114,7 +114,7 @@ OutlineTree::OutlineTree(QWidget* parent)
 
 void OutlineTree::refreshTree()
 {
-    sApp->outlineModel()->clear();
+    sApp->outlineModel(m_connectionID)->clear();
 
     m_outlineView->setModel(sApp->outlineModel(m_connectionID));
 }
