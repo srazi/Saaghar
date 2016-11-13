@@ -22,17 +22,17 @@
     <message>
         <location filename="../src/aboutdialog.cpp" line="93"/>
         <source>Site (English): </source>
-        <translation>تارنما (انگلیسی):</translation>
+        <translation>تارنما (انگلیسی):  </translation>
     </message>
     <message>
         <location filename="../src/aboutdialog.cpp" line="94"/>
         <source>Site (Persian): </source>
-        <translation>تارنما (پارسی):</translation>
+        <translation>تارنما (پارسی):  </translation>
     </message>
     <message>
         <location filename="../src/aboutdialog.cpp" line="95"/>
         <source>Mailing List: </source>
-        <translation>خبرنامه ایمیلی:</translation>
+        <translation>خبرنامه ایمیلی:  </translation>
     </message>
     <message>
         <location filename="../src/aboutdialog.cpp" line="95"/>
@@ -42,7 +42,7 @@
     <message>
         <location filename="../src/aboutdialog.cpp" line="96"/>
         <source>Facebook Page: </source>
-        <translation>صفحه فیسبوک:</translation>
+        <translation>صفحه فیسبوک:  </translation>
     </message>
     <message>
         <location filename="../src/aboutdialog.cpp" line="99"/>
@@ -163,14 +163,12 @@
     <message>
         <location filename="../src/aboutdialog.cpp" line="115"/>
         <source>&lt;br /&gt;&lt;br /&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</source>
-        <translation>&lt;br /&gt;&lt;br /&gt;ساغر برنامه‌ای رایگان و آزاد است و با امید به اینکه مفید و قابل استفاده باشد، منتشر شده است، اما بدون هیچ ضمانتی؛ حتی بدون ضمانت تجاری یا سازگاری برای هدف خاصی.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</translation>
+        <translation>&lt;br /&gt;&lt;p dir=&quot;rtl&quot;&gt;ساغر برنامه‌ای رایگان و آزاد است و با امید به اینکه مفید و قابل استفاده باشد، منتشر شده است، اما بدون هیچ ضمانتی؛ حتی بدون ضمانت تجاری یا سازگاری برای هدف خاصی.&lt;/p&gt;&lt;p dir=&quot;ltr&quot;&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</translation>
     </message>
     <message>
         <location filename="../src/aboutdialog.cpp" line="119"/>
         <source>&lt;h3&gt;Saaghar %1&lt;/h3&gt;%2Build Time: %3&lt;br /&gt;&lt;br /&gt;%4 is a Persian poem viewer software written using Qt (C++). It uses %5 database for Persian poems.&lt;br /&gt;&lt;br /&gt;%6&lt;h4&gt;Related Pages:&lt;/h4&gt;%7&lt;h4&gt;Special Thanks to:&lt;/h4&gt;%8%9</source>
-        <translation>&lt;h3&gt;ساغر %1&lt;/h3&gt;%2تاریخ ساخت: %3&lt;br /&gt;&lt;br /&gt;%4 نرم‌افزار نمایش شعر پارسی است که با استفاده از Qt (C++) نوشته شده است. برای متن‌ها و شعرهای پارسی از پایگاه‌داده %5 استفاده می‌کند.&lt;br /&gt;&lt;br /&gt;%6&lt;h4&gt;صفحه‌های مرتبط:&lt;/h4&gt;%7&lt;h4&gt;تشکر ویژه از:&lt;/h4&gt;%8%9</translation>
+        <translation>&lt;h3&gt;ساغر %1&lt;/h3&gt;%2تاریخ ساخت: %3&lt;br /&gt;&lt;br /&gt;%4 نرم‌افزار نمایش شعر پارسی است که با استفاده از Qt (C++)‎ نوشته شده است. برای متن‌ها و شعرهای پارسی از پایگاه‌داده %5 استفاده می‌کند.&lt;br /&gt;&lt;br /&gt;%6&lt;h4&gt;صفحه‌های مرتبط:&lt;/h4&gt;%7&lt;h4&gt;تشکر ویژه از:&lt;/h4&gt;%8%9</translation>
     </message>
     <message>
         <location filename="../src/aboutdialog.cpp" line="126"/>
