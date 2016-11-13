@@ -601,7 +601,7 @@ void SearchResultWidget::onDockLocationChanged(Qt::DockWidgetArea area)
 #else
 
         searchResultWidget->setStyleSheet(QString("QDockWidget::title { background: transparent; padding: 0 %1 0 10; }"
-                                                  "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}")
+                                          "QDockWidget::close-button, QDockWidget::float-button { background: transparent;}")
                                           .arg(-1 * searchResultWidget->fontMetrics().width(searchResultWidget->windowTitle())));
 #endif
     }

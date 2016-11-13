@@ -1530,7 +1530,7 @@ QTableWidgetItem* SaagharWidget::scrollToFirstItemContains(const QString &phrase
                     if (text.contains(keyword)) {
                         if (scroll) {
                             //TODO: there is a BUG! (search:دختر Sadi, حکایت 42 or 43!)
-                        //    tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
+//                            tableViewWidget->setCurrentItem(tmp, QItemSelectionModel::NoUpdate);
                             //tableViewWidget->scrollToItem(tmp, QAbstractItemView::PositionAtCenter);
                             Tools::scrollToItem(tableViewWidget, tmp, 200);
                         }
