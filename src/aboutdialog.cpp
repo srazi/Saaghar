@@ -35,6 +35,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     ui->setupUi(this);
 
     QPixmap pixmap(":/resources/images/saaghar-about.png");
+    pixmap = pixmap.scaled(550, 550, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
     setFixedSize(pixmap.size());
 
     QPalette p(palette());
