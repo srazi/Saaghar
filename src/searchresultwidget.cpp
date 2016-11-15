@@ -44,12 +44,12 @@ int SearchResultWidget::s_searchWidgetCount = 0;
 
 SearchResultWidget::SearchResultWidget(QMainWindow* qmw, QWidget* parent, const QString &searchPhrase, const QString &poetName)
     : QWidget(parent)
+    , searchResultWidget(0)
     , searchResultContents(parent)
-    , actSearchNextPage(0)
-    , actSearchPreviousPage(0)
     , m_phrase(searchPhrase)
     , m_sectionName(poetName)
-    , searchResultWidget(0)
+    , actSearchNextPage(0)
+    , actSearchPreviousPage(0)
     , m_mainWindow(qmw)
 {
     setupUi(m_mainWindow);
@@ -612,7 +612,7 @@ void SearchResultWidget::onDockLocationChanged(Qt::DockWidgetArea area)
     }
 }
 
-void SearchResultWidget::createCustomContextMenu(const QPoint &pos)
+void SearchResultWidget::createCustomContextMenu(const QPoint &/*pos*/)
 {
     QMenu* contextMenu = new QMenu(this);
     contextMenu->setAttribute(Qt::WA_DeleteOnClose);

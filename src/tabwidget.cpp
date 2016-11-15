@@ -64,7 +64,7 @@ QSize TabBar::tabSizeHint(int index) const
 
     static int height = -1;
 
-    if (height = -1) {
+    if (height == -1) {
         height = QTabBar::tabSizeHint(index).height();
 #ifndef Q_OS_MAC
         height = qMax(height, 33);

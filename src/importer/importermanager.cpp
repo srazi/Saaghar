@@ -22,7 +22,9 @@
 #include "txtimporter.h"
 #include "importeroptionsdialog.h"
 #include "databasebrowser.h"
+#include "selectcreatedialog.h"
 
+#include <QInputDialog>
 #include <QDebug>
 #include <QApplication>
 
@@ -349,11 +351,9 @@ bool ImporterManager::initializeImport()
 
     return optionDialog->exec() == QDialog::Accepted;
 }
-#include "selectcreatedialog.h"
-#include <QInputDialog>
+
 void ImporterManager::importPathChanged()
 {
-    QPushButton* selectCat = qobject_cast<QPushButton*>(sender());
     if (m_importPathView && !m_importPathView.data()->selectionModel()->selectedIndexes().isEmpty()) {
         SelectCreateDialog selectCatDialog(qApp->activeWindow());
         selectCatDialog.setForceCreate(m_forceCreateNew);

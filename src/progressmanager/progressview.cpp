@@ -219,11 +219,11 @@ void ProgressView::reposition()
     }
 
     static int frameWidth = -1;
-    static int titleBarHeight;
+    //static int titleBarHeight;
 
     if (frameWidth == -1 && m_referenceWidget) {
         frameWidth = qMax(0, (m_referenceWidget->frameGeometry().width() - m_referenceWidget->width()) / 2);
-        titleBarHeight = qMax(0, m_referenceWidget->frameGeometry().height() - m_referenceWidget->height() - frameWidth);
+        //titleBarHeight = qMax(0, m_referenceWidget->frameGeometry().height() - m_referenceWidget->height() - frameWidth);
     }
 
     const QRect screenRect = qApp->desktop()->availableGeometry(this);

@@ -570,7 +570,7 @@ void QMusicPlayer::tick(qint64 time)
 
 void QMusicPlayer::load(int index)
 {
-    bool wasPlaying = mediaObject->state() == PlayingState;
+    bool wasPlaying = (QMusicPlayer::State)mediaObject->state() == PlayingState;
 
     mediaObject->stop();
 #ifdef USE_PHONON
@@ -1188,7 +1188,7 @@ bool QMusicPlayer::loadAlbum(const QString &fileName, SaagharAlbum* album)
     QFileInfo albumFileInfo(fileName);
     QDir albumDir(albumFileInfo.absolutePath());
 
-    int ID;
+    int ID = -1;
     QString TITLE;
     QString FULL_PATH;
     QString MD5SUM;
@@ -1722,7 +1722,7 @@ void AlbumManager::setCurrentAlbum(const QString &albumName, bool forceUpdate)
             mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
         }
         else {
-            if (albumMediaObject->state() != QMusicPlayer::PlayingState) {
+            if ((QMusicPlayer::State)albumMediaObject->state() != QMusicPlayer::PlayingState) {
                 mediaItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPause));
             }
             else {
@@ -1804,7 +1804,7 @@ void AlbumManager::currentMediaChanged(const QString &fileName, const QString &t
                         childItem->setToolTip(0, fontMetric.elidedText(title, Qt::ElideRight, 400) + "\n" + fileName);
                     }
 //                  childItem->setText(1, fileName);
-                    if (albumMediaObject && albumMediaObject->state() == QMusicPlayer::PlayingState) {
+                    if (albumMediaObject && (QMusicPlayer::State)albumMediaObject->state() == QMusicPlayer::PlayingState) {
                         childItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
                     }
                     if (mediaList->currentItem()) {
@@ -1830,7 +1830,7 @@ void AlbumManager::currentMediaChanged(const QString &fileName, const QString &t
             newChild->setToolTip(0, fontMetric.elidedText(title, Qt::ElideRight, 400) + "\n" + fileName);
 //          newChild->setText(1, fileName);
             newChild->setData(0, Qt::UserRole, mediaID);
-            if (albumMediaObject && albumMediaObject->state() == QMusicPlayer::PlayingState) {
+            if (albumMediaObject && (QMusicPlayer::State)albumMediaObject->state() == QMusicPlayer::PlayingState) {
                 newChild->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
             }
 
@@ -1922,7 +1922,7 @@ void AlbumManager::setMediaObject(QMediaPlayer* MediaObject)
 void AlbumManager::mediaObjectStateChanged()
 {
     if (previousItem) {
-        if (albumMediaObject->state() == QMusicPlayer::PlayingState) {
+        if ((QMusicPlayer::State)albumMediaObject->state() == QMusicPlayer::PlayingState) {
             previousItem->setIcon(0, style()->standardIcon(QStyle::SP_MediaPlay));
         }
         else {

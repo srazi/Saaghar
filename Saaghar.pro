@@ -41,11 +41,9 @@ rev = $$system(sh $$PWD/scripts/getrevision.sh)
 DEFINES += GIT_REVISION=\\\"""$$rev"\\\""
 
 win32 {
-
 win32-msvc*{
-    DEFINES += D_MSVC_CC ZLIB_WINAPI
+    DEFINES += D_MSVC_CC
     #QTPLUGIN += qsqlite
-    LIBS += -l"D:/Qt/Qt5.7.0_msvc_32/5.7/msvc2013/lib/zdll"
 }
 
 win32-g++{
@@ -89,7 +87,9 @@ win32-g++{
         sqlPlugins \
         imagePlugins \
         phononBackend
-}
+} # end !static
+
+    LIBS += -lzdll
 }
 else {
     LIBS += -L/usr/lib -lz

@@ -82,11 +82,11 @@ SaagharWidget::SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidge
     : QWidget(parent)
     , tableViewWidget(tableWidget)
     , parentCatsToolBar(catsToolBar)
+    , m_hasPoem(true)
     , currentPoem(0)
     , currentCat(0)
     , m_vPosition(-1)
     , m_connectionID(connectionID)
-    , m_hasPoem(true)
 {
     pageMetaInfo.id = 0;
     pageMetaInfo.type = SaagharWidget::CategoryViewerPage;
@@ -1813,8 +1813,8 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
     bool MustHave2ndBandBeyt = false;
 
     bool spacerColumnIsPresent = false;
-    int firstEmptyThirdColumn = 1;
-    bool flagEmptyThirdColumn = false;
+//    int firstEmptyThirdColumn = 1;
+//    bool flagEmptyThirdColumn = false;
 
     // mesra width computation: QChar(126, 6) is Pe
     const QString &extendString = QString(QChar(126, 6)) + QChar(126, 6);
@@ -1851,10 +1851,10 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
         switch (versePosition) {
         case Right :
             spacerColumnIsPresent = true;
-            if (!flagEmptyThirdColumn) {
-                firstEmptyThirdColumn = row;
-                flagEmptyThirdColumn = true;
-            }
+//            if (!flagEmptyThirdColumn) {
+//                firstEmptyThirdColumn = row;
+//                flagEmptyThirdColumn = true;
+//            }
             if (fontMetric.width(currentVerseText + extendString) > minMesraWidth) {
                 minMesraWidth = fontMetric.width(currentVerseText + extendString);
             }
@@ -1867,10 +1867,10 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
 
         case Left :
             spacerColumnIsPresent = true;
-            if (!flagEmptyThirdColumn) {
-                firstEmptyThirdColumn = row;
-                flagEmptyThirdColumn = true;
-            }
+//            if (!flagEmptyThirdColumn) {
+//                firstEmptyThirdColumn = row;
+//                flagEmptyThirdColumn = true;
+//            }
             if (fontMetric.width(currentVerseText + extendString) > minMesraWidth) {
                 minMesraWidth = fontMetric.width(currentVerseText + extendString);
             }
@@ -1910,10 +1910,10 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
 
         case Right :
             spacerColumnIsPresent = true;
-            if (!flagEmptyThirdColumn) {
-                firstEmptyThirdColumn = row;
-                flagEmptyThirdColumn = true;
-            }
+//            if (!flagEmptyThirdColumn) {
+//                firstEmptyThirdColumn = row;
+//                flagEmptyThirdColumn = true;
+//            }
             if (fontMetric.width(currentVerseText + extendString) > minMesraWidth) {
                 minMesraWidth = fontMetric.width(currentVerseText + extendString);
             }
@@ -1941,10 +1941,10 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
                 *prow = row;
                 tableViewWidget->insertRow(row);
             }
-            if (!flagEmptyThirdColumn) {
-                firstEmptyThirdColumn = row;
-                flagEmptyThirdColumn = true;
-            }
+//            if (!flagEmptyThirdColumn) {
+//                firstEmptyThirdColumn = row;
+//                flagEmptyThirdColumn = true;
+//            }
             if (fontMetric.width(currentVerseText + extendString) > minMesraWidth) {
                 minMesraWidth = fontMetric.width(currentVerseText + extendString);
             }

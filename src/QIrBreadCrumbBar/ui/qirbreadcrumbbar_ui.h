@@ -281,8 +281,8 @@ public:
     virtual QString defaultPath() const { return QString(); }
     virtual QString cleanPath(const QString &) const { return QString(); }
 
-    virtual bool isValid(const QString &path) const { return false; }
-    virtual QIrBreadCrumbModelNodeList splitPath(const QString &path) const { return QIrBreadCrumbModelNodeList(); }
+    virtual bool isValid(const QString &path) const { Q_UNUSED(path); return false; }
+    virtual QIrBreadCrumbModelNodeList splitPath(const QString &path) const { Q_UNUSED(path); return QIrBreadCrumbModelNodeList(); }
 
     virtual QIcon icon(const QIrBreadCrumbModelNode &) const { return QIcon(); }
     virtual QString label(const QIrBreadCrumbModelNode &) const { return QString(); }

@@ -225,8 +225,13 @@ void SaagharItemDelegate::drawDisplay(QPainter* painter, const QStyleOptionViewI
         painter->restore();
     }
 
+#if QT_VERSION >= 0x050000
+    const QStyleOptionViewItem opt = option;
+    const QStyleOptionViewItem* v3 = &option;
+#else
     const QStyleOptionViewItemV4 opt = option;
-    const QStyleOptionViewItemV3* v3 = 0;//qstyleoption_cast<const QStyleOptionViewItemV3 *>(&option);
+    const QStyleOptionViewItemV3* v3 = qstyleoption_cast<const QStyleOptionViewItemV3 *>(&option);
+#endif
 
     QStyle* style = v3 && v3->widget ? v3->widget->style() : QApplication::style();
     const int textMargin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, (v3 && v3->widget ? v3->widget : 0)) + 1;

@@ -1150,11 +1150,11 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, const QStri
     QString strQuery;
     QStringList excludeWhenCleaning;
     QString searchQueryPhrase;
-    bool findRhyme = false;
+//    bool findRhyme = false;
 
-    if (phraseList.contains("=", Qt::CaseInsensitive)) {
-        findRhyme = true;
-    }
+//    if (phraseList.contains("=", Qt::CaseInsensitive)) {
+//        findRhyme = true;
+//    }
 
     QString firstPhrase = phraseList.at(0);
 
@@ -1845,7 +1845,7 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
     int newPoemId = getNewPoemID(toConnectionID);
     GanjoorCat topLevelCat = initCatPath.last();
     QHash<int, int> createdCatsIdMap;
-    int catId;
+    int catId = -1;
 
     foreach (const GanjoorPoem &poem, importData.poems) {
         QList<GanjoorVerse> verses = importData.verses.value(poem._ID);

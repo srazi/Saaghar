@@ -78,8 +78,8 @@ ConcurrentTask::ConcurrentTask(QObject* parent)
     : QObject(parent),
       QRunnable(),
       m_cancel(false),
-      m_progressObject(0),
       m_displayFullNotification(sApp->displayFullNotification() && sApp->notificationPosition() != ProgressManager::Disabled),
+      m_progressObject(0),
       m_futureProgress(0),
       m_isQueued(false)
 {

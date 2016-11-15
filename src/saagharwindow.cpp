@@ -580,23 +580,23 @@ void SaagharWindow::currentTabChanged(int tabIndex)
                         }
                     }
 
-                    int verticalScrollBarWidth = 0;
-                    if (saagharWidget->tableViewWidget->verticalScrollBar()->isVisible()) {
-                        verticalScrollBarWidth = saagharWidget->tableViewWidget->verticalScrollBar()->width();
-                    }
-                    int totalWidth = saagharWidget->tableViewWidget->columnWidth(0) - verticalScrollBarWidth - 82;
+//                    int verticalScrollBarWidth = 0;
+//                    if (saagharWidget->tableViewWidget->verticalScrollBar()->isVisible()) {
+//                        verticalScrollBarWidth = saagharWidget->tableViewWidget->verticalScrollBar()->width();
+//                    }
+//                    int totalWidth = saagharWidget->tableViewWidget->columnWidth(0) - verticalScrollBarWidth - 82;
 
-                    totalWidth = qMax(82 + verticalScrollBarWidth, totalWidth);
+//                    totalWidth = qMax(82 + verticalScrollBarWidth, totalWidth);
                     saagharWidget->resizeTable(saagharWidget->tableViewWidget);
                 }
             }
             else if (saagharWidget->tableViewWidget->columnCount() > 1) {
                 QTableWidgetItem* item = saagharWidget->tableViewWidget->item(0, 1);
                 if (item) {
-                    int verticalScrollBarWidth = 0;
-                    if (saagharWidget->tableViewWidget->verticalScrollBar()->isVisible()) {
-                        verticalScrollBarWidth = saagharWidget->tableViewWidget->verticalScrollBar()->width();
-                    }
+//                    int verticalScrollBarWidth = 0;
+//                    if (saagharWidget->tableViewWidget->verticalScrollBar()->isVisible()) {
+//                        verticalScrollBarWidth = saagharWidget->tableViewWidget->verticalScrollBar()->width();
+//                    }
                     saagharWidget->resizeTable(saagharWidget->tableViewWidget);
                 }
             }

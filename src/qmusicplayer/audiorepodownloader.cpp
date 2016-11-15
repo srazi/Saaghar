@@ -53,9 +53,9 @@ const QStringList AudioRepoDownloader::defaultRepositories = QStringList()
 AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
     : QDialog(parent, f)
     , ui(new Ui::AudioRepoDownloader)
-    , m_saagharAlbum(new QMusicPlayer::SaagharAlbum)
     , oldRootItem(0)
     , newRootItem(0)
+    , m_saagharAlbum(new QMusicPlayer::SaagharAlbum)
     , m_groupType(GroupByPoet)
 {
     downloadStarted = downloadAboutToStart = false;
@@ -449,12 +449,12 @@ void AudioRepoDownloader::readRepository(const QString &url)
         itemsCache.insert(currentText, QPair<QTreeWidgetItem*, QTreeWidgetItem*>());
     }
 
-    bool isRemote = false;
+    //bool isRemote = false;
     QString urlStr = repoUrl.toString();
     qDebug() << "url====" << urlStr;
     setupTreeRootItems();
     if (!urlStr.contains("file:///")) {
-        isRemote = true;
+        //isRemote = true;
         QString tmpPath = getTempDir();
         QDir downDir(tmpPath);
         if (!downDir.exists() && !downDir.mkpath(tmpPath)) {

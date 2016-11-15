@@ -75,7 +75,6 @@ void TxtImporter::import(const QString &data)
     const int poemId = 100000;
 
     bool createNewPoem = true;
-    bool createNewCat = false;
     bool startPassed = false;
     bool noTitle = false;
     bool maybeParagraph = false;

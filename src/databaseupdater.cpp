@@ -347,12 +347,12 @@ void DataBaseUpdater::readRepository(const QString &url)
         itemsCache.insert(ui->comboBoxRepoList->currentText(), QPair<QTreeWidgetItem*, QTreeWidgetItem*>());
     }
 
-    bool isRemote = false;
+    //bool isRemote = false;
     QString urlStr = repoUrl.toString();
     qDebug() << "url====" << urlStr;
     setupTreeRootItems();
     if (!urlStr.contains("file:///")) {
-        isRemote = true;
+        //isRemote = true;
         QString tmpPath = getTempDir();
         QDir downDir(tmpPath);
         if (!downDir.exists() && !downDir.mkpath(tmpPath)) {
