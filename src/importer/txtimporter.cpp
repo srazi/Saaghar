@@ -59,7 +59,7 @@ void TxtImporter::import(const QString &data)
 
     QStringList lines = rawdata.split("\n");
 
-    const QString catEndMark = QLatin1String("#SED!CAT!END!");
+    const QString catEndMark = QLatin1String("#CAT!END!");
 
 #if QT_VERSION >= 0x050000
     const QRegularExpression catTitleRegExp("^#CAT!TITLE!(.+)$");
@@ -106,14 +106,14 @@ void TxtImporter::import(const QString &data)
         // go one level up
         if (line.trimmed() == catEndMark) {
             if (!cat.isNull() && !m_catContents.cats.contains(cat._ID)) {
-                qDebug() << "\n----- 1 ------\n"
-                         << cat._Text << "\n"
-                         << cat._ID << "\n"
-                         << cat._ParentID << "\n"
-                         << poem._Title << "\n"
-                         << poem._ID << "\n"
-                         << poem._CatID << "\n"
-                         << "\n----- 2 ------\n";
+//                qDebug() << "\n----- 1 ------\n"
+//                         << cat._Text << "\n"
+//                         << cat._ID << "\n"
+//                         << cat._ParentID << "\n"
+//                         << poem._Title << "\n"
+//                         << poem._ID << "\n"
+//                         << poem._CatID << "\n"
+//                         << "\n----- 2 ------\n";
                 m_catContents.cats.insert(cat._ID, cat);
             }
 
@@ -133,14 +133,14 @@ void TxtImporter::import(const QString &data)
             ++matchCatTitleCount;
 
             if (!cat.isNull() && !m_catContents.cats.contains(cat._ID)) {
-                qDebug() << "\n----- 5 ------\n"
-                         << cat._Text << "\n"
-                         << cat._ID << "\n"
-                         << cat._ParentID << "\n"
-                         << poem._Title << "\n"
-                         << poem._ID << "\n"
-                         << poem._CatID << "\n"
-                         << "\n----- 6 ------\n";
+//                qDebug() << "\n----- 5 ------\n"
+//                         << cat._Text << "\n"
+//                         << cat._ID << "\n"
+//                         << cat._ParentID << "\n"
+//                         << poem._Title << "\n"
+//                         << poem._ID << "\n"
+//                         << poem._CatID << "\n"
+//                         << "\n----- 6 ------\n";
                 m_catContents.cats.insert(cat._ID, cat);
             }
 
@@ -153,14 +153,14 @@ void TxtImporter::import(const QString &data)
             cat._ID = catId + i;
             cat._ParentID = parentCat._ID;
             parentCat = cat;
-            qDebug() << "\n----- 7 ------\n"
-                     << cat._Text << "\n"
-                     << cat._ID << "\n"
-                     << cat._ParentID << "\n"
-                     << poem._Title << "\n"
-                     << poem._ID << "\n"
-                     << poem._CatID << "\n"
-                     << "\n----- 8 ------\n";
+//            qDebug() << "\n----- 7 ------\n"
+//                     << cat._Text << "\n"
+//                     << cat._ID << "\n"
+//                     << cat._ParentID << "\n"
+//                     << poem._Title << "\n"
+//                     << poem._ID << "\n"
+//                     << poem._CatID << "\n"
+//                     << "\n----- 8 ------\n";
 
             createNewPoem = true;
             continue;
@@ -197,16 +197,16 @@ void TxtImporter::import(const QString &data)
             poem._CatID = cat._ID;
             poem._ID = poemId + i;
             poem._Title = trimmedLine;
-            if (poem._Title.contains("THE PICTURE") || poem._Title.contains("TUESDAY")) {
-                qDebug() << "\n----- A ------\n"
-                         << cat._Text << "\n"
-                         << cat._ID << "\n"
-                         << cat._ParentID << "\n"
-                         << poem._Title << "\n"
-                         << poem._ID << "\n"
-                         << poem._CatID << "\n"
-                         << "\n----- B ------\n";
-            }
+//            if (poem._Title.contains("THE PICTURE") || poem._Title.contains("TUESDAY")) {
+//                qDebug() << "\n----- A ------\n"
+//                         << cat._Text << "\n"
+//                         << cat._ID << "\n"
+//                         << cat._ParentID << "\n"
+//                         << poem._Title << "\n"
+//                         << poem._ID << "\n"
+//                         << poem._CatID << "\n"
+//                         << "\n----- B ------\n";
+//            }
             createNewPoem = false;
             noTitle = true;
             maybePoem = false;
@@ -248,16 +248,16 @@ void TxtImporter::import(const QString &data)
         if (m_options.poemStartPattern.isEmpty() && !noTitle && poem._Title.isEmpty()) {
             if (line.size() < 50) {
                 poem._Title = line.trimmed();
-                if (poem._Title.contains("THE PICTURE") || poem._Title.contains("TUESDAY")) {
-                    qDebug() << "\n----- C ------\n"
-                             << cat._Text << "\n"
-                             << cat._ID << "\n"
-                             << cat._ParentID << "\n"
-                             << poem._Title << "\n"
-                             << poem._ID << "\n"
-                             << poem._CatID << "\n"
-                             << "\n----- D ------\n";
-                }
+//                if (poem._Title.contains("THE PICTURE") || poem._Title.contains("TUESDAY")) {
+//                    qDebug() << "\n----- C ------\n"
+//                             << cat._Text << "\n"
+//                             << cat._ID << "\n"
+//                             << cat._ParentID << "\n"
+//                             << poem._Title << "\n"
+//                             << poem._ID << "\n"
+//                             << poem._CatID << "\n"
+//                             << "\n----- D ------\n";
+//                }
                 continue;
             }
         }
@@ -344,14 +344,14 @@ void TxtImporter::import(const QString &data)
     }
 
     if (!cat.isNull() && !m_catContents.cats.contains(cat._ID)) {
-        qDebug() << "\n----- 9 ------\n"
-                 << cat._Text << "\n"
-                 << cat._ID << "\n"
-                 << cat._ParentID << "\n"
-                 << poem._Title << "\n"
-                 << poem._ID << "\n"
-                 << poem._CatID << "\n"
-                 << "\n----- 10 -----\n";
+//        qDebug() << "\n----- 9 ------\n"
+//                 << cat._Text << "\n"
+//                 << cat._ID << "\n"
+//                 << cat._ParentID << "\n"
+//                 << poem._Title << "\n"
+//                 << poem._ID << "\n"
+//                 << poem._CatID << "\n"
+//                 << "\n----- 10 -----\n";
         m_catContents.cats.insert(cat._ID, cat);
     }
 
