@@ -82,9 +82,8 @@ void TxtImporter::import(const QString &data)
     bool maybePoem = false;
     GanjoorCat cat;
 
-    QList<GanjoorCat> parentCats;
     // null cat is considered as root category
-    parentCats << cat;
+    GanjoorCat parentCat;
 
     GanjoorPoem poem;
     GanjoorVerse verse;
@@ -116,20 +115,7 @@ void TxtImporter::import(const QString &data)
                 m_catContents.cats.insert(cat._ID, cat);
             }
 
-            if (parentCats.size() > 1) {
-                cat = parentCats.takeFirst();
-                qDebug() << "\n----- 3 ------\n"
-                         << cat._Text << "\n"
-                         << cat._ID << "\n"
-                         << cat._ParentID << "\n"
-                         << poem._Title << "\n"
-                         << poem._ID << "\n"
-                         << poem._CatID << "\n"
-                         << "\n----- 4 ------\n";
-            }
-            else {
-                cat.setNull();
-            }
+            parentCat = (parentCat.isNull() || parentCat._ParentID == -1) ? GanjoorCat() : m_catContents.cats.value(parentCat._ParentID);
 
             createNewPoem = true;
             continue;
@@ -154,7 +140,6 @@ void TxtImporter::import(const QString &data)
                          << poem._CatID << "\n"
                          << "\n----- 6 ------\n";
                 m_catContents.cats.insert(cat._ID, cat);
-                parentCats.prepend(cat);
             }
 
 //            if (matchCatTitleCount > 1) {
@@ -164,7 +149,8 @@ void TxtImporter::import(const QString &data)
             cat.setNull();
             cat._Text = cap1;
             cat._ID = catId + i;
-            cat._ParentID = parentCats.at(0)._ID;
+            cat._ParentID = parentCat._ID;
+            parentCat = cat;
             qDebug() << "\n----- 7 ------\n"
                      << cat._Text << "\n"
                      << cat._ID << "\n"
