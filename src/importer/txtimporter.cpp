@@ -63,8 +63,10 @@ void TxtImporter::import(const QString &data)
 
 #if QT_VERSION >= 0x050000
     const QRegularExpression catTitleRegExp("^#CAT!TITLE!(.+)$");
+    const QRegularExpression poemTitleRegExp(m_options.poemStartPattern);
 #else
     const QRegExp catTitleRegExp("^#CAT!TITLE!(.+)$");
+    const QRegExp poemTitleRegExp(m_options.poemStartPattern);
 #endif
 
     const bool justWhitePoem = m_options.contentTypes == Options::WhitePoem;
@@ -166,22 +168,35 @@ void TxtImporter::import(const QString &data)
 
         matchCatTitleCount = 0;
 
+#if QT_VERSION >= 0x050000
+        QRegularExpressionMatch poemTitleMatch = poemTitleRegExp.match(line.trimmed());
+#endif
+
         if (!line.trimmed().isEmpty() && ((maybePoem && line.trimmed().size() < 50 && m_options.poemStartPattern.isEmpty()) ||
                                           (!m_options.poemStartPattern.isEmpty() &&
 #if QT_VERSION >= 0x050000
-                                           line.contains(QRegularExpression(m_options.poemStartPattern))))) {
+                                           poemTitleMatch.hasMatch()))) {
+            QString trimmedLine = line.trimmed();
+            if (!m_options.poemStartPattern.isEmpty() && poemTitleMatch.hasMatch()) {
+                trimmedLine = poemTitleMatch.captured(poemTitleMatch.capturedTexts().count() - 1);
+            }
 #else
-                                           line.contains(QRegExp(m_options.poemStartPattern))))) {
+                                           poemTitleRegExp.indexIn(line.trimmed()) >= 0))) {
+            QString trimmedLine = line.trimmed();
+            if (!m_options.poemStartPattern.isEmpty() && poemTitleRegExp.indexIn(line.trimmed()) >= 0) {
+                trimmedLine = poemTitleRegExp.cap(poemTitleRegExp.capturedTexts().count() - 1);
+            }
 #endif
             if (!poem.isNull()) {
                 m_catContents.verses.insert(poem._ID, verses);
                 m_catContents.poems.append(poem);
             }
+
             verses.clear();
             poem.setNull();
             poem._CatID = cat._ID;
             poem._ID = poemId + i;
-            poem._Title = line.trimmed();
+            poem._Title = trimmedLine;
             if (poem._Title.contains("THE PICTURE") || poem._Title.contains("TUESDAY")) {
                 qDebug() << "\n----- A ------\n"
                          << cat._Text << "\n"
