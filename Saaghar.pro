@@ -41,38 +41,62 @@ rev = $$system(sh $$PWD/scripts/getrevision.sh)
 DEFINES += GIT_REVISION=\\\"""$$rev"\\\""
 
 win32 {
-win32-msvc*{
-    DEFINES += D_MSVC_CC
-    #QTPLUGIN += qsqlite
-}
-
-win32-g++{
-    DEFINES += D_MINGW_CC
-}
     target.path = Saaghar-Win
     RESOURCES_PATH = Saaghar-Win
 
 !static {
     ##shared libs
     depFiles.path = Saaghar-Win
-    depFiles.files = $$[QT_INSTALL_BINS]/QtCore4.dll \
-        $$[QT_INSTALL_BINS]/QtGui4.dll \
-        $$[QT_INSTALL_BINS]/QtSql4.dll \
-        $$[QT_INSTALL_BINS]/QtNetwork4.dll \
-        $$[QT_INSTALL_BINS]/QtXml4.dll \
-        $$[QT_INSTALL_BINS]/phonon4.dll \
-        $$[QT_INSTALL_BINS]/mingwm10.dll \
-        $$[QT_INSTALL_BINS]/libgcc_s_dw2-1.dll \
-        $$[QT_INSTALL_BINS]/zlib1.dll \
+    depFiles.files = $$[QT_INSTALL_BINS]/zlib1.dll \
         $$[QT_INSTALL_BINS]/libssl32.dll \
-        $$[QT_INSTALL_BINS]/ssleay32.dll \
-        $$[QT_INSTALL_BINS]/msvcp100.dll \
-        $$[QT_INSTALL_BINS]/msvcr100.dll
+        $$[QT_INSTALL_BINS]/ssleay32.dll
+
+    phononBackend.path = Saaghar-Win/phonon_backend
+    phononBackend.files = $$[QT_INSTALL_PLUGINS]/phonon_backend/phonon_ds94.dll
 
     sqlPlugins.path = Saaghar-Win/sqldrivers
+    imagePlugins.path = Saaghar-Win/imageformats
+
+isEqual(QT_MAJOR_VERSION, 5) {
+    sqlPlugins.files = $$[QT_INSTALL_PLUGINS]/sqldrivers/qsqlite.dll
+
+    imagePlugins.files = $$[QT_INSTALL_PLUGINS]/imageformats/qgif.dll \
+        $$[QT_INSTALL_PLUGINS]/imageformats/qico.dll \
+        $$[QT_INSTALL_PLUGINS]/imageformats/qjpeg.dll \
+        $$[QT_INSTALL_PLUGINS]/imageformats/qsvg.dll \
+        $$[QT_INSTALL_PLUGINS]/imageformats/qtiff.dll \
+        $$[QT_INSTALL_PLUGINS]/imageformats/qdds.dll \
+        $$[QT_INSTALL_PLUGINS]/imageformats/qicns.dll \
+        $$[QT_INSTALL_PLUGINS]/imageformats/qtga.dll \
+        $$[QT_INSTALL_PLUGINS]/imageformats/qwbmp.dll \
+        $$[QT_INSTALL_PLUGINS]/imageformats/qwebp.dll \
+
+    depFiles.files += $$[QT_INSTALL_BINS]/Qt5Core.dll \
+        $$[QT_INSTALL_BINS]/Qt5Gui.dll \
+        $$[QT_INSTALL_BINS]/Qt5Sql.dll \
+        $$[QT_INSTALL_BINS]/Qt5Network.dll \
+        $$[QT_INSTALL_BINS]/Qt5Xml.dll \
+        $$[QT_INSTALL_BINS]/Qt5Widgets.dll \
+        $$[QT_INSTALL_BINS]/Qt5PrintSupport.dll \
+        $$[QT_INSTALL_BINS]/Qt5Multimedia.dll \
+        $$[QT_INSTALL_BINS]/Qt5Svg.dll
+
+    platformPlugins.path = Saaghar-Win/platforms
+    platformPlugins.files = $$[QT_INSTALL_PLUGINS]/platforms/qwindows.dll
+
+    mediaservicePlugins.path = Saaghar-Win/mediaservice
+    mediaservicePlugins.files = $$[QT_INSTALL_PLUGINS]/mediaservice/dsengine.dll
+
+    bearerPlugins.path = Saaghar-Win/bearer
+    bearerPlugins.files = $$[QT_INSTALL_PLUGINS]/bearer/qgenericbearer.dll \
+        $$[QT_INSTALL_PLUGINS]/bearer/qnativewifibearer.dll
+
+    INSTALLS += platformPlugins \
+        mediaservicePlugins \
+        bearerPlugins
+} else {
     sqlPlugins.files = $$[QT_INSTALL_PLUGINS]/sqldrivers/qsqlite4.dll
 
-    imagePlugins.path = Saaghar-Win/imageformats
     imagePlugins.files = $$[QT_INSTALL_PLUGINS]/imageformats/qgif4.dll \
         $$[QT_INSTALL_PLUGINS]/imageformats/qico4.dll \
         $$[QT_INSTALL_PLUGINS]/imageformats/qjpeg4.dll \
@@ -80,8 +104,28 @@ win32-g++{
         $$[QT_INSTALL_PLUGINS]/imageformats/qsvg4.dll \
         $$[QT_INSTALL_PLUGINS]/imageformats/qtiff4.dll
 
-    phononBackend.path = Saaghar-Win/phonon_backend
-    phononBackend.files = $$[QT_INSTALL_PLUGINS]/phonon_backend/phonon_ds94.dll
+    depFiles.files += $$[QT_INSTALL_BINS]/QtCore4.dll \
+        $$[QT_INSTALL_BINS]/QtGui4.dll \
+        $$[QT_INSTALL_BINS]/QtSql4.dll \
+        $$[QT_INSTALL_BINS]/QtNetwork4.dll \
+        $$[QT_INSTALL_BINS]/QtXml4.dll \
+        $$[QT_INSTALL_BINS]/phonon4.dll
+}
+
+win32-msvc*{
+    DEFINES += D_MSVC_CC
+    #QTPLUGIN += qsqlite
+
+    depFiles.files += $$[QT_INSTALL_BINS]/msvcp100.dll \
+        $$[QT_INSTALL_BINS]/msvcr100.dll
+}
+
+win32-g++{
+    DEFINES += D_MINGW_CC
+
+    depFiles.files += $$[QT_INSTALL_BINS]/mingwm10.dll \
+        $$[QT_INSTALL_BINS]/libgcc_s_dw2-1.dll
+}
 
     INSTALLS += depFiles \
         sqlPlugins \

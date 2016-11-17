@@ -540,6 +540,8 @@ void SaagharWindow::actionRemovePoet()
     }
 }
 
+// FIXME: There is a first chance exception when
+//  changing tabs that have loaded audio.
 void SaagharWindow::currentTabChanged(int tabIndex)
 {
     SaagharWidget* tmpSaagharWidget = getSaagharWidget(tabIndex);
