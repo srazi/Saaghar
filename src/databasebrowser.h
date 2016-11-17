@@ -139,7 +139,7 @@ private:
     int getNewPoetID(const QString &connectionID = defaultConnectionId());
     int getNewCatID(const QString &connectionID = defaultConnectionId());
     // return the first id for creating new category
-    int createCatPathOnNeed(QList<GanjoorCat> &catPath, const QString &connectionID = defaultConnectionId());
+    int createCatPathOnNeed(QList<GanjoorCat> &catPath, const QString &description = QString(), const QString &connectionID = defaultConnectionId());
     void removeCatFromDataBase(const GanjoorCat &gCat, const QString &connectionID = defaultConnectionId());
 
     static bool comparePoetsByName(GanjoorPoet* poet1, GanjoorPoet* poet2);

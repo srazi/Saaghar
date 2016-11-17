@@ -23,7 +23,13 @@
 #include "importeroptionsdialog.h"
 #include "databasebrowser.h"
 #include "selectcreatedialog.h"
+#include "outlinemodel.h"
+#include "saagharwidget.h"
 
+#include <QTextEdit>
+#include <QTreeView>
+#include <QTreeWidget>
+#include <QMessageBox>
 #include <QInputDialog>
 #include <QDebug>
 #include <QApplication>
@@ -31,7 +37,6 @@
 ImporterManager* ImporterManager::s_importerManager = 0;
 
 ImporterManager::ImporterManager()
-    : m_importPathLabel(0)
 {
     registerImporter("txt", new TxtImporter);
 }
@@ -90,10 +95,7 @@ QStringList ImporterManager::availableFormats()
 
     return formats;
 }
-#include "outlinemodel.h"
-#include "saagharwidget.h"
-#include <QTreeView>
-#include <QTreeWidget>
+
 void ImporterManager::storeAsDataset(const CatContents &importData, bool storeAsGDB)
 {
     m_importData.clear();
@@ -121,28 +123,33 @@ void ImporterManager::storeAsDataset(const CatContents &importData, bool storeAs
     m_importPathView.data()->setCurrentItem(rootItem);
     //m_importPathView.data()->setModel(OutlineModel::instance());
     m_importPathLabel = new QLabel(&importPath);
-    QPushButton selectCat(tr("Select or Create a Poet or Book..."), &importPath);
-    QPushButton importNow(tr("Import..."), &importPath);
-    QPushButton clear(tr("Clear"), &importPath);
-    importNow.hide();
-    clear.hide();
+    m_addPoetBio = new QPushButton(tr("Set Bio./Desc..."), &importPath);
+    m_selectCat = new QPushButton(tr("Select or Create a Poet/Book..."), &importPath);
+    m_importNow = new QPushButton(tr("Import..."), &importPath);
+    m_clearButton = new QPushButton(tr("Clear"), &importPath);
+    m_addPoetBio->hide();
+    m_importNow->hide();
+    m_clearButton->hide();
     // selectCat.hide();
     layout.addWidget(&infoLabel);
     layout.addWidget(m_importPathView);
     layout.addWidget(m_importPathLabel);
-    layout.addWidget(&selectCat);
-    layout.addWidget(&clear);
-    layout.addWidget(&importNow);
+    layout.addWidget(m_addPoetBio);
+    layout.addWidget(m_selectCat);
+    layout.addWidget(m_clearButton);
+    layout.addWidget(m_importNow);
     importPath.setLayout(&layout);
-    connect(&selectCat, SIGNAL(clicked(bool)), this, SLOT(importPathChanged()));
-    connect(&clear, SIGNAL(clicked(bool)), this, SLOT(clearImportPath()));
-    connect(&importNow, SIGNAL(clicked(bool)), this, SLOT(importHere()));
+    connect(m_addPoetBio, SIGNAL(clicked(bool)), this, SLOT(addPoetBio()));
+    connect(m_selectCat, SIGNAL(clicked(bool)), this, SLOT(importPathChanged()));
+    connect(m_clearButton, SIGNAL(clicked(bool)), this, SLOT(clearImportPath()));
+    connect(m_importNow, SIGNAL(clicked(bool)), this, SLOT(importHere()));
     connect(this, SIGNAL(importDialogDone()), &importPath, SLOT(accept()));
     // connect(m_importPathView.data()->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), &importNow, SLOT(show()));
     // connect(m_importPathView.data()->selectionModel(), SIGNAL(selectionChanged(QItemSelection,QItemSelection)), &selectCat, SLOT(show()));
 
-    connect(&selectCat, SIGNAL(clicked(bool)), &importNow, SLOT(show()));
-    connect(&selectCat, SIGNAL(clicked(bool)), &clear, SLOT(show()));
+    connect(m_selectCat, SIGNAL(clicked(bool)), m_importNow, SLOT(show()));
+    //connect(m_selectCat, SIGNAL(clicked(bool)), m_clearButton, SLOT(show()));
+    connect(this, SIGNAL(setBioVisible(bool)), m_addPoetBio, SLOT(setVisible(bool)));
     importPath.exec();
 //    foreach (const GanjoorPoem &poem, importData.poems) {
 //        QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
@@ -279,27 +286,27 @@ static QString lineTypeFromPosition(VersePosition position)
 // tags for Version-0.1 of Saaghar Easy Editable Dataset Format (SED)
 // #SAAGHAR!SED!         // start of SED file
 // #SED!LANGUAGE!        // SED file language
-// #SED!CAT!START!       // start of cat
+// #CAT!START!           // start of cat
 // #CAT!ID!              // ganjoor id of category
 // #CAT!UID!             // unique id of category
 // #CAT!CATID!           // ganjoor id of toplevel category of current category
 // #CAT!CATUID!          // unique id of toplevel category of current category
 // #CAT!TITLE!           // title of category
-// #SED!POEM!START!      // start of poem
+// #POEM!START!          // start of poem
 // #POEM!CATID!          // ganjoor id of toplevel category of current poem
 // #POEM!CATUID!         // unique id of toplevel category of current poem
 // #POEM!ID!             // ganjoor id of poem
 // #POEM!UID!            // unique id of poem
 // #POEM!TITLE!          // title of poem
-// #POEM!VERSECOUNT!     // title of poem
-// #SED!VERSES!START!    // start of verses
-// #SED!VERSE!START!     // start of verse
+// #POEM!VERSECOUNT!     // count of verses in poem
+// #VERSES!START!        // start of verses
+// #VERSE!START!         // start of verse
 // #VERSE!ORDER!         // verse order within poem
 // #VERSE!POSITION!      // verse type and position
 // #VERSE!TEXT!          // verse text
-// #SED!VERSE!END!       // end of verse
-// #SED!POEM!END!        // end of poem
-// #SED!CAT!END!         // end of cat
+// #VERSE!END!           // end of verse
+// #POEM!END!            // end of poem
+// #CAT!END!             // end of cat
 /*******************************************************************************/
 QString ImporterManager::convertToSED(const CatContents &importData) const
 {
@@ -311,15 +318,15 @@ QString ImporterManager::convertToSED(const CatContents &importData) const
     QString catTitle = "catTitle";
 
     content += "#SAAGHAR!SED!v0.1\n";
-//    content += QString("#SED!LANGUAGE!FA_IR\n#SED!CAT!START!#CAT!UID!%1#CAT!CATID!0\n#CAT!TITLE!%2\n"
-//                       "#SED!CAT!START!#CAT!UID!%3#CAT!CATUID!%1\n#CAT!TITLE!%4\n")
+//    content += QString("#SED!LANGUAGE!FA_IR\n#CAT!START!#CAT!UID!%1#CAT!CATID!0\n#CAT!TITLE!%2\n"
+//                       "#CAT!START!#CAT!UID!%3#CAT!CATUID!%1\n#CAT!TITLE!%4\n")
 //            .arg(poetUID).arg(poetTitle).arg(catUID).arg(catTitle);
 
     content += "######################\n######################\n";
 
     foreach (const GanjoorPoem &poem, importData.poems) {
         QList<GanjoorVerse> verses = importData.verses.value(poem._ID);
-//        content += QString("#SED!POEM!START!#POEM!CATUID!%1#POEM!ID!%2#POEM!VERSECOUNT!%4\n#POEM!TITLE!%3\n")
+//        content += QString("#POEM!START!#POEM!CATUID!%1#POEM!ID!%2#POEM!VERSECOUNT!%4\n#POEM!TITLE!%3\n")
 //                .arg(catUID).arg(poem._ID).arg(poem._Title).arg(verses.count());
 
         QStringList parentsTitles = importData.catParentsTitles(poem._CatID);
@@ -329,14 +336,14 @@ QString ImporterManager::convertToSED(const CatContents &importData) const
                    .arg(poem._Title.isEmpty() ? "UNKNOWN_POEM_TITLE" : poem._Title);
 
         QString lastPosition;
-        // content += QString("#SED!VERSES!START!\n");
+        // content += QString("#VERSES!START!\n");
         foreach (const GanjoorVerse &verse, verses) {
             if (lastPosition != lineTypeFromPosition(verse._Position)) {
                 lastPosition = lineTypeFromPosition(verse._Position);
                 content += QString("###\n#VERSE!POSITION!%1\n").arg(lastPosition);
             }
             content += QString("%1\n").arg(verse._Text);
-//            content += QString("#SED!VERSE!START!#VERSE!ORDER!%1#VERSE!POSITION!%2\n#VERSE!TEXT!%3\n")
+//            content += QString("#VERSE!START!#VERSE!ORDER!%1#VERSE!POSITION!%2\n#VERSE!TEXT!%3\n")
 //                    .arg(verse._Order).arg(versePositionToString(verse._Position)).arg(verse._Text);
         }
         content += "######################\n";
@@ -360,7 +367,18 @@ void ImporterManager::importPathChanged()
         selectCatDialog.adjustSize();
 
         if (selectCatDialog.exec() == QDialog::Accepted) {
+            m_clearButton->show();
+            if (m_forceCreateNew) {
+                m_selectCat->setText(tr("Create a Category..."));
+            }
+            else {
+                m_selectCat->setText(tr("Select or Create a Category..."));
+            }
+
             if (selectCatDialog.createNewCat()) {
+                if (m_importPathView.data()->selectionModel()->selectedIndexes().at(0).data(OutlineModel::CategoryRole).value<GanjoorCat>()._ID == -1) {
+                    emit setBioVisible(true);
+                }
                 m_forceCreateNew = true;
                 QTreeWidgetItem* childItem = new QTreeWidgetItem(m_importPathView.data()->selectedItems().at(0)
                         ? m_importPathView.data()->selectedItems().at(0)
@@ -389,27 +407,6 @@ void ImporterManager::importPathChanged()
 //        QString title = QInputDialog::getText(qApp->activeWindow(), tr("Create New Category"), tr("Enter title:"));
 //        m_importPathView.data()->model()->insertRow(0, m_importPathView.data()->selectionModel()->selectedIndexes().at(0));
     }
-
-    return;
-    if (m_importPathLabel) {
-        SelectCreateDialog selectCatDialog(qApp->activeWindow(), m_importPath);
-        selectCatDialog.setForceCreate(m_forceCreateNew);
-
-        if (selectCatDialog.exec() == QDialog::Accepted) {
-            if (selectCatDialog.createNewCat()) {
-                m_forceCreateNew = true;
-            }
-            else {
-                m_importPath = selectCatDialog.selectedPath();
-            }
-        }
-//        QDialog selectCatDialog(qApp->activeWindow());
-//        QVBoxLayout layout;
-//        QLabel infoLabel(tr("The poems will import to the following category:"), &importPath);
-
-//        m_importPathLabel.data()->setText(m_importPathLabel.data()->text() + "\nADD PATH");
-//        selectCat->setText(tr("Select or Create a Category or Book..."));
-    }
 }
 
 void ImporterManager::clearImportPath()
@@ -421,9 +418,12 @@ void ImporterManager::clearImportPath()
         m_importPathView.data()->setCurrentItem(m_importPathView.data()->topLevelItem(0));
         m_forceCreateNew = false;
         clear->hide();
+        m_addPoetBio->hide();
+        m_importNow->hide();
+        m_selectCat->setText(tr("Select or Create a Poet/Book..."));
     }
 }
-#include <QMessageBox>
+
 void ImporterManager::importHere()
 {
     if (m_importData.isNull() || !m_importPathView || m_importPathView.data()->selectedItems().isEmpty()) {
@@ -436,21 +436,24 @@ void ImporterManager::importHere()
     QTreeWidgetItem* item = m_importPathView.data()->selectedItems().at(0);
     while (item && item != homeItem) {
         GanjoorCat cat = item->data(0, OutlineModel::CategoryRole).value<GanjoorCat>();
-        qDebug() << "\n@@@@@@@@@@@@@@@@@@@@@@@@\n" << __LINE__ << __FUNCTION__ << "\n"
-                 << cat._Text << "\n"
-                 << cat._ID << "\n"
-                 << cat._ParentID << "\n"
-                 << cat._PoetID << "\n"
-                 << "\n@@@@@@@@@@@@@@@@@@@@@@@@\n" ;
+//        qDebug() << "\n@@@@@@@@@@@@@@@@@@@@@@@@\n" << __LINE__ << __FUNCTION__ << "\n"
+//                 << cat._Text << "\n"
+//                 << cat._ID << "\n"
+//                 << cat._ParentID << "\n"
+//                 << cat._PoetID << "\n"
+//                 << "\n@@@@@@@@@@@@@@@@@@@@@@@@\n" ;
         catPath.prepend(cat);
         titlePath.prepend(item->text(0));
         item = item->parent();
     }
-    qDebug() << "\n===========\n" << __LINE__ << __FUNCTION__ << m_importPathView.data()->selectionModel()->selectedIndexes();
+//    qDebug() << "\n===========\n" << __LINE__ << __FUNCTION__ << m_importPathView.data()->selectionModel()->selectedIndexes();
+    const QString prefixJoin = tr("Data will import as subsections of the following category:\n%1").isRightToLeft()
+            ? QChar(0x200F) // RLM
+            : QChar(0x200E); // LRM
     if (QMessageBox::Cancel == QMessageBox::information(
                 qApp->activeWindow(), tr("Import"),
                 tr("Data will import as subsections of the following category:\n%1")
-                .arg(titlePath.join(tr(" > \n\t"))), // FIXME: Add LRM
+                .arg(titlePath.join(prefixJoin + tr(" > \n\t"))),
                 QMessageBox::Ok, QMessageBox::Cancel)) {
         return;
     }
@@ -459,4 +462,28 @@ void ImporterManager::importHere()
     m_importData.clear();
 
     emit importDialogDone();
+}
+
+void ImporterManager::addPoetBio()
+{
+    if (!m_importPathView) {
+        return;
+    }
+
+    QDialog getBio(qApp->activeWindow());
+    QVBoxLayout layout;
+    QPushButton ok(tr("Ok"), &getBio);
+    QTextEdit doc(&getBio);
+
+    layout.addWidget(&doc);
+    layout.addWidget(&ok);
+    getBio.setLayout(&layout);
+    getBio.setMinimumSize(200, 150);
+    getBio.adjustSize();
+
+    connect(&ok, SIGNAL(clicked(bool)), &getBio, SLOT(accept()));
+
+    if (getBio.exec() == QDialog::Accepted) {
+        m_importData.description = doc.toPlainText();
+    }
 }

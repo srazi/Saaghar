@@ -29,6 +29,7 @@
 
 class QLabel;
 class QTreeWidget;
+class QPushButton;
 
 class ImporterManager : public QObject
 {
@@ -60,9 +61,12 @@ private slots:
     void importPathChanged();
     void clearImportPath();
     void importHere();
+    void addPoetBio();
 
 signals:
     void importDialogDone();
+    void setBioVisible(bool yes);
+
 private:
     Q_DISABLE_COPY(ImporterManager)
     ImporterManager();
@@ -72,7 +76,12 @@ private:
 
     bool m_forceCreateNew;
     QList<int> m_importPath;
-    QPointer<QLabel> m_importPathLabel;
+    QPushButton* m_addPoetBio;
+    QPushButton* m_selectCat;
+    QPushButton* m_clearButton;
+    QPushButton* m_importNow;
+    QLabel* m_importPathLabel;
+
     QPointer<QTreeWidget> m_importPathView;
     CatContents m_importData;
 };

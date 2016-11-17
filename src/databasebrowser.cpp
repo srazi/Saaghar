@@ -1737,7 +1737,7 @@ QSqlDatabase DatabaseBrowser::databaseForThread(QThread* thread, const QString &
     return database(getIdForDataBase(databaseFileFromID(baseConnectionID), thread));
 }
 
-int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath, const QString &connectionID)
+int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath, const QString &description, const QString &connectionID)
 {
     int newPoetID = -1;
     int newCatID = -1;
@@ -1765,8 +1765,8 @@ int DatabaseBrowser::createCatPathOnNeed(QList<GanjoorCat> &catPath, const QStri
                 ++newCatID;
                 ++newPoetID;
 
-                QString strQuery = QString("INSERT INTO poet (id, name, cat_id) VALUES (%1, \"%2\", %3);")
-                                   .arg(cat._PoetID).arg(cat._Text).arg(cat._ID);
+                QString strQuery = QString("INSERT INTO poet (id, name, cat_id, description) VALUES (%1, \"%2\", %3, \"%4\");")
+                                   .arg(cat._PoetID).arg(cat._Text).arg(cat._ID).arg(description);
                 QSqlQuery q(database(connectionID));
                 q.exec(strQuery);
 
@@ -1824,7 +1824,7 @@ void DatabaseBrowser::storeAsDataset(const CatContents &importData, const QList<
 
     QList<GanjoorCat> initCatPath = catPath;
     debugCatPath(initCatPath, "1-BEFORE");
-    int newCatID = createCatPathOnNeed(initCatPath);
+    int newCatID = createCatPathOnNeed(initCatPath, importData.description, toConnectionID);
     debugCatPath(initCatPath, "22-AFTER");
 
 //    struct CatContents {

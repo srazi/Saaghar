@@ -183,13 +183,14 @@ struct GanjoorCat {
 // So we just track poem's verses. The poems with catId == -1 are
 //  considered as poems of root category.
 struct CatContents {
+    QString description;
     QMap<int, GanjoorCat> cats;
     QList<GanjoorPoem> poems;
     QMap<int, QList<GanjoorVerse> > verses;
 
     CatContents() {}
     bool isNull() const { return poems.isEmpty() || verses.isEmpty(); }
-    void clear() { cats.clear(); poems.clear(); verses.clear(); }
+    void clear() { description.clear(); cats.clear(); poems.clear(); verses.clear(); }
     QList<GanjoorCat> catParents(int catId) const {
         QList<GanjoorCat> catList;
         while (catId != -1) {
