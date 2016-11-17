@@ -76,7 +76,7 @@ class ProgressManagerPrivate : public ProgressManager
 {
     Q_OBJECT
 public:
-    ProgressManagerPrivate();
+    ProgressManagerPrivate(QWidget* parent = 0);
     ~ProgressManagerPrivate();
     void init();
     void cleanup();
@@ -146,6 +146,7 @@ private:
     bool m_progressViewPinned;
     bool m_hovered;
     int m_allTasksCount;
+    bool m_hasParent;
 };
 
 class ToggleButton : public QToolButton

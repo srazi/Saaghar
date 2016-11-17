@@ -362,16 +362,22 @@ static void drawArrow(QStyle::PrimitiveElement element, QPainter* painter, const
 
 static ProgressManagerPrivate* m_instance = 0;
 
-ProgressManagerPrivate::ProgressManagerPrivate()
+ProgressManagerPrivate::ProgressManagerPrivate(QWidget* parent)
     : m_applicationTask(0),
       m_currentStatusDetailsWidget(0),
       m_opacityEffect(new QGraphicsOpacityEffect(this)),
       m_progressViewPinned(true),
       m_hovered(false),
-      m_allTasksCount(0)
+      m_allTasksCount(0),
+      m_hasParent(false)
 {
     m_instance = this;
-    m_progressView = new ProgressView;
+
+    if (parent) {
+        m_hasParent = true;
+    }
+
+    m_progressView = new ProgressView(parent);
     m_progressView->setAttribute(Qt::WA_ShowWithoutActivating);
     // withDelay, so the statusBarWidget has the chance to get the enter event
     connect(m_progressView, SIGNAL(hoveredChanged(bool)), this, SLOT(updateVisibilityWithDelay()));
@@ -384,7 +390,10 @@ ProgressManagerPrivate::~ProgressManagerPrivate()
     qDeleteAll(m_taskList);
     m_taskList.clear();
 
-    delete m_statusBarWidget;
+    // if there is parent it is responsible for deleting m_progressView that is parent of m_statusBarWidget
+    if (!m_hasParent) {
+        delete m_statusBarWidget;
+    }
 
     cleanup();
     m_instance = 0;

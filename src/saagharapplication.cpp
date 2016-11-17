@@ -122,7 +122,7 @@ void SaagharApplication::setDefaultPath(SaagharApplication::PathType type, const
 ProgressManager* SaagharApplication::progressManager()
 {
     if (!m_progressManager) {
-        m_progressManager = new ProgressManagerPrivate;
+        m_progressManager = new ProgressManagerPrivate(m_mainWindow);
 
         m_progressManager->init();
         m_progressManager->progressView()->setReferenceWidget(m_mainWindow);
