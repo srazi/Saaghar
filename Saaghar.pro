@@ -124,7 +124,9 @@ win32-g++{
     DEFINES += D_MINGW_CC
 
     depFiles.files += $$[QT_INSTALL_BINS]/mingwm10.dll \
-        $$[QT_INSTALL_BINS]/libgcc_s_dw2-1.dll
+        $$[QT_INSTALL_BINS]/libgcc_s_dw2-1.dll \
+        $$[QT_INSTALL_BINS]/libstdc++-6.dll \
+        $$[QT_INSTALL_BINS]/libwinpthread-1.dll
 }
 
     INSTALLS += depFiles \
