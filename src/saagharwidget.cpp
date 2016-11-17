@@ -1455,11 +1455,6 @@ void SaagharWidget::resizeTable(QTableWidget* table)
 
                 ++it;
             }
-
-            // try to fix rare loop in resize event.
-            if (table->viewport()->height() <= (table->height() + 20)) {
-                table->setRowHeight(table->rowCount() - 1, table->rowHeight(table->rowCount() - 1) + 50);
-            }
         }
 
         //***************************//
