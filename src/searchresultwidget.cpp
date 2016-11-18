@@ -23,6 +23,7 @@
 #include "searchitemdelegate.h"
 #include "tools.h"
 #include "databasebrowser.h"
+#include "saagharapplication.h"
 
 #include <QSearchLineEdit>
 #include <QMessageBox>
@@ -645,6 +646,7 @@ void SearchResultWidget::createCustomContextMenu(const QPoint &/*pos*/)
                 }
             }
         }
+        sApp->progressManager()->cancelTasks("SEARCH");
     }
 }
 
