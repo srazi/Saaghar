@@ -378,6 +378,9 @@ ProgressManagerPrivate::ProgressManagerPrivate(QWidget* parent)
     }
 
     m_progressView = new ProgressView(parent);
+    if (parent) {
+        connect(parent, SIGNAL(destroyed(QObject*)), this, SLOT(deleteParentProgressView()));
+    }
     m_progressView->setAttribute(Qt::WA_ShowWithoutActivating);
     // withDelay, so the statusBarWidget has the chance to get the enter event
     connect(m_progressView, SIGNAL(hoveredChanged(bool)), this, SLOT(updateVisibilityWithDelay()));
@@ -724,6 +727,13 @@ void ProgressManagerPrivate::slotRemoveTask()
         if (progressPointer && progress && !progress->future().isFinished()) {
             m_progressView->addProgressWidget(progress);
         }
+    }
+}
+
+void ProgressManagerPrivate::deleteParentProgressView()
+{
+    if (m_progressView) {
+        m_progressView.data()->setParent(0, m_progressView.data()->windowFlags());
     }
 }
 

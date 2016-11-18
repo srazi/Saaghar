@@ -109,6 +109,8 @@ private slots:
     void updateStatusDetailsWidget();
 
     void slotRemoveTask();
+    void deleteParentProgressView();
+
 private:
     void readSettings();
     void initInternal();
