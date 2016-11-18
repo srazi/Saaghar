@@ -238,5 +238,6 @@ signals:
     void loadingStatusText(const QString &);
     void highlightedTextChanged(const QString &);
     void verseSelected(int);
+    void cancelProgress();
 };
 #endif // SAAGHARWINDOW_H

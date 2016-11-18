@@ -81,7 +81,8 @@ ConcurrentTask::ConcurrentTask(QObject* parent)
       m_displayFullNotification(sApp->displayFullNotification() && sApp->notificationPosition() != ProgressManager::Disabled),
       m_progressObject(0),
       m_futureProgress(0),
-      m_isQueued(false)
+      m_isQueued(false),
+      m_searchUiObject(parent)
 {
     // deleted by parent/child system of Qt
     setAutoDelete(false);
@@ -121,6 +122,7 @@ void ConcurrentTask::start(const QString &type, const QVariantHash &argumants, b
                            progressFlags);
 
         connect(m_futureProgress, SIGNAL(canceled()), this, SLOT(setCanceled()));
+        connect(m_searchUiObject, SIGNAL(cancelProgress()), m_futureProgress, SLOT(cancel()));
     }
 
     ConcurrentTaskManager::instance()->addConcurrentTask(this);

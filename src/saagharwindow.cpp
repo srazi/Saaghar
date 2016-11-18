@@ -394,7 +394,7 @@ void SaagharWindow::searchStart()
             //searchResultContents->setLayoutDirection(Qt::RightToLeft);
 
             phrase = Tools::cleanString(phrase);
-            SearchResultWidget* searchResultWidget = new SearchResultWidget(this, searchResultContents, phrase, currentSelectionPathTitle);
+            QPointer<SearchResultWidget> searchResultWidget = new SearchResultWidget(this, searchResultContents, phrase, currentSelectionPathTitle);
 
             SaagharWidget::lineEditSearchText->searchStart(&searchCanceled);
             SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Searching Data Base(subset= %1)...").arg(currentSelectionPathTitle));
@@ -403,8 +403,12 @@ void SaagharWindow::searchStart()
             bool success = false;
 
             for (int j = 0; j < vectorSize; ++j) {
-                ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget);
-                connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget, SLOT(onConcurrentResultReady(QString,QVariant)));
+                if (!searchResultWidget) {
+                    break;
+                }
+
+                ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget.data());
+                connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget.data(), SLOT(onConcurrentResultReady(QString,QVariant)));
                 connect(searchTask, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));
 
                 QStringList phrases = phraseVectorList.at(j);
@@ -432,28 +436,32 @@ void SaagharWindow::searchStart()
 //                SaagharWidget::lineEditSearchText->searchStop();
 //            }
 
-            if (!success) {
-                if (i == selectList.size() - 1) {
-                    SaagharWidget::lineEditSearchText->notFound();
-//                    connect(selectSearchRange, SIGNAL(itemCheckStateChanged(QListWidgetItem*)), SaagharWidget::lineEditSearchText, SLOT(resetNotFound()));
-//                    SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(selectSearchRange->getSelectedStringList().join("-")));
-                }
-                delete searchResultWidget;
-                searchResultWidget = 0;
+            if (searchResultWidget) {
+                if (!success) {
+                    if (i == selectList.size() - 1) {
+                        SaagharWidget::lineEditSearchText->notFound();
+    //                    connect(selectSearchRange, SIGNAL(itemCheckStateChanged(QListWidgetItem*)), SaagharWidget::lineEditSearchText, SLOT(resetNotFound()));
+    //                    SaagharWidget::lineEditSearchText->setSearchProgressText(tr("Current Scope: %1\nNo match found.").arg(selectSearchRange->getSelectedStringList().join("-")));
+                    }
+                    delete searchResultWidget.data();
 
-                if (searchCanceled) {
-                    break;    //search is canceled
+                    if (searchCanceled) {
+                        break;    //search is canceled
+                    }
+                    else {
+                        continue;
+                    }
                 }
-                else {
-                    continue;
-                }
+
+                connect(this, SIGNAL(maxItemPerPageChanged()), searchResultWidget.data(), SLOT(maxItemPerPageChange()));
+
+                //create connections for mouse signals
+                connect(searchResultWidget->searchTable, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(tableItemClick(QTableWidgetItem*)));
+                connect(searchResultWidget->searchTable, SIGNAL(itemPressed(QTableWidgetItem*)), this, SLOT(tableItemPress(QTableWidgetItem*)));
             }
-
-            connect(this, SIGNAL(maxItemPerPageChanged()), searchResultWidget, SLOT(maxItemPerPageChange()));
-
-            //create connections for mouse signals
-            connect(searchResultWidget->searchTable, SIGNAL(itemClicked(QTableWidgetItem*)), this, SLOT(tableItemClick(QTableWidgetItem*)));
-            connect(searchResultWidget->searchTable, SIGNAL(itemPressed(QTableWidgetItem*)), this, SLOT(tableItemPress(QTableWidgetItem*)));
+            else {
+                continue;
+            }
 
             //we should create conection first and then break!
             if (searchCanceled) {
@@ -466,6 +474,9 @@ void SaagharWindow::searchStart()
 
     if (!searchCanceled) {
         ConcurrentTaskManager::instance()->startQueuedTasks();
+    }
+    else {
+        sApp->progressManager()->cancelTasks("SEARCH");
     }
 
     SaagharWidget::lineEditSearchText->searchStop();

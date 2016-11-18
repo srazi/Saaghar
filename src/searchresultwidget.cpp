@@ -632,6 +632,7 @@ void SearchResultWidget::createCustomContextMenu(const QPoint &/*pos*/)
     text.remove("&");
 
     if (text == tr("Close")) {
+        emit cancelProgress();
         searchResultWidget->deleteLater();
         deleteLater();
     }

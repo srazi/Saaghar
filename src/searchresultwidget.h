@@ -86,6 +86,7 @@ private slots:
 
 signals:
     void searchFiltered(const QString &);
+    void cancelProgress();
 };
 
 #endif // SEARCHRESULTWIDGET_H

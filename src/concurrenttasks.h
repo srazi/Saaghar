@@ -74,6 +74,8 @@ private:
     bool m_isQueued;
     bool m_shouldPrependTask;
 
+    QObject* m_searchUiObject;
+
 signals:
     void concurrentResultReady(const QString &type, const QVariant &results);
     void searchStatusChanged(const QString &);
