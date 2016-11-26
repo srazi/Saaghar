@@ -212,7 +212,14 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
         insertedToList.insert(key, audio_mp3);
     }
 
-    const QString poetName = poemToPoetCache.value(audio_post_ID.toInt(), sApp->databaseBrowser()->getPoetForPoem(audio_post_ID.toInt())._Name);
+    QString poetName = m_poemToPoetCache.value(audio_post_ID.toInt(), sApp->databaseBrowser()->getPoetForPoem(audio_post_ID.toInt())._Name);
+    m_poemToPoetCache.insert(audio_post_ID.toInt(), poetName);
+
+    bool forceDisabled = false;
+    if (poetName.isEmpty()) {
+        poetName = tr("Not Available");
+        forceDisabled = true;
+    }
 
     const QString title = m_groupType == GroupByPoet
                           ? tr("%1 (voice: %2)").arg(audio_title).arg(audio_artist)
@@ -227,10 +234,10 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
 //            << audio_artist_url;
 
     const QString parentTitle = m_groupType == GroupByPoet ? poetName : audio_artist;
-    QTreeWidgetItem* rootItem = findParentItem(isNew ? newRootItem : oldRootItem, parentTitle);
+    QTreeWidgetItem* rootItem = findParentItem(isNew && !forceDisabled ? newRootItem : oldRootItem, parentTitle);
 
     if (!rootItem) {
-        rootItem = new QTreeWidgetItem(isNew ? newRootItem : oldRootItem);
+        rootItem = new QTreeWidgetItem(isNew && !forceDisabled ? newRootItem : oldRootItem);
         rootItem->setText(0, parentTitle);
         rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
         rootItem->setCheckState(0, Qt::Unchecked);
@@ -241,7 +248,7 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
     item->setCheckState(0, Qt::Unchecked);
 
-    itemSetDisable(item, !isNew);
+    itemSetDisable(item, !isNew || forceDisabled);
 
     item->setData(0, AudioPostIDRole, audio_post_ID);
     item->setData(0, AudioOrderRole, audio_order);
@@ -550,7 +557,13 @@ void AudioRepoDownloader::lighRefreshTree()
             int audio_post_ID = item->data(0, AudioPostIDRole).toInt();
             const QString audioTitle = item->data(0, AudioTitleRole).toString();
             const QString audioArtist = item->data(0, AudioArtistRole).toString();
-            const QString poetName = poemToPoetCache.value(audio_post_ID, sApp->databaseBrowser()->getPoetForPoem(audio_post_ID)._Name);
+            QString poetName = m_poemToPoetCache.value(audio_post_ID, sApp->databaseBrowser()->getPoetForPoem(audio_post_ID)._Name);
+
+            bool forceDisabled = false;
+            if (poetName.isEmpty()) {
+                poetName = tr("Not Available");
+                forceDisabled = true;
+            }
 
             const QString title = m_groupType == GroupByPoet
                                   ? tr("%1 (voice: %2)").arg(audioTitle).arg(audioArtist)
@@ -559,12 +572,12 @@ void AudioRepoDownloader::lighRefreshTree()
             item->setToolTip(0, title);
 
             const QString parentTitle = m_groupType == GroupByPoet ? poetName : audioArtist;
-            QTreeWidgetItem* rootItem = !m_saagharAlbum->mediaItems.contains(audio_post_ID) ? newRootItem : oldRootItem;
+            QTreeWidgetItem* rootItem = !m_saagharAlbum->mediaItems.contains(audio_post_ID) && !forceDisabled ? newRootItem : oldRootItem;
 
             const QPair<QTreeWidgetItem*, QString> key = qMakePair(rootItem, parentTitle);
             rootItem = parentCache.value(key, 0);
             if (!rootItem) {
-                rootItem = new QTreeWidgetItem(!m_saagharAlbum->mediaItems.contains(audio_post_ID) ? newRootItem : oldRootItem);
+                rootItem = new QTreeWidgetItem(!m_saagharAlbum->mediaItems.contains(audio_post_ID) && !forceDisabled ? newRootItem : oldRootItem);
                 rootItem->setText(0, parentTitle);
                 rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
                 rootItem->setCheckState(0, Qt::Unchecked);
@@ -572,7 +585,7 @@ void AudioRepoDownloader::lighRefreshTree()
             }
 
             rootItem->addChild(item);
-            itemSetDisable(item, m_saagharAlbum->mediaItems.contains(audio_post_ID));
+            itemSetDisable(item, m_saagharAlbum->mediaItems.contains(audio_post_ID) || forceDisabled);
         }
     }
 }

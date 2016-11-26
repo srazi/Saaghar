@@ -100,7 +100,7 @@ private:
     void downloadCheckedItem(QTreeWidgetItem* rootItem);
 
     QHash<QString, QPair<QTreeWidgetItem*, QTreeWidgetItem*> > itemsCache;
-    QHash<int, QString> poemToPoetCache;
+    QHash<int, QString> m_poemToPoetCache;
 
     const static QStringList defaultRepositories;
     static QStringList repositoriesUrls;
