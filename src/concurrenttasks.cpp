@@ -95,7 +95,7 @@ ConcurrentTask::~ConcurrentTask()
 
 void ConcurrentTask::start(const QString &type, const QVariantHash &argumants, bool queued)
 {
-    if (type != "SEARCH" && type != "UPDATE") {
+    if (type != "SEARCH" && type != "UPDATE" && type != "DB_CLEANUP") {
         return;
     }
 
@@ -167,6 +167,9 @@ void ConcurrentTask::run()
     }
     else if (m_type == "UPDATE") {
         result = checkForUpdates();
+    }
+    else if (m_type == "DB_CLEANUP") {
+        result = cleanUpDatabase();
     }
 
     if (m_progressObject) {
@@ -442,6 +445,69 @@ QVariant ConcurrentTask::checkForUpdates()
     return QStringList() << QLatin1String("ERROR=FALSE")
            << checkByUser
            << QString("DATA=%1").arg(QString::fromUtf8(reply->readAll()));
+}
+
+QVariant ConcurrentTask::cleanUpDatabase()
+{
+    TASK_CANCELED;
+
+    static const QRegExp startSpaceRegExp("^ +");
+    const QString &theConnectionID = VAR_GET(m_options, connectionID).toString();
+    const QString &connectionID = sApp->databaseBrowser()->getIdForDataBase(sApp->databaseBrowser()->databaseFileFromID(theConnectionID), QThread::currentThread());
+
+    QSqlDatabase threadDatabase = sApp->databaseBrowser()->database(connectionID);
+    if (!threadDatabase.isOpen() || !threadDatabase.transaction()) {
+        qDebug() << QString("ConcurrentTask::cleanUpDatabase: A database for thread %1 could not be opened or transaction can not be began!").arg(QString::number((quintptr)QThread::currentThread()));
+        return QVariant();
+    }
+
+    const QString TATWEEL = "ـ";
+    QString strQuery = QString("UPDATE verse SET text=REPLACE(text, \'%1\', \'\') WHERE text LIKE \'%%1%\' AND LENGTH(REPLACE(REPLACE(text, \'%1\', \'\'), \' \', \'\')) > 1").arg(TATWEEL);
+    QSqlQuery q(threadDatabase);
+    QSqlQuery vq(threadDatabase);
+    q.exec(strQuery);
+
+    q.exec("SELECT id FROM poem");
+    QSqlRecord qrec;
+    QSqlRecord vqrec;
+    while (q.next()) {
+        qrec = q.record();
+        int poemID = qrec.value(0).toInt();
+        strQuery = QString("SELECT text FROM verse WHERE poem_id=%1").arg(poemID);
+
+        vq.exec(strQuery);
+        int minStartingSpace = -1;
+        while (vq.next()) {
+            vqrec = vq.record();
+            QString verse = vqrec.value(0).toString();
+            if (startSpaceRegExp.indexIn(verse) >= 0) {
+                const QString cap1 = startSpaceRegExp.cap(0);
+                int capSize = cap1.size();
+                if (capSize < minStartingSpace || minStartingSpace == -1) {
+                    minStartingSpace = capSize;
+                }
+
+                if (minStartingSpace == 0) {
+                    break;
+                }
+            }
+            else {
+                minStartingSpace = 0;
+                break;
+            }
+        }
+
+        if (minStartingSpace > 0) {
+           strQuery = QString("UPDATE verse SET text=SUBSTR(text, %1) WHERE poem_id=%2").arg(minStartingSpace + 1).arg(poemID);
+           vq.exec(strQuery);
+        }
+    }
+
+    if (isCanceled() || !threadDatabase.commit()) {
+        threadDatabase.rollback();
+    }
+
+    return QVariant();
 }
 
 bool ConcurrentTask::isCanceled()

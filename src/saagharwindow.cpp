@@ -1729,6 +1729,10 @@ void SaagharWindow::setupUi()
 
     actionInstance("actionPreface", ICON_FILE("show-preface"), tr("&Show Preface..."));
 
+#ifdef DEV_TOOLS
+    actionInstance("actionDevDatabaseCleanups", ICON_FILE("dev-cleanup-database"), tr("&Dev. Clean up Database"));
+#endif
+
     //Inserting main menu items
     ui->menuBar->addMenu(menuFile);
     ui->menuBar->addMenu(menuNavigation);
@@ -1849,6 +1853,10 @@ void SaagharWindow::setupUi()
 #endif
     menuTools->addSeparator();
     menuTools->addAction(actionInstance("actionSettings"));
+#ifdef DEV_TOOLS
+    menuTools->addSeparator();
+    menuTools->addAction(actionInstance("actionDevDatabaseCleanups"));
+#endif
 
     menuHelp->addAction(actionInstance("actionHelpContents"));
     menuHelp->addAction(actionInstance("actionPreface"));
@@ -3243,6 +3251,19 @@ void SaagharWindow::namedActionTriggered(bool checked)
     else if (actionName == "actionPreface") {
         showPreface(Tools::prefaceIDFromVersion(SAAGHAR_VERSION));
     }
+#ifdef DEV_TOOLS
+    else if (actionName == "actionDevDatabaseCleanups") {
+        ConcurrentTask* cleanUpTask = new ConcurrentTask(this);
+        QVariantHash arguments;
+        const QString taskTitle = tr("Clean Up Database");
+        const QString connectionID = DatabaseBrowser::defaultConnectionId();
+
+        VAR_ADD(arguments, connectionID);
+        VAR_ADD(arguments, taskTitle);
+
+        cleanUpTask->start("DB_CLEANUP", arguments);
+    }
+#endif
 
     connect(action, SIGNAL(triggered(bool)), this, SLOT(namedActionTriggered(bool)));
 }

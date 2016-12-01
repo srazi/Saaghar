@@ -60,6 +60,7 @@ private:
     bool isCanceled();
     QVariant startSearch(const QVariantHash &options);
     QVariant checkForUpdates();
+    QVariant cleanUpDatabase();
 
     QMutex m_mutex;
     QString m_type;
