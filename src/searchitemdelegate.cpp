@@ -377,6 +377,9 @@ void SaagharItemDelegate::updateAdditionalFormats() const
             fr.start = pos;
             fr.length = maybeOthers.matchedLength();
 
+            if (fr.length == 0) {
+                break;
+            }
             pos += fr.length;
 
             fr.format.setFontPointSize(pointSize);
@@ -469,6 +472,10 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
         int index = maybeOthers.indexIn(text);
         while (index >= 0) {
             int length = maybeOthers.matchedLength();
+            if (length == 0) {
+                break;
+            }
+
             setFormat(index, length, paragraphHighightFormat);
             index = maybeOthers.indexIn(text, index + length);
         }
