@@ -702,10 +702,12 @@ void SaagharWidget::showCategory(GanjoorCat category)
 
     emit loadingStatusText(tr("<i><b>Loading the \"%1\"...</b></i>").arg(currentCaption), (poems.size() + subcatsSize) / (step + 1));
 
+    const QString RLM = QChar(0x200F);
     for (int i = 0; i < subcatsSize; ++i) {
         QString catText = Tools::simpleCleanString(subcats.at(i)->_Text);
 
-        if (catText.isRightToLeft()) {
+        // default empty or strings containing just weak direction characters to RTL
+        if (QString("%1%2").arg(catText).arg(RLM).isRightToLeft()) {
             ++betterRightToLeft;
         }
         else {
@@ -751,7 +753,8 @@ void SaagharWidget::showCategory(GanjoorCat category)
         }
         itemText += " : " + Tools::simpleCleanString(sApp->databaseBrowser()->getFirstMesra(poems.at(i)->_ID, m_connectionID));
 
-        if (itemText.isRightToLeft()) {
+        // default empty or strings containing just weak direction characters to RTL
+        if (QString("%1%2").arg(itemText).arg(RLM).isRightToLeft()) {
             ++betterRightToLeft;
         }
         else {
@@ -1020,6 +1023,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
     m_hasPoem = false;
     int betterRightToLeft = 0, betterLeftToRight = 0;
+    const QString RLM = QChar(0x200F);
     //very Big For loop
     for (int i = 0; i < numberOfVerses; i++) {
         QString currentVerseText = verses.at(i)->_Text;
@@ -1069,7 +1073,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
             }
         }
 
-        if (currentVerseText.isRightToLeft()) {
+        // default empty or strings containing just weak direction characters to RTL
+        if (QString("%1%2").arg(currentVerseText).arg(RLM).isRightToLeft()) {
             ++betterRightToLeft;
         }
         else {
@@ -1133,7 +1138,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 if (SaagharWidget::showBeytNumbers && m_hasPoem) {
                     int itemNumber = isBand ? BandNum : BeytNum;
                     QString localizedNumber = SaagharWidget::persianIranLocal.toString(itemNumber);
-                    numItem->setText(currentVerseText.isRightToLeft() ? localizedNumber : QString::number(itemNumber));
+                    // default empty or strings containing just weak direction characters to RTL
+                    numItem->setText(QString("%1%2").arg(currentVerseText).arg(RLM).isRightToLeft() ? localizedNumber : QString::number(itemNumber));
                     numItem->setFont(resolvedFont(LS("SaagharWidget/Fonts/Numbers")));
                     numItem->setForeground(resolvedColor(LS("SaagharWidget/Colors/Numbers")));
                     if (isBand) {
