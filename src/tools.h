@@ -29,6 +29,8 @@
 #define VAR_ADD(x, y) x.insert(#y, QVariant::fromValue(y))
 #define VAR_GET(x, y) x.value(#y)
 
+//#define DEV_TOOLS 1
+
 #include <QFontMetrics>
 #include <QStringList>
 

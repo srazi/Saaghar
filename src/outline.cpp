@@ -56,6 +56,13 @@
 #include "outlinemodel.h"
 #include "saagharapplication.h"
 
+#ifdef DEV_TOOLS
+#include <QFileDialog>
+#include <QTextEdit>
+
+#include "databasebrowser.h"
+#endif
+
 OutlineTree::OutlineTree(QWidget* parent)
     : QWidget(parent)
 {
@@ -221,6 +228,12 @@ void OutlineTree::createCustomContextMenu(const QPoint &pos)
         }
     }
 
+#ifdef DEV_TOOLS
+    contextMenu->addSeparator();
+    contextMenu->addAction(tr("Create Empty Audio List"));
+    contextMenu->addAction(tr("Create Audio List From File"));
+#endif
+
     QAction* action = contextMenu->exec(QCursor::pos());
     if (!action) {
         return;
@@ -244,6 +257,15 @@ void OutlineTree::createCustomContextMenu(const QPoint &pos)
     else if (text == tr("Random")) {
         emit openRandomRequested(itemID, false);
     }
+#ifdef DEV_TOOLS
+    else if (text == tr("Create Audio List From File")) {
+        createAudioList(itemID, true);
+    }
+    else if (text == tr("Create Empty Audio List")) {
+        createAudioList(itemID, false);
+    }
+#endif
+
 }
 
 void OutlineTree::pressed()
@@ -273,4 +295,89 @@ void OutlineTree::setConnectionID(const QString &connectionID)
         m_connectionID = connectionID;
         m_outlineView->setModel(sApp->outlineModel(m_connectionID));
     }
+}
+
+void OutlineTree::createAudioList(int catID, bool askInputMediaList)
+{
+#ifdef DEV_TOOLS
+    QString theConnectionID = m_connectionID;
+    if (theConnectionID.isEmpty()) {
+        theConnectionID = DatabaseBrowser::defaultConnectionId();
+    }
+
+    QStringList lowMediaLinks;
+    QStringList hqMediaLinks;
+
+    if (askInputMediaList) {
+        QString fileName = QFileDialog::getOpenFileName(0, tr("Select File Containing media links..."), QDir::homePath(), tr("Text File (*.txt);;All (*.*)"));
+
+        QFile file(fileName);
+
+        if (!file.open(QFile::ReadOnly)) {
+            return;
+        }
+
+        QStringList lines = QString::fromUtf8(file.readAll()).replace("\r", "\n").split("\n", QString::SkipEmptyParts);
+
+        foreach (QString line, lines) {
+            line = line.trimmed();
+            if (line.isEmpty()) {
+                continue;
+            }
+            QStringList tokens = line.split("=", QString::SkipEmptyParts);
+            if (tokens.size() == 2) {
+                if (tokens.at(0) != "mp3") {
+                    lowMediaLinks << tokens.at(1);
+                }
+                else {
+                    hqMediaLinks << tokens.at(1);
+                }
+            }
+            else if (tokens.size() == 1) {
+                lowMediaLinks << tokens.at(0);
+            }
+        }
+    }
+
+    QStringList audioList;
+    const QString poemAudio = QString("<PoemAudio>\n"
+                                      "    <audio_post_ID>%1</audio_post_ID>\n"
+                                      "    <audio_order>%2</audio_order>\n"
+                                      "    <audio_xml>%3</audio_xml>\n"
+                                      "    <audio_ogg>%4</audio_ogg>\n"
+                                      "    <audio_mp3_hq>%5</audio_mp3_hq>\n"
+                                      "    <audio_mp3>%6</audio_mp3>\n"
+                                      "    <audio_title>%7</audio_title>\n"
+                                      "    <audio_artist>%8</audio_artist>\n"
+                                      "    <audio_artist_url>%9</audio_artist_url>\n"
+                                      "</PoemAudio>");
+    QList<GanjoorPoem*> poems = sApp->databaseBrowser()->getPoems(catID, theConnectionID);
+
+    for(int i = 0; i < poems.size(); ++i) {
+        GanjoorPoem* poem = poems.at(i);
+        QString hqLink;
+        QString lowLink;
+        if (hqMediaLinks.size() > i) {
+            hqLink = hqMediaLinks.at(i);
+        }
+
+        if (lowMediaLinks.size() > i) {
+            lowLink = lowMediaLinks.at(i);
+        }
+
+        audioList << poemAudio.arg(poem->_ID)
+                     .arg(1)
+                     .arg(QString())
+                     .arg(QString())
+                     .arg(hqLink)
+                     .arg(lowLink)
+                     .arg(poem->_Title)
+                     .arg(QString())
+                     .arg(QString());
+    }
+
+    QTextEdit *doc = new QTextEdit(0);
+    doc->setPlainText(audioList.join("\n"));
+    doc->show();
+#endif
 }

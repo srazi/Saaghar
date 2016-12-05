@@ -461,10 +461,17 @@ QVariant ConcurrentTask::cleanUpDatabase()
         return QVariant();
     }
 
-    const QString TATWEEL = "ـ";
-    QString strQuery = QString("UPDATE verse SET text=REPLACE(text, \'%1\', \'\') WHERE text LIKE \'%%1%\' AND LENGTH(REPLACE(REPLACE(text, \'%1\', \'\'), \' \', \'\')) > 1").arg(TATWEEL);
     QSqlQuery q(threadDatabase);
     QSqlQuery vq(threadDatabase);
+
+    const QString TATWEEL = "ـ";
+    QString strQuery = QString("UPDATE verse SET text=REPLACE(text, \'%1\', \'\') WHERE text LIKE \'%%1%\' AND LENGTH(REPLACE(REPLACE(text, \'%1\', \'\'), \' \', \'\')) > 1").arg(TATWEEL);
+    q.exec(strQuery);
+    strQuery = QString("UPDATE poem SET title=REPLACE(title, \'%1\', \'\') WHERE title LIKE \'%%1%\' AND LENGTH(REPLACE(REPLACE(title, \'%1\', \'\'), \' \', \'\')) > 1").arg(TATWEEL);
+    q.exec(strQuery);
+    strQuery = QString("UPDATE cat SET text=REPLACE(text, \'%1\', \'\') WHERE text LIKE \'%%1%\' AND LENGTH(REPLACE(REPLACE(text, \'%1\', \'\'), \' \', \'\')) > 1").arg(TATWEEL);
+    q.exec(strQuery);
+    strQuery = QString("UPDATE poet SET name=REPLACE(name, \'%1\', \'\') WHERE name LIKE \'%%1%\' AND LENGTH(REPLACE(REPLACE(name, \'%1\', \'\'), \' \', \'\')) > 1").arg(TATWEEL);
     q.exec(strQuery);
 
     q.exec("SELECT id FROM poem");

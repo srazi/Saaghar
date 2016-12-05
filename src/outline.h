@@ -70,6 +70,8 @@ private slots:
     void createCustomContextMenu(const QPoint &pos);
 
 private:
+    void createAudioList(int catID, bool askInputMediaList);
+
     QTreeView* m_outlineView;
     Qt::MouseButtons pressedMouseButton;
 
