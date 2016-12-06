@@ -883,7 +883,7 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         tabGridLayout->setContentsMargins(0, 0, 0, 0);
 
         tabContent->setObjectName(QString::fromUtf8("SaagharViewerTab"));
-        QTableWidget* tabTableWidget = new QTableWidget;
+        QTableWidget* tabTableWidget = new TableWidget;
 
         //table defaults
         tabTableWidget->setObjectName(QString::fromUtf8("mainTableWidget"));
@@ -3702,4 +3702,15 @@ void SaagharWindow::checkRegistration(bool forceShow)
         actionInstance("Registeration")->setData(QVariant::fromValue(mainTabWidget->currentWidget()));
     }
 #endif
+}
+
+TableWidget::TableWidget(QWidget* parent)
+    : QTableWidget(parent)
+{
+}
+
+void TableWidget::wheelEvent(QWheelEvent* event)
+{
+    event->accept();
+    verticalScrollBar()->setValue(verticalScrollBar()->value() - event->delta());
 }

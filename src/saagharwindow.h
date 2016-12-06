@@ -30,6 +30,8 @@
 #include <QToolButton>
 #include <QUndoGroup>
 #include <QComboBox>
+
+
 class QPrinter;
 
 class QMultiSelectWidget;
@@ -239,5 +241,16 @@ signals:
     void highlightedTextChanged(const QString &);
     void verseSelected(int);
     void cancelProgress();
+};
+
+class TableWidget : public QTableWidget
+{
+    Q_OBJECT
+
+public:
+    explicit TableWidget(QWidget* parent = 0);
+
+protected:
+    void wheelEvent(QWheelEvent* event);
 };
 #endif // SAAGHARWINDOW_H
