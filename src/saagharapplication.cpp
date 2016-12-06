@@ -94,8 +94,8 @@ SaagharApplication::SaagharApplication(int &argc, char** argv)
 
 SaagharApplication::~SaagharApplication()
 {
-    delete m_mainWindow;
     delete m_progressManager;
+    delete m_mainWindow;
     delete m_databaseBrowser;
     delete m_splash;
 }
