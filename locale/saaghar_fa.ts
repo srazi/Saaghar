@@ -20,173 +20,197 @@
         <translation>ویرایش: %1 &lt;br /&gt;</translation>
     </message>
     <message>
+        <source>Telegram Channel (Persian): </source>
+        <translation type="vanished">کانال تلگرام:</translation>
+    </message>
+    <message>
         <location filename="../src/aboutdialog.cpp" line="94"/>
+        <source>Telegram Channel: </source>
+        <translation>کانال تلگرام: ‎</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp" line="95"/>
+        <source>Telegram Bot: </source>
+        <translation>ربات تلگرام: ‎</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp" line="97"/>
         <source>Site (English): </source>
         <translation>تارنما (انگلیسی):  </translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="95"/>
+        <location filename="../src/aboutdialog.cpp" line="98"/>
         <source>Site (Persian): </source>
         <translation>تارنما (پارسی):  </translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="96"/>
+        <location filename="../src/aboutdialog.cpp" line="99"/>
         <source>Mailing List: </source>
         <translation>خبرنامه ایمیلی:  </translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="96"/>
+        <location filename="../src/aboutdialog.cpp" line="99"/>
         <source>Saaghar Google Group</source>
         <translation>گروه گوگلی ساغر</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="97"/>
+        <location filename="../src/aboutdialog.cpp" line="100"/>
         <source>Facebook Page: </source>
         <translation>صفحه فیسبوک:  </translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="100"/>
+        <location filename="../src/aboutdialog.cpp" line="103"/>
         <source>Nasser Alavizadeh</source>
         <translation>ناصر علوی‌زاده</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="100"/>
+        <location filename="../src/aboutdialog.cpp" line="103"/>
         <source>(Logo Idea/Design)</source>
         <translation>(ایده/طراحی نماد)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="101"/>
+        <location filename="../src/aboutdialog.cpp" line="104"/>
         <source>Hamid Reza Mohammadi</source>
         <translation>حمیدرضا محمدی</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="101"/>
+        <location filename="../src/aboutdialog.cpp" line="104"/>
         <source>(Ganjoor Founder)</source>
         <translation>(پدیدآورنده گنجور)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="103"/>
+        <location filename="../src/aboutdialog.cpp" line="106"/>
         <source>Hedayat Vatankhah</source>
         <translation>هدایت وطن‌خواه</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="103"/>
+        <location filename="../src/aboutdialog.cpp" line="106"/>
         <source>(Fedora/MeeGo Package)</source>
         <translation>(بسته فدورا/میگو)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="104"/>
+        <location filename="../src/aboutdialog.cpp" line="107"/>
         <source>Forud A</source>
         <translation>فرود</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="104"/>
+        <location filename="../src/aboutdialog.cpp" line="107"/>
         <source>(Arch Package)</source>
         <translation>(بسته آرچ)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="105"/>
+        <location filename="../src/aboutdialog.cpp" line="108"/>
         <source>Javad Kouhi</source>
         <translation>جواد کوهی</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="105"/>
+        <location filename="../src/aboutdialog.cpp" line="108"/>
         <source>(BSD Port)</source>
         <translation>(پورت BSD)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="106"/>
+        <location filename="../src/aboutdialog.cpp" line="109"/>
         <source>Novid</source>
         <translation>نوید</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="106"/>
-        <location filename="../src/aboutdialog.cpp" line="107"/>
+        <location filename="../src/aboutdialog.cpp" line="109"/>
+        <location filename="../src/aboutdialog.cpp" line="110"/>
         <source>(Ubuntu Package)</source>
         <translation>(بسته اوبونتو)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="107"/>
+        <location filename="../src/aboutdialog.cpp" line="110"/>
         <source>Danial Behzadi</source>
         <translation>دانیال بهزادی</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="109"/>
+        <location filename="../src/aboutdialog.cpp" line="112"/>
         <source>Siyvash Kiani</source>
         <translation>سیاوش کیانی</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="109"/>
+        <location filename="../src/aboutdialog.cpp" line="112"/>
         <source>(Expert Assistance in Literature)</source>
         <translation>(همکاری در تخصص ادبیات)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="110"/>
+        <location filename="../src/aboutdialog.cpp" line="113"/>
         <source>Sahand Soltandoost</source>
         <translation>سهند سلطان‌دوست</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="110"/>
+        <location filename="../src/aboutdialog.cpp" line="113"/>
         <source>(Light-Gray Iconset)</source>
         <translation>(مجموعه نماد Light-Gray)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="111"/>
+        <location filename="../src/aboutdialog.cpp" line="114"/>
         <source>Open Iconic Project</source>
         <translation>پروژه Open Iconic</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="111"/>
+        <location filename="../src/aboutdialog.cpp" line="114"/>
         <source>(Iconic-Cyan Iconset, &lt;i&gt;modified version&lt;/i&gt;)</source>
         <translation>(مجموعه نماد Iconic-Cyan, &lt;i&gt;نسخه ویرایش‌شده&lt;/i&gt;)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="112"/>
+        <location filename="../src/aboutdialog.cpp" line="115"/>
         <source>Qt Creator Team</source>
         <translation>تیم Qt Creator</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="112"/>
+        <location filename="../src/aboutdialog.cpp" line="115"/>
         <source>(Code of Tasks Notification)</source>
         <translation>(کد اعلان وظیفه‌ها)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="113"/>
+        <location filename="../src/aboutdialog.cpp" line="116"/>
+        <source>QIron Developer</source>
+        <translation>توسعه‌دهنده QIron</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp" line="116"/>
+        <source>(Code of BreadCrumbBar)</source>
+        <translation>(کد BreadCrumbBar)</translation>
+    </message>
+    <message>
+        <location filename="../src/aboutdialog.cpp" line="117"/>
         <source>All Ganjoor Project Contributors</source>
         <translation>تمامی همکاری‌کننده‌ها در پروژه گنجور</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="113"/>
+        <location filename="../src/aboutdialog.cpp" line="117"/>
         <source>(Persian-Datasets/Audio)</source>
         <translation>(پایگاه‌داده پارسی-خوانش‌ها)</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="116"/>
+        <location filename="../src/aboutdialog.cpp" line="120"/>
         <source>&lt;br /&gt;&lt;br /&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.</source>
         <translation>&lt;br /&gt;&lt;p dir=&quot;rtl&quot;&gt;ساغر برنامه‌ای رایگان و آزاد است و با امید به اینکه مفید و قابل استفاده باشد، منتشر شده است، اما بدون هیچ ضمانتی؛ حتی بدون ضمانت تجاری یا سازگاری برای هدف خاصی.&lt;/p&gt;&lt;p dir=&quot;ltr&quot;&gt;This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.&lt;/p&gt;</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="120"/>
+        <location filename="../src/aboutdialog.cpp" line="124"/>
         <source>&lt;h3&gt;Saaghar %1&lt;/h3&gt;%2Build Time: %3&lt;br /&gt;&lt;br /&gt;%4 is a Persian poem viewer software written using Qt (C++). It uses %5 database for Persian poems.&lt;br /&gt;&lt;br /&gt;%6&lt;h4&gt;Related Pages:&lt;/h4&gt;%7&lt;h4&gt;Special Thanks to:&lt;/h4&gt;%8%9</source>
         <translation>&lt;h3&gt;ساغر %1&lt;/h3&gt;%2تاریخ ساخت: %3&lt;br /&gt;&lt;br /&gt;%4 نرم‌افزار نمایش شعر پارسی است که با استفاده از Qt (C++)‎ نوشته شده است. برای متن‌ها و شعرهای پارسی از پایگاه‌داده %5 استفاده می‌کند.&lt;br /&gt;&lt;br /&gt;%6&lt;h4&gt;صفحه‌های مرتبط:&lt;/h4&gt;%7&lt;h4&gt;تشکر ویژه از:&lt;/h4&gt;%8%9</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="127"/>
+        <location filename="../src/aboutdialog.cpp" line="131"/>
         <source>Saaghar</source>
         <translation>ساغر</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="128"/>
+        <location filename="../src/aboutdialog.cpp" line="132"/>
         <source>Ganjoor</source>
         <translation>گنجور</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="129"/>
+        <location filename="../src/aboutdialog.cpp" line="133"/>
         <source>Copyright 2010-2016 %1. All right reserved.</source>
         <translation>حق مولف ۲۰۱۰-۲۰۱۶ (۱۳۸۹-۱۳۹۵) %1. تمام حقوق محفوظ است.</translation>
     </message>
     <message>
-        <location filename="../src/aboutdialog.cpp" line="129"/>
+        <location filename="../src/aboutdialog.cpp" line="133"/>
         <source>Razi Alavizadeh</source>
         <translation>رضی علوی‌زاده</translation>
     </message>
@@ -1884,7 +1908,7 @@ Error: %2</source>
 <context>
     <name>SaagharWidget</name>
     <message>
-        <location filename="../src/saagharwidget.cpp" line="1598"/>
+        <location filename="../src/saagharwidget.cpp" line="1600"/>
         <source>Home</source>
         <translation>خانه</translation>
     </message>

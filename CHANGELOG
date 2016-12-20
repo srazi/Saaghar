@@ -1,22 +1,47 @@
-== 1.0.94-->2.5.99 ==
+== 2.5.0-->3.0.0 ==
 - Not released
 New Features:
 --------------------------
 Add multi-threaded search.
-Add Qt5 support to QMusicPlayer using phonon4qt5 and also QtMultiMedia.
-Internal: Add ConcurrentTask to run jobs asynchronously.
-Internal: Add a patched version of ProgressManager. (code taken from QtCreator's code).
+Add task notification.
+New search option dialog with new selection-manager and ability to select categories as search range.
+Add ability to download audio and synced lyrics from internet.
+Add ability to import multiple categories and poems at once.
+Add a modern vista like BreadCrumb navigation bar with quick-access menu and new selection-manager.
+Open local database using drag-n-drop.
+dev-only: Add some dev. tools. You have to compile using DEV_TOOLS define.
 
 Improved Features:
 --------------------------
+A new design for "About Saaghar" dialog.
+Add Qt5 support to QMusicPlayer using phonon4qt5 and also QtMultiMedia.
+Use a 100x faster SQL query that excludes JOIN for search individual poets.
 Use vertical title-bar for bottom and top search docks.
 Check for update use another thread than GUI thread.
-Internal: Switched to a new settings manager.
+Animated scroll to item.
+Add context menu to close all search result dock-windows.
+Limit number of opened search widgets to 200.
+Don't toggle search-toolbar on Ctrl+F.
+Set application layout direction even if qt_*.qm is not loaded. (also it is a workaround for Qt5 not setting layout direction)
+Improved size computation of tabbar, and bigger active tab.
+Add small margin to start of paragraphs.
+Remove poem's number empty space for text books.
+Fallback to default theme if icon is not provided by current theme.
+Use Latin  numerals for non-Persian poems.
+Use MVC for outline.
 
 Fixed Bugs:
 --------------------------
+Fix critical issue on skipping poems of categories with one sub-category.
+Correctly load database if it is not.
+Improved computation of paragraph height, and fix a rare loop in resize event.
+Fix print and print preview.
+A workaround to correctly sync text and audio for mono-audio synced by Ganjoor Desktop.
 Windows XP: Fixed black background.
 Fixed libpng warning: iCCP: known incorrect sRGB profile.
+Don't use Kashida for IranNastaliq
+Add OneSecondBugFix to sync xml data. (element after Ganjoor Desktop 2.78)
+Fixed detecting layout direction of viewer.
 
 
 == 1.0.94-->2.5.0 ==

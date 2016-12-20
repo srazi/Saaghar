@@ -91,6 +91,9 @@ AboutDialog::AboutDialog(QWidget* parent)
 
     const QString listItem = QString("<li>%1</li>");
     QString relatedPages;
+    relatedPages += listItem.arg(tr("Telegram Channel: ") + "<a style=\"color: #07F; text-decoration:none;\" href=\"https://telegram.me/Saaghar\">@Saaghar</a>");
+    relatedPages += listItem.arg(tr("Telegram Bot: ") + "<a style=\"color: #07F; text-decoration:none;\" href=\"https://telegram.me/SaagharBot\">@SaagharBot</a>");
+
     relatedPages += listItem.arg(tr("Site (English): ") + "<a style=\"color: #07F; text-decoration:none;\" href=\"http://en.saaghar.pozh.org/\">en.saaghar.pozh.org</a>");
     relatedPages += listItem.arg(tr("Site (Persian): ") + "<a style=\"color: #07F; text-decoration:none;\" href=\"http://saaghar.pozh.org/\">saaghar.pozh.org</a>");
     relatedPages += listItem.arg(tr("Mailing List: ") + "<a style=\"color: #07F; text-decoration:none;\" href=\"http://groups.google.com/group/saaghar/\">" + tr("Saaghar Google Group") + "</a>");
@@ -110,6 +113,7 @@ AboutDialog::AboutDialog(QWidget* parent)
     speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://homayounshajarian.blogfa.com/\">" + tr("Sahand Soltandoost") + "</a> " + tr("(Light-Gray Iconset)"));
     speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://www.useiconic.com/open/\">" + tr("Open Iconic Project") + "</a> " + tr("(Iconic-Cyan Iconset, <i>modified version</i>)"));
     speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"https://www.qt.io/ide/\">" + tr("Qt Creator Team") + "</a> " + tr("(Code of Tasks Notification)"));
+    speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"https://sourceforge.net/projects/qiron/files/\">" + tr("QIron Developer") + "</a> " + tr("(Code of BreadCrumbBar)"));
     speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"https://ganjoor.net/\">" + tr("All Ganjoor Project Contributors") + "</a> " + tr("(Persian-Datasets/Audio)"));
 
 
