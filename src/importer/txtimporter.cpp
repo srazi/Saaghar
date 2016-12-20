@@ -288,7 +288,7 @@ void TxtImporter::import(const QString &data)
 //        if (!maybePoem && !maybeParagraph && !(m_options.contentTypes & Options::Poem) && ((line.startsWith(QChar(' ')) && line.size() <= 70) || line.trimmed().size() < 50)) {
 //            maybeSingle = true;
 //        }
-        if (!(m_options.contentTypes &Options::Poem) && (line.startsWith(QLatin1String("  ")) && line.size() <= 70)) {
+        if (!(m_options.contentTypes & Options::Poem) && (line.startsWith(QLatin1String("  ")) && line.size() <= 70)) {
             maybeSingle = true;
 
             if (!verse._Text.isEmpty()) {
@@ -299,7 +299,7 @@ void TxtImporter::import(const QString &data)
             }
         }
 
-        if (maybeSingle || (line.size() <= 70 && m_options.contentTypes &Options::WhitePoem) || justWhitePoem) {
+        if (maybeSingle || (line.size() <= 70 && m_options.contentTypes & Options::WhitePoem) || justWhitePoem) {
             verse._Order = vorder;
             verse._Text = line;
             verse._Position = Single;
@@ -307,7 +307,7 @@ void TxtImporter::import(const QString &data)
             verses.append(verse);
             verse._Text.clear();
         }
-        else if ((line.size() <= 70 && m_options.contentTypes &Options::Poem) || justClassicalPoem) {
+        else if ((line.size() <= 70 && m_options.contentTypes & Options::Poem) || justClassicalPoem) {
             verse._Order = vorder;
             verse._Text = line.trimmed();
             verse._Position = VersePosition(vorder % 2);
@@ -320,12 +320,28 @@ void TxtImporter::import(const QString &data)
             verse._Text += prefix + line.trimmed();
             verse._Position = Paragraph;
             maybeParagraph = false;
+
+            // don't allow very big paragraphs.
+            if (verse._Text.size() > 3000) {
+                verse._Order = vorder;
+                verses.append(verse);
+                ++vorder;
+                verse._Text.clear();
+            }
         }
         else {
             QString prefix = verse._Text.isEmpty() ? "" : " ";
             verse._Text += prefix + line.trimmed();
             verse._Position = Paragraph;
             maybeParagraph = false;
+
+            // don't allow very big paragraphs.
+            if (verse._Text.size() > 3000) {
+                verse._Order = vorder;
+                verses.append(verse);
+                ++vorder;
+                verse._Text.clear();
+            }
         }
 
         maybeSingle = false;
