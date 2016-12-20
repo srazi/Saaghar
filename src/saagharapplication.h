@@ -92,6 +92,7 @@ public:
 
 private slots:
     void customizeQuickAccessBookmarks();
+    void aboutToShowMainWindow();
 
 private:
     void init();

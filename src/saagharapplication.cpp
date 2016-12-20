@@ -587,6 +587,13 @@ void SaagharApplication::customizeQuickAccessBookmarks()
     selectionManager->show();
 }
 
+void SaagharApplication::aboutToShowMainWindow()
+{
+    if (m_splash) {
+        m_splash->finish(m_mainWindow);
+    }
+}
+
 void SaagharApplication::init()
 {
     // loadSettings() setups paths and loads settings and then
@@ -610,7 +617,7 @@ void SaagharApplication::init()
     QPixmap mask(":/resources/images/saaghar-splash-mask.png");
     m_splash = new QExtendedSplashScreen(pixmap, Qt::WindowStaysOnTopHint);
     m_splash->setMessageOptions(QRect(QPoint(120, 520), QSize(310, qMin(m_splash->fontMetrics().height() + 2, 18))),
-                                Qt::AlignLeft | Qt::AlignVCenter, QColor(7, 12, 150));
+                                Qt::AlignLeft | Qt::AlignVCenter, QColor(0, 170, 255));
     m_splash->setProgressBar(mask, 0, 10, Qt::Vertical);
     Tools::setSplashScreen(m_splash);
 
@@ -618,6 +625,6 @@ void SaagharApplication::init()
     m_mainWindow->show();
 
     if (m_splash) {
-        m_splash->finish(m_mainWindow);
+        QTimer::singleShot(200, this, SLOT(aboutToShowMainWindow()));
     }
 }
