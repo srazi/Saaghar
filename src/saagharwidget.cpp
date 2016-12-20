@@ -1028,7 +1028,9 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     for (int i = 0; i < numberOfVerses; i++) {
         QString currentVerseText = verses.at(i)->_Text;
 
-        m_hasPoem = verses.at(i)->_Position != Paragraph;
+        if (verses.at(i)->_Position != Paragraph) {
+            m_hasPoem = true;
+        }
 
         if (verses.at(i)->_Position != Single && verses.at(i)->_Position != Paragraph) {
             currentVerseText = currentVerseText.simplified();
