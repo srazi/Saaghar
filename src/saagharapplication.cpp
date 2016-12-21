@@ -346,7 +346,7 @@ void SaagharApplication::setupInitialValues()
                                 ? LS("XB Sols") : LS("Droid Arabic Naskh (with DOT)");
 
     QFont appFont1(firstFamily, 18);
-    appFont1.setBold(true);
+    //appFont1.setBold(true);
     appFont1.setStyleStrategy(QFont::PreferAntialias);
 
     //The "Droid Arabic Naskh (with DOT)" is an application font
@@ -356,29 +356,30 @@ void SaagharApplication::setupInitialValues()
 #endif
 
     QFont appFont2(secondFamily, 8);
-    appFont2.setBold(true);
     appFont2.setStyleStrategy(QFont::PreferAntialias);
 
     VAR_INIT("SaagharWidget/Fonts/Default", appFont1);
     VAR_INIT("SaagharWidget/Fonts/PoemText", appFont1);
 
+    appFont2.setPointSize(16);
+    VAR_INIT("SaagharWidget/Fonts/ProseText", appFont2);
+    appFont2.setBold(true);
+    appFont2.setPointSize(8);
     VAR_INIT("SaagharWidget/Fonts/OutLine", appFont2);
     appFont2.setPointSize(12);
     VAR_INIT("SaagharWidget/Fonts/Numbers", appFont2);
-    appFont2.setPointSize(16);
-    VAR_INIT("SaagharWidget/Fonts/ProseText", appFont2);
     appFont2.setPointSize(18);
     VAR_INIT("SaagharWidget/Fonts/SectionName", appFont2);
     appFont2.setPointSize(22);
     VAR_INIT("SaagharWidget/Fonts/Titles", appFont2);
 
-    VAR_INIT("SaagharWidget/Colors/OutLine", QColor(22, 127, 175));
-    VAR_INIT("SaagharWidget/Colors/Default", QColor(47, 144, 45));
-    VAR_INIT("SaagharWidget/Colors/PoemText", QColor(57, 175, 175));
-    VAR_INIT("SaagharWidget/Colors/ProseText", QColor(2, 118, 190));
-    VAR_INIT("SaagharWidget/Colors/SectionName", QColor(48, 127, 105));
-    VAR_INIT("SaagharWidget/Colors/Titles", QColor(143, 47, 47));
-    VAR_INIT("SaagharWidget/Colors/Numbers", QColor(84, 81, 171));
+    VAR_INIT("SaagharWidget/Colors/OutLine", QColor(0, 120, 200));
+    VAR_INIT("SaagharWidget/Colors/Default", QColor(0, 150, 225));
+    VAR_INIT("SaagharWidget/Colors/PoemText", QColor(0, 100, 220));
+    VAR_INIT("SaagharWidget/Colors/ProseText", QColor(0, 150, 225));
+    VAR_INIT("SaagharWidget/Colors/SectionName", QColor(0, 120, 225));
+    VAR_INIT("SaagharWidget/Colors/Titles", QColor(0, 90, 225));
+    VAR_INIT("SaagharWidget/Colors/Numbers", QColor(0, 170, 255));
 
 #ifdef Q_OS_WIN
     VAR_INIT("SaagharWindow/UseTransparecy", true);
