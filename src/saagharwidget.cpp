@@ -590,6 +590,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
     }
     ///Initialize Table//TODO: I need to check! maybe it's not needed
     tableViewWidget->clearContents();
+    tableViewWidget->setWordWrap(false);
 
     tableViewWidget->setLayoutDirection(Qt::RightToLeft);
 
@@ -935,6 +936,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
 
     tableViewWidget->setRowCount(2);
     tableViewWidget->setColumnCount(4);
+    tableViewWidget->setWordWrap(true);
 
     currentPoemTitle = poem._Title;
 
