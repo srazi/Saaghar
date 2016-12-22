@@ -103,8 +103,7 @@ DatabaseBrowser::DatabaseBrowser(const QString &sqliteDbCompletePath)
 
         noDataBaseDialog.exec();
 
-        if (noDataBaseDialog.clickedButton() != noDataBaseDialog.ui->exitPushButton &&
-                errorString.simplified().isEmpty()) {
+        if (noDataBaseDialog.clickedButton() != noDataBaseDialog.ui->exitPushButton) {
             if (noDataBaseDialog.clickedButton() == noDataBaseDialog.ui->selectDataBase) {
                 QString dir = QFileDialog::getExistingDirectory(0, tr("Add Path For Data Base"), dBFile.absoluteDir().path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
                 if (!dir.isEmpty()) {

@@ -44,6 +44,8 @@ public:
 
     void setResultList(const QMap<int, QString> &map);
 
+    void addTaskInQuequed();
+
     static int currentSearchWidgetCount();
     //static void setMaxItemPerPage(int max);
     QTableWidget* searchTable;
@@ -72,6 +74,7 @@ private:
 
     Qt::DockWidgetArea m_dockWidgetArea;
     QMainWindow* m_mainWindow;
+    int m_taskInQuequedCount;
 
     static int s_searchWidgetCount;
 
@@ -83,6 +86,9 @@ private slots:
     void onConcurrentResultReady(const QString &type, const QVariant &results);
     void onDockLocationChanged(Qt::DockWidgetArea area);
     void createCustomContextMenu(const QPoint &pos);
+
+protected:
+    bool eventFilter(QObject* watched, QEvent* event);
 
 signals:
     void searchFiltered(const QString &);

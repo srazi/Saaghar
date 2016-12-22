@@ -407,6 +407,8 @@ void SaagharWindow::searchStart()
                     break;
                 }
 
+                searchResultWidget.data()->addTaskInQuequed();
+
                 ConcurrentTask* searchTask = new ConcurrentTask(searchResultWidget.data());
                 connect(searchTask, SIGNAL(concurrentResultReady(QString,QVariant)), searchResultWidget.data(), SLOT(onConcurrentResultReady(QString,QVariant)));
                 connect(searchTask, SIGNAL(searchStatusChanged(QString)), SaagharWidget::lineEditSearchText, SLOT(setSearchProgressText(QString)));

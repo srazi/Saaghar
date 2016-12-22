@@ -52,6 +52,7 @@ SearchResultWidget::SearchResultWidget(QMainWindow* qmw, QWidget* parent, const 
     , actSearchNextPage(0)
     , actSearchPreviousPage(0)
     , m_mainWindow(qmw)
+    , m_taskInQuequedCount(0)
 {
     setupUi(m_mainWindow);
 
@@ -93,6 +94,11 @@ void SearchResultWidget::setResultList(const QMap<int, QString> &map)
     searchResultWidget->raise();
 }
 
+void SearchResultWidget::addTaskInQuequed()
+{
+    ++m_taskInQuequedCount;
+}
+
 int SearchResultWidget::currentSearchWidgetCount()
 {
     return s_searchWidgetCount;
@@ -101,6 +107,7 @@ int SearchResultWidget::currentSearchWidgetCount()
 void SearchResultWidget::setupUi(QMainWindow* qmw)
 {
     searchResultWidget = new QDockWidget(qmw);
+    searchResultWidget->installEventFilter(this);
     searchResultWidget->setObjectName(QString::fromUtf8("searchResultWidget_new"));//object name for created instance, it renames to 'searchResultWidget_old'
     //searchResultWidget->setLayoutDirection(Qt::RightToLeft);
     searchResultWidget->setFeatures(QDockWidget::AllDockWidgetFeatures | QDockWidget::DockWidgetVerticalTitleBar);
@@ -576,6 +583,7 @@ void SearchResultWidget::onConcurrentResultReady(const QString &type, const QVar
         return;
     }
 
+    --m_taskInQuequedCount;
 
     SearchResults searchResults = results.value<SearchResults>();
 
@@ -633,8 +641,7 @@ void SearchResultWidget::createCustomContextMenu(const QPoint &/*pos*/)
 
     if (text == tr("Close")) {
         emit cancelProgress();
-        searchResultWidget->deleteLater();
-        deleteLater();
+        searchResultWidget->close();
     }
     else if (text == tr("Close All")) {
         QDockWidget* tmpDockWidget = 0;
@@ -649,6 +656,18 @@ void SearchResultWidget::createCustomContextMenu(const QPoint &/*pos*/)
         }
         sApp->progressManager()->cancelTasks("SEARCH");
     }
+}
+
+bool SearchResultWidget::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == searchResultWidget && event->type() == QEvent::Close) {
+        if (m_taskInQuequedCount > 0) {
+            hide();
+            event->ignore();
+            return true;
+        }
+    }
+    return false;
 }
 
 void SearchResultWidget::currentRowColumnChanged(int currentRow, int /*currentColumn*/, int previousRow, int /*previousColumn*/)

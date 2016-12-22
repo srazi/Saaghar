@@ -71,6 +71,7 @@ lightGrayIcons.files = \
     $$PWD/iconsets/light-gray/select-mask.png \
     $$PWD/iconsets/light-gray/settings.png \
     $$PWD/iconsets/light-gray/up.png \
+    $$PWD/iconsets/light-gray/root-node.png \
     $$PWD/iconsets/light-gray/README
 
 classicIcons.path = $${RESOURCES_PATH}/themes/iconsets/classic
@@ -126,6 +127,9 @@ classicIcons.files = \
     $$PWD/iconsets/classic/un-bookmark.png \
     $$PWD/iconsets/classic/undo.png \
     $$PWD/iconsets/classic/up.png \
+    $$PWD/iconsets/classic/container-node.png \
+    $$PWD/iconsets/classic/leaf-node.png \
+    $$PWD/iconsets/classic/root-node.png \
     $$PWD/iconsets/classic/README
 
 iconicCyanIcons.path = $${RESOURCES_PATH}/themes/iconsets/iconic-cyan
@@ -179,6 +183,18 @@ iconicCyanIcons.files = \
     $$PWD/iconsets/iconic-cyan/two-hemistich-line.png \
     $$PWD/iconsets/iconic-cyan/undo.png \
     $$PWD/iconsets/iconic-cyan/up.png \
+    $$PWD/iconsets/iconic-cyan/container-node.png \
+    $$PWD/iconsets/iconic-cyan/leaf-node.png \
+    $$PWD/iconsets/iconic-cyan/root-node.png \
+    $$PWD/iconsets/iconic-cyan/bookmarks-import.png \
+    $$PWD/iconsets/iconic-cyan/browse_net.png \
+    $$PWD/iconsets/iconic-cyan/download-audio-repositories.png \
+    $$PWD/iconsets/iconic-cyan/export.png \
+    $$PWD/iconsets/iconic-cyan/import-to-database.png \
+    $$PWD/iconsets/iconic-cyan/print-preview.png \
+    $$PWD/iconsets/iconic-cyan/print.png \
+    $$PWD/iconsets/iconic-cyan/remove-poet.png \
+    $$PWD/iconsets/iconic-cyan/un-bookmark.png \
     $$PWD/iconsets/iconic-cyan/README
 
 

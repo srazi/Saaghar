@@ -38,6 +38,13 @@ isEqual(QT_MAJOR_VERSION, 5) {
 
 # Git revision
 rev = $$system(sh $$PWD/scripts/getrevision.sh)
+
+isEmpty(rev) {
+    rev = ""
+}
+
+!build_pass:message("Git revision: " $$rev)
+
 DEFINES += GIT_REVISION=\\\"""$$rev"\\\""
 
 win32 {
@@ -123,7 +130,8 @@ win32-msvc*{
 win32-g++{
     DEFINES += D_MINGW_CC
 
-    depFiles.files += $$[QT_INSTALL_BINS]/mingwm10.dll \
+    depFiles.files += \
+        # $$[QT_INSTALL_BINS]/mingwm10.dll \
         $$[QT_INSTALL_BINS]/libgcc_s_dw2-1.dll \
         $$[QT_INSTALL_BINS]/libstdc++-6.dll \
         $$[QT_INSTALL_BINS]/libwinpthread-1.dll
