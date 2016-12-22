@@ -78,7 +78,12 @@ ProgressView::ProgressView(QWidget* parent)
     m_layout->setSpacing(0);
     m_layout->setSizeConstraint(QLayout::SetFixedSize);
     setWindowTitle(tr("Processes"));
+
+#ifdef Q_OS_WIN
     setWindowFlags(Qt::SubWindow | Qt::Tool | Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
+#else
+    setWindowFlags(Qt::SubWindow | Qt::Tool | Qt::CustomizeWindowHint | Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+#endif
 
     setWindowOpacity(0.75);
 }

@@ -1,6 +1,6 @@
 Saaghar, a Persian poetry software
 ----------------------------------------------------------------------------------------
-**Copyright (C) 2010-2015, Razi Alavizadeh**
+**Copyright (C) 2010-2016, Razi Alavizadeh**
 
 Homepage (in English): [http://en.saaghar.pozh.org](http://en.saaghar.pozh.org)
 
@@ -59,7 +59,7 @@ Compiling
 
 Current version
 ----------------------------------------------------------------------------------------
-The current version of Saaghar is **2.5.0**. You can download precompiled packages
+The current version of Saaghar is **3.0.0**. You can download precompiled packages
 and the sources from: [Saaghar's download page](http://pozh.org/saaghar/download).
 
 Development Version

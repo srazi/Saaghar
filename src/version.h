@@ -22,11 +22,11 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define MAJOR_VERSION               2
-#define MINOR_VERSION               5
-#define PATCH_VERSION               99
+#define MAJOR_VERSION               3
+#define MINOR_VERSION               0
+#define PATCH_VERSION               0
 
-const QString BUILD_TIME = __DATE__" "__TIME__;
+const QString BUILD_TIME = __DATE__ " " __TIME__;
 const QString SAAGHAR_VERSION = QString("%1.%2.%3").arg(MAJOR_VERSION).arg(MINOR_VERSION).arg(PATCH_VERSION);
 
 #define CONCAT(...)                 __VA_ARGS__
@@ -45,7 +45,7 @@ const QString SAAGHAR_VERSION = QString("%1.%2.%3").arg(MAJOR_VERSION).arg(MINOR
 #define VER_COMPANYNAME_STR         "Pozh"
 #define VER_FILEDESCRIPTION_STR     "Saaghar, a Persian Poetry Software"
 #define VER_INTERNALNAME_STR        "Saaghar"
-#define VER_LEGALCOPYRIGHT_STR      "Copyright © 2010-2016, S. Razi Alavizadeh"
+#define VER_LEGALCOPYRIGHT_STR      "Copyright (c) 2010-2017, S. Razi Alavizadeh"
 #define VER_LEGALTRADEMARKS1_STR    "This program is licensed under GPL v.3"
 #define VER_LEGALTRADEMARKS2_STR    VER_LEGALTRADEMARKS1_STR
 #define VER_ORIGINALFILENAME_STR    "Saaghar.exe"
