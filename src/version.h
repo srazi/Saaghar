@@ -24,7 +24,7 @@
 
 #define MAJOR_VERSION               3
 #define MINOR_VERSION               0
-#define PATCH_VERSION               0
+#define PATCH_VERSION               99
 
 const QString BUILD_TIME = __DATE__ " " __TIME__;
 const QString SAAGHAR_VERSION = QString("%1.%2.%3").arg(MAJOR_VERSION).arg(MINOR_VERSION).arg(PATCH_VERSION);
