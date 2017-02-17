@@ -1,0 +1,73 @@
+version: 3.0.99.{build}-{branch}
+os: MinGW
+
+platform:
+  - x86
+
+build:
+  parallel: true
+  verbosity: detailed
+
+configuration:
+  - release
+#  - debug
+
+branches:
+  only:
+  - master
+
+environment:
+  global:
+    QMAKESPEC: win32-g++
+    MAKETOOL: mingw32-make
+
+
+  matrix:
+    - QTDIR: C:\Qt\5.7\mingw53_32
+      TOOLSDIR: C:\Qt\Tools\mingw482_32
+    - QTDIR: C:\Qt\5.7\msvc2013
+      TOOLSDIR: C:\Qt\Tools\QtCreator
+      QMAKESPEC: win32-msvc2013
+      VSVER: 12
+      MAKETOOL: jom
+      # - QTDIR: C:\Qt\5.7\msvc2015
+      # TOOLSDIR: C:\Qt\Tools\QtCreator
+      # QMAKESPEC: win32-msvc2015
+      # VSVER: 14
+      # MAKETOOL: jom
+
+install:
+  - if not "%VSVER%" == "" call "C:\Program Files (x86)\Microsoft Visual Studio "%VSVER%".0\VC\vcvarsall.bat" x86
+  - set PATH=%QTDIR%\bin;%TOOLSDIR%\bin;%PATH%
+  - set BUILD_ID="%APPVEYOR_BUILD_VERSION%_%QMAKESPEC%_%VSVER%_%CONFIGURATION%"
+
+build_script:
+  - echo "%CONFIGURATION% BUILD"
+  - set SRC_DIR=%CD%
+  - mkdir ..\shadow_build_%BUILD_ID%
+  - cd ..\shadow_build_%BUILD_ID%
+  - appveyor DownloadFile http://zlib.net/zlib128-dll.zip
+  - 7z x zlib128-dll.zip
+  - if "%VSVER%" == "" cp lib/zdll.lib lib/libzdll.a
+  - qmake -v
+  - qmake LIBS+=-Llib %SRC_DIR%\Saaghar.pro
+  - call %MAKETOOL% -j8
+  - call %MAKETOOL% install
+  - cp %CONFIGURATION%\Saaghar.exe %SRC_DIR%\Saaghar-%BUILD_ID%.exe
+  - cd %SRC_DIR%
+  - 7z a Saaghar-Win_%BUILD_ID%.zip Saaghar-Win\*
+  - dir
+
+artifacts:
+   - path: Saaghar*.exe
+     name: Saaghar Executable
+   - path: Saaghar*.zip
+     name: Package
+
+notifications:
+  - provider: Email
+    to:
+      - s.r.alavizadeh@gmail.com
+    on_build_success: false
+    on_build_failure: false
+    on_build_status_changed: true
