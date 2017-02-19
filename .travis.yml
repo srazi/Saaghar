@@ -1,0 +1,35 @@
+language: cpp
+dist: trusty
+sudo: required
+cache: apt
+
+os:
+  - linux
+  - osx
+
+env:
+  # - CONFIG=Debug
+  - CONFIG=Release
+
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+         sudo apt-get update; sudo apt-add-repository -y ppa:beineri/opt-qt58-trusty; sudo apt-get update -qq; sudo apt-get install -qq libpulse-dev qt58base qt58tools qt58multimedia qt58imageformats  qt58x11extras
+      ;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+         brew update
+      && brew install qt5
+      ;
+    fi
+script:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+         /opt/qt58/bin/qmake -v
+      && /opt/qt58/bin/qmake CONFIG+=$CONFIG
+      ;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+         /usr/local/opt/qt5/bin/qmake -v
+      && /usr/local/opt/qt5/bin/qmake CONFIG+=$CONFIG
+      ;
+    fi
+  - make -j8
