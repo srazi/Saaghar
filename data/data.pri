@@ -139,8 +139,6 @@ iconicCyanIcons.files = \
     $$PWD/iconsets/iconic-cyan/arrow-down.png \
     $$PWD/iconsets/iconic-cyan/bookmark-folder.png \
     $$PWD/iconsets/iconic-cyan/bookmark-off.png \
-    $$PWD/iconsets/iconic-cyan/bookmark-off1.png \
-    $$PWD/iconsets/iconic-cyan/bookmark-on-0.png \
     $$PWD/iconsets/iconic-cyan/bookmark-on.png \
     $$PWD/iconsets/iconic-cyan/cancel.png \
     $$PWD/iconsets/iconic-cyan/check-updates.png \
@@ -162,14 +160,12 @@ iconicCyanIcons.files = \
     $$PWD/iconsets/iconic-cyan/new_tab.png \
     $$PWD/iconsets/iconic-cyan/new_window.png \
     $$PWD/iconsets/iconic-cyan/next.png \
-    $$PWD/iconsets/iconic-cyan/next1.png \
     $$PWD/iconsets/iconic-cyan/no-fullscreen.png \
     $$PWD/iconsets/iconic-cyan/no-photo.png \
     $$PWD/iconsets/iconic-cyan/ocr-verification.png \
     $$PWD/iconsets/iconic-cyan/one-hemistich-line.png \
     $$PWD/iconsets/iconic-cyan/outline.png \
     $$PWD/iconsets/iconic-cyan/previous.png \
-    $$PWD/iconsets/iconic-cyan/previous1.png \
     $$PWD/iconsets/iconic-cyan/qt-logo.png \
     $$PWD/iconsets/iconic-cyan/random.png \
     $$PWD/iconsets/iconic-cyan/redo.png \
