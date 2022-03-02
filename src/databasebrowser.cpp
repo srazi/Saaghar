@@ -761,9 +761,13 @@ QString DatabaseBrowser::getIdForDataBase(const QString &fileName, QThread* thre
             }
         }
 
-        QSqlDatabase db = clone
-                          ? QSqlDatabase::cloneDatabase(QSqlDatabase::database(id, false), connectionID)
-                          : QSqlDatabase::addDatabase(sqlDriver, connectionID);
+        QSqlDatabase db = clone ?
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+                    QSqlDatabase::cloneDatabase(id, connectionID)
+#else
+                    QSqlDatabase::cloneDatabase(QSqlDatabase::database(id, false), connectionID)
+#endif
+                  : QSqlDatabase::addDatabase(sqlDriver, connectionID);
 
         db.setDatabaseName(fileName);
         db.open();
