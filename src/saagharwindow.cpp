@@ -70,6 +70,7 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QActionGroup>
+#include <QTimer>
 
 
 #include "qirbreadcrumbbar.h"
@@ -1047,7 +1048,11 @@ void SaagharWindow::actionExportAsPDFClicked()
     QPrinter printer(QPrinter::HighResolution);
     printer.setOutputFormat(QPrinter::PdfFormat);
     printer.setColorMode(QPrinter::Color);
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    printer.setPageSize(QPageSize(QPageSize::A4));
+#else
     printer.setPageSize(QPrinter::A4);
+#endif
     printer.setCreator("Saaghar");
     printer.setPrinterName("Saaghar");
     printer.setFontEmbeddingEnabled(true);
@@ -1097,7 +1102,11 @@ void SaagharWindow::writeToFile(QString fileName, QString textToWrite)
         return;
     }
     QTextStream out(&exportFile);
-    out.setCodec("UTF-8");
+#if QT_VERSION_MAJOR >= 6
+    out.setEncoding(QStringConverter::Utf8);
+#else
+    out.setCodec("utf-8");
+#endif
     out << textToWrite;
     exportFile.close();
 }
@@ -3409,7 +3418,11 @@ void SaagharWindow::setupBookmarkManagerUi()
         //create an empty XBEL file.
         if (bookmarkFile.open(QFile::WriteOnly | QFile::Text)) {
             QTextStream out(&bookmarkFile);
+#if QT_VERSION_MAJOR >= 6
+            out.setEncoding(QStringConverter::Utf8);
+#else
             out.setCodec("utf-8");
+#endif
             out << "<?xml version='1.0' encoding='UTF-8'?>\n"
                 <<  "<!DOCTYPE xbel>\n"
                 <<  "<xbel version=\"1.0\">\n"

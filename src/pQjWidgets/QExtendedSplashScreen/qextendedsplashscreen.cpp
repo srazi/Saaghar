@@ -282,7 +282,7 @@ void QExtendedSplashScreen::setPixmap(const QPixmap &pixmap)
     QRect r(0, 0, splashPixmap.size().width(), splashPixmap.size().height());
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
-    move(QApplication::activeWindow()->windowHandle()->screen()->geometry().center() - r.center());
+    move(qApp->primaryScreen()->geometry().center() - r.center());
 #else
     move(QApplication::desktop()->screenGeometry().center() - r.center());
 #endif

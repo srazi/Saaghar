@@ -89,21 +89,18 @@ const QString &Tools::OTHER_GLYPHS = QString(QChar(78, 6)) +
                                      QChar(79, 6) + QChar(80, 6) + QChar(81, 6) + QChar(64, 6) +
                                      QChar(75, 6) + QChar(76, 6) + QChar(77, 6) + QChar(82, 6) + QChar(0x200C);
 /***************************/
-const QRegExp Ve_EXP = QRegExp("[" +
-                               Tools::Ve_Variant.join("").remove(Tools::Ve_Variant.at(0))
-                               + "]");
-const QRegExp Ye_EXP = QRegExp("[" +
-                               Tools::Ye_Variant.join("").remove(Tools::Ye_Variant.at(0))
-                               + "]");
-const QRegExp AE_EXP = QRegExp("[" +
-                               Tools::AE_Variant.join("").remove(Tools::AE_Variant.at(0))
-                               + "]");
-const QRegExp He_EXP = QRegExp("[" +
-                               Tools::He_Variant.join("").remove(Tools::He_Variant.at(0))
-                               + "]");
-const QRegExp SomeSymbol_EXP = QRegExp("[" +
-                                       Tools::someSymbols.join("")
-                                       + "]+");
+
+// it will undef at the end of file
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    #define REG_EXP QRegularExpression
+#else
+    #define REG_EXP QRegExp
+#endif
+const REG_EXP Ve_EXP = REG_EXP("[" + Tools::Ve_Variant.join("").remove(Tools::Ve_Variant.at(0)) + "]");
+const REG_EXP Ye_EXP = REG_EXP("[" + Tools::Ye_Variant.join("").remove(Tools::Ye_Variant.at(0)) + "]");
+const REG_EXP AE_EXP = REG_EXP("[" + Tools::AE_Variant.join("").remove(Tools::AE_Variant.at(0)) + "]");
+const REG_EXP He_EXP = REG_EXP("[" +  Tools::He_Variant.join("").remove(Tools::He_Variant.at(0)) + "]");
+const REG_EXP SomeSymbol_EXP = REG_EXP("[" + Tools::someSymbols.join("") + "]+");
 /***************************/
 ////////////////////////////
 
@@ -281,7 +278,7 @@ QString Tools::justifiedText(const QString &text, const QFontMetrics &fontmetric
             tatweelPositions << i;
             continue;
         }
-#elif
+#else
         if (charsOfText.at(i).at(0).joining() != QChar::Dual) {
             continue;
         }
@@ -361,7 +358,7 @@ QString Tools::snippedText(const QString &text, const QString &str, int from, in
         return leftPart + str + rightPart;
     }
 
-    QStringList words = text.split(QRegExp("\\b"), SKIP_EMPTY_PARTS);
+    QStringList words = text.split(REG_EXP("\\b"), SKIP_EMPTY_PARTS);
     int textWordCount = words.size();
     if (textWordCount < maxNumOfWords || maxNumOfWords <= 0) {
         return text;
@@ -556,3 +553,5 @@ QString Tools::getTempDir(const QString &path, bool makeDir)
 
     return tmpPath;
 }
+
+#undef REG_EXP

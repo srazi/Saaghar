@@ -42,7 +42,7 @@ public:
     SearchResultWidget(QMainWindow* qmw, QWidget* parent = 0, const QString &searchPhrase = QString(), const QString &poetName = QString());
     ~SearchResultWidget();
 
-    void setResultList(const QMap<int, QString> &map);
+    void setResultList(const QMultiMap<int, QString> &map);
 
     void addTaskInQuequed();
 

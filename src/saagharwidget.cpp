@@ -1525,9 +1525,14 @@ QTableWidgetItem* SaagharWidget::scrollToFirstItemContains(const QString &phrase
 
                     if (keyword.contains("@")) {
                         keyword.replace("@", "\\S*", Qt::CaseInsensitive);//replace wildcard by word chars
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+                        QRegularExpression regExp(keyword, QRegularExpression::CaseInsensitiveOption);
+                        keyword = regExp.match(text).captured(0);
+#else
                         QRegExp regExp(keyword, Qt::CaseInsensitive);
                         regExp.indexIn(text);
                         keyword = regExp.cap(0);
+#endif
                         if (keyword.isEmpty()) {
                             continue;
                         }

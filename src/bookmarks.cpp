@@ -254,7 +254,11 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
         else if (child.tagName() == "separator") {
             QTreeWidgetItem* childItem = createItem(child, item);
             childItem->setFlags(item->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
             childItem->setText(0, QString(qsizetype(30), QChar(0xB7)));
+#else
+            childItem->setText(0, QString(30, QChar(0xB7)));
+#endif
         }
         child = child.nextSiblingElement();
     }

@@ -72,7 +72,7 @@ SearchResultWidget::~SearchResultWidget()
     //qDebug() << "SearchResultWidget is destroyed!";
 }
 
-void SearchResultWidget::setResultList(const QMap<int, QString> &map)
+void SearchResultWidget::setResultList(const QMultiMap<int, QString> &map)
 {
     copyResultList = resultList = map;
 
@@ -349,8 +349,8 @@ void SearchResultWidget::showSearchResult(int start)
     //const int step = count/20;
 
     //bool firstTimeUpdate = false;
-    QMap<int, QString>::const_iterator it = resultList.constBegin();
-    const QMap<int, QString>::const_iterator endIt = it + end + 1; //resultList.constEnd();
+    QMultiMap<int, QString>::const_iterator it = resultList.constBegin();
+    const QMultiMap<int, QString>::const_iterator endIt = it + end + 1; //resultList.constEnd();
     it = it + start;
     int i = start;
     const QColor fisrtColor(235, 235, 230, 190);
@@ -549,8 +549,8 @@ void SearchResultWidget::filterResults(const QString &text)
     //QMap<int, QString> tmpList;
 
     resultList.clear();
-    QMap<int, QString>::const_iterator it = copyResultList.constBegin();
-    const QMap<int, QString>::const_iterator endIterator = copyResultList.constEnd();
+    QMultiMap<int, QString>::const_iterator it = copyResultList.constBegin();
+    const QMultiMap<int, QString>::const_iterator endIterator = copyResultList.constEnd();
     while (it != endIterator) {
         QString value = it.value();
         value = Tools::cleanString(value);
@@ -588,7 +588,7 @@ void SearchResultWidget::onConcurrentResultReady(const QString &type, const QVar
     SearchResults searchResults = results.value<SearchResults>();
 
     if (!copyResultList.isEmpty()) {
-        QMap<int, QString>::const_iterator it = copyResultList.constBegin();
+        QMultiMap<int, QString>::const_iterator it = copyResultList.constBegin();
         while (it != copyResultList.constEnd()) {
             searchResults.insert(it.key(), it.value());
             ++it;

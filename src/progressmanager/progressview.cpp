@@ -56,7 +56,7 @@
 #include <QTimer>
 #include <QVBoxLayout>
 
-#if QT_VERSION > QT_VERSION_CHECK(5,15,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
     #include <QWindow>
     #include <QSCreen>
 #else
@@ -237,8 +237,8 @@ void ProgressView::reposition()
         //titleBarHeight = qMax(0, m_referenceWidget->frameGeometry().height() - m_referenceWidget->height() - frameWidth);
     }
 
-#if QT_VERSION > QT_VERSION_CHECK(5,15,0)
-    const QRect screenRect = qApp->activeWindow()->windowHandle()->screen()->availableGeometry();
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    const QRect screenRect = qApp->primaryScreen()->availableGeometry();
 #else
     const QRect screenRect = qApp->desktop()->availableGeometry(this);
 #endif

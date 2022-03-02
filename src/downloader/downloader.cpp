@@ -230,9 +230,39 @@ void Downloader::replyReadyRead()
     // That way we use less RAM than when reading it at the finished()
     // signal of the QNetworkReply
     QByteArray dataToWrite = reply->readAll();
-    QRegExp htmlRedirect("<meta\\s+http-equiv\\s*=\\s*\"refresh\"\\s+content\\s*=\\s*\"\\s*[0-9]+\\s*;\\s*url\\s*=\\s*([^\"]+)\\s*\"\\s*>", Qt::CaseInsensitive);
+
     //<meta\s+http-equiv\s*=\s*"refresh"\s+content\s*=\s*"\s*[0-9]+\s*;\s*url\s*=\s*([^"]+)\s*"\s*>
     dataText += dataToWrite;
+
+    const QString pattern = "<meta\\s+http-equiv\\s*=\\s*\"refresh\"\\s+content\\s*=\\s*\"\\s*[0-9]+\\s*;\\s*url\\s*=\\s*([^\"]+)\\s*\"\\s*>";
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    QRegularExpression htmlRedirect(pattern, QRegularExpression::CaseInsensitiveOption);
+    QRegularExpressionMatch match = htmlRedirect.match(dataText);
+//  qDebug()<<"====replyReadyRead==================================================";
+//  qDebug()<<dataText;
+//  qDebug()<<"cap_0="<< htmlRedirect.cap(0)<<"cap_1" <<htmlRedirect.cap(1);
+//  qDebug()<<"====replyReadyRead==================================================";
+    QString reirectUrl = match.captured(1);
+    if (!reirectUrl.isEmpty()) {
+        //qDebug() <<"============================\ndataText=\n"<<dataText<<"\n========================\n";
+        //qDebug()<<"====reirectUrl="<<reirectUrl;
+        dataText = "";
+        QUrl newUrl(reirectUrl);
+        if (reirectUrl.contains("sourceforge") && reirectUrl.contains("use_mirror")) {
+            //unfortunately this redirection uses cookies and we need QWebPage for tracking this type of redirections
+            //this is an ugly trick for creating direct link for sourceforge!
+            //http://ignum.dl.sourceforge.net/project/ganjoor/gdb/ahmd-prvin.zip?r=&amp;ts=1337765789&amp;use_mirror=garr
+            QRegularExpression mirror(".*use_mirror=(.*)");
+            QRegularExpressionMatch matchMirror = mirror.match(reirectUrl);
+            QString mirrorStr = matchMirror.captured(1);
+            if (mirrorStr.isEmpty()) {
+                mirrorStr = "mesh";
+            }
+            reirectUrl.replace("downloads", mirrorStr + ".dl");
+        }
+#else
+    QRegExp htmlRedirect(pattern, Qt::CaseInsensitive);
+
     dataText.indexOf(htmlRedirect);
 //  qDebug()<<"====replyReadyRead==================================================";
 //  qDebug()<<dataText;
@@ -256,6 +286,7 @@ void Downloader::replyReadyRead()
             }
             reirectUrl.replace("downloads", mirrorStr + ".dl");
         }
+#endif
         redirectTo(QUrl(reirectUrl));
         return;
     }

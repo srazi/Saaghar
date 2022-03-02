@@ -104,7 +104,8 @@ bool QMultiSelectWidget::isCheckBoxUnderPosition(const QPoint &pos)
     if (item) {
         // with the help of styles, check if checkbox rect contains 'pos'
         QStyleOptionButton opt;
-        opt.QStyleOption::operator=(viewOptions());
+        //FIXME: what do about viewOptions() in Qt6
+//        opt.QStyleOption::operator=(viewOptions());
         opt.rect = visualItemRect(item);
         QRect r = style()->subElementRect(QStyle::SE_ItemViewItemCheckIndicator, &opt);
         // assure that the item is also selected

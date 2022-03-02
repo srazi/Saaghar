@@ -338,9 +338,14 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
                         tphrase.replace(YeAsKasre, QString(QChar(71, 6)) + "\\s*" + QString(QChar(204, 6)) +
                                         "{0,2}\\s+");
 
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+                        QRegularExpression anySearch(".*" + tphrase + ".*", QRegularExpression::CaseInsensitiveOption);
+                        bool hasMatch = anySearch.match(foundVerse).hasMatch();
+#else
                         QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
-
-                        if (!anySearch.exactMatch(foundVerse)) {
+                        bool hasMatch = anySearch.exactMatch(foundVerse);
+#endif
+                        if (!hasMatch) {
                             excludeCurrentVerse = true;
                             break;
                         }
@@ -358,8 +363,14 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
                 else {
                     tphrase = tphrase.replace("%%", ".*");
                     tphrase = tphrase.replace("%", "\\S*");
-                    QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
-                    if (!anySearch.exactMatch(foundVerse)) {
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+                        QRegularExpression anySearch(".*" + tphrase + ".*", QRegularExpression::CaseInsensitiveOption);
+                        bool hasMatch = anySearch.match(foundVerse).hasMatch();
+#else
+                        QRegExp anySearch(".*" + tphrase + ".*", Qt::CaseInsensitive);
+                        bool hasMatch = anySearch.exactMatch(foundVerse);
+#endif
+                    if (!hasMatch) {
                         excludeCurrentVerse = true;
                         break;
                     }
@@ -451,7 +462,6 @@ QVariant ConcurrentTask::cleanUpDatabase()
 {
     TASK_CANCELED;
 
-    static const QRegExp startSpaceRegExp("^ +");
     const QString &theConnectionID = VAR_GET(m_options, connectionID).toString();
     const QString &connectionID = sApp->databaseBrowser()->getIdForDataBase(sApp->databaseBrowser()->databaseFileFromID(theConnectionID), QThread::currentThread());
 
@@ -487,8 +497,17 @@ QVariant ConcurrentTask::cleanUpDatabase()
         while (vq.next()) {
             vqrec = vq.record();
             QString verse = vqrec.value(0).toString();
+
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+            static const QRegularExpression startSpaceRegExp("^ +");
+            QRegularExpressionMatch match = startSpaceRegExp.match(verse);
+            if (match.hasMatch()) {
+                const QString cap1 = match.captured(0);
+#else
+            static const QRegExp startSpaceRegExp("^ +");
             if (startSpaceRegExp.indexIn(verse) >= 0) {
                 const QString cap1 = startSpaceRegExp.cap(0);
+#endif
                 int capSize = cap1.size();
                 if (capSize < minStartingSpace || minStartingSpace == -1) {
                     minStartingSpace = capSize;

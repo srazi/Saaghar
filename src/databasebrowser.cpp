@@ -1172,7 +1172,12 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, const QStri
     //we have not to worry about this replacement, because phraseList.at(0) is tested again!
     bool variantPresent = false;
     if (SearchResultWidget::skipVowelLetters) {
-        QRegExp variantEXP("[" + Tools::Ve_Variant.join("") + Tools::AE_Variant.join("") + Tools::He_Variant.join("") + Tools::Ye_Variant.join("") + "]+");
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+        const QRegularExpression variantEXP("[" + Tools::Ve_Variant.join("") + Tools::AE_Variant.join("") + Tools::He_Variant.join("") + Tools::Ye_Variant.join("") + "]+");
+#else
+        const QRegExp variantEXP("[" + Tools::Ve_Variant.join("") + Tools::AE_Variant.join("") + Tools::He_Variant.join("") + Tools::Ye_Variant.join("") + "]+");
+#endif
+
         if (firstPhrase.contains(variantEXP)) {
             firstPhrase.replace(variantEXP, "%");
             variantPresent = true;
