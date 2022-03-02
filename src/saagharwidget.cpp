@@ -301,7 +301,7 @@ QString SaagharWidget::highlightCell(int vorder)
         for (int row = 0; row < numOfRows; ++row) {
             QTableWidgetItem* item = tableViewWidget->item(row, col);
             if (item) {
-                QStringList verseData = item->data(Qt::UserRole).toString().split("|", QString::SkipEmptyParts);
+                QStringList verseData = item->data(Qt::UserRole).toString().split("|", SKIP_EMPTY_PARTS);
                 if (verseData.size() == 4 && verseData.at(0) == "VerseData=") {
                     if (verseData.at(2).toInt() == vorder) {
                         Tools::scrollToItem(tableViewWidget, item);

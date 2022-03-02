@@ -40,7 +40,10 @@ class QDir;
 class QFile;
 class QIODevice;
 class QString;
-class QStringList;
+
+#if QT_VERSION_MAJOR < 6
+    class QStringList;
+#endif
 
 OSDAB_BEGIN_NAMESPACE(Zip)
 

@@ -52,10 +52,16 @@
 #include "progressview.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
 #include <QEvent>
 #include <QTimer>
 #include <QVBoxLayout>
+
+#if QT_VERSION > QT_VERSION_CHECK(5,15,0)
+    #include <QWindow>
+    #include <QSCreen>
+#else
+    #include <QDesktopWidget>
+#endif
 
 ProgressView::ProgressView(QWidget* parent)
     : QWidget(parent),
@@ -231,7 +237,12 @@ void ProgressView::reposition()
         //titleBarHeight = qMax(0, m_referenceWidget->frameGeometry().height() - m_referenceWidget->height() - frameWidth);
     }
 
+#if QT_VERSION > QT_VERSION_CHECK(5,15,0)
+    const QRect screenRect = qApp->activeWindow()->windowHandle()->screen()->availableGeometry();
+#else
     const QRect screenRect = qApp->desktop()->availableGeometry(this);
+#endif
+
     QRect geoRect = this->rect();
     // for now we always assume parent is 0
     switch (m_position) {

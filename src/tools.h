@@ -22,12 +22,20 @@
 #ifndef TOOLS_H
 #define TOOLS_H
 
+#include <QtGlobal>
+
 #define splashScreen(T) (static_cast<T*>(Tools::s_splashScreen))
 #define ICON_FILE(X) Tools::iconFileByKey(X)
 
 // x is variant-hash
 #define VAR_ADD(x, y) x.insert(#y, QVariant::fromValue(y))
 #define VAR_GET(x, y) x.value(#y)
+
+#if QT_VERSION >= 0x050F00
+    #define SKIP_EMPTY_PARTS Qt::SkipEmptyParts
+#else
+    #define SKIP_EMPTY_PARTS QString::SkipEmptyParts
+#endif
 
 //#define DEV_TOOLS 1
 

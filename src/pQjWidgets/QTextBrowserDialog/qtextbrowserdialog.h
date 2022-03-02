@@ -39,11 +39,17 @@ class QTextBrowserDialog : public QTextBrowser
     Q_OBJECT
 
 public:
-    explicit QTextBrowserDialog(QWidget* parent = 0, const QString &title = "", const QString &text = "", const QPixmap &pixmapIcon = QPixmap(), Qt::WindowFlags f = 0);
+    explicit QTextBrowserDialog(QWidget* parent = 0, const QString &title = "", const QString &text = "", const QPixmap &pixmapIcon = QPixmap(), Qt::WindowFlags f = Qt::WindowFlags());
     inline int exec() {return containerDialog->exec();}
     void setIconPixmap(const QPixmap &pixmap);
+
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    inline QPixmap iconPixmap() const
+        { return labelIcon->pixmap(Qt::ReturnByValue); }
+#else
     inline const QPixmap* iconPixmap()
-    {return labelIcon->pixmap();}
+        { return labelIcon->pixmap(); }
+#endif
 
 private:
     QDialog* containerDialog;

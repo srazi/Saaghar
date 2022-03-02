@@ -264,7 +264,7 @@ void SaagharApplication::setupPaths()
 
 void SaagharApplication::setupDatabasePaths()
 {
-    const QStringList dirs = VARS("DatabaseBrowser/DataBasePath").split(QLatin1String(";"), QString::SkipEmptyParts);
+    const QStringList dirs = VARS("DatabaseBrowser/DataBasePath").split(QLatin1String(";"), SKIP_EMPTY_PARTS);
     QStringList settingsDatabaseDirs = dirs;
 
     //searching database-path for database-file

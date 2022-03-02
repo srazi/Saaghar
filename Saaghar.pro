@@ -25,6 +25,10 @@ CONFIG(static) {
     DEFINES += STATIC
 }
 
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x050F00
+isEqual(QT_MAJOR_VERSION, 6) {
+    QT += network widgets printsupport sql xml concurrent core5compat
+} else {
 isEqual(QT_MAJOR_VERSION, 5) {
     QT += network widgets printsupport sql xml concurrent
 
@@ -35,7 +39,9 @@ isEqual(QT_MAJOR_VERSION, 5) {
 
     QT += sql network xml
 }
+}
 
+!win32 {
 # Git revision
 rev = $$system(sh $$PWD/scripts/getrevision.sh)
 
@@ -44,6 +50,7 @@ isEmpty(rev) {
 }
 
 !build_pass:message("Git revision: " $$rev)
+}
 
 DEFINES += GIT_REVISION=\\\"""$$rev"\\\""
 

@@ -397,8 +397,8 @@ void SearchResultWidget::showSearchResult(int start)
         searchTable->setItem(currentRow, 0, numItem);
 
         QString firstVerse = "", poemTiltle = "", poetName = "";
-        //QStringList verseData = resultList.value(poemId, "").split("|", QString::SkipEmptyParts);
-        QStringList verseData = it.value().split("|", QString::SkipEmptyParts);
+        //QStringList verseData = resultList.value(poemId, "").split("|", SKIP_EMPTY_PARTS);
+        QStringList verseData = it.value().split("|", SKIP_EMPTY_PARTS);
 
         if (verseData.size() == 3) {
             firstVerse = verseData.at(0);
@@ -509,7 +509,7 @@ void SearchResultWidget::searchPageNavigationClicked(QAction* action)
     if (!actionData.isValid() || actionData.isNull()) {
         return;
     }
-    QStringList dataList = actionData.toString().split("|", QString::SkipEmptyParts);
+    QStringList dataList = actionData.toString().split("|", SKIP_EMPTY_PARTS);
     if (dataList.size() == 2) {
         showSearchResult(dataList.at(1).toInt());
         searchTable->scrollToTop();
@@ -523,7 +523,7 @@ void SearchResultWidget::maxItemPerPageChange()
         bool enabled = searchPreviousPage->isEnabled();
         QVariant actionData = actSearchPreviousPage->data();
         if (actionData.isValid() && !actionData.isNull()) {
-            QStringList dataList = actionData.toString().split("|", QString::SkipEmptyParts);
+            QStringList dataList = actionData.toString().split("|", SKIP_EMPTY_PARTS);
             if (dataList.size() == 2) {
                 int start = dataList.at(1).toInt() + SearchResultWidget::maxItemPerPage;
                 actSearchPreviousPage->setData("actSearchPreviousPage|" + QString::number(start - SearchResultWidget::maxItemPerPage));

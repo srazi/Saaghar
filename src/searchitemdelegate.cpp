@@ -98,7 +98,7 @@ void SaagharItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem &o
         QString keyword = keywordList.at(i);
 
         keyword.replace(QChar(0x200C), "", Qt::CaseInsensitive);//replace ZWNJ by ""
-        keyword = keyword.split("", QString::SkipEmptyParts).join(tatweel + "*");
+        keyword = keyword.split("", SKIP_EMPTY_PARTS).join(tatweel + "*");
         keyword.replace("@" + tatweel + "*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
         QRegExp maybeTatweel(keyword, Qt::CaseInsensitive);
         maybeTatweel.indexIn(text);
@@ -228,15 +228,16 @@ void SaagharItemDelegate::drawDisplay(QPainter* painter, const QStyleOptionViewI
 #if QT_VERSION >= 0x050000
     const QStyleOptionViewItem opt = option;
     const QStyleOptionViewItem* v3 = &option;
+    const bool wrapText = opt.features & QStyleOptionViewItem::WrapText;
 #else
     const QStyleOptionViewItemV4 opt = option;
     const QStyleOptionViewItemV3* v3 = qstyleoption_cast<const QStyleOptionViewItemV3 *>(&option);
+    const bool wrapText = opt.features & QStyleOptionViewItemV2::WrapText;
 #endif
 
     QStyle* style = v3 && v3->widget ? v3->widget->style() : QApplication::style();
     const int textMargin = style->pixelMetric(QStyle::PM_FocusFrameHMargin, 0, (v3 && v3->widget ? v3->widget : 0)) + 1;
     QRect textRect = rect.adjusted(textMargin, 0, -textMargin, 0); // remove width padding
-    const bool wrapText = opt.features & QStyleOptionViewItemV2::WrapText;
     m_textOption.setWrapMode(wrapText ? QTextOption::WordWrap : QTextOption::ManualWrap);
     m_textOption.setTextDirection(option.direction);
     m_textOption.setAlignment(QStyle::visualAlignment(option.direction, option.displayAlignment));
@@ -327,7 +328,12 @@ QSizeF SaagharItemDelegate::doTextLayout(int lineWidth) const
 void SaagharItemDelegate::updateAdditionalFormats() const
 {
     m_additionalFormats.clear();
+
+#if QT_VERSION >= 0x050F00
+    m_textLayout.clearFormats();
+#else
     m_textLayout.clearAdditionalFormats();
+#endif
 
     const QString &text = m_textLayout.text();
     qreal pointSize = m_textLayout.font().pointSizeF() + 2.0;
@@ -363,12 +369,35 @@ void SaagharItemDelegate::updateAdditionalFormats() const
             continue;
         }
 
-        keyword = keyword.split("", QString::SkipEmptyParts).join("[" + Tools::OTHER_GLYPHS + "]*") + "[" + Tools::OTHER_GLYPHS + "]*";
+        keyword = keyword.split("", SKIP_EMPTY_PARTS).join("[" + Tools::OTHER_GLYPHS + "]*") + "[" + Tools::OTHER_GLYPHS + "]*";
         keyword.replace("@[" + Tools::OTHER_GLYPHS + "]*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
         keyword.replace(Tools::AE_Variant.at(0), "(" + Tools::AE_Variant.join("|") + ")");
         keyword.replace(Tools::Ye_Variant.at(0), "(" + Tools::Ye_Variant.join("|") + ")");
         keyword.replace(Tools::He_Variant.at(0), "(" + Tools::He_Variant.join("|") + ")");
         keyword.replace(Tools::Ve_Variant.at(0), "(" + Tools::Ve_Variant.join("|") + ")");
+
+#if QT_VERSION_MAJOR >= 5
+        QRegularExpression maybeOthers(keyword, QRegularExpression::CaseInsensitiveOption);
+        QRegularExpressionMatchIterator it = maybeOthers.globalMatch(text);
+
+        while (it.hasNext()) {
+            QRegularExpressionMatch match = it.next();
+            QTextLayout::FormatRange fr;
+            fr.start = match.capturedStart();
+            fr.length = match.capturedLength(0);
+
+            if (fr.length == 0) {
+                break;
+            }
+
+            fr.format.setFontPointSize(pointSize);
+            fr.format.setForeground(SaagharWidget::matchedTextColor);
+            fr.format.setBackground(highlight);
+            fr.format.setFontWeight(99);
+
+            m_additionalFormats << fr;
+        }
+#else
         QRegExp maybeOthers(keyword, Qt::CaseInsensitive);
 
         int pos = 0;
@@ -389,10 +418,15 @@ void SaagharItemDelegate::updateAdditionalFormats() const
 
             m_additionalFormats << fr;
         }
+#endif
     }
 
     if (!m_additionalFormats.isEmpty()) {
+#if QT_VERSION_MAJOR >= 6
+        m_textLayout.setFormats(m_additionalFormats);
+#else
         m_textLayout.setAdditionalFormats(m_additionalFormats);
+#endif
     }
 }
 
@@ -462,12 +496,15 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
     for (int i = 0; i < keywordsCount; ++i) {
         QString keyword = keywordList.at(i);
 
-        keyword = keyword.split("", QString::SkipEmptyParts).join("[" + Tools::OTHER_GLYPHS + "]*") + "[" + Tools::OTHER_GLYPHS + "]*";
+        keyword = keyword.split("", SKIP_EMPTY_PARTS).join("[" + Tools::OTHER_GLYPHS + "]*") + "[" + Tools::OTHER_GLYPHS + "]*";
         keyword.replace("@[" + Tools::OTHER_GLYPHS + "]*", "\\S*", Qt::CaseInsensitive); //replace wildcard by word chars
         keyword.replace(Tools::AE_Variant.at(0), "(" + Tools::AE_Variant.join("|") + ")");
         keyword.replace(Tools::Ye_Variant.at(0), "(" + Tools::Ye_Variant.join("|") + ")");
         keyword.replace(Tools::He_Variant.at(0), "(" + Tools::He_Variant.join("|") + ")");
         keyword.replace(Tools::Ve_Variant.at(0), "(" + Tools::Ve_Variant.join("|") + ")");
+#if QT_VERSION_MAJOR >= 5
+        QRegularExpression maybeOthers(keyword, Qt::CaseInsensitive);
+#else
         QRegExp maybeOthers(keyword, Qt::CaseInsensitive);
         int index = maybeOthers.indexIn(text);
         while (index >= 0) {
@@ -479,5 +516,6 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
             setFormat(index, length, paragraphHighightFormat);
             index = maybeOthers.indexIn(text, index + length);
         }
+#endif
     }
 }

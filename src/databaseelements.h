@@ -28,7 +28,7 @@
 inline QString qStringMacHelper(const QString &str)
 {
     QString tmp = str;
-    tmp = tmp.replace(QChar(0x200C), QString(0x200F) + QString(0x200C) + QString(0x200F), Qt::CaseInsensitive);
+    tmp = tmp.replace(QChar(0x200C), QString(QChar(0x200F)) + QString(QChar(0x200C)) + QString(QChar(0x200F)), Qt::CaseInsensitive);
     return tmp;
 }
 

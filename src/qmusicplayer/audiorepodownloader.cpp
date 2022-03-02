@@ -819,7 +819,7 @@ void AudioRepoDownloader::addRemoveRepository()
     QObject::connect(&buttonBox, SIGNAL(rejected()), &addRemove, SLOT(reject()));
 
     if (addRemove.exec() == QDialog::Accepted) {
-        setRepositories(textEdit.toPlainText().split("\n", QString::SkipEmptyParts));
+        setRepositories(textEdit.toPlainText().split("\n", SKIP_EMPTY_PARTS));
         fillRepositoryList();
     }
 }

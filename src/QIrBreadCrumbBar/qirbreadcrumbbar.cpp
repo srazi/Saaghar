@@ -795,7 +795,7 @@ void QIrBreadCrumbBarUi::init()
 ////////////////////
 // QIrBreadCrumbBar
 ////////////////////
-QIrBreadCrumbBar::QIrBreadCrumbBar(QWidget* parent) : QWidget(parent, 0), QIrWidget(* new QIrBreadCrumbBarUi)
+QIrBreadCrumbBar::QIrBreadCrumbBar(QWidget* parent) : QWidget(parent, Qt::WindowFlags(0)), QIrWidget(* new QIrBreadCrumbBarUi)
 {
     QIR_UI(QIrBreadCrumbBar);
 

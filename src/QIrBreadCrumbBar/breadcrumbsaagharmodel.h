@@ -25,7 +25,10 @@
 #include "qirabstractbreadcrumbmodel.h"
 
 class QMenu;
-class QStringList;
+
+#if QT_VERSION_MAJOR < 6
+    class QStringList;
+#endif
 
 QIR_BEGIN_NAMESPACE
 

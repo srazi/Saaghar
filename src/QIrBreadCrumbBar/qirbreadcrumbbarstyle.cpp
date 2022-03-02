@@ -225,7 +225,7 @@ void QIrDefaultBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, c
             QImage downArrow(indicator->isTruncated ? truncated_img : down ? arrow_down_img : arrow_right_img);
             QColor color = option->palette.color(QPalette::Normal, QPalette::Highlight);
 
-            downArrow.setColor(1, down ? !valid ? QColor(Qt::red).rgba() : color.dark(120).rgba() : hover ? !valid ? QColor(Qt::red).rgba() : color.rgba() : option->palette.foreground().color().rgba());
+            downArrow.setColor(1, down ? !valid ? QColor(Qt::red).rgba() : color.darker(120).rgba() : hover ? !valid ? QColor(Qt::red).rgba() : color.rgba() : option->palette.windowText().color().rgba());
             painter->drawImage(rect.center().x() - downArrow.width() / 2,
                                rect.center().y() - downArrow.height() / 2 + 1,
                                isLeftToRight ? downArrow : downArrow.mirrored(false, true));
@@ -241,7 +241,7 @@ void QIrDefaultBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, c
                 down = false;
             }
             QColor color = option->palette.color(QPalette::Normal, QPalette::Highlight);
-            painter->setPen(down ? !valid ? QColor(Qt::red).rgba() : color.dark(120) : hover ? !valid ? QColor(Qt::red).rgba() : color : option->palette.foreground().color());
+            painter->setPen(down ? !valid ? QColor(Qt::red).rgba() : color.darker(120) : hover ? !valid ? QColor(Qt::red).rgba() : color : option->palette.windowText().color());
             painter->drawText(option->rect, Qt::AlignCenter, label->text);
 
             return;
@@ -322,10 +322,10 @@ void QIrStyledBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, co
                 color = indicator->isValid ? option->palette.color(QPalette::Normal, QPalette::Highlight) : QColor(250, 170, 0);
 
                 if (indicator->usePseudoState && hover) {
-                    color = color.light();
+                    color = color.lighter(150);
                 }
                 else if (hover) {
-                    color = color.light(120);
+                    color = color.lighter(120);
                 }
                 QColor c = color;
 
@@ -347,7 +347,7 @@ void QIrStyledBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, co
                 }
                 painter->drawLine(rect.topRight(), rect.bottomRight());
             }
-            downArrow.setColor(1, option->palette.foreground().color().rgba());
+            downArrow.setColor(1, option->palette.windowText().color().rgba());
             painter->drawImage(rect.center().x() - downArrow.width() / 2,
                                rect.center().y() - downArrow.height() / 2 + 1,
                                isLeftToRight ? downArrow : downArrow.mirrored(true, false));
@@ -364,13 +364,13 @@ void QIrStyledBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, co
 
             if (down || hover) {
                 if (label->usePseudoState && hover) {
-                    color = color.light();
+                    color = color.lighter(150);
                 }
                 else if (down) {
                     textRect.adjust(1, 1, 1, 1);
                 }
                 else {
-                    color = color.light(120);
+                    color = color.lighter(120);
                 }
 
                 QLinearGradient g(rect.topLeft(), rect.bottomLeft());
@@ -394,7 +394,7 @@ void QIrStyledBreadCrumbBarStyle::drawControl(QStyle::ControlElement element, co
                     painter->drawLine(rect.topRight(), rect.bottomRight());
                 }
             }
-            painter->setPen(option->palette.foreground().color());
+            painter->setPen(option->palette.windowText().color());
             const QString text = label->fontMetrics.elidedText(label->text, Qt::ElideMiddle, textRect.width());
             painter->drawText(textRect, Qt::AlignCenter, text);
 

@@ -223,7 +223,7 @@ QMenu* BreadCrumbSaagharModel::buildMenu(const QIrBreadCrumbModelNode &node)
 
 QStringList BreadCrumbSaagharModel::pathSections(const QString &path) const
 {
-    return path.split(SEPARATOR, QString::SkipEmptyParts);
+    return path.split(SEPARATOR, SKIP_EMPTY_PARTS);
 }
 
 QIrBreadCrumbModelNode::Type BreadCrumbSaagharModel::pathNodeType(const QStringList &sections) const

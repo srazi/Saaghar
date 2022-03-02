@@ -523,7 +523,7 @@ void QMusicPlayer::showTextByTime(qint64 time)
             metaInfos << title << metaData.value("ARTIST") << metaData.value("ALBUM") << metaData.value("DATE");
             metaInfos.removeDuplicates();
             QString tmp = metaInfos.join("-");
-            metaInfos = tmp.split("-", QString::SkipEmptyParts);
+            metaInfos = tmp.split("-", SKIP_EMPTY_PARTS);
             infoLabel->setText(metaInfos.join(" - "));
         }
     }
@@ -936,7 +936,7 @@ void QMusicPlayer::metaStateChange()
     metaInfos << title << metaData.value("ARTIST") << metaData.value("ALBUM") << metaData.value("DATE");
     metaInfos.removeDuplicates();
     QString tmp = metaInfos.join("-");
-    metaInfos = tmp.split("-", QString::SkipEmptyParts);
+    metaInfos = tmp.split("-", SKIP_EMPTY_PARTS);
     infoLabel->setText(metaInfos.join(" - "));
 
     int index = sources.indexOf(source) + 1;

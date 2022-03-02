@@ -127,7 +127,12 @@ bool Bookmarks::write(QIODevice* device)
     const int IndentSize = 4;
 
     QTextStream out(device);
+#if QT_VERSION_MAJOR >= 6
+    out.setEncoding(QStringConverter::Utf8);
+#else
     out.setCodec("utf-8");
+#endif
+
     QString domString = m_domDocument.toString(IndentSize);
     domString = domString.replace("&#xd;", "");
     out << domString;
@@ -190,7 +195,8 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
     item->setToolTip(0, title);
 
     bool folded = (parentElement.attribute("folded") != "no");
-    setItemExpanded(item, !folded);
+
+    item->setExpanded(!folded);
 
     QDomElement child = parentElement.firstChildElement();
     while (!child.isNull()) {
@@ -248,7 +254,7 @@ void Bookmarks::parseFolderElement(const QDomElement &element,
         else if (child.tagName() == "separator") {
             QTreeWidgetItem* childItem = createItem(child, item);
             childItem->setFlags(item->flags() & ~(Qt::ItemIsSelectable | Qt::ItemIsEditable));
-            childItem->setText(0, QString(30, 0xB7));
+            childItem->setText(0, QString(qsizetype(30), QChar(0xB7)));
         }
         child = child.nextSiblingElement();
     }

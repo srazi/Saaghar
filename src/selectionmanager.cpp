@@ -85,7 +85,7 @@ void SelectionManager::setSelection(const QStringList &paths)
 
     foreach (const QString &path, paths) {
         bool ok;
-        QModelIndex ind = sApp->outlineModel()->index(path.split(SEPARATOR, QString::SkipEmptyParts), &ok);
+        QModelIndex ind = sApp->outlineModel()->index(path.split(SEPARATOR, SKIP_EMPTY_PARTS), &ok);
 
         if (ok) {
             ui->selectionView->selectionModel()->select(ind, QItemSelectionModel::Select);

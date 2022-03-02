@@ -80,9 +80,9 @@ public:
     static ProgressManager* instance();
 
     static FutureProgress* addTask(const QFuture<void> &future, const QString &title,
-                                   const QString &type, ProgressFlags flags = 0);
+                                   const QString &type, ProgressFlags flags = ProgressFlags());
     static FutureProgress* addTimedTask(const QFutureInterface<void> &fi, const QString &title,
-                                        const QString &type, int expectedSeconds, ProgressFlags flags = 0);
+                                        const QString &type, int expectedSeconds, ProgressFlags flags = ProgressFlags());
     static void setApplicationLabel(const QString &text);
 
 public slots:

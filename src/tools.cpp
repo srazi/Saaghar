@@ -254,7 +254,7 @@ QString Tools::justifiedText(const QString &text, const QFontMetrics &fontmetric
 
     QList<int> tatweelPositions;
     QList<int> spacePositions;
-    QStringList charsOfText = text.split("", QString::SkipEmptyParts);
+    QStringList charsOfText = text.split("", SKIP_EMPTY_PARTS);
 
     //founding suitable position for inserting TATWEEL or SPACE characters.
     for (int i = 0; i < charsOfText.size(); ++i) {
@@ -328,20 +328,20 @@ QString Tools::snippedText(const QString &text, const QString &str, int from, in
             return "";    //it's not possible
         }
         int partMaxNumOfWords = maxNumOfWords / 2;
-        if (text.right(text.size() - str.size() - index).split(" ", QString::SkipEmptyParts).size() < partMaxNumOfWords) {
-            partMaxNumOfWords = maxNumOfWords - text.right(text.size() - str.size() - index).split(" ", QString::SkipEmptyParts).size();
+        if (text.right(text.size() - str.size() - index).split(" ", SKIP_EMPTY_PARTS).size() < partMaxNumOfWords) {
+            partMaxNumOfWords = maxNumOfWords - text.right(text.size() - str.size() - index).split(" ", SKIP_EMPTY_PARTS).size();
         }
         QString leftPart = Tools::snippedText(text.left(index), "", 0, partMaxNumOfWords, elided, Qt::ElideLeft);
 
-        if (leftPart.split(" ", QString::SkipEmptyParts).size() < maxNumOfWords / 2) {
-            partMaxNumOfWords = maxNumOfWords - leftPart.split(" ", QString::SkipEmptyParts).size();
+        if (leftPart.split(" ", SKIP_EMPTY_PARTS).size() < maxNumOfWords / 2) {
+            partMaxNumOfWords = maxNumOfWords - leftPart.split(" ", SKIP_EMPTY_PARTS).size();
         }
         QString rightPart = Tools::snippedText(text.right(text.size() - str.size() - index), "", 0, partMaxNumOfWords, elided, Qt::ElideRight);
 
         return leftPart + str + rightPart;
     }
 
-    QStringList words = text.split(QRegExp("\\b"), QString::SkipEmptyParts);
+    QStringList words = text.split(QRegExp("\\b"), SKIP_EMPTY_PARTS);
     int textWordCount = words.size();
     if (textWordCount < maxNumOfWords || maxNumOfWords <= 0) {
         return text;

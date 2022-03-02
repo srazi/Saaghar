@@ -65,7 +65,7 @@ void SearchPatternManager::init()
 
     initilizedPhrase = initilizedPhrase.replace(OP(WholeWord), " ");//moved here from subAndList loop
 
-    QStringList orList = initilizedPhrase.split(OP(Or), QString::SkipEmptyParts);
+    QStringList orList = initilizedPhrase.split(OP(Or), SKIP_EMPTY_PARTS);
 
     for (int i = 0; i < orList.size(); ++i) {
         QStringList subAndList = orList.at(i).split(OP(And));
@@ -193,10 +193,10 @@ QString SearchPatternManager::clearedPhrase(const QString &str)
     clearedString.replace(OP(Any) + OP(Any), m_wildcardCharacter + m_wildcardCharacter);
 
     //clear doublicates
-    clearedString = clearedString.split(OP(WithOut), QString::SkipEmptyParts).join(OP(WithOut));
-    clearedString = clearedString.split(OP(Any), QString::SkipEmptyParts).join(OP(Any));
-    clearedString = clearedString.split(OP(Or), QString::SkipEmptyParts).join(OP(Or));
-    clearedString = clearedString.split(OP(And), QString::SkipEmptyParts).join(OP(And));
+    clearedString = clearedString.split(OP(WithOut), SKIP_EMPTY_PARTS).join(OP(WithOut));
+    clearedString = clearedString.split(OP(Any), SKIP_EMPTY_PARTS).join(OP(Any));
+    clearedString = clearedString.split(OP(Or), SKIP_EMPTY_PARTS).join(OP(Or));
+    clearedString = clearedString.split(OP(And), SKIP_EMPTY_PARTS).join(OP(And));
 
     //maybe we change this behaivior
     clearedString.replace(OP(Any), m_wildcardCharacter);
@@ -249,7 +249,7 @@ QStringList SearchPatternManager::phraseToList(const QString &str,  bool removeW
         tmp.replace(m_wildcardCharacter, "@");
     }
 
-    QStringList list = tmp.split(" ", QString::SkipEmptyParts);
+    QStringList list = tmp.split(" ", SKIP_EMPTY_PARTS);
     int listSize = list.size();
     for (int i = 0; i < listSize; ++i) {
         if (list.at(i).startsWith(OP(WithOut), Qt::CaseInsensitive)) {

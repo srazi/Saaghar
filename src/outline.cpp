@@ -317,14 +317,14 @@ void OutlineTree::createAudioList(int catID, bool askInputMediaList)
             return;
         }
 
-        QStringList lines = QString::fromUtf8(file.readAll()).replace("\r", "\n").split("\n", QString::SkipEmptyParts);
+        QStringList lines = QString::fromUtf8(file.readAll()).replace("\r", "\n").split("\n", SKIP_EMPTY_PARTS);
 
         foreach (QString line, lines) {
             line = line.trimmed();
             if (line.isEmpty()) {
                 continue;
             }
-            QStringList tokens = line.split("=", QString::SkipEmptyParts);
+            QStringList tokens = line.split("=", SKIP_EMPTY_PARTS);
             if (tokens.size() == 2) {
                 if (tokens.at(0) != "mp3") {
                     lowMediaLinks << tokens.at(1);

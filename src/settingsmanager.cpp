@@ -24,6 +24,7 @@
 #include <QApplication>
 #include <QDataStream>
 #include <QDebug>
+#include <QIODevice>
 
 SettingsManager* SettingsManager::s_instance = 0;
 

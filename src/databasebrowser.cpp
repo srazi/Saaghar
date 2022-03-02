@@ -1179,7 +1179,7 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, const QStri
         }
     }
 
-    QStringList anyWordedList = firstPhrase.split("%%", QString::SkipEmptyParts);
+    QStringList anyWordedList = firstPhrase.split("%%", SKIP_EMPTY_PARTS);
     for (int i = 0; i < anyWordedList.size(); ++i) {
         QString subPhrase = anyWordedList.at(i);
         if (SearchResultWidget::skipVowelSigns) {
@@ -1189,7 +1189,7 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, const QStri
         //search for firstPhrase then go for other ones
         subPhrase = subPhrase.simplified();
         if (!subPhrase.contains(" ") || variantPresent) {
-            subPhrase = Tools::cleanString(subPhrase, excludeWhenCleaning).split("", QString::SkipEmptyParts).join(joiner);
+            subPhrase = Tools::cleanString(subPhrase, excludeWhenCleaning).split("", SKIP_EMPTY_PARTS).join(joiner);
         }
         subPhrase.replace("% %", "%");
         anyWordedList[i] = subPhrase;

@@ -228,7 +228,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
         QStringList openedTabs = VAR("SaagharWindow/LastSessionTabs").toStringList();
         showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), openedTabs.size());
         for (int i = 0; i < openedTabs.size(); ++i) {
-            QStringList tabViewData = openedTabs.at(i).split("=", QString::SkipEmptyParts);
+            QStringList tabViewData = openedTabs.at(i).split("=", SKIP_EMPTY_PARTS);
             if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID")) {
                 bool Ok = false;
                 int id = tabViewData.at(1).toInt(&Ok);
@@ -744,11 +744,11 @@ void SaagharWindow::processUpdateData(const QString &type, const QVariant &resul
         return;
     }
 
-    data = dataPart.split("|", QString::SkipEmptyParts);
+    data = dataPart.split("|", SKIP_EMPTY_PARTS);
 
     QMap<QString, QString> releaseInfo;
     for (int i = 0; i < data.size(); ++i) {
-        QStringList fields = data.at(i).split("*", QString::SkipEmptyParts);
+        QStringList fields = data.at(i).split("*", SKIP_EMPTY_PARTS);
 
         if (fields.size() == 2) {
             releaseInfo.insert(fields.at(0), fields.at(1));
@@ -775,7 +775,7 @@ void SaagharWindow::processUpdateData(const QString &type, const QVariant &resul
         updateIsAvailable.setIcon(QMessageBox::Information);
         QString newVersionInfo = "";
         if (!releaseInfo.value("infoLinks").isEmpty()) {
-            QStringList infoLinks = releaseInfo.value("infoLinks").split('\\', QString::SkipEmptyParts);
+            QStringList infoLinks = releaseInfo.value("infoLinks").split('\\', SKIP_EMPTY_PARTS);
             if (!infoLinks.isEmpty()) {
                 newVersionInfo = infoLinks.join("<br />");
             }
@@ -1230,7 +1230,7 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                     }
                     QVariant data = item->data(Qt::UserRole);
                     if (data.isValid() && !data.isNull()) {
-                        itemDataList = data.toString().split("|", QString::SkipEmptyParts);
+                        itemDataList = data.toString().split("|", SKIP_EMPTY_PARTS);
                     }
                 }
 
@@ -1326,7 +1326,7 @@ QString SaagharWindow::convertToTeX(SaagharWidget* saagharObject)
                     }
                     QVariant data = item->data(Qt::UserRole);
                     if (data.isValid() && !data.isNull()) {
-                        itemDataList = data.toString().split("|", QString::SkipEmptyParts);
+                        itemDataList = data.toString().split("|", SKIP_EMPTY_PARTS);
                     }
                 }
 
@@ -2700,10 +2700,10 @@ void SaagharWindow::tableItemClick(QTableWidgetItem* item)
     }
 
     disconnect(senderTable, SIGNAL(itemClicked(QTableWidgetItem*)), 0, 0);
-    QStringList itemData = item->data(Qt::UserRole).toString().split("=", QString::SkipEmptyParts);
+    QStringList itemData = item->data(Qt::UserRole).toString().split("=", SKIP_EMPTY_PARTS);
 
     if (itemData.size() == 2 && itemData.at(0) == "VerseData") {
-        QStringList verseData = itemData.at(1).split("|", QString::SkipEmptyParts);
+        QStringList verseData = itemData.at(1).split("|", SKIP_EMPTY_PARTS);
         if (verseData.size() == 3) {
             emit verseSelected(verseData.at(1).toInt());
         }
@@ -2796,7 +2796,7 @@ void SaagharWindow::openPath(const QString &path)
 {
     QString SEPARATOR = QLatin1String("/");
     bool ok;
-    QModelIndex ind = sApp->outlineModel(m_breadCrumbSaagharModel->connectionID())->index(path.split(SEPARATOR, QString::SkipEmptyParts), &ok);
+    QModelIndex ind = sApp->outlineModel(m_breadCrumbSaagharModel->connectionID())->index(path.split(SEPARATOR, SKIP_EMPTY_PARTS), &ok);
 
     if (ok) {
         openPage(ind.data(OutlineModel::IDRole).toInt(), SaagharWidget::CategoryViewerPage, false, m_breadCrumbSaagharModel->connectionID(), false);

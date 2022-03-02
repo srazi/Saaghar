@@ -39,13 +39,13 @@ void BreadCrumbBarSaagharStyle::drawControl(QStyle::ControlElement element, cons
 
             if (down || hover) {
                 if (label->usePseudoState && hover) {
-                    color = color.light();
+                    color = color.lighter(150);
                 }
                 else if (down) {
                     textRect.adjust(1, 1, 1, 1);
                 }
                 else {
-                    color = color.light(120);
+                    color = color.lighter(120);
                 }
 
                 QLinearGradient g(rect.topLeft(), rect.bottomLeft());
@@ -69,7 +69,7 @@ void BreadCrumbBarSaagharStyle::drawControl(QStyle::ControlElement element, cons
                     painter->drawLine(rect.topRight(), rect.bottomRight());
                 }
             }
-            painter->setPen(option->palette.foreground().color());
+            painter->setPen(option->palette.windowText().color());
 
             const static QChar LRE(0x202a);
             const static QChar RLE(0x202b);

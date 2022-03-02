@@ -64,8 +64,13 @@ private:
     QMap<SearchPatternManager::Operator, QString> m_operators;
     QString m_wildcardCharacter;
     QString m_phraseForSearch;
+#if QT_VERSION_MAJOR >= 6
+    QMultiMap<int, QString> m_computedPhraseList;
+    QMultiMap<int, QString> m_relatedExcludeList;
+#else
     QMap<int, QString> m_computedPhraseList;
     QMap<int, QString> m_relatedExcludeList;
+#endif
     int m_uniqueKeysCount;
 };
 #endif // SEARCHPATTERNMANAGER_H

@@ -26,7 +26,6 @@
 #include <QApplication>
 #include <QVBoxLayout>
 #include <QLabel>
-#include <QDesktopWidget>
 #include <QPainter>
 #include <QTextDocument>
 #include <QTextCursor>
@@ -35,6 +34,12 @@
 #include <QProgressBar>
 #include <QBitmap>
 #include <QStyle>
+
+#if QT_VERSION > QT_VERSION_CHECK(5,15,0)
+    #include <QWindow>
+#else
+    #include <QDesktopWidget>
+#endif
 
 //#include <QDebug>
 
@@ -88,7 +93,7 @@ void QExtendedSplashScreen::repaint()
 {
     drawContents();
     QWidget::repaint();
-    QApplication::flush();
+    QApplication::processEvents();
 }
 
 void QExtendedSplashScreen::show()
@@ -200,7 +205,10 @@ void QExtendedSplashScreen::drawContents()
     if (!splashPixmap.isNull()) {
         QPixmap textPix = splashPixmap;
         QPainter painter(&textPix);
+        // can it be removed?
+#if QT_VERSION <= QT_VERSION_CHECK(5,15,0)
         painter.initFrom(this);
+#endif
         drawContents(&painter);
         pixmapLabel->setPixmap(textPix);
     }
@@ -271,7 +279,13 @@ void QExtendedSplashScreen::setPixmap(const QPixmap &pixmap)
     splashPixmap = pixmap;
     textRect = splashPixmap.rect();
     QRect r(0, 0, splashPixmap.size().width(), splashPixmap.size().height());
+
+#if QT_VERSION > QT_VERSION_CHECK(5,15,0)
+    move(QApplication::activeWindow()->windowHandle()->screen()->geometry().center() - r.center());
+#else
     move(QApplication::desktop()->screenGeometry().center() - r.center());
+#endif
+
     pixmapLabel->setPixmap(splashPixmap);
     forceRepaint();
 }
