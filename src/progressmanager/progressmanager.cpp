@@ -292,7 +292,7 @@ static void drawArrow(QStyle::PrimitiveElement element, QPainter* painter, const
     QPixmap pixmap;
     QString pixmapName;
 
-#if QT_VERSION_MAJOR >= 6
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
     pixmapName.asprintf(
 #else
     pixmapName.sprintf(

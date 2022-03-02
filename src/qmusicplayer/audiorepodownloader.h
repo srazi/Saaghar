@@ -43,7 +43,7 @@ class AudioRepoDownloader : public QDialog
     Q_OBJECT
 
 public:
-    AudioRepoDownloader(QWidget* parent = 0, Qt::WindowFlags f = 0);
+    AudioRepoDownloader(QWidget* parent = 0, Qt::WindowFlags f = Qt::WindowFlags(0));
     static QStringList repositories();
     static void setRepositories(const QStringList &urls);
 
@@ -89,7 +89,6 @@ private:
     void resizeColumnsToContents();
     bool parseDocument();
     void setupTreeRootItems();
-    QString getTempDir(const QString &path = "", bool makeDir = false);
     bool downloadItem(QTreeWidgetItem* item, bool addToAlbum = false);
     void setupUi();
     void parseElement(const QDomElement &element);

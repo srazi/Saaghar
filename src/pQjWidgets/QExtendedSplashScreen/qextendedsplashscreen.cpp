@@ -35,8 +35,9 @@
 #include <QBitmap>
 #include <QStyle>
 
-#if QT_VERSION > QT_VERSION_CHECK(5,15,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
     #include <QWindow>
+    #include <QScreen>
 #else
     #include <QDesktopWidget>
 #endif
@@ -206,7 +207,7 @@ void QExtendedSplashScreen::drawContents()
         QPixmap textPix = splashPixmap;
         QPainter painter(&textPix);
         // can it be removed?
-#if QT_VERSION <= QT_VERSION_CHECK(5,15,0)
+#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
         painter.initFrom(this);
 #endif
         drawContents(&painter);
@@ -280,7 +281,7 @@ void QExtendedSplashScreen::setPixmap(const QPixmap &pixmap)
     textRect = splashPixmap.rect();
     QRect r(0, 0, splashPixmap.size().width(), splashPixmap.size().height());
 
-#if QT_VERSION > QT_VERSION_CHECK(5,15,0)
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
     move(QApplication::activeWindow()->windowHandle()->screen()->geometry().center() - r.center());
 #else
     move(QApplication::desktop()->screenGeometry().center() - r.center());

@@ -352,10 +352,12 @@ bool WindowNotifier::nativeEvent(const QByteArray &eventType, void* _message, lo
     }
 #if (QT_VERSION < 0x050000)
     return QWidget::winEvent(message, result);
-#else
+#elif QT_VERSION_MAJOR >= 6
     //FIXME
     qDebug() << reinterpret_cast<qintptr*>(result) << result;
     return QWidget::nativeEvent(eventType, _message, reinterpret_cast<qintptr*>(result));
+#else
+    return QWidget::nativeEvent(eventType, _message, result);
 #endif
 }
 

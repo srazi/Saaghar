@@ -42,7 +42,7 @@ class DataBaseUpdater : public QDialog
     Q_OBJECT
 
 public:
-    DataBaseUpdater(QWidget* parent = 0, Qt::WindowFlags f = 0);
+    DataBaseUpdater(QWidget* parent = 0, Qt::WindowFlags f = Qt::WindowFlags(0));
     static QStringList repositories();
     static void setRepositories(const QStringList &urls);
 
@@ -69,7 +69,6 @@ private:
     void resizeColumnsToContents();
     bool parseDocument();
     void setupTreeRootItems();
-    QString getTempDir(const QString &path = "", bool makeDir = false);
     void downloadItem(QTreeWidgetItem* item, bool install = false);
     void setupUi();
     void parseElement(const QDomElement &element);

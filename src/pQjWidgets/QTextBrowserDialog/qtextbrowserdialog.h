@@ -39,7 +39,7 @@ class QTextBrowserDialog : public QTextBrowser
     Q_OBJECT
 
 public:
-    explicit QTextBrowserDialog(QWidget* parent = 0, const QString &title = "", const QString &text = "", const QPixmap &pixmapIcon = QPixmap(), Qt::WindowFlags f = Qt::WindowFlags());
+    explicit QTextBrowserDialog(QWidget* parent = 0, const QString &title = "", const QString &text = "", const QPixmap &pixmapIcon = QPixmap(), Qt::WindowFlags f = Qt::WindowFlags(0));
     inline int exec() {return containerDialog->exec();}
     void setIconPixmap(const QPixmap &pixmap);
 

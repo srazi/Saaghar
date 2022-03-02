@@ -255,11 +255,12 @@ SaagharWindow::SaagharWindow(QWidget* parent)
     currentTabChanged(mainTabWidget->currentIndex());
 
 //    multiSelectInsertItems(selectSearchRange);
-
+#if QT_VERSION < QT_VERSION_CHECK(5,10,0)
     //seeding random function
-    uint numOfSecs = QDateTime::currentDateTime().toTime_t();
+    uint numOfSecs = QDateTime::currentDateTime().toMSecsSinceEpoch();
     uint seed = QCursor::pos().x() + QCursor::pos().y() + numOfSecs + QDateTime::currentDateTime().time().msec();
     qsrand(seed);
+#endif
 
     restoreState(VAR("SaagharWindow/State0").toByteArray(), 0);
     restoreGeometry(VAR("SaagharWindow/Geometry").toByteArray());
@@ -416,13 +417,13 @@ void SaagharWindow::searchStart()
                 QStringList phrases = phraseVectorList.at(j);
                 QStringList excluded = excludedVectorList.at(j);
 #ifdef SAAGHAR_DEBUG
-                int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+                int start = QDateTime::currentDateTime().toMSecsSinceEpoch();
 #endif
 
                 success |= sApp->databaseBrowser()->getPoemIDsByPhrase(searchTask, currentSelectionPath, currentSelectionPathTitle, phrases, excluded, &searchCanceled, slowSearch);
 
 #ifdef SAAGHAR_DEBUG
-                int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+                int end = QDateTime::currentDateTime().toMSecsSinceEpoch();
                 int miliSec = end - start;
                 qDebug() << "\n------------------------------------------------\n"
                          << phrases << "\tsearch-duration=" << miliSec
@@ -3711,8 +3712,21 @@ TableWidget::TableWidget(QWidget* parent)
 {
 }
 
-void TableWidget::wheelEvent(QWheelEvent* event)
-{
-    event->accept();
-    verticalScrollBar()->setValue(verticalScrollBar()->value() - event->delta());
-}
+//void TableWidget::wheelEvent(QWheelEvent* event)
+//{
+//#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+//    QPoint numPixels = event->pixelDelta();
+//    QPoint numDegrees = event->angleDelta() / 8;
+
+//    if (!numPixels.isNull()) {
+////        scrollWithPixels(numPixels);
+//        verticalScrollBar()->setValue(verticalScrollBar()->value() - event->delta());
+//    } else if (!numDegrees.isNull()) {
+//        QPoint numSteps = numDegrees / 15;
+////        scrollWithDegrees(numSteps);
+//    }
+//#else
+//    verticalScrollBar()->setValue(verticalScrollBar()->value() - event->delta());
+//#endif
+//    event->accept();
+//}

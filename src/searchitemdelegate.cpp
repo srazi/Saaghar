@@ -422,7 +422,7 @@ void SaagharItemDelegate::updateAdditionalFormats() const
     }
 
     if (!m_additionalFormats.isEmpty()) {
-#if QT_VERSION_MAJOR >= 6
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
         m_textLayout.setFormats(m_additionalFormats);
 #else
         m_textLayout.setAdditionalFormats(m_additionalFormats);
@@ -503,7 +503,7 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
         keyword.replace(Tools::He_Variant.at(0), "(" + Tools::He_Variant.join("|") + ")");
         keyword.replace(Tools::Ve_Variant.at(0), "(" + Tools::Ve_Variant.join("|") + ")");
 #if QT_VERSION_MAJOR >= 5
-        QRegularExpression maybeOthers(keyword, Qt::CaseInsensitive);
+        QRegularExpression maybeOthers(keyword, QRegularExpression::CaseInsensitiveOption);
 #else
         QRegExp maybeOthers(keyword, Qt::CaseInsensitive);
         int index = maybeOthers.indexIn(text);

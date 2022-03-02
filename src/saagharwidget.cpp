@@ -305,11 +305,11 @@ QString SaagharWidget::highlightCell(int vorder)
                 if (verseData.size() == 4 && verseData.at(0) == "VerseData=") {
                     if (verseData.at(2).toInt() == vorder) {
                         Tools::scrollToItem(tableViewWidget, item);
-                        item->setTextColor(SaagharWidget::matchedTextColor);
+                        item->SET_TABLE_ITEM_COLOR(SaagharWidget::matchedTextColor);
                         text = item->text();
                     }
                     else {
-                        item->setTextColor(poemColor);
+                        item->SET_TABLE_ITEM_COLOR(poemColor);
                     }
                 }
             }
@@ -522,14 +522,14 @@ void SaagharWidget::homeResizeColsRows()
             }
 
             if (tableViewWidget->item(row, col)) {
-                int w = sectionFontMetric.width(tableViewWidget->item(row, col)->text());
+                int w = Tools::horizontalAdvanceByFontMetric(sectionFontMetric, tableViewWidget->item(row, col)->text());
                 if (w > colWidth) {
                     colWidth = w;
                 }
             }
         }
         colWidth += showPhoto ? 82 : 0;
-        tableViewWidget->setColumnWidth(col, colWidth + sectionFontMetric.width("888"));
+        tableViewWidget->setColumnWidth(col, colWidth + Tools::horizontalAdvanceByFontMetric(sectionFontMetric, "888"));
     }
 }
 
@@ -821,7 +821,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
         buttonHomePressed = buttonHomeHovered = buttonImage;
 
         parentCatButton = new QPushButton(parentCatsToolBar);
-        int minWidth = parentCatButton->fontMetrics().width(ancestors.at(i)._Text) + 4;
+        int minWidth = Tools::horizontalAdvanceByFontMetric(parentCatButton->fontMetrics(), ancestors.at(i)._Text) + 4;
 
         if (ancestors.size() == 1 && category._Text.isEmpty()) {
             buttonImage = ":/resources/cats-buttons/button-home-single.png";
@@ -879,7 +879,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
         parentCatButton->setText(category._Text);
         parentCatButton->setObjectName("CatID=" + QString::number(category._ID)); //used as button data
         connect(parentCatButton, SIGNAL(clicked(bool)), this, SLOT(parentCatClicked()));
-        int minWidth = parentCatButton->fontMetrics().width(category._Text) + 6;
+        int minWidth = Tools::horizontalAdvanceByFontMetric(parentCatButton->fontMetrics(), category._Text) + 6;
         QString styleSheetStr = QString("QPushButton {\
                 color: #707070;\
                 min-height: 22px;\
@@ -981,7 +981,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     const bool justified = true && !Tools::No_KASHIDA_FONTS.contains(poemFont.family());//temp
     int maxWidth = -1;
     if (longestHemistiches.contains(poem._ID)) {
-        maxWidth = poemFontMetric.width(longestHemistiches.value(poem._ID));
+        maxWidth = Tools::horizontalAdvanceByFontMetric(poemFontMetric, longestHemistiches.value(poem._ID));
     }
     int numberOfVerses = verses.size();
 #ifdef SAAGHAR_DEBUG
@@ -998,7 +998,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 }
 
                 verseText = verseText.simplified();
-                int temp = poemFontMetric.width(verseText);
+                int temp = Tools::horizontalAdvanceByFontMetric(poemFontMetric, verseText);
                 if (temp > maxWidth) {
                     longest = verseText;
                     maxWidth = temp;
@@ -1359,9 +1359,10 @@ void SaagharWidget::resizeTable(QTableWidget* table)
             table->setColumnWidth(1, (baseWidthSize * 47) / 100);
             table->setColumnWidth(2, (baseWidthSize * 47) / 100);
             break;
-        case 4:
+        case 4: {
+            int horizontalAdvance = Tools::horizontalAdvanceByFontMetric(QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))), QString::number(table->rowCount() * 100));
             if (CurrentViewStyle == SteppedHemistichLine /*|| CurrentViewStyle==MesraPerLineGroupedBeyt*/) {
-                table->setColumnWidth(0, (SaagharWidget::showBeytNumbers && m_hasPoem) ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
+                table->setColumnWidth(0, (SaagharWidget::showBeytNumbers && m_hasPoem) ?  horizontalAdvance + iconWidth : iconWidth + 3); //numbers
                 baseWidthSize = baseWidthSize - table->columnWidth(0);
                 table->setColumnWidth(2, qMax(qMin((7 * minMesraWidth) / 4, (7 * baseWidthSize) / 8), minMesraWidth)); // cells contain mesras
                 test = qMax(0, baseWidthSize - (table->columnWidth(2)));
@@ -1369,7 +1370,7 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                 table->setColumnWidth(3, test / 2); //left margin
             }
             else if (CurrentViewStyle == OneHemistichLine) {
-                table->setColumnWidth(0, (SaagharWidget::showBeytNumbers && m_hasPoem) ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
+                table->setColumnWidth(0, (SaagharWidget::showBeytNumbers && m_hasPoem) ? horizontalAdvance + iconWidth : iconWidth + 3); //numbers
                 baseWidthSize = baseWidthSize - table->columnWidth(0);
                 table->setColumnWidth(2, qMax(0, minMesraWidth));  // cells contain mesras
                 test = qMax(0, baseWidthSize - (table->columnWidth(2)));
@@ -1377,12 +1378,13 @@ void SaagharWidget::resizeTable(QTableWidget* table)
                 table->setColumnWidth(3, test / 2); //left margin
             }
             else {
-                table->setColumnWidth(0, (SaagharWidget::showBeytNumbers && m_hasPoem) ? QFontMetrics(resolvedFont(LS("SaagharWidget/Fonts/Numbers"))).width(QString::number(table->rowCount() * 100)) + iconWidth : iconWidth + 3); //numbers
+                table->setColumnWidth(0, (SaagharWidget::showBeytNumbers && m_hasPoem) ? horizontalAdvance + iconWidth : iconWidth + 3); //numbers
                 int tw = baseWidthSize - (table->columnWidth(0) + poemFontMetrics.height() * 2/*table->columnWidth(2)*/);
                 table->setColumnWidth(1, qMax(minMesraWidth, tw / 2/* -table->columnWidth(0) */)); //mesra width
                 table->setColumnWidth(3, qMax(minMesraWidth, tw / 2)); //mesra width
                 table->setColumnWidth(2, qMax(poemFontMetrics.height() + 1, baseWidthSize - (table->columnWidth(0) + table->columnWidth(1) + table->columnWidth(3)))); //spacing between mesras
             }
+        }
             break;
         default:
             break;
@@ -1860,8 +1862,8 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
 //                firstEmptyThirdColumn = row;
 //                flagEmptyThirdColumn = true;
 //            }
-            if (fontMetric.width(currentVerseText + extendString) > minMesraWidth) {
-                minMesraWidth = fontMetric.width(currentVerseText + extendString);
+            if (Tools::horizontalAdvanceByFontMetric(fontMetric, currentVerseText + extendString) > minMesraWidth) {
+                minMesraWidth = Tools::horizontalAdvanceByFontMetric(fontMetric, currentVerseText + extendString);
             }
             mesraItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
             tableViewWidget->setItem(row, 1, mesraItem);
@@ -1876,8 +1878,8 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
 //                firstEmptyThirdColumn = row;
 //                flagEmptyThirdColumn = true;
 //            }
-            if (fontMetric.width(currentVerseText + extendString) > minMesraWidth) {
-                minMesraWidth = fontMetric.width(currentVerseText + extendString);
+            if (Tools::horizontalAdvanceByFontMetric(fontMetric, currentVerseText + extendString) > minMesraWidth) {
+                minMesraWidth = Tools::horizontalAdvanceByFontMetric(fontMetric, currentVerseText + extendString);
             }
             mesraItem->setTextAlignment(Qt::AlignLeft | Qt::AlignVCenter);
             tableViewWidget->setItem(row, 3, mesraItem);
@@ -1919,8 +1921,8 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
 //                firstEmptyThirdColumn = row;
 //                flagEmptyThirdColumn = true;
 //            }
-            if (fontMetric.width(currentVerseText + extendString) > minMesraWidth) {
-                minMesraWidth = fontMetric.width(currentVerseText + extendString);
+            if (Tools::horizontalAdvanceByFontMetric(fontMetric, currentVerseText + extendString) > minMesraWidth) {
+                minMesraWidth = Tools::horizontalAdvanceByFontMetric(fontMetric, currentVerseText + extendString);
             }
 
             if (CurrentViewStyle == SteppedHemistichLine) {
@@ -1950,8 +1952,8 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
 //                firstEmptyThirdColumn = row;
 //                flagEmptyThirdColumn = true;
 //            }
-            if (fontMetric.width(currentVerseText + extendString) > minMesraWidth) {
-                minMesraWidth = fontMetric.width(currentVerseText + extendString);
+            if (Tools::horizontalAdvanceByFontMetric(fontMetric, currentVerseText + extendString) > minMesraWidth) {
+                minMesraWidth = Tools::horizontalAdvanceByFontMetric(fontMetric, currentVerseText + extendString);
             }
 
             if (CurrentViewStyle == SteppedHemistichLine) {

@@ -38,8 +38,8 @@ class QExtendedSplashScreen : public QWidget
     Q_OBJECT
 
 public:
-    explicit QExtendedSplashScreen(const QPixmap &pixmap = QPixmap(), Qt::WindowFlags f = Qt::WindowFlags());
-    QExtendedSplashScreen(QWidget* parent, const QPixmap &pixmap = QPixmap(), Qt::WindowFlags f = Qt::WindowFlags());
+    explicit QExtendedSplashScreen(const QPixmap &pixmap = QPixmap(), Qt::WindowFlags f = Qt::WindowFlags(0));
+    QExtendedSplashScreen(QWidget* parent, const QPixmap &pixmap = QPixmap(), Qt::WindowFlags f = Qt::WindowFlags(0));
     virtual ~QExtendedSplashScreen();
 
     const QPixmap pixmap() const;

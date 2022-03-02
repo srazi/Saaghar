@@ -250,7 +250,7 @@ class TableWidget : public QTableWidget
 public:
     explicit TableWidget(QWidget* parent = 0);
 
-protected:
-    void wheelEvent(QWheelEvent* event);
+//protected:
+//    void wheelEvent(QWheelEvent* event);
 };
 #endif // SAAGHARWINDOW_H

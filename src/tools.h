@@ -31,10 +31,16 @@
 #define VAR_ADD(x, y) x.insert(#y, QVariant::fromValue(y))
 #define VAR_GET(x, y) x.value(#y)
 
-#if QT_VERSION >= 0x050F00
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
     #define SKIP_EMPTY_PARTS Qt::SkipEmptyParts
+    #define SET_TABLE_ITEM_COLOR setForeground
+    #define SET_TABLE_ITEM_BACKGROUND setBackground
+    #define GET_TABLE_ITEM_BACKGROUND background
 #else
     #define SKIP_EMPTY_PARTS QString::SkipEmptyParts
+    #define SET_TABLE_ITEM_COLOR setTextColor
+    #define SET_TABLE_ITEM_BACKGROUND setBackgroundColor
+    #define GET_TABLE_ITEM_BACKGROUND backgroundColor
 #endif
 
 //#define DEV_TOOLS 1
@@ -65,6 +71,10 @@ public:
     static void scrollTo(QScrollBar* scrollBar, int value, int duration = 125);
     static void scrollToItem(QTableWidget* table, const QTableWidgetItem* item, int duration = 125);
 
+    static int horizontalAdvanceByFontMetric(const QFontMetrics &fm, const QString &text);
+
+
+    static QString getTempDir(const QString &path = QString(), bool makeDir = false);
 
     static const QStringList someSymbols;
     static const QStringList Ve_Variant;

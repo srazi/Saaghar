@@ -148,7 +148,7 @@ bool OSDAB_ZIP_MANGLE(setFileTimestamp)(const QString &fileName, const QDateTime
 #elif defined(Q_OS_LINUX) || defined(Q_OS_MACX)
 
     struct utimbuf t_buffer;
-    t_buffer.actime = t_buffer.modtime = dateTime.toTime_t();
+    t_buffer.actime = t_buffer.modtime = dateTime.toMSecsSinceEpoch() / 1000;
     return utime(fileName.toLocal8Bit().constData(), &t_buffer) == 0;
 #endif
 

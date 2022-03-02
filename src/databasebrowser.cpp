@@ -273,7 +273,7 @@ QList<GanjoorPoet*> DatabaseBrowser::getPoets(const QString &connectionID, bool 
             }
         }
         if (sort) {
-            qSort(poets.begin(), poets.end(), comparePoetsByName);
+            std::sort(poets.begin(), poets.end(), comparePoetsByName);
         }
     }
 
@@ -386,7 +386,7 @@ QList<GanjoorCat*> DatabaseBrowser::getSubCategories(int CatID, const QString &c
             }
         }
         if (CatID == 0) {
-            qSort(lst.begin(), lst.end(), compareCategoriesByName);
+            std::sort(lst.begin(), lst.end(), compareCategoriesByName);
         }
     }
     return lst;
@@ -1543,11 +1543,11 @@ bool DatabaseBrowser::poetHasSubCats(int poetID, const QString &connectionID)
 
 //    QSqlQuery q(db);
 //#ifdef SAAGHAR_DEBUG
-//    int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+//    int start = QDateTime::currentDateTime().toMSecsSinceEpoch();
 //#endif
 //    q.exec(strQuery);
 //#ifdef SAAGHAR_DEBUG
-//    int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+//    int end = QDateTime::currentDateTime().toMSecsSinceEpoch();
 //    int miliSec = end - start;
 //    qDebug() << "duration=" << miliSec;
 //#endif

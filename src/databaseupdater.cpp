@@ -283,9 +283,16 @@ void DataBaseUpdater::setupTreeRootItems()
     QFont font(ui->repoSelectTree->font());
     font.setBold(true);
 
+    Qt::ItemFlags rootItemsFlags = Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    rootItemsFlags |= Qt::ItemIsAutoTristate;
+#else
+    rootItemsFlags |= Qt::ItemIsTristate;
+#endif
+
     oldRootItem = new QTreeWidgetItem(ui->repoSelectTree);
     oldRootItem->setText(0, tr("Installed"));
-    oldRootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
+    oldRootItem->setFlags(rootItemsFlags);
     oldRootItem->setCheckState(0, Qt::Unchecked);
     oldRootItem->setFont(0, font);
     oldRootItem->setExpanded(false);
@@ -293,7 +300,7 @@ void DataBaseUpdater::setupTreeRootItems()
 
     newRootItem = new QTreeWidgetItem(ui->repoSelectTree);
     newRootItem->setText(0, tr("Ready To Install"));
-    newRootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
+    newRootItem->setFlags(rootItemsFlags);
     newRootItem->setCheckState(0, Qt::Unchecked);
     newRootItem->setFont(0, font);
     newRootItem->setExpanded(true);
@@ -353,7 +360,7 @@ void DataBaseUpdater::readRepository(const QString &url)
     setupTreeRootItems();
     if (!urlStr.contains("file:///")) {
         //isRemote = true;
-        QString tmpPath = getTempDir();
+        QString tmpPath = Tools::getTempDir();
         QDir downDir(tmpPath);
         if (!downDir.exists() && !downDir.mkpath(tmpPath)) {
             QMessageBox::information(this, tr("Error!"), tr("Can not create temp path."));
@@ -429,7 +436,7 @@ void DataBaseUpdater::initDownload()
         }
     }
     else {
-        randomFolder = sessionDownloadFolder = getTempDir();
+        randomFolder = sessionDownloadFolder = Tools::getTempDir();
     }
 
     downDir.setPath(sessionDownloadFolder);
@@ -570,26 +577,6 @@ void DataBaseUpdater::forceStopDownload()
     tmpDir.rmdir(randomFolder);
 }
 
-QString DataBaseUpdater::getTempDir(const QString &path, bool makeDir)
-{
-    QString currentPath = path.isEmpty() ? QDir::tempPath() : path;
-    QFileInfo currentPathInfo(currentPath);
-    if (!currentPathInfo.isDir()) {
-        currentPath = QDir::tempPath();
-    }
-    QString tmpPath = currentPath + "/~tmp_saaghar_0"; //+QString::number(qrand());
-    QDir tmpDir(tmpPath);
-    while (tmpDir.exists()) {
-        tmpPath += QString::number(qrand());
-        tmpDir.setPath(tmpPath);
-    }
-    if (makeDir) {
-        tmpDir.mkpath(tmpPath);
-    }
-
-    return tmpPath;
-}
-
 void DataBaseUpdater::installItemToDB(const QString &fullFilePath, const QString &fileType)
 {
     if (fullFilePath.isEmpty()) {
@@ -652,7 +639,7 @@ void DataBaseUpdater::installItemToDB(const QString &fileName, const QString &pa
                 return;
             }
 
-            QString tmpExtractPath = getTempDir(path, true);
+            QString tmpExtractPath = Tools::getTempDir(path, true);
             for (int i = 0; i < list.size(); ++i) {
                 QString extractPath = tmpExtractPath;
                 const UnZip::ZipEntry &entry = list.at(i);

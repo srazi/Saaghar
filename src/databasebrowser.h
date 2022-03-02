@@ -47,7 +47,8 @@
 
 class ConcurrentTask;
 
-typedef QMap<int, QString> SearchResults;
+
+typedef QMultiMap<int, QString> SearchResults;
 
 
 class DatabaseBrowser : public QObject

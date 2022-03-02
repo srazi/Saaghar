@@ -36,7 +36,7 @@ class NoDataBaseDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit NoDataBaseDialog(QWidget* parent = 0, Qt::WindowFlags f = 0);
+    explicit NoDataBaseDialog(QWidget* parent = 0, Qt::WindowFlags f = Qt::WindowFlags(0));
     ~NoDataBaseDialog();
     Ui::NoDataBaseDialog* ui;
 

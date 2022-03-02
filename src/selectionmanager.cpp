@@ -24,6 +24,7 @@
 #include "saagharapplication.h"
 #include "outlinemodel.h"
 #include "settingsmanager.h"
+#include "tools.h"
 
 #include <QItemSelectionModel>
 

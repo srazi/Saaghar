@@ -48,7 +48,11 @@ QStringList AudioRepoDownloader::repositoriesUrls = QStringList();
 const QStringList AudioRepoDownloader::defaultRepositories = QStringList()
         << "http://a.ganjoor.net/index.xml";
 
-
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    #define ROOT_ITEMSFLAGS Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsAutoTristate
+#else
+    #define ROOT_ITEMSFLAGS Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate
+#endif
 
 AudioRepoDownloader::AudioRepoDownloader(QWidget* parent, Qt::WindowFlags f)
     : QDialog(parent, f)
@@ -239,7 +243,7 @@ void AudioRepoDownloader::parseElement(const QDomElement &element)
     if (!rootItem) {
         rootItem = new QTreeWidgetItem(isNew && !forceDisabled ? newRootItem : oldRootItem);
         rootItem->setText(0, parentTitle);
-        rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
+        rootItem->setFlags(ROOT_ITEMSFLAGS);
         rootItem->setCheckState(0, Qt::Unchecked);
     }
 
@@ -389,7 +393,7 @@ void AudioRepoDownloader::setupTreeRootItems()
 
     oldRootItem = new QTreeWidgetItem(ui->repoSelectTree);
     oldRootItem->setText(0, tr("Present in Album"));
-    oldRootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
+    oldRootItem->setFlags(ROOT_ITEMSFLAGS);
     oldRootItem->setCheckState(0, Qt::Unchecked);
     oldRootItem->setFont(0, font);
     oldRootItem->setExpanded(false);
@@ -397,13 +401,13 @@ void AudioRepoDownloader::setupTreeRootItems()
 
     newRootItem = new QTreeWidgetItem(ui->repoSelectTree);
     newRootItem->setText(0, tr("Not in Album"));
-    newRootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
+    newRootItem->setFlags(ROOT_ITEMSFLAGS);
     newRootItem->setCheckState(0, Qt::Unchecked);
     newRootItem->setFont(0, font);
     newRootItem->setExpanded(true);
     newRootItem->setDisabled(true);
 }
-
+#include <QTemporaryFile>
 void AudioRepoDownloader::readRepository(const QString &url)
 {
     QString currentText = ui->comboBoxRepoList->currentText();
@@ -462,18 +466,23 @@ void AudioRepoDownloader::readRepository(const QString &url)
     setupTreeRootItems();
     if (!urlStr.contains("file:///")) {
         //isRemote = true;
-        QString tmpPath = getTempDir();
-        QDir downDir(tmpPath);
-        if (!downDir.exists() && !downDir.mkpath(tmpPath)) {
-            QMessageBox::information(this, tr("Error!"), tr("Can not create temp path."));
+        QFileInfo urlInfo(urlStr);
+        QString tmpPath = Tools::getTempDir();
+        QString filepath = tmpPath + "/XXXXXX" + urlInfo.fileName();
+        QTemporaryFile tempFile(filepath, qApp);
+
+//        QDir downDir(tmpPath);
+        if (!tempFile.open()) {
+            QMessageBox::information(this, tr("Error!"), tr("Can not create temp file."));
             return;//continue;
         }
+        //FIXME: check new changes
+        qDebug() << __LINE__ << __FUNCTION__ <<  QFileInfo(tempFile).canonicalPath() << tempFile.fileName();
 
-        QFileInfo urlInfo(urlStr);
         ui->comboBoxRepoList->setEnabled(false);
         ui->refreshPushButton->setEnabled(false);
         downloadAboutToStart = downloadStarted = true;
-        downloaderObject->downloadFile(repoUrl, tmpPath, urlInfo.fileName());
+        downloaderObject->downloadFile(repoUrl, QFileInfo(tempFile).canonicalPath(), tempFile.fileName());
         downloadAboutToStart = downloadStarted = false;
         ui->comboBoxRepoList->setEnabled(true);
         if (!downloaderObject->hasError()) {
@@ -485,11 +494,10 @@ void AudioRepoDownloader::readRepository(const QString &url)
             ui->comboBoxRepoList->setCurrentIndex(0);
         }
         ui->labelDownloadStatus->hide();
-        QString filepath = tmpPath + "/" + urlInfo.fileName();
-        QFile file(filepath);
-        read(&file);
-        file.remove();
-        downDir.rmdir(tmpPath);
+//        QFile file(filepath);
+        read(&tempFile);
+//        file.remove();
+//        downDir.rmdir(tmpPath);
     }
     else {
         urlStr.remove("file:///");
@@ -579,7 +587,7 @@ void AudioRepoDownloader::lighRefreshTree()
             if (!rootItem) {
                 rootItem = new QTreeWidgetItem(!m_saagharAlbum->mediaItems.contains(audio_post_ID) && !forceDisabled ? newRootItem : oldRootItem);
                 rootItem->setText(0, parentTitle);
-                rootItem->setFlags(Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled | Qt::ItemIsTristate);
+                rootItem->setFlags(ROOT_ITEMSFLAGS);
                 rootItem->setCheckState(0, Qt::Unchecked);
                 parentCache.insert(key, rootItem);
             }
@@ -757,26 +765,6 @@ void AudioRepoDownloader::forceStopDownload()
     connect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(initDownload()));
     disconnect(ui->pushButtonDownload, SIGNAL(clicked()), this, SLOT(doStopDownload()));
     disconnect(ui->pushButtonDownload, SIGNAL(clicked()), downloaderObject->loop, SLOT(quit()));
-}
-
-QString AudioRepoDownloader::getTempDir(const QString &path, bool makeDir)
-{
-    QString currentPath = path.isEmpty() ? QDir::tempPath() : path;
-    QFileInfo currentPathInfo(currentPath);
-    if (!currentPathInfo.isDir()) {
-        currentPath = QDir::tempPath();
-    }
-    QString tmpPath = currentPath + "/~tmp_saaghar_0";
-    QDir tmpDir(tmpPath);
-    while (tmpDir.exists()) {
-        tmpPath += QString::number(qrand());
-        tmpDir.setPath(tmpPath);
-    }
-    if (makeDir) {
-        tmpDir.mkpath(tmpPath);
-    }
-
-    return tmpPath;
 }
 
 void AudioRepoDownloader::resizeColumnsToContents()

@@ -110,7 +110,7 @@ void SearchResultWidget::setupUi(QMainWindow* qmw)
     searchResultWidget->installEventFilter(this);
     searchResultWidget->setObjectName(QString::fromUtf8("searchResultWidget_new"));//object name for created instance, it renames to 'searchResultWidget_old'
     //searchResultWidget->setLayoutDirection(Qt::RightToLeft);
-    searchResultWidget->setFeatures(QDockWidget::AllDockWidgetFeatures | QDockWidget::DockWidgetVerticalTitleBar);
+    searchResultWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetVerticalTitleBar);
     searchResultWidget->setAttribute(Qt::WA_DeleteOnClose, true);
     searchResultWidget->hide();
 
@@ -444,14 +444,14 @@ void SearchResultWidget::showSearchResult(int start)
         poemItem->setData(ITEM_SEARCH_DATA, QStringList() << m_phrase << firstVerse);
 
         if (viewedItems.contains(snippedFirstVerse)) {
-            numItem->setBackgroundColor(QColor(Qt::green).lighter(170));
+            numItem->SET_TABLE_ITEM_BACKGROUND(QColor(Qt::green).lighter(170));
         }
         else {
-            numItem->setBackgroundColor(color);
+            numItem->SET_TABLE_ITEM_BACKGROUND(color);
         }
 
-        poemItem->setBackgroundColor(color);
-        verseItem->setBackgroundColor(color);
+        poemItem->SET_TABLE_ITEM_BACKGROUND(color);
+        verseItem->SET_TABLE_ITEM_BACKGROUND(color);
         if (it + 1 != endIt) {
             if ((it + 1).key() != it.key()) {
                 if (color == fisrtColor) {
@@ -555,7 +555,7 @@ void SearchResultWidget::filterResults(const QString &text)
         QString value = it.value();
         value = Tools::cleanString(value);
         if (value.contains(str, Qt::CaseInsensitive)) {
-            resultList.insertMulti(it.key(), it.value());
+            resultList.insert(it.key(), it.value());
         }
         ++it;
     }
@@ -590,7 +590,7 @@ void SearchResultWidget::onConcurrentResultReady(const QString &type, const QVar
     if (!copyResultList.isEmpty()) {
         QMap<int, QString>::const_iterator it = copyResultList.constBegin();
         while (it != copyResultList.constEnd()) {
-            searchResults.insertMulti(it.key(), it.value());
+            searchResults.insert(it.key(), it.value());
             ++it;
         }
     }
@@ -681,7 +681,7 @@ void SearchResultWidget::currentRowColumnChanged(int currentRow, int /*currentCo
         if (previousRowItem && col != 0) {
             QColor color = previousRowItem->data(Qt::UserRole + 15).value<QColor>();
             if (color.isValid()) {
-                previousRowItem->setBackgroundColor(color);
+                previousRowItem->SET_TABLE_ITEM_BACKGROUND(color);
             }
         }
 
@@ -690,8 +690,8 @@ void SearchResultWidget::currentRowColumnChanged(int currentRow, int /*currentCo
             if (col == 2 && !viewedItems.contains(text)) {
                 viewedItems << text;
             }
-            currentRowItem->setData(Qt::UserRole + 15, currentRowItem->backgroundColor());
-            currentRowItem->setBackgroundColor(QColor(Qt::green).lighter(170));
+            currentRowItem->setData(Qt::UserRole + 15, currentRowItem->GET_TABLE_ITEM_BACKGROUND());
+            currentRowItem->SET_TABLE_ITEM_BACKGROUND(QColor(Qt::green).lighter(170));
         }
     }
 }

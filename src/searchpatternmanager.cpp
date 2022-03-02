@@ -74,7 +74,11 @@ void SearchPatternManager::init()
             if (str.startsWith(OP(WithOut))) {
                 str = str.remove(0, 1);
                 str = Tools::cleanString(str);
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+                m_relatedExcludeList.insert(i, str);
+#else
                 m_relatedExcludeList.insertMulti(i, str);
+#endif
                 subAndList[j] = "";
                 continue;
             }
@@ -93,7 +97,11 @@ void SearchPatternManager::init()
             //str = str.replace(OP(WholeWord), " ");//moved to the first
             //str = wildcardCharacter+str+wildcardCharacter;
             str = Tools::cleanString(subAndList.at(j));
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+            m_computedPhraseList.insert(i, str);
+#else
             m_computedPhraseList.insertMulti(i, str);
+#endif
         }
     }
 

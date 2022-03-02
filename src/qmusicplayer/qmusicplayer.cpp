@@ -45,6 +45,7 @@
 #include "qmusicplayer.h"
 #include "lyricsmanager.h"
 #include "settingsmanager.h"
+#include "tools.h"
 
 #include <QLCDNumber>
 #include <QFile>
@@ -1061,7 +1062,7 @@ void QMusicPlayer::setupUi()
 
 
     infoLayout->addWidget(seekSlider);
-    infoLayout->addWidget(infoLabel/*tmpLabel*/, 0, 0 /* Qt::AlignCenter*/);
+    infoLayout->addWidget(infoLabel/*tmpLabel*/, 0);
 
     addWidget(infoWidget);
     addWidget(timeLcd);
@@ -1098,7 +1099,7 @@ void QMusicPlayer::readPlayerSettings()
 {
     albumsPathList = VAR("QMusicPlayer/ListOfAlbum").toHash();
 
-    QStringList keys = albumsPathList.uniqueKeys();
+    QStringList keys = albumsPathList.keys();
     for (int i = 0; i < keys.size(); ++i) {
         if (!QFile::exists(albumsPathList.value(keys.at(i)).toString())) {
             albumsPathList.remove(keys.at(i));
@@ -1985,7 +1986,7 @@ void ScrollText::updateText(bool keepScrolling)
 {
     timer.stop();
 
-    singleTextWidth = fontMetrics().width(_text);
+    singleTextWidth = Tools::horizontalAdvanceByFontMetric(fontMetrics(), _text);
     scrollEnabled = (singleTextWidth > width() - leftMargin);
 
     if (scrollEnabled) {
@@ -2001,7 +2002,7 @@ void ScrollText::updateText(bool keepScrolling)
 #if QT_VERSION >= 0x040700
     staticText.prepare(QTransform(), font());
 #endif
-    wholeTextSize = QSize(fontMetrics().width(staticText.text()), fontMetrics().height());
+    wholeTextSize = QSize(Tools::horizontalAdvanceByFontMetric(fontMetrics(), staticText.text()), fontMetrics().height());
 }
 
 void ScrollText::paintEvent(QPaintEvent*)

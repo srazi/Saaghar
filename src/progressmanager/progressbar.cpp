@@ -57,6 +57,8 @@
 #include <QColor>
 #include <QMouseEvent>
 
+#include "tools.h"
+
 static const int PROGRESSBAR_HEIGHT = 13;
 static const int CANCELBUTTON_WIDTH = 16;
 static const int SEPARATOR_HEIGHT = 2;
@@ -250,13 +252,7 @@ QSize ProgressBar::sizeHint() const
     if (m_titleVisible) {
         QFontMetrics fm(titleFont());
 
-#if QT_VERSION_MAJOR >= 6
-        int titleWidth = fm.horizontalAdvance(m_title)
-#else
-        int titleWidth = fm.width(m_title)
-#endif
-
-        width = qMax(width, titleWidth + 16);
+        width = qMax(width, Tools::horizontalAdvanceByFontMetric(fm, m_title) + 16);
         height += fm.height() + 4;
     }
     if (m_separatorVisible) {

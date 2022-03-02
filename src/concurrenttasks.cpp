@@ -237,13 +237,13 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
     QSqlQuery q(threadDatabase);
 
 #ifdef SAAGHAR_DEBUG
-    int start = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+    int start = QDateTime::currentDateTime().toMSecsSinceEpoch();
 #endif
 
     q.exec(strQuery);
 
 #ifdef SAAGHAR_DEBUG
-    int end = QDateTime::currentDateTime().toTime_t() * 1000 + QDateTime::currentDateTime().time().msec();
+    int end = QDateTime::currentDateTime().toMSecsSinceEpoch();
     int miliSec = end - start;
     qDebug() << "duration=" << miliSec;
 #endif
@@ -383,7 +383,7 @@ QVariant ConcurrentTask::startSearch(const QVariantHash &options)
         GanjoorPoem gPoem = sApp->databaseBrowser()->getPoem(poemID, connectionID);
 
         // TODO: Add connectionID to item
-        searchResults.insertMulti(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + sApp->databaseBrowser()->getPoetForCat(gPoem._CatID, connectionID)._Name);
+        searchResults.insert(poemID, "verseText=" + verseText + "|poemTitle=" + gPoem._Title + "|poetName=" + sApp->databaseBrowser()->getPoetForCat(gPoem._CatID, connectionID)._Name);
     }
 
     //for the last result

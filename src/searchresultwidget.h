@@ -68,8 +68,8 @@ private:
     int pageNumber, pageCount;
     QLabel* pageLabel;
     QSearchLineEdit* filterLineEdit;
-    QMap<int, QString> resultList;
-    QMap<int, QString> copyResultList;
+    QMultiMap<int, QString> resultList;
+    QMultiMap<int, QString> copyResultList;
     QStringList viewedItems;
 
     Qt::DockWidgetArea m_dockWidgetArea;

@@ -64,7 +64,7 @@ private:
     QMap<SearchPatternManager::Operator, QString> m_operators;
     QString m_wildcardCharacter;
     QString m_phraseForSearch;
-#if QT_VERSION_MAJOR >= 6
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
     QMultiMap<int, QString> m_computedPhraseList;
     QMultiMap<int, QString> m_relatedExcludeList;
 #else

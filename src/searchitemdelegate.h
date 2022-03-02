@@ -55,8 +55,11 @@ private:
 
     mutable QTextLayout m_textLayout;
     mutable QTextOption m_textOption;
-
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    mutable QVector<QTextLayout::FormatRange> m_additionalFormats;
+#else
     mutable QList<QTextLayout::FormatRange> m_additionalFormats;
+#endif
 
 private slots:
     void keywordChanged(const QString &text);

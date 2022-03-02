@@ -26,12 +26,21 @@
 #include <QPropertyAnimation>
 #include <QScrollBar>
 #include <QFileInfo>
+#include <QDir>
 
 #ifdef Q_OS_WIN
 #define BUFSIZE 4096
 #define _WIN32_WINNT 0x0500
 #include <windows.h>
 #include <tchar.h>
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+    #include <QRandomGenerator>
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    #include <QTemporaryDir>
 #endif
 
 QObject* Tools::s_splashScreen = 0;
@@ -227,9 +236,9 @@ QString Tools::cleanStringFast(const QString &text, const QStringList &excludeLi
 
 QString Tools::justifiedText(const QString &text, const QFontMetrics &fontmetric, int width)
 {
-    int textWidth = fontmetric.width(text);
+    int textWidth = horizontalAdvanceByFontMetric(fontmetric, text);
     QChar tatweel = QChar(0x0640);
-    int tatweelWidth = fontmetric.width(tatweel);
+    int tatweelWidth = horizontalAdvanceByFontMetric(fontmetric, tatweel);
 
     //Current font has not a TATWEEL character
     if (tatweel == QChar(QChar::ReplacementCharacter)) {
@@ -243,7 +252,7 @@ QString Tools::justifiedText(const QString &text, const QFontMetrics &fontmetric
     tatweelWidth = 0;
 #endif
 
-    int spaceWidth = fontmetric.width(" ");
+    int spaceWidth = horizontalAdvanceByFontMetric(fontmetric, " ");
 
     if (textWidth >= width || width <= 0) {
         return text;
@@ -262,7 +271,17 @@ QString Tools::justifiedText(const QString &text, const QFontMetrics &fontmetric
             spacePositions << i;
             continue;
         }
+#if QT_VERSION >= QT_VERSION_CHECK(5,3,0)
+        if (charsOfText.at(i).at(0).joiningType() != QChar::Joining_Dual) {
+            continue;
+        }
 
+        if (i < charsOfText.size() - 1 && ((charsOfText.at(i + 1).at(0).joiningType() == QChar::Joining_Dual) ||
+                                           (charsOfText.at(i + 1).at(0).joiningType() == QChar::Joining_Right))) {
+            tatweelPositions << i;
+            continue;
+        }
+#elif
         if (charsOfText.at(i).at(0).joining() != QChar::Dual) {
             continue;
         }
@@ -272,6 +291,7 @@ QString Tools::justifiedText(const QString &text, const QFontMetrics &fontmetric
             tatweelPositions << i;
             continue;
         }
+#endif
     }
 
     if (tatweelPositions.isEmpty()) {
@@ -380,7 +400,6 @@ QString Tools::snippedText(const QString &text, const QString &str, int from, in
     }
 }
 
-
 int Tools::getRandomNumber(int minBound, int maxBound)
 {
     if ((maxBound < minBound) || (minBound < 0)) {
@@ -389,7 +408,9 @@ int Tools::getRandomNumber(int minBound, int maxBound)
     if (minBound == maxBound) {
         return minBound;
     }
-
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+    return QRandomGenerator::global()->bounded(minBound, maxBound);
+#else
     //Generate a random number in the range [0.5f, 1.0f).
     unsigned int ret = 0x3F000000 | (0x7FFFFF & ((qrand() << 8) ^ qrand()));
     unsigned short coinFlips;
@@ -428,6 +449,7 @@ int Tools::getRandomNumber(int minBound, int maxBound)
 
     float rand = *((float*)(&ret));
     return (int)(rand * (maxBound - minBound + 1) + minBound);
+#endif
 }
 
 int Tools::prefaceIDFromVersion(const QString &version)
@@ -491,4 +513,46 @@ void Tools::scrollToItem(QTableWidget* table, const QTableWidgetItem* item, int 
         // scroll to center
         scrollTo(table->horizontalScrollBar(), horizontalPosition - ((viewportWidth - cellWidth) / 2), duration);
     }
+}
+
+int Tools::horizontalAdvanceByFontMetric(const QFontMetrics &fm, const QString &text)
+{
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    return fm.horizontalAdvance(text);
+#else
+    return fm.width(text);
+#endif
+}
+
+QString Tools::getTempDir(const QString &path, bool makeDir)
+{
+    QString currentPath = path.isEmpty() ? QDir::tempPath() : path;
+    QFileInfo currentPathInfo(currentPath);
+    if (!currentPathInfo.isDir()) {
+        currentPath = QDir::tempPath();
+    }
+    QString tmpPath = currentPath + "/~tmp_saaghar_0";
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    QTemporaryDir tmpDir(tmpPath + "XXXXXX");
+    if (tmpDir.isValid()) {
+        tmpPath = tmpDir.path();
+    }
+#else
+//    QTemporaryFile file(tmpPath + "/_XXX.txt");
+//    qDebug() << __LINE__ << __FUNCTION__ << file.open() << file.fileName();
+    QDir tmpDir(tmpPath);
+    while (tmpDir.exists()) {
+#if QT_VERSION >= QT_VERSION_CHECK(5,10,0)
+        tmpPath += QString::number(QRandomGenerator::global()->generate());
+#else
+        tmpPath += QString::number(qrand());
+#endif
+        tmpDir.setPath(tmpPath);
+    }
+    if (makeDir) {
+        tmpDir.mkpath(tmpPath);
+    }
+#endif
+
+    return tmpPath;
 }
