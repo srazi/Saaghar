@@ -19,9 +19,11 @@
  *                                                                         *
  ***************************************************************************/
 
-#include <QDebug>
 
 #include "lyricsmanager.h"
+
+#include <QDebug>
+#include <QIODevice>
 
 const int ID_DATA = Qt::UserRole + 1;
 
@@ -37,12 +39,17 @@ bool LyricsManager::read(QIODevice* device, const QString &format)
         return false;
     }
 
+    if (!device->open(QIODevice::ReadOnly)) {
+        qWarning() << __FUNCTION__ << device->errorString();
+        return false;
+    }
+
     QString errorStr;
-    int errorLine;
-    int errorColumn;
+    int errorLine = -1;
+    int errorColumn = -1;
 
     if (!m_domDocument.setContent(device, true, &errorStr, &errorLine, &errorColumn)) {
-        qDebug() << QString("Parse error at line %1, column %2:\n%3").arg(errorLine).arg(errorColumn).arg(errorStr);
+        qWarning() << QString("Parse error at line %1, column %2:\n%3").arg(errorLine).arg(errorColumn).arg(errorStr);
         return false;
     }
 
