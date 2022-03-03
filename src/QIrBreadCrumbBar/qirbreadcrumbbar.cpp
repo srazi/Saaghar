@@ -578,13 +578,13 @@ QIrBreadCrumbComboBox::QIrBreadCrumbComboBox(QIrBreadCrumbBar* parent) : QComboB
     setObjectName("Location Bar");
     setDuplicatesEnabled(false);
     c = new QCompleter(this);
+    setEditable(true);
     setCompleter(c);
     m_iconLabel = new QIrBreadCrumbIconWidget(this);
     pal.setBrush(QPalette::Normal, QPalette::Window, pal.brush(QPalette::Normal, QPalette::Base));
     pal.setBrush(QPalette::Disabled, QPalette::Window, pal.brush(QPalette::Disabled, QPalette::Base));
     pal.setBrush(QPalette::Inactive, QPalette::Window, pal.brush(QPalette::Inactive, QPalette::Base));
     m_iconLabel->setPalette(pal);
-    setEditable(true);
     connect(lineEdit(), SIGNAL(returnPressed()), this, SLOT(slotHandleEditTextChanged()));
     m_container = new QIrBreadCrumbComboBoxContainer(this);
     m_container->setAutoFillBackground(false);
