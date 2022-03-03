@@ -158,6 +158,10 @@ public slots:
     void updateTabsSubMenus();
     void highlightTextOnPoem(int poemId, int vorder);
 
+#ifdef MEDIA_PLAYER
+    void mediaInfoChanged(const QString &fileName, const QString &title = "", int id = -1);
+#endif
+
 private slots:
     void openPath(const QString &path);
     void openParentPage(int parentID, bool newPage = false);
@@ -166,9 +170,6 @@ private slots:
     void createCustomContextMenu(const QPoint &pos);
     void onCurrentLocationChanged(const QStringList &locationList, const QString &connectionID = QString());
 
-#ifdef MEDIA_PLAYER
-    void mediaInfoChanged(const QString &fileName, const QString &title = "", int id = -1);
-#endif
 
     void ensureVisibleBookmarkedItem(const QString &type, const QString &itemText, const QString &data, bool ensureVisible = true, bool unbookmark = true);
     void setHomeAsDirty();

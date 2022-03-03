@@ -25,21 +25,23 @@ CONFIG(static) {
     DEFINES += STATIC
 }
 
+# we have to bump up this over time, so it help us to update application in a continuous manner.
 DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x050F00
-isEqual(QT_MAJOR_VERSION, 6) {
-    QT += network widgets printsupport sql xml concurrent core5compat
-} else {
-isEqual(QT_MAJOR_VERSION, 5) {
+
+
+greaterThan(QT_MAJOR_VERSION, 4) {
     QT += network widgets printsupport sql xml concurrent
 
     DEFINES += MEDIA_PLAYER
-
+    isEqual(QT_MAJOR_VERSION, 6) {
+        QT += core5compat
+    }
 } else {
     DEFINES += MEDIA_PLAYER
 
     QT += sql network xml
 }
-}
+
 
 !win32 {
 # Git revision

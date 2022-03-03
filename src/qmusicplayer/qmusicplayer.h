@@ -150,7 +150,10 @@ public:
     QDockWidget* albumManagerDock();
 
     static QHash<QString, QVariant> albumsPathList;
+
+#if QT_VERSION_MAJOR < 6
     static QStringList commonSupportedMedia(const QString &type = "");//"" or "audio" or "video"
+#endif
 
     inline static QHash<QString, SaagharAlbum*> albumsHash() { return albumsMediaHash; }
 
@@ -220,7 +223,7 @@ private:
 
     QMediaPlayer* mediaObject;
     QMediaPlayer* metaInformationResolver;
-    QList<QMediaContent> sources;
+    QList<QUrl> sources;
 #endif
 
     QAction* togglePlayPauseAction;
@@ -400,6 +403,7 @@ public:
 
 public slots:
     void playerOrientationChanged(Qt::Orientation orintation);
+    void setVolume(int vol);
 
 private slots:
     void volumeMute(bool mute);

@@ -1,4 +1,4 @@
-isEqual(QT_MAJOR_VERSION, 5) {
+greaterThan(QT_MAJOR_VERSION, 4) {
     CONFIG(USE_PHONON4_QT5) {
         DEFINES += USE_PHONON
         QT += phonon4qt5
