@@ -442,6 +442,12 @@ QVariant ConcurrentTask::checkForUpdates()
             error = false;
             break;
         }
+#if QT_VERSION <= QT_VERSION_CHECK(5,15,0) and QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+        if (i == updateInfoServers.size() - 1) {
+            qDebug() << __LINE__ << __FUNCTION__ << reply->errorString();
+            qDebug() << "A regression in Qt, update to Qt 5.15.1 or newer.\nSee: https://bugreports.qt.io/browse/QTBUG-85913";
+        }
+#endif
     }
 
     if (error || isCanceled()) {
