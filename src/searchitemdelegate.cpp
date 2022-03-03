@@ -504,6 +504,18 @@ void ParagraphHighlighter::highlightBlock(const QString &text)
         keyword.replace(Tools::Ve_Variant.at(0), "(" + Tools::Ve_Variant.join("|") + ")");
 #if QT_VERSION_MAJOR >= 5
         QRegularExpression maybeOthers(keyword, QRegularExpression::CaseInsensitiveOption);
+        QRegularExpressionMatchIterator it = maybeOthers.globalMatch(text);
+
+        while (it.hasNext()) {
+            QRegularExpressionMatch match = it.next();
+            int index = match.capturedStart();
+            int length = match.capturedLength(0);
+            if (length == 0) {
+                break;
+            }
+
+            setFormat(index, length, paragraphHighightFormat);
+        }
 #else
         QRegExp maybeOthers(keyword, Qt::CaseInsensitive);
         int index = maybeOthers.indexIn(text);
