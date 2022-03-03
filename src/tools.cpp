@@ -358,7 +358,14 @@ QString Tools::snippedText(const QString &text, const QString &str, int from, in
         return leftPart + str + rightPart;
     }
 
-    QStringList words = text.split(REG_EXP("\\b"), SKIP_EMPTY_PARTS);
+    REG_EXP wordRegExp("\\b");
+
+#if QT_VERSION >= QT_VERSION_CHECK(5,15,0)
+    wordRegExp.setPatternOptions(QRegularExpression::UseUnicodePropertiesOption);
+#endif
+
+    QStringList words = text.split(wordRegExp, SKIP_EMPTY_PARTS);
+
     int textWordCount = words.size();
     if (textWordCount < maxNumOfWords || maxNumOfWords <= 0) {
         return text;
