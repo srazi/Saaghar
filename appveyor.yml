@@ -71,6 +71,7 @@ for:
       MAKETOOL: make
       #APPVEYOR_VNC_PASSWORD: a@bcd22
   build_script:
+    - sudo apt --yes install mesa-common-dev libglu1-mesa-dev
     - export PATH=~/$QTDIR/bin:$PATH
     - echo $CONFIGURATION
     - qmake CONFIG+=$CONFIGURATION
