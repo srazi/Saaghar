@@ -1,73 +1,100 @@
 version: 3.0.99.{build}-{branch}
-os: MinGW
 
-platform:
-  - x86
+image:
+- Ubuntu2004
+- macOS-Monterey
+- Visual Studio 2019
 
-build:
-  parallel: true
-  verbosity: detailed
-
+      
 configuration:
-  - release
-#  - debug
+  - Release
+#  - Debug
 
 branches:
   only:
   - master
-
-environment:
-  global:
-    QMAKESPEC: win32-g++
-    MAKETOOL: mingw32-make
-
-
+  - appveyor_ci
+  
+for:
+-
+  ### Windows
   matrix:
-    - QTDIR: C:\Qt\5.7\mingw53_32
-      TOOLSDIR: C:\Qt\Tools\mingw482_32
-    - QTDIR: C:\Qt\5.7\msvc2013
-      TOOLSDIR: C:\Qt\Tools\QtCreator
-      QMAKESPEC: win32-msvc2013
-      VSVER: 12
+    only:
+      - image: Visual Studio 2019
+  environment:
+    global:
+      VSVER: 14
       MAKETOOL: jom
-      # - QTDIR: C:\Qt\5.7\msvc2015
-      # TOOLSDIR: C:\Qt\Tools\QtCreator
-      # QMAKESPEC: win32-msvc2015
-      # VSVER: 14
-      # MAKETOOL: jom
-
-install:
-  - if not "%VSVER%" == "" call "C:\Program Files (x86)\Microsoft Visual Studio "%VSVER%".0\VC\vcvarsall.bat" x86
-  - set PATH=%QTDIR%\bin;%TOOLSDIR%\bin;%PATH%
-  - set BUILD_ID="%APPVEYOR_BUILD_VERSION%_%QMAKESPEC%_%VSVER%_%CONFIGURATION%"
-
-build_script:
-  - echo "%CONFIGURATION% BUILD"
-  - set SRC_DIR=%CD%
-  - mkdir ..\shadow_build_%BUILD_ID%
-  - cd ..\shadow_build_%BUILD_ID%
-  - appveyor DownloadFile http://zlib.net/zlib128-dll.zip
-  - 7z x zlib128-dll.zip
-  - if "%VSVER%" == "" cp lib/zdll.lib lib/libzdll.a
-  - qmake -v
-  - qmake LIBS+=-Llib %SRC_DIR%\Saaghar.pro
-  - call %MAKETOOL% -j8
-  - call %MAKETOOL% install
-  - cp %CONFIGURATION%\Saaghar.exe %SRC_DIR%\Saaghar-%BUILD_ID%.exe
-  - cd %SRC_DIR%
-  - 7z a Saaghar-Win_%BUILD_ID%.zip Saaghar-Win\*
-  - dir
-
-artifacts:
-   - path: Saaghar*.exe
-     name: Saaghar Executable
-   - path: Saaghar*.zip
-     name: Package
-
-notifications:
-  - provider: Email
-    to:
-      - s.r.alavizadeh@gmail.com
-    on_build_success: false
-    on_build_failure: false
-    on_build_status_changed: true
+      TOOLSDIR: C:\Qt\Tools\QtCreator
+      QTDIR: C:\Qt\5.15.2\msvc2019_64
+      PLATFORM: x64
+  install:
+    - call "C:\Program Files (x86)\Microsoft Visual Studio "%VSVER%".0\VC\vcvarsall.bat" %PLATFORM%
+    - set PATH=%QTDIR%\bin;%TOOLSDIR%\bin\jom;C:\Program Files (x86)\Windows Kits\10\bin\10.0.17763.0\%PLATFORM%\;%PATH%
+    - set BUILD_ID="%APPVEYOR_BUILD_VERSION%_%QMAKESPEC%_%VSVER%_%PLATFORM%_%CONFIGURATION%"
+  build_script:
+    - echo %BUILD_ID%
+    - echo %QTDIR%
+    - echo "%CONFIGURATION% BUILD..."
+    - set SRC_DIR=%CD%
+    - mkdir ..\shadow_build_%BUILD_ID%
+    - cd ..\shadow_build_%BUILD_ID%
+    - qmake -v
+    - qmake LIBS+=-L%SRC_DIR%\dep\win\%PLATFORM% %SRC_DIR%\Saaghar.pro
+    - call %MAKETOOL% -j8 Makefile.%CONFIGURATION%
+    - call %MAKETOOL% -j8 install
+    - cp %CONFIGURATION%\Saaghar.exe %SRC_DIR%\Saaghar-%BUILD_ID%.exe
+    - cd %SRC_DIR%
+    - 7z a Saaghar-Win_%BUILD_ID%.zip Saaghar-Win\*
+    - dir
+  artifacts:
+    - path: Saaghar*.exe
+      name: Saaghar Executable
+    - path: Saaghar*.zip
+      name: Package
+            
+  # # # remote desktop connection on init
+  # init:
+    # - ps: iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  # # # remote desktop connection on finish and block build to not destroy VM
+  # on_finish:
+    # - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+-
+  ### Ubuntu
+  matrix:
+    only:
+      - image: ubuntu2004
+  environment:
+    global:
+      QTDIR: Qt/5.15.2/gcc_64
+      PLATFORM: x64
+      MAKETOOL: make
+      #APPVEYOR_VNC_PASSWORD: a@bcd22
+  build_script:
+    - sudo apt --yes install mesa-common-dev libglu1-mesa-dev
+    - export PATH=~/$QTDIR/bin:$PATH
+    - echo $CONFIGURATION
+    - qmake CONFIG+=$CONFIGURATION
+    - $MAKETOOL -j8
+  # init:
+    # - sh: export APPVEYOR_VNC_BLOCK=true
+    # - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-vnc.sh' | bash -e -
+-
+  ### MacOS
+  matrix:
+    only:
+      - image: macOS-Monterey
+  environment:
+      QTDIR: Qt/5.15.2/clang_64/
+      PLATFORM: x64
+      MAKETOOL: make
+      #APPVEYOR_VNC_PASSWORD: 
+  build_script:
+    - export PATH=~/$QTDIR/bin:$PATH
+    - echo $CONFIGURATION
+    - qmake CONFIG+=$CONFIGURATION
+    - $MAKETOOL -j8
+  # init:
+    # - sh: export APPVEYOR_VNC_BLOCK=true
+    # - sh: curl -sflL 'https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-vnc.sh' | bash -e -
+    

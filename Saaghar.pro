@@ -152,7 +152,7 @@ win32-g++{
         phononBackend
 } # end !static
 
-    LIBS += -lzdll
+    LIBS += -lzlibstat
 }
 else {
     LIBS += -L/usr/lib -lz
