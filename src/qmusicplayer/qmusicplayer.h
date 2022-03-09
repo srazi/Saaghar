@@ -130,6 +130,7 @@ public:
 
     QMusicPlayer(QWidget* parent = 0);
     QString currentFile() const;
+    int getCurrentId() { return currentID; }
     QString source();
     void setSource(const QString &fileName, const QString &title = "", int mediaID = -1, bool newSource = false);
     void readPlayerSettings();

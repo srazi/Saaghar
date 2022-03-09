@@ -163,7 +163,7 @@ QString QMusicPlayer::currentFile() const
 
 void QMusicPlayer::seekOnStateChange()
 {
-    if (_newTime > 0) {
+    if (_newTime >= 0) {
 #ifdef USE_PHONON
         mediaObject->seek(_newTime);
 #else
@@ -282,7 +282,7 @@ void QMusicPlayer::setSource(const QString &fileName, const QString &title, int 
         disconnect(this, SIGNAL(highlightedTextChange(QString)), infoLabel, SLOT(setText(QString)));
     }
 #else
-    bool success = !fileName.isEmpty() && m_lyricReader->read(&file, "GANJOOR_XML");
+    bool success = !fileName.isEmpty() && file.exists() && m_lyricReader->read(&file, "GANJOOR_XML");
     if (success) {
         connect(mediaObject, SIGNAL(positionChanged(qint64)), this, SLOT(showTextByTime(qint64)));
         connect(this, SIGNAL(highlightedTextChange(QString)), infoLabel, SLOT(setText(QString)));
@@ -1180,7 +1180,7 @@ void QMusicPlayer::createConnections()
     connect(mediaObject, SIGNAL(playbackStateChanged(QMediaPlayer::PlaybackState)), this, SLOT(stateChange()));
     connect(metaInformationResolver, SIGNAL(playbackStateChanged(QMediaPlayer::PlaybackState)), this, SLOT(metaStateChange()));
 #else
-    connect(mediaObject, SIGNAL(currentMediaChanged(QUrl)), this, SLOT(sourceChanged()));
+    connect(mediaObject, SIGNAL(currentMediaChanged(QMediaContent)), this, SLOT(sourceChanged()));
     connect(mediaObject, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(seekOnStateChange()));
     connect(mediaObject, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(stateChange()));
     connect(metaInformationResolver, SIGNAL(stateChanged(QMediaPlayer::State)), this, SLOT(metaStateChange()));
