@@ -101,6 +101,28 @@ int LyricsManager::vorderByTime(qint64 time)
     return m_syncMap.value(key, -3);
 }
 
+qint64 LyricsManager::timeByVerseOrder(int vorder)
+{
+    if (vorder < 0 || m_syncMap.isEmpty()) {
+        return -1;
+    }
+
+    QMap<qint64, int>::const_iterator it = m_syncMap.constBegin();
+    qint64 time = -1;
+    while (it != m_syncMap.constEnd()) {
+        time = it.key();
+        if (it.value() == vorder) {
+            break;
+        }
+        ++it;
+    }
+
+    if (it != m_syncMap.constEnd())
+        return time / (m_scaleFactor * 1.0);
+    else
+        return -1;
+}
+
 int LyricsManager::setScaleFactor(qint64 totalDuration)
 {
     if (totalDuration <= 0 || m_syncMap.isEmpty()) {

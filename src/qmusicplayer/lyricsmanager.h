@@ -35,6 +35,7 @@ public:
 
     bool read(QIODevice* device, const QString &format);
     int vorderByTime(qint64 time);
+    qint64 timeByVerseOrder(int vorder);
     int setScaleFactor(qint64 totalDuration);
 
 private:

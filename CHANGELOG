@@ -1,5 +1,14 @@
+== 3.0.0-->3.0.99 ==
+New Features:
+--------------------------
+Add ability to change position of playing media which has lyric by double clicking on poem's verses.
+
+Improved Features:
+--------------------------
+Port to latest Qt 6.2.3.
+
+
 == 2.5.0-->3.0.0 ==
-- Not released
 New Features:
 --------------------------
 Add multi-threaded search.

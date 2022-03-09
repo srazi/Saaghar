@@ -110,7 +110,12 @@ SaagharWidget::SaagharWidget(QWidget* parent, QToolBar* catsToolBar, QTableWidge
 
     connect(this->tableViewWidget, SIGNAL(cellClicked(int,int)), this, SLOT(clickedOnItem(int,int)));
     connect(this->tableViewWidget, SIGNAL(cellPressed(int,int)), this, SLOT(pressedOnItem(int,int)));
+
     showHome();
+
+#ifdef MEDIA_PLAYER
+    connect(this->tableViewWidget, SIGNAL(cellDoubleClicked(int,int)), this, SLOT(doubleClickedOnItem(int,int)));
+#endif
 }
 
 SaagharWidget::~SaagharWidget()
@@ -1749,6 +1754,27 @@ void SaagharWidget::clickedOnItem(int row, int column)
         }
     }
 }
+
+#ifdef MEDIA_PLAYER
+void SaagharWidget::doubleClickedOnItem(int row, int col)
+{
+    if (col == 0) {
+        return;
+    }
+
+    QTableWidgetItem* item = tableViewWidget->item(row, col);
+
+    if (!item)
+        return;
+
+    if (SaagharWidget::musicPlayer && SaagharWidget::musicPlayer->getCurrentId() == currentPoem) {
+        QStringList verseData = item->data(Qt::UserRole).toString().split("|", SKIP_EMPTY_PARTS);
+        if (verseData.size() == 4 && verseData.at(0) == "VerseData=") {
+            SaagharWidget::musicPlayer->seekByVerseOrder(verseData.at(2).toInt());
+        }
+    }
+}
+#endif
 
 QStringList SaagharWidget::identifier()
 {

@@ -176,6 +176,10 @@ private slots:
     void clickedOnItem(int row, int col);
     void pressedOnItem(int row, int col);
 
+#ifdef MEDIA_PLAYER
+    void doubleClickedOnItem(int row, int col);
+#endif
+
     void setFromMVPosition();
 
 #ifdef Q_OS_MAC

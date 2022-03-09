@@ -175,6 +175,7 @@ public slots:
     void removeAlbum(const QString &albumName);
     void saveAsAlbum(const QString &albumName, bool saveAs = true);
     void showTextByTime(qint64 time);
+    void seekByVerseOrder(int vorder);
 
 private slots:
     void removeSource();

@@ -577,6 +577,29 @@ void QMusicPlayer::showTextByTime(qint64 time)
     }
 }
 
+void QMusicPlayer::seekByVerseOrder(int vorder)
+{
+    qint64 time = m_lyricReader->timeByVerseOrder(vorder);
+
+    if (time < 0) {
+        return;
+    }
+
+    if (vorder >= 0 && m_lastVorder != vorder) {
+#if QT_VERSION_MAJOR >= 6
+        QMusicPlayer::State state = (QMusicPlayer::State)mediaObject->playbackState();
+#else
+        QMusicPlayer::State state = (QMusicPlayer::State)mediaObject->state();
+#endif
+        if (state == QMusicPlayer::PlayingState) {
+            m_lastVorder = vorder;
+
+            setCurrentTime(time-1);
+        }
+    }
+
+}
+
 void QMusicPlayer::removeSource()
 {
     _newTime = -1;
