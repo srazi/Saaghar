@@ -152,7 +152,11 @@ win32-g++{
         phononBackend
 } # end !static
 
-    LIBS += -lzlibstat
+    !contains(QT_ARCH, x86_64) {
+        LIBS += -L$$PWD/dep/win/x86/ -lzlibstat
+    } else {
+        LIBS += -L$$PWD/dep/win/x64/ -lzlibstat
+    }
 }
 else {
     LIBS += -L/usr/lib -lz
