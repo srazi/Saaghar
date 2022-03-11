@@ -227,6 +227,7 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     if (!fresh) {
         QStringList openedTabs = VAR("SaagharWindow/LastSessionTabs").toStringList();
+        int currentIndex = qMin(openedTabs.size() - 1, VAR("SaagharWindow/LastSessionTabs/Current").toString().toInt());
         showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), openedTabs.size());
         for (int i = 0; i < openedTabs.size(); ++i) {
             QStringList tabViewData = openedTabs.at(i).split("=", SKIP_EMPTY_PARTS);
@@ -238,6 +239,8 @@ SaagharWindow::SaagharWindow(QWidget* parent)
                 }
             }
         }
+
+        mainTabWidget->setCurrentIndex(currentIndex);
     }
 
     if (mainTabWidget->count() < 1) {
@@ -2461,7 +2464,9 @@ void SaagharWindow::saveSettings()
             openedTabs << tabViewType;
         }
     }
+
     VAR_DECL("SaagharWindow/LastSessionTabs", openedTabs);
+    VAR_DECL("SaagharWindow/LastSessionTabs/Current", QString::number(mainTabWidget->currentIndex()));
 
     //database path
     VAR_DECL("DatabaseBrowser/DataBasePath", QDir::toNativeSeparators(sApp->defaultPath(SaagharApplication::DatabaseDirs)));
