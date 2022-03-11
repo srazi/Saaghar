@@ -405,6 +405,7 @@ void SaagharApplication::setupInitialValues()
     VAR_INIT("SaagharWindow/MainToolBarItems", defaultToolbarActions);
     VAR_INIT("SaagharWindow/LastSessionTabs", QVariant());
     VAR_INIT("SaagharWindow/LastSessionTabs/Current", QVariant());
+    VAR_INIT("SaagharWindow/LastSessionTabs/Captions", QVariant());
     VAR_INIT("SaagharWindow/State0", QVariant());
     VAR_INIT("SaagharWindow/Geometry", QVariant());
     VAR_INIT("SaagharWindow/LockToolBars", true);

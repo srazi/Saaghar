@@ -111,7 +111,7 @@ private:
     // empty connectionID means DatabaseBrowser::defaultConnectionId()
     QWidget* insertNewTab(TabType tabType = SaagharWindow::SaagharViewerTab, const QString &title = QString(),
                           int id = -1, const QString &type = "CatID", bool noError = true,
-                          bool pushToStack = true, const QString &connectionID = QString());
+                          bool pushToStack = true, const QString &connectionID = QString(), bool delayedLoad = false);
     Ui::SaagharWindow* ui;
     void createConnections();
     void setupUi();
@@ -208,7 +208,7 @@ private slots:
     void tabCloser(int tabIndex);
     void showSettingsDialog();
     void applySettings();
-    void newTabForItem(int id, const QString &type = "CatID", bool noError = true, bool pushToStack = true, const QString &connectionID = QString());
+    void newTabForItem(int id, const QString &type = "CatID", bool noError = true, bool pushToStack = true, const QString &connectionID = QString(), const QString &title = QString(), bool delayedLoad = false);
     void updateCaption();
     void searchStart();
     //Navigation

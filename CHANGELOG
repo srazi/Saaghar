@@ -2,11 +2,12 @@
 New Features:
 --------------------------
 Add ability to change position of playing media which has lyric by double clicking on poem's verses.
-
+Remember current tab when storing session data.
+ 
 Improved Features:
 --------------------------
 Port to latest Qt 6.2.3.
-
+Faster startup by delayed loading of tabs
 
 == 2.5.0-->3.0.0 ==
 New Features:

@@ -227,15 +227,20 @@ SaagharWindow::SaagharWindow(QWidget* parent)
 
     if (!fresh) {
         QStringList openedTabs = VAR("SaagharWindow/LastSessionTabs").toStringList();
+        QStringList tabsCaptions = VAR("SaagharWindow/LastSessionTabs/Captions").toStringList();
         int currentIndex = qMin(openedTabs.size() - 1, VAR("SaagharWindow/LastSessionTabs/Current").toString().toInt());
+        bool noCaption = tabsCaptions.size() != openedTabs.size();
+
         showStatusText(tr("<i><b>Saaghar is starting...</b></i>"), openedTabs.size());
         for (int i = 0; i < openedTabs.size(); ++i) {
             QStringList tabViewData = openedTabs.at(i).split("=", SKIP_EMPTY_PARTS);
             if (tabViewData.size() == 2 && (tabViewData.at(0) == "PoemID" || tabViewData.at(0) == "CatID")) {
                 bool Ok = false;
                 int id = tabViewData.at(1).toInt(&Ok);
+                bool delayedLoad = (i != currentIndex) && !noCaption;
                 if (Ok) {
-                    newTabForItem(id, tabViewData.at(0), true, false);
+                    // Don't delayed load for current index and use tabCaption if possible
+                    newTabForItem(id, tabViewData.at(0), true, false, QString(), (noCaption ? QString() : tabsCaptions.at(i)), delayedLoad);
                 }
             }
         }
@@ -567,6 +572,21 @@ void SaagharWindow::currentTabChanged(int tabIndex)
         SaagharWidget* old_saagharWidget = saagharWidget;
         saagharWidget = tmpSaagharWidget;
 
+        // delayed load
+        const QVariant tabData = saagharWidget->property("SETUP_TAB_DATA");
+        saagharWidget->setProperty("SETUP_TAB_DATA", QVariant());
+        if (tabData.isValid()) {
+            const QVariantHash varHash = tabData.toHash();
+
+            const QString &type = varHash.value("type").toString();
+            int id = varHash.value("id").toInt();
+            bool noError = varHash.value("noError").toBool();
+            bool pushToStack = varHash.value("pushToStack").toBool();
+            const QString &tabConnectionID = varHash.value("tabConnectionID").toString();
+
+            saagharWidget->processClickedItem(type, id, noError, pushToStack, tabConnectionID);
+        }
+
         saagharWidget->loadSettings();
 
         if (saagharWidget->isDirty()) {
@@ -875,7 +895,7 @@ void SaagharWindow::tabCloser(int tabIndex)
 
 QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int id,
                                      const QString &type, bool noError,
-                                     bool pushToStack, const QString &connectionID)
+                                     bool pushToStack, const QString &connectionID, bool delayedLoad)
 {
     QString tabConnectionID = connectionID;
     if (tabConnectionID.isEmpty()) {
@@ -946,11 +966,33 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
         // Updating table on changing of selection
         connect(saagharWidget->tableViewWidget, SIGNAL(itemSelectionChanged()), this, SLOT(tableSelectChanged()));
         if (id != -1) {
-            saagharWidget->processClickedItem(type, id, noError, pushToStack, tabConnectionID);
+            if (!delayedLoad || isVisible()) {
+                saagharWidget->processClickedItem(type, id, noError, pushToStack, tabConnectionID);
+            }
+            else {
+                QVariantHash varHash;
+                varHash.insert("type", type);
+                varHash.insert("id", id);
+                varHash.insert("noError", QVariant(noError));
+                varHash.insert("pushToStack", QVariant(pushToStack));
+                varHash.insert("tabConnectionID", tabConnectionID);
+
+                saagharWidget->setProperty("SETUP_TAB_DATA", varHash);
+                saagharWidget->currentCaption = title;
+
+                if (type == "PoemID") {
+                    saagharWidget->currentPoem = id;
+                }
+                else {
+                    saagharWidget->currentCat = id;
+                }
+            }
         }
+
         tabGridLayout->addWidget(tabTableWidget, 0, 0, 1, 1);
         mainTabWidget->setUpdatesEnabled(false);
-        mainTabWidget->setCurrentIndex(mainTabWidget->addTab(tabContent, title)); //add and gets focus to it
+        int index = mainTabWidget->addTab(tabContent, title);
+        mainTabWidget->setCurrentIndex(index); //add and gets focus to it
         mainTabWidget->setUpdatesEnabled(true);
     }
     else if (tabType == SaagharWindow::WidgetTab) {
@@ -991,9 +1033,10 @@ QWidget* SaagharWindow::insertNewTab(TabType tabType, const QString &title, int 
     return tabContent;
 }
 
-void SaagharWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack, const QString &connectionID)
+void SaagharWindow::newTabForItem(int id, const QString &type, bool noError, bool pushToStack, const QString &connectionID, const QString &title, bool delayedLoad)
 {
-    insertNewTab(SaagharWindow::SaagharViewerTab, QString(), id, type, noError, pushToStack, connectionID);
+    insertNewTab(SaagharWindow::SaagharViewerTab, title, id, type, noError, pushToStack, connectionID,  delayedLoad);
+
     showStatusText(tr("<i><b>\"%1\" was loaded!</b></i>").arg(Tools::snippedText(saagharWidget->currentCaption.mid(saagharWidget->currentCaption.lastIndexOf(":") + 1), "", 0, 6, false, Qt::ElideRight)));
 }
 
@@ -2450,6 +2493,8 @@ void SaagharWindow::saveSettings()
     VAR_DECL("SaagharWindow/Geometry", saveGeometry());
 
     QStringList openedTabs;
+    QStringList tabsCaptions;
+
     for (int i = 0; i < mainTabWidget->count(); ++i) {
         SaagharWidget* tmp = getSaagharWidget(i);
         if (tmp && !tmp->isLocalDataset()) {
@@ -2462,10 +2507,12 @@ void SaagharWindow::saveSettings()
             }
 
             openedTabs << tabViewType;
+            tabsCaptions << tmp->currentCaption;
         }
     }
 
     VAR_DECL("SaagharWindow/LastSessionTabs", openedTabs);
+    VAR_DECL("SaagharWindow/LastSessionTabs/Captions", tabsCaptions);
     VAR_DECL("SaagharWindow/LastSessionTabs/Current", QString::number(mainTabWidget->currentIndex()));
 
     //database path
