@@ -71,6 +71,7 @@
 #include <QNetworkReply>
 #include <QActionGroup>
 #include <QTimer>
+#include <QMimeData>
 
 
 #include "qirbreadcrumbbar.h"
@@ -805,7 +806,7 @@ void SaagharWindow::processUpdateData(const QString &type, const QVariant &resul
                 newVersionInfo = infoLinks.join("<br />");
             }
         }
-        updateIsAvailable.setText(tr("The Version <strong>%1</strong> of Saaghar is available for download.<br />%2<br />Do you want to browse download page?").arg(releaseInfo.value("VERSION")).arg(newVersionInfo));
+        updateIsAvailable.setText(tr("The Version <strong>%1</strong> of Saaghar is available for download.<br />%2<br />Do you want to browse download page?").arg(releaseInfo.value("VERSION"), newVersionInfo));
         updateIsAvailable.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
         updateIsAvailable.setEscapeButton(QMessageBox::Cancel);
         updateIsAvailable.setDefaultButton(QMessageBox::Ok);
@@ -1246,7 +1247,7 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                 if (secondItem) {
                     secondText = secondItem->text();
                 }
-                tableBody += QString("\n<TR>\n<TD HEIGHT=%1 ALIGN=LEFT>%2</TD>\n<TD></TD>\n<TD ALIGN=RIGHT>%3</TD>\n</TR>\n").arg(saagharObject->tableViewWidget->rowHeight(row)).arg(firstText).arg(secondText);
+                tableBody += QString("\n<TR>\n<TD HEIGHT=%1 ALIGN=LEFT>%2</TD>\n<TD></TD>\n<TD ALIGN=RIGHT>%3</TD>\n</TR>\n").arg(saagharObject->tableViewWidget->rowHeight(row)).arg(firstText, secondText);
             }
             else if (span == 1 && SaagharWidget::CurrentViewStyle == SaagharWidget::SteppedHemistichLine) {
                 if (row == 1) {
@@ -1266,7 +1267,7 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
 
                     text = item->text();
                 }
-                tableBody += QString("\n<TR><TD HEIGHT=%1 ALIGN=%2>\n%3\n</TD>\n</TR>\n").arg(saagharObject->tableViewWidget->rowHeight(row)).arg(align).arg(text);
+                tableBody += QString("\n<TR><TD HEIGHT=%1 ALIGN=%2>\n%3\n</TD>\n</TR>\n").arg(saagharObject->tableViewWidget->rowHeight(row)).arg(align, text);
             }
             else {
                 QTableWidgetItem* item = saagharObject->tableViewWidget->item(row, 1);
@@ -1306,8 +1307,7 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                 default:
                     break;
                 }
-                tableBody += QString("\n<TR>\n<TD %5 HEIGHT=%1 WIDTH=%2 ALIGN=%3>%4</TD>\n</TR>\n").arg(saagharObject->tableViewWidget->rowHeight(qMax(0, row - 1))).arg(saagharObject->tableViewWidget->width()).arg(align).arg(mesraText)
-                             .arg(SaagharWidget::CurrentViewStyle == SaagharWidget::SteppedHemistichLine ? "" : "COLSPAN=3");
+                tableBody += QString("\n<TR>\n<TD %5 HEIGHT=%1 WIDTH=%2 ALIGN=%3>%4</TD>\n</TR>\n").arg(QString::number(saagharObject->tableViewWidget->rowHeight(qMax(0, row - 1))), QString::number(saagharObject->tableViewWidget->width()), align, mesraText, (SaagharWidget::CurrentViewStyle == SaagharWidget::SteppedHemistichLine ? "" : "COLSPAN=3"));
             }
         }
     }
@@ -1323,13 +1323,13 @@ QString SaagharWindow::convertToHtml(SaagharWidget* saagharObject)
                                   "STYLE=\"width: %4; FONT-FAMILY: %5; COLOR: %6; FONT-SIZE: %7; %8;\">\n"
                                   "<COLGROUP>%9</COLGROUP>\n<TBODY>\n%10\n</TBODY>\n"
                                   "</TABLE>\n</BODY>\n</HTML>\n")
-                          .arg(curPoem._Title)
-                          .arg("CENTER").arg(numberOfCols).arg(totalWidth)
-                          .arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).family())
-                          .arg(SaagharWidget::resolvedColor(LS("SaagharWidget/Colors/PoemText")).name())
-                          .arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).pointSize())
-                          .arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).bold() ? "FONT-WEIGHT: bold" : "")
-                          .arg(columnGroupFormat).arg(tableBody);
+                          .arg(curPoem._Title
+                          , "CENTER", QString::number(numberOfCols), QString::number(totalWidth)
+                          , SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).family()
+                          , SaagharWidget::resolvedColor(LS("SaagharWidget/Colors/PoemText")).name()
+                          , QString::number(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).pointSize()))
+                          .arg((SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).bold() ? "FONT-WEIGHT: bold" : "")
+                          , columnGroupFormat, tableBody);
 
     return tableAsHTML;
 }
@@ -1359,7 +1359,7 @@ QString SaagharWindow::convertToTeX(SaagharWidget* saagharObject)
                     secondText = secondItem->text();
                 }
 
-                tableBody += QString("%1 & %2 ").arg(firstText).arg(secondText);
+                tableBody += QString("%1 & %2 ").arg(firstText, secondText);
                 if (row + 1 != saagharObject->tableViewWidget->rowCount()) {
                     tableBody += "\\\\\n";
                 }
@@ -1427,7 +1427,8 @@ QString SaagharWindow::convertToTeX(SaagharWidget* saagharObject)
     }
 
     QString tableAsTeX = QString("%%%%%\n%This file is generated automatically by Saaghar %1, 2010 http://pozh.org\n%%%%%\n%XePersian and bidipoem packages must have been installed on your TeX distribution for compiling this document\n%You can compile this document by running XeLaTeX on it, twice.\n%%%%%\n\\documentclass{article}\n\\usepackage{hyperref}%\n\\usepackage[Kashida]{xepersian}\n\\usepackage{bidipoem}\n\\settextfont{%2}\n\\hypersetup{\npdftitle={%3},%\npdfsubject={Poem},%\npdfkeywords={Poem, Persian},%\npdfcreator={Saaghar, a Persian poetry software, http://saaghar.pozh.org},%\npdfview=FitV,\n}\n\\renewcommand{\\poemcolsepskip}{1.5cm}\n\\begin{document}\n\\begin{center}\n%3\\\\\n\\end{center}\n\\begin{%4}\n%5\n%6\\end{document}\n%End of document\n")
-                         .arg(SAAGHAR_VERSION).arg(SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).family()).arg(curPoem._Title).arg(poemType).arg(tableBody).arg(endOfEnvironment);
+                         .arg(SAAGHAR_VERSION, SaagharWidget::resolvedFont(LS("SaagharWidget/Fonts/PoemText")).family(), curPoem._Title, poemType, tableBody, endOfEnvironment);
+
     return tableAsTeX;
     /*******************************************************
     %1: Saaghar Version: SAAGHAR_VERSION
@@ -2055,9 +2056,8 @@ void SaagharWindow::showSearchTips()
                     "<br /><b>Tip4:</b> User can use operators mixed together;"
                     "<br />i.e: <b>\"%1\"+\"%2\"+%6</b>, <b>%1+%2|%6 -%7</b>, <b>\"%1\"**\"%2\"</b>, <b>S*r*g -Spring</b> and <b>\"Gr*en\"</b> are valid search terms.<br />"
                     "<br />")
-                 .arg(tr("Spring")).arg(tr("Flower")).arg(tr(" ALIGN=CENTER")).arg(tr(" ALIGN=Left"))
-                 .arg(tr("<TABLE DIR=LTR FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0><TBODY>")).arg(tr("Rain")).arg(tr("Sunny"))
-                 .arg(tr("<TD  ALIGN=Left>:</TD>"));
+                 .arg(tr("Spring"), tr("Flower"), tr(" ALIGN=CENTER"), tr(" ALIGN=Left"),
+                 tr("<TABLE DIR=LTR FRAME=VOID CELLSPACING=5 COLS=3 RULES=ROWS BORDER=0><TBODY>"), tr("Rain"), tr("Sunny"), tr("<TD  ALIGN=Left>:</TD>"));
     QTextBrowserDialog searchTipsDialog(this, tr("Search Tips..."), searchTips, QPixmap(ICON_FILE("search")).scaledToHeight(64, Qt::SmoothTransformation));
     searchTipsDialog.exec();
 }
@@ -2108,7 +2108,7 @@ void SaagharWindow::updateSearchOptionButtonToolTip()
 
     SaagharWidget::lineEditSearchText->optionsButton()->setToolTip(tooltip);
 }
-#include <QMimeData>
+
 void SaagharWindow::dragEnterEvent(QDragEnterEvent* event)
 {
     const QMimeData* mime = event->mimeData();
@@ -2458,8 +2458,7 @@ void SaagharWindow::saveSettings()
         QFile bookmarkFile(sApp->defaultPath(SaagharApplication::BookmarksFile));
         if (!bookmarkFile.open(QFile::WriteOnly | QFile::Text)) {
             QMessageBox::warning(this, tr("Bookmarks"), tr("Can not write the bookmark file %1:\n%2.")
-                                 .arg(bookmarkFile.fileName())
-                                 .arg(bookmarkFile.errorString()));
+                                 .arg(bookmarkFile.fileName(), bookmarkFile.errorString()));
         }
         else {
             SaagharWidget::bookmarks->write(&bookmarkFile);
@@ -2469,9 +2468,8 @@ void SaagharWindow::saveSettings()
 #ifdef MEDIA_PLAYER
     if (SaagharWidget::musicPlayer) {
         SaagharWidget::musicPlayer->saveAllAlbums();
+        SaagharWidget::musicPlayer->savePlayerSettings();
     }
-
-    SaagharWidget::musicPlayer->savePlayerSettings();
 #endif
 
     VAR_DECL("SaagharWidget/PoemViewStyle", SaagharWidget::CurrentViewStyle);
@@ -3174,10 +3172,10 @@ void SaagharWindow::namedActionTriggered(bool checked)
              actionName == "globalRedoAction" ||
              actionName == "globalUndoAction") {
         if (actionName == "fixedNameRedoAction") {
-            emit globalRedoAction->activate(QAction::Trigger);
+            globalRedoAction->activate(QAction::Trigger);
         }
         if (actionName == "fixedNameUndoAction") {
-            emit globalUndoAction->activate(QAction::Trigger);
+            globalUndoAction->activate(QAction::Trigger);
         }
 
         actionInstance("fixedNameRedoAction")->setEnabled(globalRedoAction->isEnabled());

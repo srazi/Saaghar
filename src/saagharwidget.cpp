@@ -702,7 +702,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
         QString catText = Tools::simpleCleanString(subcats.at(i)->_Text);
 
         // default empty or strings containing just weak direction characters to RTL
-        if (QString("%1%2").arg(catText).arg(RLM).isRightToLeft()) {
+        if (QString("%1%2").arg(catText, RLM).isRightToLeft()) {
             ++betterRightToLeft;
         }
         else {
@@ -748,7 +748,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
         itemText += " : " + Tools::simpleCleanString(sApp->databaseBrowser()->getFirstMesra(poems.at(i)->_ID, m_connectionID));
 
         // default empty or strings containing just weak direction characters to RTL
-        if (QString("%1%2").arg(itemText).arg(RLM).isRightToLeft()) {
+        if (QString("%1%2").arg(itemText, RLM).isRightToLeft()) {
             ++betterRightToLeft;
         }
         else {
@@ -844,7 +844,7 @@ void SaagharWidget::showParentCategory(GanjoorCat category)
                 border-left: 15px transparent; }\
                 QPushButton:hover { font: bold; color: black; border-image: url(%3) 0 15 0 15; }\
                 QPushButton:pressed { color: grey; border-image: url(%4) 0 15 0 15; }\
-                ").arg(minWidth).arg(buttonImage).arg(buttonHomeHovered).arg(buttonHomePressed);
+                ").arg(minWidth).arg(buttonImage, buttonHomeHovered, buttonHomePressed);
 
         if (i == 0) {
             parentCatButton->setText("");
@@ -1068,7 +1068,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
         }
 
         // default empty or strings containing just weak direction characters to RTL
-        if (QString("%1%2").arg(currentVerseText).arg(RLM).isRightToLeft()) {
+        if (QString("%1%2").arg(currentVerseText, RLM).isRightToLeft()) {
             ++betterRightToLeft;
         }
         else {
@@ -1132,7 +1132,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                     int itemNumber = isBand ? BandNum : BeytNum;
                     QString localizedNumber = SaagharWidget::persianIranLocal.toString(itemNumber);
                     // default empty or strings containing just weak direction characters to RTL
-                    numItem->setText(QString("%1%2").arg(currentVerseText).arg(RLM).isRightToLeft() ? localizedNumber : QString::number(itemNumber));
+                    numItem->setText(QString("%1%2").arg(currentVerseText, RLM).isRightToLeft() ? localizedNumber : QString::number(itemNumber));
                     numItem->setFont(resolvedFont(LS("SaagharWidget/Fonts/Numbers")));
                     numItem->setForeground(resolvedColor(LS("SaagharWidget/Colors/Numbers")));
                     if (isBand) {
@@ -1820,7 +1820,7 @@ QTextEdit* SaagharWidget::createItemForLongText(int row, int column, const QStri
     }
     const QString paragraphStart = QLatin1String("    ");
     QTextEdit* para = new QTextEdit(tableViewWidget);
-    para->setStyleSheet(QString("QTextEdit{background: transparent; border: none; selection-color: %1; selection-background-color: %2;}").arg(tableViewWidget->palette().color(QPalette::HighlightedText).name()).arg(tableViewWidget->palette().color(QPalette::Highlight).name()));
+    para->setStyleSheet(QString("QTextEdit{background: transparent; border: none; selection-color: %1; selection-background-color: %2;}").arg(tableViewWidget->palette().color(QPalette::HighlightedText).name(), tableViewWidget->palette().color(QPalette::Highlight).name()));
     //para->setAlignment(Qt::AlignJustify);
     para->setContextMenuPolicy(Qt::CustomContextMenu);
     //connect(para, SIGNAL(customContextMenuRequested(QPoint)), this, SIGNAL(createContextMenuRequested(QPoint)));
@@ -1860,7 +1860,6 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
     int row = *prow;
 
     int BandBeytNums = 0;
-    bool MustHave2ndBandBeyt = false;
 
     bool spacerColumnIsPresent = false;
 //    int firstEmptyThirdColumn = 1;
@@ -1910,9 +1909,6 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
             }
             mesraItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
             tableViewWidget->setItem(row, 1, mesraItem);
-            if (MustHave2ndBandBeyt) {
-                MustHave2ndBandBeyt = false;
-            }
             break;
 
         case Left :
@@ -1933,14 +1929,12 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
             tableViewWidget->setItem(row, 1, mesraItem);
             tableViewWidget->setSpan(row, 1, 1, 3);
             BandBeytNums++;
-            MustHave2ndBandBeyt = true;
             break;
 
         case CenteredVerse2 :
             mesraItem->setTextAlignment(Qt::AlignCenter);
             tableViewWidget->setItem(row, 1, mesraItem);
             tableViewWidget->setSpan(row, 1, 1, 3);
-            MustHave2ndBandBeyt = false;
             break;
 
         default:
@@ -1978,10 +1972,6 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
                 tableViewWidget->setItem(row, 1, mesraItem);
                 tableViewWidget->setSpan(row, 1, 1, 3);
             }
-
-            if (MustHave2ndBandBeyt) {
-                MustHave2ndBandBeyt = false;
-            }
             break;
 
         case Left :
@@ -2016,14 +2006,12 @@ void SaagharWidget::doPoemLayout(int* prow, QTableWidgetItem* mesraItem, const Q
             tableViewWidget->setItem(row, 1, mesraItem);
             tableViewWidget->setSpan(row, 1, 1, 3);
             BandBeytNums++;
-            MustHave2ndBandBeyt = true;
             break;
 
         case CenteredVerse2 :
             mesraItem->setTextAlignment(Qt::AlignCenter);
             tableViewWidget->setItem(row, 1, mesraItem);
             tableViewWidget->setSpan(row, 1, 1, 3);
-            MustHave2ndBandBeyt = false;
             break;
 
         default:

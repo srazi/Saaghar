@@ -51,12 +51,12 @@ const int minNewPoetID = 1001;
 const int minNewCatID = 10001;
 const int minNewPoemID = 100001;
 
-const int DatabaseVersion = 1;
+//const int DatabaseVersion = 1;
 
 #ifdef EMBEDDED_SQLITE
 QSQLiteDriver* DatabaseBrowser::sqlDriver = 0;
 #else
-const QString sqlDriver = "QSQLITE";
+const char* sqlDriver = "QSQLITE";
 #endif
 
 static QString threadToString(QThread* thread = 0)
@@ -159,7 +159,7 @@ DatabaseBrowser::DatabaseBrowser(const QString &sqliteDbCompletePath)
                 defaultConnectionId = getIdForDataBase(dir + "/ganjoor.s3db");
 
                 if (!database().open()) {
-                    QMessageBox::information(0, tr("Cannot open Database File!"), tr("Cannot open database file, please check if you have write permisson.\nError: %1\nDataBase Path=%2").arg(errorString).arg(dir));
+                    QMessageBox::information(0, tr("Cannot open Database File!"), tr("Cannot open database file, please check if you have write permisson.\nError: %1\nDataBase Path=%2").arg(errorString, dir));
                     exit(1);
                 }
                 //insert main tables
@@ -639,7 +639,8 @@ void DatabaseBrowser::setPoemMediaSource(int PoemID, const QString &fileName, co
         QSqlQuery q(database(connectionID));
         QString strQuery = "";
         if (!database().record("poem").contains("mediasource")) {
-            strQuery = QString("ALTER TABLE %1 ADD COLUMN %2 %3").arg("poem").arg("mediasource").arg("NVARCHAR(255)");
+            strQuery = QString("ALTER TABLE %1 ADD COLUMN %2 %3")
+                    .arg("poem", "mediasource", "NVARCHAR(255)");
             q.exec(strQuery);
             //q.finish();
         }
@@ -1104,7 +1105,7 @@ bool DatabaseBrowser::importDataBase(const QString &fromFileName, const QString 
             dicPoemID.insert(tmp, newPoem->_ID);
 
             if (isConnected(toConnectionID)) {
-                strQuery = QString("INSERT INTO poem (id, cat_id, title, url) VALUES (%1, %2, \"%3\", \"%4\");").arg(newPoem->_ID).arg(newPoem->_CatID).arg(newPoem->_Title).arg(newPoem->_Url);
+                strQuery = QString("INSERT INTO poem (id, cat_id, title, url) VALUES (%1, %2, \"%3\", \"%4\");").arg(newPoem->_ID).arg(newPoem->_CatID).arg(newPoem->_Title, newPoem->_Url);
                 QSqlQuery q(database(toConnectionID));
                 q.exec(strQuery);
             }
@@ -1215,7 +1216,7 @@ bool DatabaseBrowser::getPoemIDsByPhrase(ConcurrentTask* searchTask, const QStri
         strQuery = QString("SELECT id, title FROM poem WHERE title LIKE \'%" + searchQueryPhrase + "%\' ORDER BY id");
     }
     else {
-        strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM verse WHERE verse.text LIKE \'%%1%\' AND verse.poem_id IN (SELECT poem.id FROM poem WHERE poem.cat_id IN (%2) ORDER BY poem.id)").arg(searchQueryPhrase).arg(currentSelectionPath);
+        strQuery = QString("SELECT verse.poem_id,verse.text, verse.vorder FROM verse WHERE verse.text LIKE \'%%1%\' AND verse.poem_id IN (SELECT poem.id FROM poem WHERE poem.cat_id IN (%2) ORDER BY poem.id)").arg(searchQueryPhrase, currentSelectionPath);
     }
 
     taskTitle.prepend(tr("Search: "));

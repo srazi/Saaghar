@@ -305,13 +305,20 @@ void SaagharApplication::setupDatabasePaths()
 void SaagharApplication::setupTranslators()
 {
     QTranslator* appTranslator = new QTranslator();
-    QTranslator* basicTranslator = new QTranslator();
 
     if (appTranslator->load(QString("saaghar_") + VARS("General/UILanguage"), sApp->defaultPath(SaagharApplication::ResourcesDir))) {
         installTranslator(appTranslator);
+
+        QTranslator* basicTranslator = new QTranslator();
+
         if (basicTranslator->load(QString("qt_") + VARS("General/UILanguage"), sApp->defaultPath(SaagharApplication::ResourcesDir))) {
             installTranslator(basicTranslator);
         }
+        else {
+            delete basicTranslator;
+        }
+    } else {
+        delete appTranslator;
     }
 
     if (tr("LTR") == QLatin1String("RTL")) {
@@ -450,8 +457,7 @@ void SaagharApplication::loadSettings()
                           || !settingsManager()->loadVariable(&file))) {
         QMessageBox::information(m_mainWindow, tr("Warning!"),
                                  tr("Settings could not be loaded!\nFile: %1\nError: %2")
-                                 .arg(QFileInfo(file).absoluteFilePath())
-                                 .arg(file.errorString()));
+                                 .arg(QFileInfo(file).absoluteFilePath()), file.errorString());
     }
 
     // before using VAR* macros we have to initialize defaults
@@ -538,8 +544,7 @@ void SaagharApplication::saveSettings()
             || !settingsManager()->writeVariable(&file)) {
         QMessageBox::information(m_mainWindow, tr("Warning!"),
                                  tr("Settings could not be saved!\nFile: %1\nError: %2")
-                                 .arg(QFileInfo(file).absoluteFilePath())
-                                 .arg(file.errorString()));
+                                 .arg(QFileInfo(file).absoluteFilePath(), file.errorString()));
     }
 }
 

@@ -298,11 +298,11 @@ QString Tools::justifiedText(const QString &text, const QFontMetrics &fontmetric
 
     if (numOfTatweels > 0) {
         ++numOfTatweels;
-        width = numOfSpaces * spaceWidth + numOfTatweels * tatweelWidth + textWidth;
+//        width = numOfSpaces * spaceWidth + numOfTatweels * tatweelWidth + textWidth;
     }
     else {
         ++numOfSpaces;
-        width = numOfSpaces * spaceWidth + numOfTatweels * tatweelWidth + textWidth;
+//        width = numOfSpaces * spaceWidth + numOfTatweels * tatweelWidth + textWidth;
     }
 
     for (int i = 0; i < tatweelPositions.size(); ++i) {

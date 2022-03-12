@@ -117,9 +117,13 @@ AboutDialog::AboutDialog(QWidget* parent)
     speceialThanks += listItem.arg("<a style=\"color: #07F; text-decoration:none;\" href=\"https://ganjoor.net/\">" + tr("All Ganjoor Project Contributors") + "</a> " + tr("(Persian-Datasets/Audio)"));
 
 
+    const QString copyRight = tr("Copyright 2010-2016 %1. All right reserved.").arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://pozh.org/\">" + tr("Razi Alavizadeh") + "</a>");
     const QString noWarranty = tr("<br /><br />This program is distributed in the hope that it will be useful,"
                                   " but WITHOUT ANY WARRANTY; without even the implied warranty of"
                                   " MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.");
+
+    const QString saagharLink = "<a style=\"color: #07F; text-decoration:none;\" href=\"http://saaghar.pozh.org\">" + tr("Saaghar") + "</a>";
+    const QString ganjoorLink = "<a style=\"color: #07F; text-decoration:none;\" href=\"http://ganjoor.net/\">" + tr("Ganjoor") + "</a>";
 
     setText(tr("<h3>Saaghar %1</h3>%2Build Time: %3<br /><br />"
                "%4 is a Persian poem viewer software written using Qt (C++)."
@@ -127,13 +131,13 @@ AboutDialog::AboutDialog(QWidget* parent)
                "<br /><br />%6"
                "<h4>Related Pages:</h4>%7"
                "<h4>Special Thanks to:</h4>%8%9")
-            .arg(SAAGHAR_VERSION).arg(gitRevision).arg(BUILD_TIME)
-            .arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://saaghar.pozh.org\">" + tr("Saaghar") + "</a>")
-            .arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://ganjoor.net/\">" + tr("Ganjoor") + "</a>")
-            .arg(tr("Copyright 2010-2016 %1. All right reserved.").arg("<a style=\"color: #07F; text-decoration:none;\" href=\"http://pozh.org/\">" + tr("Razi Alavizadeh") + "</a>"))
-            .arg(QString("<ul>%1</ul>").arg(relatedPages))
-            .arg(QString("<ul>%1</ul>").arg(speceialThanks))
-            .arg(noWarranty));
+            .arg(SAAGHAR_VERSION, gitRevision, BUILD_TIME
+            , saagharLink
+            , ganjoorLink
+            , copyRight
+            , ("<ul>"+ relatedPages + "</ul>")
+            , ("<ul>" + speceialThanks + "</ul>")
+            , noWarranty));
 
     connect(ui->closeLabel, SIGNAL(linkActivated(QString)), this, SLOT(accept()));
 }

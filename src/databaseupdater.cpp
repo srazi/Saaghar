@@ -165,7 +165,7 @@ void DataBaseUpdater::parseElement(const QDomElement &element)
     if (!BlogUrl.isEmpty()) {
         QLabel* blogLink = new QLabel(ui->repoSelectTree);
         blogLink->setTextFormat(Qt::RichText);
-        blogLink->setText(QString("<a href=\"%1\" title=\"%1\" >%2</a>").arg(BlogUrl).arg(tr("Go to Release Information")));
+        blogLink->setText(QString("<a href=\"%1\" title=\"%1\" >%2</a>").arg(BlogUrl, tr("Go to Release Information")));
         //blogLink->setToolTip(BlogUrl);
         blogLink->setOpenExternalLinks(true);
         ui->repoSelectTree->setItemWidget(item, 3, blogLink);

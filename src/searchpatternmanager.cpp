@@ -180,7 +180,7 @@ QString SearchPatternManager::clearedPhrase(const QString &str)
 
     clearedString.replace(OP(WithOut), " " + OP(WithOut));
 
-    clearedString.simplified();
+    clearedString = clearedString.simplified();
 
     clearedString.replace(OP(WithOut) + " ", " ");
 

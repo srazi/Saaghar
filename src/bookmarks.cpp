@@ -478,7 +478,7 @@ bool Bookmarks::unBookmarkItem(QTreeWidgetItem* item)
                                            tr("This bookmark has comment if you remove it, the comment will be deleted, too."
                                               "\nThis operation can not be undoed!"
                                               "\nBookmark's' Title:\n%1\n\nBookmark's Comment:\n%2")
-                                           .arg(item->text(0)).arg(itemComment),
+                                           .arg(item->text(0), itemComment),
                                            QMessageBox::Ok | QMessageBox::Cancel, parentWidget());
 
         if (bookmarkCommentWarning.exec() == QMessageBox::Cancel) {
