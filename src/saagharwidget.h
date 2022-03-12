@@ -58,6 +58,16 @@ public:
     static QMusicPlayer* musicPlayer;
 #endif
 
+    enum ViewItem {
+        NumberItem,
+        GroupNameItem,
+        CategoryNameItem,
+        PoemNameItem,
+        VerseItem,
+        PoemsTitleItem,
+        EmptyItem
+    };
+
     enum PoemViewStyle {
         TwoHemistichLine,
         OneHemistichLine,
@@ -150,6 +160,9 @@ public:
     {dirty = true;}
     QStringList identifier();
     void refresh();
+
+
+    QTableWidgetItem *createViewItem(ViewItem item, const QString &text = QString());
 
     inline void setMVPosition(int value) { m_vPosition = value; }
 

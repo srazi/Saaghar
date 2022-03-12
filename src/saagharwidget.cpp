@@ -67,11 +67,6 @@ QSearchLineEdit* SaagharWidget::lineEditSearchText = 0;
 
 //Constants
 const int ITEM_BOOKMARKED_STATE = Qt::UserRole + 20;
-const Qt::ItemFlags numItemFlags = Qt::ItemIsEnabled;//Qt::NoItemFlags;
-const Qt::ItemFlags catsItemFlag = Qt::ItemIsEnabled;
-const Qt::ItemFlags poemsItemFlag = Qt::ItemIsEnabled;
-const Qt::ItemFlags versesItemFlag = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
-const Qt::ItemFlags poemsTitleItemFlag = Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 
 #ifdef MEDIA_PLAYER
 #include "qmusicplayer.h"
@@ -450,10 +445,9 @@ bool SaagharWidget::initializeCustomizedHome()
                     }
 
 
-                    QTableWidgetItem* groupLabelItem = new QTableWidgetItem(groupLabel);
+                    QTableWidgetItem* groupLabelItem = createViewItem(GroupNameItem, groupLabel);
                     groupLabelItem->setFont(resolvedFont(LS("SaagharWidget/Fonts/Titles")));
                     groupLabelItem->setForeground(resolvedColor(LS("SaagharWidget/Colors/Titles")));
-                    groupLabelItem->setFlags(Qt::NoItemFlags);
                     groupLabelItem->setTextAlignment(Qt::AlignCenter);
                     tableViewWidget->setItem(0, col, groupLabelItem);
                     if (col == 0) {
@@ -461,10 +455,9 @@ bool SaagharWidget::initializeCustomizedHome()
                     }
                 }
             }
-            QTableWidgetItem* catItem = new QTableWidgetItem(poets.at(poetIndex)->_Name + "       ");
+            QTableWidgetItem* catItem = createViewItem(CategoryNameItem, poets.at(poetIndex)->_Name + "       ");
             catItem->setFont(sectionFont);
             catItem->setForeground(sectionColor);
-            catItem->setFlags(catsItemFlag);
             catItem->setData(Qt::UserRole, "CatID=" + QString::number(poets.at(poetIndex)->_CatID));
             //poets.at(poetIndex)->_ID
             QString poetPhotoFileName = poetsImagesDir + "/" + QString::number(poets.at(poetIndex)->_ID) + ".png";;
@@ -482,9 +475,7 @@ bool SaagharWidget::initializeCustomizedHome()
             ++poetIndex;
             if (poetIndex >= numOfPoets) {
                 for (int i = row + 1; i < SaagharWidget::maxPoetsPerGroup; ++i) {
-                    QTableWidgetItem* tmpItem = new QTableWidgetItem("");
-                    tmpItem->setFlags(Qt::NoItemFlags);
-                    tableViewWidget->setItem(i + startIndex, col, tmpItem);
+                    tableViewWidget->setItem(i + startIndex, col, createViewItem(EmptyItem));
                 }
                 break;
             }
@@ -623,9 +614,7 @@ void SaagharWidget::showCategory(GanjoorCat category)
         if (!itemText.isEmpty() && category._ParentID == 0) {
             startRow = 1;
             tableViewWidget->setRowCount(1 + subcatsSize + poems.size());
-            QTableWidgetItem* catItem = new QTableWidgetItem(""/*itemText*/);
-            catItem->setFlags(catsItemFlag);
-
+            QTableWidgetItem* catItem = createViewItem(CategoryNameItem);
             catItem->setTextAlignment(Qt::AlignJustify);
             catItem->setData(Qt::UserRole, "CatID=" + QString::number(category._ID));
             QString poetPhotoFileName = poetsImagesDir + "/" + QString::number(gPoet._ID) + ".png";;
@@ -720,10 +709,9 @@ void SaagharWidget::showCategory(GanjoorCat category)
             ++betterLeftToRight;
         }
 
-        QTableWidgetItem* catItem = new QTableWidgetItem(catText);
+        QTableWidgetItem* catItem = createViewItem(CategoryNameItem, catText);
         catItem->setFont(sectionFont);
         catItem->setForeground(sectionColor);
-        catItem->setFlags(catsItemFlag);
         catItem->setData(Qt::UserRole, "CatID=" + QString::number(subcats.at(i)->_ID));
 
         if (currentCat == 0) {
@@ -767,10 +755,9 @@ void SaagharWidget::showCategory(GanjoorCat category)
             ++betterLeftToRight;
         }
 
-        QTableWidgetItem* poemItem = new QTableWidgetItem(itemText);
+        QTableWidgetItem* poemItem = createViewItem(PoemNameItem, itemText);
         poemItem->setFont(sectionFont);
         poemItem->setForeground(sectionColor);
-        poemItem->setFlags(poemsItemFlag);
         poemItem->setData(Qt::UserRole, "PoemID=" + QString::number(poems.at(i)->_ID));
 
         //we need delete all
@@ -955,13 +942,11 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
     emit captionChanged();
 
     // disabling item at (0,0)
-    QTableWidgetItem* flagItem = new QTableWidgetItem("");
-    flagItem->setFlags(Qt::NoItemFlags);
+    QTableWidgetItem* flagItem = createViewItem(EmptyItem);
     tableViewWidget->setItem(0, 0, flagItem);
 
     //Title of Poem
-    QTableWidgetItem* poemTitle = new QTableWidgetItem(Tools::simpleCleanString(poem._Title));
-    poemTitle->setFlags(poemsTitleItemFlag);
+    QTableWidgetItem* poemTitle = createViewItem(PoemsTitleItem, Tools::simpleCleanString(poem._Title));
     poemTitle->setData(Qt::UserRole, "PoemID=" + QString::number(poem._ID));
 
     //title is centered by using each PoemViewStyle
@@ -1090,8 +1075,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
             ++betterLeftToRight;
         }
 
-        QTableWidgetItem* mesraItem = new QTableWidgetItem(currentVerseText);
-        mesraItem->setFlags(versesItemFlag);
+        QTableWidgetItem* mesraItem = createViewItem(VerseItem, currentVerseText);
         //set data for mesraItem
         QString verseData = QString::number(verses.at(i)->_PoemID) + "|" + QString::number(verses.at(i)->_Order) + "|" + QString::number((int)verses.at(i)->_Position);
         mesraItem->setData(Qt::UserRole, "VerseData=|" + verseData);
@@ -1142,7 +1126,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
             if (!currentVerseText.isEmpty()) {
                 //empty verse strings have been seen sometimes, it seems that we have some errors in our database
                 //QString verseData = QString::number(verses.at(i)->_PoemID)+"."+QString::number(verses.at(i)->_Order)+"."+QString::number((int)verses.at(i)->_Position);
-                QTableWidgetItem* numItem = new QTableWidgetItem("");
+                QTableWidgetItem* numItem = createViewItem(NumberItem);
 
                 if (SaagharWidget::showBeytNumbers && m_hasPoem) {
                     int itemNumber = isBand ? BandNum : BeytNum;
@@ -1159,7 +1143,7 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                         numItem->setForeground(QBrush(QColor(Qt::yellow).darker(150)));
                     }
                 }
-                numItem->setFlags(numItemFlags);
+
                 if (SaagharWidget::bookmarks && !isLocalDataset()) {
                     QPixmap star(ICON_FILE("bookmark-on"));
                     QPixmap starOff(ICON_FILE("bookmark-off"));
@@ -1188,8 +1172,8 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
                 verses.at(i)->_Position == Single) {
             QTableWidgetItem* numItem = tableViewWidget->item(row, 0);
             if (!numItem) {
-                numItem = new QTableWidgetItem("");
-                numItem->setFlags(numItemFlags);
+                numItem = createViewItem(NumberItem);
+
                 if (SaagharWidget::bookmarks && verses.at(i)->_Position == Paragraph && !isLocalDataset()) {
                     QPixmap star(ICON_FILE("bookmark-on"));
                     QPixmap starOff(ICON_FILE("bookmark-off"));
@@ -1255,10 +1239,9 @@ void SaagharWidget::showPoem(GanjoorPoem poem)
         }
     }
 
-    QTableWidgetItem* emptyLastRow = new QTableWidgetItem(QString());
-    emptyLastRow->setFlags(Qt::NoItemFlags);
+    // create last empty row
     tableViewWidget->insertRow(tableViewWidget->rowCount());
-    tableViewWidget->setItem(tableViewWidget->rowCount() - 1, 0, emptyLastRow);
+    tableViewWidget->setItem(tableViewWidget->rowCount() - 1, 0, createViewItem(EmptyItem));
     tableViewWidget->setSpan(tableViewWidget->rowCount() - 1, 0, 1, tableViewWidget->columnCount());
 
     currentPoem = poem._ID;
@@ -1799,6 +1782,35 @@ void SaagharWidget::refresh()
     else {
         processClickedItem("CatID", currentCat, true, true, m_connectionID);
     }
+}
+
+QTableWidgetItem* SaagharWidget::createViewItem(ViewItem itemType, const QString &text)
+{
+    QTableWidgetItem* item = new QTableWidgetItem(text);
+    switch (itemType) {
+    case NumberItem:
+        item->setFlags(Qt::ItemIsEnabled);
+        break;
+    case CategoryNameItem:
+        item->setFlags(Qt::ItemIsEnabled);
+        break;
+    case PoemNameItem:
+        item->setFlags(Qt::ItemIsEnabled);
+        break;
+    case VerseItem:
+        item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+        break;
+    case PoemsTitleItem:
+        item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+        break;
+    case GroupNameItem:
+    case EmptyItem:
+    default:
+        item->setFlags(Qt::NoItemFlags);
+        break;
+    }
+
+    return item;
 }
 
 QTextEdit* SaagharWidget::createItemForLongText(int row, int column, const QString &text, const QString &highlightText)
