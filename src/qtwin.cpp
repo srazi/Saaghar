@@ -97,6 +97,8 @@ public:
     }
 #if (QT_VERSION < 0x050000)
     bool winEvent(MSG* message, long* result);
+#elif QT_VERSION_MAJOR >= 6
+    bool nativeEvent(const QByteArray &eventType, void* _message, qintptr* result);
 #else
     bool nativeEvent(const QByteArray &eventType, void* _message, long* result);
 #endif
@@ -320,7 +322,12 @@ WindowNotifier* QtWin::windowNotifier()
 bool WindowNotifier::winEvent(MSG* message, long* result)
 {
 #else
-bool WindowNotifier::nativeEvent(const QByteArray &eventType, void* _message, long* result)
+bool WindowNotifier::nativeEvent(const QByteArray &eventType, void* _message,
+#if QT_VERSION_MAJOR >= 6
+                                 qintptr* result) // Qt6+
+#else
+                                 long* result) // Qt5
+#endif
 {
     Q_UNUSED(eventType)
     MSG* message = static_cast<MSG*>(_message);
@@ -353,9 +360,7 @@ bool WindowNotifier::nativeEvent(const QByteArray &eventType, void* _message, lo
 #if (QT_VERSION < 0x050000)
     return QWidget::winEvent(message, result);
 #elif QT_VERSION_MAJOR >= 6
-    //FIXME
-    qDebug() << reinterpret_cast<qintptr*>(result) << result;
-    return QWidget::nativeEvent(eventType, _message, reinterpret_cast<qintptr*>(result));
+    return QWidget::nativeEvent(eventType, _message, result);
 #else
     return QWidget::nativeEvent(eventType, _message, result);
 #endif
