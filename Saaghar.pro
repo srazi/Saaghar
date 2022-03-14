@@ -33,9 +33,6 @@ greaterThan(QT_MAJOR_VERSION, 4) {
     QT += network widgets printsupport sql xml concurrent
 
     DEFINES += MEDIA_PLAYER
-    isEqual(QT_MAJOR_VERSION, 6) {
-        QT += core5compat
-    }
 } else {
     DEFINES += MEDIA_PLAYER
 

@@ -55,7 +55,6 @@
 #include <QProcess>
 #include <QDir>
 #include <QCloseEvent>
-#include <QTextCodec>
 #include <QPrinter>
 #include <QPainter>
 #include <QPrintDialog>
@@ -82,6 +81,11 @@
 #include "qmusicplayer.h"
 #include "audiorepodownloader.h"
 #endif
+
+#if QT_VERSION_MAJOR < 6
+#include <QTextCodec>
+#endif
+
 
 SaagharWindow::SaagharWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -142,11 +146,13 @@ SaagharWindow::SaagharWindow(QWidget* parent)
         }
     }
 
+#if QT_VERSION_MAJOR < 6
 #ifdef D_MSVC_CC
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("Windows-1256"));
 #endif
 #ifdef D_MINGW_CC
     QTextCodec::setCodecForLocale(QTextCodec::codecForName("utf-8"));
+#endif
 #endif
 
     SaagharWidget::persianIranLocal = QLocale(QLocale::Persian, QLocale::Iran);
@@ -1533,11 +1539,6 @@ void SaagharWindow::actionImportNewSet()
         }
 
         foreach (const QString &file, fileList) {
-
-#ifdef SAAGHAR_DEBUG
-            QMessageBox::information(0, "DEBUG!", QString("%1\n%2\n%3\n%4\n%5").arg(file, QFile::encodeName(file), file.toUtf8(), file.toLocal8Bit(), QTextCodec::codecForName("Windows-1256")->fromUnicode(file)));
-#endif
-
             DatabaseBrowser::dbUpdater->installItemToDB(file);
             QApplication::processEvents();
         }
