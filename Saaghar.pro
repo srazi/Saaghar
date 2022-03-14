@@ -43,7 +43,7 @@ greaterThan(QT_MAJOR_VERSION, 4) {
 }
 
 
-!win32 {
+unix {
 # Git revision
 rev = $$system(sh $$PWD/scripts/getrevision.sh)
 

@@ -286,6 +286,8 @@ SaagharWindow::SaagharWindow(QWidget* parent)
         actionInstance("actionFullScreen")->setChecked(true);
         actionInstance("actionFullScreen")->setText(tr("Exit &Full Screen"));
         actionInstance("actionFullScreen")->setIcon(QIcon(ICON_FILE("no-fullscreen")));
+
+        QtWin::easyBlurUnBlur(this, false);
     }
     else {
         actionInstance("actionFullScreen")->setChecked(false);
