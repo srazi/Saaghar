@@ -236,7 +236,7 @@ void SaagharApplication::setupPaths()
         resourcesPath = QCoreApplication::applicationDirPath();
         dataPath = QDir::homePath() + "/Pozh/Saaghar/";
 #endif
-#ifdef Q_OS_X11
+#if defined(Q_OS_UNIX) && !defined(Q_OS_DARWIN)
         resourcesPath = PREFIX"/share/saaghar/";
         dataPath = QDir::homePath() + "/.Pozh/Saaghar/";
 #endif
